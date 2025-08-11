@@ -4,15 +4,15 @@
 
 ### Conventional Commits
 
-このプロジェクトでは、[Conventional Commits v1.0.0](https://www.conventionalcommits.org/ja/v1.0.0/)に従ってコミットメッセージを記述してください。
+このプロジェクトでは、[Conventional Commits v1.0.0](https://www.conventionalcommits.org/ja/v1.0.0/)に従ってコミットメッセージを記述してください。  
 
 ### ブランチ戦略
 
-Git Flowを採用します。
+Git Flowを採用します。  
 
 ## リポジトリ構造
 
-以下の構造でモノレポとして管理します：
+以下の構造でモノレポとして管理します：  
 
 ```bash
 goal-mandala/
@@ -36,7 +36,7 @@ goal-mandala/
 
 ## 開発ツール管理方法
 
-各種ツールは`asdf`を使用してインストール・管理します。
+各種ツールは`asdf`を使用してインストール・管理します。  
 
 ## レスポンシブ対応
 

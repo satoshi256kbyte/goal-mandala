@@ -2,7 +2,7 @@
 
 ## データベース設計概要
 
-曼荼羅目標管理システムのデータベース設計では、以下の主要エンティティを定義します：
+曼荼羅目標管理システムのデータベース設計では、以下の主要エンティティを定義します：  
 
 - **User**: システム利用者
 - **Goal**: 中心目標
@@ -27,7 +27,7 @@ erDiagram
         datetime created_at
         datetime updated_at
     }
-    
+  
     Goal {
         string id PK
         string user_id FK
@@ -41,7 +41,7 @@ erDiagram
         datetime created_at
         datetime updated_at
     }
-    
+  
     SubGoal {
         string id PK
         string goal_id FK
@@ -54,7 +54,7 @@ erDiagram
         datetime created_at
         datetime updated_at
     }
-    
+  
     Action {
         string id PK
         string sub_goal_id FK
@@ -68,7 +68,7 @@ erDiagram
         datetime created_at
         datetime updated_at
     }
-    
+  
     Task {
         string id PK
         string action_id FK
@@ -81,7 +81,7 @@ erDiagram
         datetime created_at
         datetime updated_at
     }
-    
+  
     TaskReminder {
         string id PK
         string task_id FK
@@ -90,7 +90,7 @@ erDiagram
         datetime sent_at
         datetime created_at
     }
-    
+  
     Reflection {
         string id PK
         string goal_id FK
@@ -101,7 +101,7 @@ erDiagram
         datetime created_at
         datetime updated_at
     }
-    
+  
     User ||--o{ Goal : creates
     Goal ||--o{ SubGoal : contains
     SubGoal ||--o{ Action : contains

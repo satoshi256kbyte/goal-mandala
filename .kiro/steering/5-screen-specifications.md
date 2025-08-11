@@ -31,40 +31,40 @@ flowchart TD
     D -->|No| E[プロフィール入力画面]
     D -->|Yes| F[TOP画面]
     E --> F
-    
+  
     F --> G[新規マンダラ作成]
     F --> H[既存マンダラ選択]
-    
+  
     G --> I[目標入力画面]
     I --> J[AI処理中画面]
     J --> K[サブ目標確認・編集画面]
     K --> L[アクション確認・編集画面]
     L --> M[活動開始確認画面]
     M --> N[マンダラチャート画面]
-    
+  
     H --> N[マンダラチャート画面]
-    
+  
     N --> O[タスク詳細画面]
     N --> P[振り返り画面]
     N --> Q[編集モード]
-    
+  
     O --> R[気分選択画面]
     R --> N
-    
+  
     P --> S[振り返り履歴画面]
     S --> N
-    
+  
     Q --> T[目標・サブ目標・アクション編集]
     T --> N
-    
+  
     %% メール経由のアクセス
     U[リマインドメール] --> V[メール内リンク]
     V --> O
-    
+  
     %% 設定画面
     F --> W[ユーザー設定画面]
     W --> F
-    
+  
     %% 画面の分類
     classDef auth fill:#e1f5fe
     classDef main fill:#f3e5f5
@@ -73,7 +73,7 @@ flowchart TD
     classDef reflection fill:#fce4ec
     classDef settings fill:#f1f8e9
     classDef external fill:#ffebee
-    
+  
     class A,C,E auth
     class F,N main
     class I,J,K,L,M,Q,T create
