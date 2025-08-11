@@ -1,0 +1,52 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "composite": true,
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "noEmit": false,
+
+    // Node.js + Lambda用設定
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+
+    // バックエンド固有設定
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "allowImportingTsExtensions": false,
+    "jsx": "preserve",
+
+    // Node.js環境用
+    "types": ["node"],
+
+    // パッケージ間参照設定
+    "baseUrl": ".",
+    "paths": {
+      "@goal-mandala/shared/*": ["../shared/src/*"],
+      "@goal-mandala/backend/*": ["./src/*"],
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": [
+    "src/**/*",
+    "tests/**/*",
+    "**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "build",
+    "coverage",
+    "**/*.tsx"
+  ],
+  "references": [
+    { "path": "../shared" }
+  ]
+}

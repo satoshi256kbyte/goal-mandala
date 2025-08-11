@@ -1,0 +1,66 @@
+{
+    "$schema": "https://turbo.build/schema.json",
+    "pipeline": {
+        "build": {
+            "dependsOn": [
+                "^build",
+                "type-check"
+            ],
+            "outputs": [
+                "dist/**",
+                "build/**",
+                ".next/**",
+                "!.next/cache/**",
+                "cdk.out/**"
+            ],
+            "cache": true
+        },
+        "test": {
+            "dependsOn": [
+                "build"
+            ],
+            "outputs": [
+                "coverage/**"
+            ],
+            "cache": true
+        },
+        "lint": {
+            "dependsOn": [],
+            "outputs": [],
+            "cache": true
+        },
+        "type-check": {
+            "dependsOn": [
+                "^build"
+            ],
+            "outputs": [
+                "dist/**/*.d.ts",
+                "build/**/*.d.ts"
+            ],
+            "cache": true
+        },
+        "dev": {
+            "dependsOn": [
+                "^build"
+            ],
+            "cache": false,
+            "persistent": true
+        },
+        "clean": {
+            "cache": false
+        }
+    },
+    "globalDependencies": [
+        "package.json",
+        "pnpm-workspace.yaml",
+        "turbo.json",
+        ".env",
+        ".env.local",
+        ".env.example"
+    ],
+    "globalEnv": [
+        "NODE_ENV",
+        "AWS_REGION",
+        "AWS_PROFILE"
+    ]
+}

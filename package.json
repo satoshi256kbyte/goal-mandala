@@ -1,0 +1,57 @@
+{
+    "name": "goal-mandala",
+    "version": "0.1.0",
+    "private": true,
+    "description": "曼荼羅目標管理システム - モノレポ構成",
+    "engines": {
+        "node": ">=23.10.0",
+        "pnpm": ">=8.0.0"
+    },
+    "packageManager": "pnpm@8.15.0",
+    "workspaces": [
+        "packages/*",
+        "tools/*"
+    ],
+    "scripts": {
+        "build": "turbo run build",
+        "test": "turbo run test",
+        "test:coverage": "turbo run test:coverage",
+        "lint": "turbo run lint",
+        "lint:fix": "turbo run lint:fix",
+        "type-check": "turbo run type-check",
+        "format": "turbo run format",
+        "format:check": "turbo run format:check",
+        "dev": "turbo run dev --parallel",
+        "clean": "turbo run clean",
+        "install:all": "pnpm install",
+        "build:all": "pnpm run build",
+        "test:all": "pnpm run test",
+        "lint:all": "pnpm run lint",
+        "type-check:all": "pnpm run type-check"
+    },
+    "devDependencies": {
+        "@types/node": "^20.11.0",
+        "@typescript-eslint/eslint-plugin": "^6.19.0",
+        "@typescript-eslint/parser": "^6.19.0",
+        "eslint": "^8.56.0",
+        "eslint-config-prettier": "^9.1.0",
+        "eslint-plugin-import": "^2.29.1",
+        "eslint-plugin-jsx-a11y": "^6.8.0",
+        "eslint-plugin-react": "^7.33.2",
+        "eslint-plugin-react-hooks": "^4.6.0",
+        "prettier": "^3.2.4",
+        "turbo": "^1.12.0",
+        "typescript": "^5.3.3"
+    },
+    "keywords": [
+        "monorepo",
+        "typescript",
+        "react",
+        "hono",
+        "aws-cdk",
+        "mandala-chart",
+        "goal-management"
+    ],
+    "author": "Goal Mandala Team",
+    "license": "MIT"
+}

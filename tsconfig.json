@@ -1,0 +1,70 @@
+{
+  "compilerOptions": {
+    // 基本設定
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+
+    // 型チェック設定
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "allowUnusedLabels": false,
+    "allowUnreachableCode": false,
+
+    // モジュール解決設定
+    "baseUrl": ".",
+    "paths": {
+      "@goal-mandala/shared/*": ["packages/shared/src/*"],
+      "@goal-mandala/frontend/*": ["packages/frontend/src/*"],
+      "@goal-mandala/backend/*": ["packages/backend/src/*"],
+      "@goal-mandala/infrastructure/*": ["packages/infrastructure/src/*"]
+    },
+
+    // 出力設定（各パッケージで個別設定）
+    "skipLibCheck": true,
+
+    // 互換性設定
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+
+    // 実験的機能
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
+  },
+  "include": [
+    "packages/*/src/**/*",
+    "packages/*/tests/**/*",
+    "tools/*/src/**/*",
+    "**/*.ts",
+    "**/*.tsx"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "build",
+    "coverage",
+    "**/*.js",
+    "**/*.jsx",
+    "packages/*/dist",
+    "packages/*/build",
+    "packages/*/coverage"
+  ],
+  "references": [
+    { "path": "./packages/shared" },
+    { "path": "./packages/frontend" },
+    { "path": "./packages/backend" },
+    { "path": "./packages/infrastructure" }
+  ]
+}
