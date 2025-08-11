@@ -1,7 +1,7 @@
 {
   "enabled": true,
   "name": "Spec作成時にタスク一覧を更新",
-  "description": "Specのtasks.mdファイルが作成または更新された時に、4-wbs.mdファイルを自動的に更新します",
+  "description": "Specのtasks.mdファイルが作成または更新された時に、[4-wbs.md](.kiro/steering/4-wbs.md)ファイルを自動的に更新します",
   "version": "1",
   "when": {
     "type": "fileEdited",

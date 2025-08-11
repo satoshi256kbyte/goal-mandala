@@ -1,7 +1,7 @@
 {
   "enabled": true,
   "name": "Steerling更新時のタスク見直し",
-  "description": "Steerlingファイルが更新された際に、4-wbs.mdの内容を見直して必要に応じて更新する",
+  "description": "Steerlingファイルが更新された際に、[4-wbs.md](.kiro/steering/4-wbs.md)の内容を見直して必要に応じて更新する",
   "version": "1",
   "when": {
     "type": "fileEdited",
