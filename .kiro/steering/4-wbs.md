@@ -1,18 +1,25 @@
 # WBS（Work Breakdown Structure）
 
+## 進捗管理ルール
+
+- ワークパッケージごとにSpecを作成してください。
+- Specのフォルダ名は、`WBS番号-ワークパッケージ名の英語名のハイフン区切り`としてください。
+- 1つのワークパッケージに対して複数のSpecがある場合は、`WBS番号-`に連番を付与してください。
+- Specの`tasks.md`の作業を全て完了した場合、ワークパッケージにチェックを入れてください。
+
 ## プロジェクト構造
 
 ### 1. 基盤構築
 
 #### 1.1 開発環境セットアップ
 
-- 1.1.1 モノレポ構成設定
-  - 1.1.1.1 .tool-versions設定確認（Node.js 23.10.0, Python 3.13.3）
-  - 1.1.1.2 pnpm workspace設定ファイル作成
-  - 1.1.1.3 turbo.json設定
-  - 1.1.1.4 ルートpackage.json設定
-  - 1.1.1.5 各パッケージのpackage.json設定
-  - 1.1.1.6 共通依存関係の整理
+- 1.1.1 モノレポ構成設定 (Spec: 1.1.1-monorepo-setup)
+  - [ ] 1.1.1.1 .tool-versions設定確認（Node.js 23.10.0, Python 3.13.3）
+  - [ ] 1.1.1.2 pnpm workspace設定ファイル作成
+  - [ ] 1.1.1.3 turbo.json設定
+  - [ ] 1.1.1.4 ルートpackage.json設定
+  - [ ] 1.1.1.5 各パッケージのpackage.json設定
+  - [ ] 1.1.1.6 共通依存関係の整理
 
 - 1.1.2 Docker Compose環境構築
   - 1.1.2.1 docker-compose.yml作成
@@ -28,12 +35,12 @@
   - 1.1.3.4 Lambda関数テンプレート作成
   - 1.1.3.5 API Gateway設定
 
-- 1.1.4 開発ツール設定
-  - 1.1.4.1 ESLint設定ファイル作成
-  - 1.1.4.2 Prettier設定ファイル作成
-  - 1.1.4.3 TypeScript設定ファイル作成
-  - 1.1.4.4 VS Code設定ファイル作成
-  - 1.1.4.5 Git hooks設定（husky + lint-staged）
+- 1.1.4 開発ツール設定 (Spec: monorepo-setup)
+  - [ ] 1.1.4.1 ESLint設定ファイル作成
+  - [ ] 1.1.4.2 Prettier設定ファイル作成
+  - [ ] 1.1.4.3 TypeScript設定ファイル作成
+  - [ ] 1.1.4.4 VS Code設定ファイル作成
+  - [ ] 1.1.4.5 Git hooks設定（husky + lint-staged）
 
 - 1.1.5 GitHub Actions基本設定
   - 1.1.5.1 CI/CDワークフロー作成
@@ -432,7 +439,7 @@
 
 ### フェーズ1成果物
 
-- [ ] モノレポ環境構築
+- [x] モノレポ環境構築 (Spec: monorepo-setup - 進行中)
 - [ ] Docker Compose設定
 - [ ] CDKインフラコード
 - [ ] 認証システム
@@ -476,3 +483,31 @@
 - 予期しない要件変更: 10人日
 
 **総工数**: 145人日
+
+## Spec進捗管理
+
+### 進行中のSpec
+
+#### monorepo-setup (モノレポ構成設定)
+
+- **状態**: 進行中
+- **対応WBSタスク**: 1.1.1, 1.1.4
+- **進捗**: 12タスク中 0完了
+- **主要タスク**:
+  - [ ] ルートpackage.json設定
+  - [ ] pnpm workspace設定
+  - [ ] turbo.json設定
+  - [ ] TypeScript設定
+  - [ ] ESLint/Prettier設定
+  - [ ] パッケージディレクトリ構造作成
+
+### 完了済みSpec
+
+(なし)
+
+### 計画中のSpec
+
+- Docker環境構築
+- CDKインフラ設定
+- 認証システム構築
+- データベース設計実装
