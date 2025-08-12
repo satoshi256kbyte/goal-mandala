@@ -48,6 +48,16 @@
         },
         "clean": {
             "cache": false
+        },
+        "format": {
+            "dependsOn": [],
+            "outputs": [],
+            "cache": false
+        },
+        "format:check": {
+            "dependsOn": [],
+            "outputs": [],
+            "cache": true
         }
     },
     "globalDependencies": [

@@ -1,53 +1,44 @@
 {
-  "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "composite": true,
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
     "outDir": "./dist",
     "rootDir": "./src",
+    "composite": true,
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
-    "noEmit": false,
-
-    // AWS CDK用設定
-    "target": "ES2022",
-    "lib": ["ES2022"],
-    "module": "CommonJS",
-    "moduleResolution": "node",
-    "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true,
-
-    // CDK固有設定
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "allowImportingTsExtensions": false,
-    "jsx": "preserve",
-
-    // Node.js環境用
     "types": ["node"],
-
-    // パッケージ間参照設定
     "baseUrl": ".",
     "paths": {
       "@goal-mandala/shared/*": ["../shared/src/*"],
-      "@goal-mandala/infrastructure/*": ["./src/*"],
-      "@/*": ["./src/*"]
+      "@goal-mandala/shared": ["../shared/src/index.ts"]
     }
   },
   "include": [
-    "src/**/*",
-    "tests/**/*",
-    "**/*.ts"
+    "src/**/*"
   ],
   "exclude": [
-    "node_modules",
     "dist",
-    "build",
-    "coverage",
-    "**/*.tsx",
+    "node_modules",
+    "**/*.test.ts",
+    "**/*.spec.ts",
     "cdk.out"
   ],
   "references": [
-    { "path": "../shared" }
+    {
+      "path": "../shared"
+    }
   ]
 }

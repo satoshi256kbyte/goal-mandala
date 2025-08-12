@@ -2,6 +2,7 @@
     "name": "goal-mandala",
     "version": "0.1.0",
     "private": true,
+    "type": "module",
     "description": "曼荼羅目標管理システム - モノレポ構成",
     "engines": {
         "node": ">=23.10.0",
@@ -27,7 +28,11 @@
         "build:all": "pnpm run build",
         "test:all": "pnpm run test",
         "lint:all": "pnpm run lint",
-        "type-check:all": "pnpm run type-check"
+        "type-check:all": "pnpm run type-check",
+        "test:integration": "node tools/scripts/integration-test-simple.js",
+        "test:integration:full": "node tools/scripts/integration-test-full.js",
+        "test:integration:advanced": "node tools/scripts/integration-test.js",
+        "test:integration:shell": "bash tools/scripts/integration-test.sh"
     },
     "devDependencies": {
         "@types/node": "^20.11.0",

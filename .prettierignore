@@ -1,0 +1,79 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Build outputs
+dist/
+build/
+out/
+**/dist/
+**/build/
+**/out/
+
+# Generated files
+*.tsbuildinfo
+**/*.tsbuildinfo
+
+# Coverage reports
+coverage/
+**/coverage/
+
+# Logs
+*.log
+logs/
+**/logs/
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Package manager files
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+
+# CDK generated files
+cdk.out/
+**/cdk.out/
+
+# AWS SAM files
+.aws-sam/
+**/.aws-sam/
+
+# Docker files
+.dockerignore
+
+# Git files
+.gitignore
+.gitattributes
+
+# Markdown files (preserve original formatting)
+*.md
+
+# Configuration files that should maintain specific formatting
+.eslintrc.js
+.eslintrc.json
+tsconfig.json
+**/tsconfig.json
+turbo.json
+pnpm-workspace.yaml
+
+# Lock files
+*.lock
+
+# Temporary files
+*.tmp
+*.temp

@@ -1,5 +1,5 @@
 // バックエンドAPIのエントリーポイント
-import { User, Goal } from '../shared/src';
+import { User, Goal } from '@goal-mandala/shared';
 
 export * from './handlers';
 export * from './services';

@@ -1,0 +1,110 @@
+{
+  "timestamp": "2025-08-12T03:48:39.766Z",
+  "results": {
+    "structure": {
+      "status": "success",
+      "duration": 2,
+      "error": null,
+      "details": [
+        "✅ packages/frontend: @goal-mandala/frontend v0.1.0",
+        "✅ packages/backend: @goal-mandala/backend v0.1.0",
+        "✅ packages/infrastructure: @goal-mandala/infrastructure v0.1.0",
+        "✅ packages/shared: @goal-mandala/shared v0.1.0",
+        "✅ tools ディレクトリ: .gitkeep, README.md, docker, scripts"
+      ]
+    },
+    "workspace": {
+      "status": "success",
+      "duration": 2,
+      "error": null,
+      "details": [
+        "✅ pnpm-workspace.yaml が存在します",
+        "✅ packages/* が設定されています",
+        "✅ turbo.json が存在します",
+        "✅ turbo タスク 'build' が設定されています",
+        "✅ turbo タスク 'test' が設定されています",
+        "✅ turbo タスク 'lint' が設定されています",
+        "✅ turbo タスク 'type-check' が設定されています",
+        "✅ ルートpackage.json: goal-mandala v0.1.0",
+        "✅ 必要なスクリプトがすべて設定されています",
+        "✅ Node.js バージョン制約: >=23.10.0"
+      ]
+    },
+    "install": {
+      "status": "success",
+      "duration": 2667,
+      "details": [
+        "✅ パッケージインストール が正常に完了しました"
+      ]
+    },
+    "build": {
+      "status": "success",
+      "duration": 10874,
+      "details": [
+        "✅ プロジェクトビルド が正常に完了しました"
+      ]
+    },
+    "test": {
+      "status": "failed",
+      "duration": 381590,
+      "error": "Command failed: pnpm test",
+      "details": [
+        "❌ テスト実行 が失敗しました: Command failed: pnpm test"
+      ]
+    },
+    "lint": {
+      "status": "failed",
+      "duration": 26085,
+      "error": "Command failed: pnpm lint",
+      "details": [
+        "❌ リント実行 が失敗しました: Command failed: pnpm lint"
+      ]
+    },
+    "dependencies": {
+      "status": "success",
+      "duration": 1,
+      "error": null,
+      "details": [
+        "✅ frontend: shared パッケージに依存しています (workspace:*)",
+        "📋 frontend: 16 個の依存関係があります",
+        "✅ backend: shared パッケージに依存しています (workspace:*)",
+        "📋 backend: 15 個の依存関係があります",
+        "✅ infrastructure: shared パッケージに依存しています (workspace:*)",
+        "📋 infrastructure: 9 個の依存関係があります"
+      ]
+    },
+    "typescript": {
+      "status": "success",
+      "duration": 1,
+      "error": null,
+      "details": [
+        "✅ ルートtsconfig.json が存在します",
+        "✅ packages/frontend/tsconfig.json が存在します",
+        "✅ packages/backend/tsconfig.json が存在します",
+        "✅ packages/infrastructure/tsconfig.json が存在します",
+        "✅ packages/shared/tsconfig.json が存在します"
+      ]
+    },
+    "turbo": {
+      "status": "success",
+      "duration": 1,
+      "error": null,
+      "details": [
+        "✅ 設定されているタスク: build, test, lint, type-check, dev, clean, format, format:check",
+        "✅ build: 依存関係 ^build, type-check",
+        "✅ build: 出力 dist/**, build/**, .next/**, !.next/cache/**, cdk.out/**",
+        "✅ test: 依存関係 build",
+        "✅ test: 出力 coverage/**",
+        "✅ type-check: 依存関係 ^build",
+        "✅ type-check: 出力 dist/**/*.d.ts, build/**/*.d.ts",
+        "✅ dev: 依存関係 ^build"
+      ]
+    }
+  },
+  "summary": {
+    "total": 9,
+    "passed": 7,
+    "failed": 2,
+    "pending": 0
+  }
+}

@@ -14,12 +14,12 @@
 #### 1.1 開発環境セットアップ
 
 - 1.1.1 モノレポ構成設定 (Spec: 1.1.1-monorepo-setup)
-  - [ ] 1.1.1.1 .tool-versions設定確認（Node.js 23.10.0, Python 3.13.3）
-  - [ ] 1.1.1.2 pnpm workspace設定ファイル作成
-  - [ ] 1.1.1.3 turbo.json設定
-  - [ ] 1.1.1.4 ルートpackage.json設定
-  - [ ] 1.1.1.5 各パッケージのpackage.json設定
-  - [ ] 1.1.1.6 共通依存関係の整理
+  - [x] 1.1.1.1 .tool-versions設定確認（Node.js 23.10.0, Python 3.13.3）
+  - [x] 1.1.1.2 pnpm workspace設定ファイル作成
+  - [x] 1.1.1.3 turbo.json設定
+  - [x] 1.1.1.4 ルートpackage.json設定
+  - [x] 1.1.1.5 各パッケージのpackage.json設定
+  - [x] 1.1.1.6 共通依存関係の整理
 
 - 1.1.2 Docker Compose環境構築
   - 1.1.2.1 docker-compose.yml作成
@@ -35,10 +35,10 @@
   - 1.1.3.4 Lambda関数テンプレート作成
   - 1.1.3.5 API Gateway設定
 
-- 1.1.4 開発ツール設定 (Spec: monorepo-setup)
+- 1.1.4 開発ツール設定 (Spec: 1.1.1-monorepo-setup)
   - [ ] 1.1.4.1 ESLint設定ファイル作成
   - [ ] 1.1.4.2 Prettier設定ファイル作成
-  - [ ] 1.1.4.3 TypeScript設定ファイル作成
+  - [x] 1.1.4.3 TypeScript設定ファイル作成
   - [ ] 1.1.4.4 VS Code設定ファイル作成
   - [ ] 1.1.4.5 Git hooks設定（husky + lint-staged）
 
@@ -488,18 +488,21 @@
 
 ### 進行中のSpec
 
-#### monorepo-setup (モノレポ構成設定)
+#### 1.1.1-monorepo-setup (モノレポ構成設定)
 
 - **状態**: 進行中
 - **対応WBSタスク**: 1.1.1, 1.1.4
-- **進捗**: 12タスク中 0完了
+- **進捗**: 12タスク中 11完了、1進行中
 - **主要タスク**:
-  - [ ] ルートpackage.json設定
-  - [ ] pnpm workspace設定
-  - [ ] turbo.json設定
-  - [ ] TypeScript設定
-  - [ ] ESLint/Prettier設定
-  - [ ] パッケージディレクトリ構造作成
+  - [x] ルートpackage.json設定
+  - [x] pnpm workspace設定
+  - [x] turbo.json設定
+  - [x] TypeScript設定
+  - [x] ESLint/Prettier設定
+  - [x] パッケージディレクトリ構造作成
+  - [x] バージョン管理設定確認
+  - [x] 統合テスト実装
+  - [-] ドキュメント更新（進行中）
 
 ### 完了済みSpec
 
