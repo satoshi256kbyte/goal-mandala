@@ -1,7 +1,7 @@
 {
   "enabled": true,
-  "name": "Steerling修正時のREADMEのメンテ",
-  "description": "Steerlingファイルが修正された際に、READMEファイルを自動的にメンテナンスして最新の情報を反映します",
+  "name": "Steerling修正時のドキュメントのメンテ",
+  "description": "Steerlingファイルが修正された際に、README.mdとCONTRIBUTING.mdを自動的にメンテナンスして最新の情報を反映します",
   "version": "1",
   "when": {
     "type": "fileEdited",
@@ -11,6 +11,6 @@
   },
   "then": {
     "type": "askAgent",
-    "prompt": "Steerlingファイルが修正されました。READMEファイルを確認し、必要に応じて以下の内容を更新してください：\n\n1. プロジェクト概要の更新\n2. 新機能や変更点の追加\n3. セットアップ手順の修正\n4. 使用方法の更新\n5. 依存関係の変更\n6. その他関連する情報の更新\n\n変更されたSteerlingファイルの内容を分析し、READMEに反映すべき重要な変更があるかを判断してください。"
+    "prompt": "Steerlingファイルが修正されました。README.mdとCONTRIBUTING.mdを確認し、必要に応じて以下の内容を更新してください：\n\n1. プロジェクト概要の更新\n2. 新機能や変更点の追加\n3. セットアップ手順の修正\n4. 使用方法の更新\n5. 依存関係の変更\n6. その他関連する情報の更新\n\n変更されたSteerlingファイルの内容を分析し、README.mdとCONTRIBUTING.mdに反映すべき重要な変更があるかを判断してください。"
   }
 }
