@@ -22,11 +22,11 @@
   - [x] 1.1.1.6 共通依存関係の整理
 
 - 1.1.2 Docker Compose環境構築 (Spec: 1.1.2-docker-compose-setup)
-  - [ ] 1.1.2.1 docker-compose.yml作成
-  - [ ] 1.1.2.2 PostgreSQL設定
-  - [ ] 1.1.2.3 cognito-local設定
-  - [ ] 1.1.2.4 環境変数設定（.env.example）
-  - [ ] 1.1.2.5 初期化スクリプト作成
+  - [x] 1.1.2.1 docker-compose.yml作成
+  - [x] 1.1.2.2 PostgreSQL設定
+  - [x] 1.1.2.3 cognito-local設定
+  - [x] 1.1.2.4 環境変数設定（.env.example）
+  - [x] 1.1.2.5 初期化スクリプト作成
 
 - 1.1.3 AWS SAM CLI環境構築
   - 1.1.3.1 template.yaml作成
@@ -36,10 +36,10 @@
   - 1.1.3.5 API Gateway設定
 
 - 1.1.4 開発ツール設定 (Spec: 1.1.1-monorepo-setup)
-  - [ ] 1.1.4.1 ESLint設定ファイル作成
-  - [ ] 1.1.4.2 Prettier設定ファイル作成
+  - [x] 1.1.4.1 ESLint設定ファイル作成
+  - [x] 1.1.4.2 Prettier設定ファイル作成
   - [x] 1.1.4.3 TypeScript設定ファイル作成
-  - [ ] 1.1.4.4 VS Code設定ファイル作成
+  - [x] 1.1.4.4 VS Code設定ファイル作成
   - [ ] 1.1.4.5 Git hooks設定（husky + lint-staged）
 
 - 1.1.5 GitHub Actions基本設定
@@ -440,7 +440,7 @@
 ### フェーズ1成果物
 
 - [x] モノレポ環境構築 (Spec: 1.1.1-monorepo-setup - 完了)
-- [ ] Docker Compose設定 (Spec: 1.1.2-docker-compose-setup - 計画中)
+- [x] Docker Compose設定 (Spec: 1.1.2-docker-compose-setup - 完了)
 - [ ] CDKインフラコード
 - [ ] 認証システム
 - [ ] データベーススキーマ
@@ -506,27 +506,56 @@
   - [x] 統合テスト実装
   - [x] ドキュメント更新
 
-### 進行中のSpec
-
 #### 1.1.2-docker-compose-setup (Docker Compose環境構築)
 
-- **状態**: 進行中
+- **状態**: 完了
 - **対応WBSタスク**: 1.1.2
-- **進捗**: 10タスク中 3完了、2進行中、5計画中
+- **進捗**: 10タスク中 10完了
 - **主要タスク**:
   - [x] Docker Compose基本設定ファイル作成
   - [x] PostgreSQL初期化設定実装
   - [x] cognito-local設定実装
-  - [-] 環境変数管理システム実装
-  - [-] 初期化スクリプト作成
-  - [ ] ヘルスチェック機能実装
-  - [ ] Docker設定ファイル最適化
-  - [ ] 開発用ユーティリティスクリプト作成
-  - [ ] 統合テスト実装
-  - [ ] ドキュメント作成
+  - [x] 環境変数管理システム実装
+  - [x] 初期化スクリプト作成
+  - [x] ヘルスチェック機能実装
+  - [x] Docker設定ファイル最適化
+  - [x] 開発用ユーティリティスクリプト作成
+  - [x] 統合テスト実装
+  - [x] ドキュメント作成
+
+### 進行中のSpec
+
+現在進行中のSpecはありません。
 
 ### 計画中のSpec
 
-- CDKインフラ設定
-- 認証システム構築
-- データベース設計実装
+次に実装予定のSpecは以下の通りです：
+
+#### 1.1.3-aws-sam-cli-setup (AWS SAM CLI環境構築)
+
+- **対応WBSタスク**: 1.1.3
+- **主要タスク**:
+  - template.yaml作成
+  - samconfig.toml設定
+  - ローカルAPI起動スクリプト
+  - Lambda関数テンプレート作成
+  - API Gateway設定
+
+#### 1.2.1-cdk-project-init (CDKプロジェクト初期化)
+
+- **対応WBSタスク**: 1.2.1
+- **主要タスク**:
+  - CDKアプリケーション初期化
+  - cdk.json設定
+  - CDK依存関係インストール
+  - スタック構成設計
+  - 環境別設定ファイル作成
+
+#### 1.4.1-database-design (データベース設計)
+
+- **対応WBSタスク**: 1.4.1, 1.4.2
+- **主要タスク**:
+  - ER図設計・ドキュメント化
+  - Prismaスキーマ定義
+  - モデル・リレーション定義
+  - 制約条件・インデックス設計
