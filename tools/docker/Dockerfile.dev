@@ -1,0 +1,50 @@
+# 開発用Dockerfileテンプレート
+# 現在は使用していませんが、将来的なカスタマイズ用
+
+# Node.js開発環境用
+FROM node:23.10.0-alpine AS node-dev
+
+# セキュリティ: 非rootユーザーの作成
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nextjs -u 1001
+
+# 作業ディレクトリの設定
+WORKDIR /app
+
+# パッケージファイルのコピー
+COPY package*.json ./
+COPY pnpm-lock.yaml ./
+
+# 依存関係のインストール
+RUN npm install -g pnpm && \
+    pnpm install --frozen-lockfile
+
+# アプリケーションコードのコピー
+COPY . .
+
+# 権限の設定
+RUN chown -R nextjs:nodejs /app
+USER nextjs
+
+# ポートの公開
+EXPOSE 3000
+
+# 開発サーバーの起動
+CMD ["pnpm", "dev"]
+
+# PostgreSQL開発環境用（カスタマイズが必要な場合）
+FROM postgres:15-alpine AS postgres-dev
+
+# カスタム設定ファイルのコピー
+COPY tools/docker/postgres/postgresql.conf /etc/postgresql/postgresql.conf
+COPY tools/docker/postgres/pg_hba.conf /etc/postgresql/pg_hba.conf
+
+# 初期化スクリプトのコピー
+COPY tools/docker/postgres/init.sql /docker-entrypoint-initdb.d/
+
+# 権限の設定
+RUN chmod 644 /etc/postgresql/postgresql.conf && \
+    chmod 644 /etc/postgresql/pg_hba.conf
+
+# PostgreSQL設定の適用
+CMD ["postgres", "-c", "config_file=/etc/postgresql/postgresql.conf"]

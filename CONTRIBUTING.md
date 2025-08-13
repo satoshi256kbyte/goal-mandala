@@ -60,9 +60,34 @@ pnpm list --depth=0
 cp .env.example .env
 
 # 必要に応じて.envファイルを編集
+# 特に以下の値は必ず変更してください：
+# - POSTGRES_PASSWORD: データベースパスワード
+# - JWT_SECRET: JWT署名用秘密鍵
 ```
 
-### 5. 開発環境の起動確認
+詳細な環境変数設定については [環境変数設定ガイド](./docs/environment-variables.md) を参照してください。
+
+### 5. Docker環境のセットアップ
+
+ローカル開発にはDocker Composeを使用してPostgreSQLとcognito-localを起動します。
+
+```bash
+# Docker環境の起動
+docker-compose up -d
+
+# または、Makefileを使用（推奨）
+make -C tools/docker up
+
+# サービス状態確認
+make -C tools/docker health
+
+# 初期化スクリプトの実行
+./tools/scripts/setup.sh
+```
+
+Docker環境の詳細については [Docker環境セットアップガイド](./docs/docker-setup-guide.md) を参照してください。
+
+### 6. 開発環境の起動確認
 
 ```bash
 # 全パッケージをビルド
@@ -356,11 +381,48 @@ describe('Goals API', () => {
 # PostgreSQL + cognito-localを起動
 docker-compose up -d
 
+# または、Makefileを使用（推奨）
+make -C tools/docker up
+
+# 初期化スクリプトの実行（初回のみ）
+./tools/scripts/setup.sh
+
 # データベースマイグレーション
 pnpm --filter @goal-mandala/backend run db:migrate
 
 # シードデータ投入
 pnpm --filter @goal-mandala/backend run db:seed
+
+# 動作確認
+./tools/scripts/health-check.sh
+```
+
+**Docker環境の管理コマンド**:
+
+```bash
+# 環境起動
+make -C tools/docker up
+
+# 環境停止
+make -C tools/docker down
+
+# 環境再起動
+make -C tools/docker restart
+
+# ログ表示
+make -C tools/docker logs
+
+# ヘルスチェック
+make -C tools/docker health
+
+# データベース接続
+make -C tools/docker db-connect
+
+# 環境クリーンアップ
+make -C tools/docker clean
+
+# 利用可能なコマンド一覧
+make -C tools/docker help
 ```
 
 #### AWS SAM CLI使用
@@ -505,8 +567,21 @@ docker-compose down -v
 docker-compose up -d
 
 # データベース接続確認
-docker-compose exec postgres psql -U postgres -d goal_mandala
+docker-compose exec postgres psql -U goal_mandala_user -d goal_mandala_dev
+
+# 総合診断スクリプト実行
+./tools/scripts/diagnose-issues.sh
+
+# 個別診断スクリプト
+./tools/scripts/validate-docker-compose.sh
+./tools/scripts/validate-postgres-setup.sh
+./tools/scripts/validate-cognito-local.sh
+
+# ヘルスチェック
+./tools/scripts/health-check.sh
 ```
+
+Docker環境の詳細なトラブルシューティングについては [Docker環境トラブルシューティングガイド](./docs/docker-troubleshooting.md) を参照してください。
 
 #### 5. AWS関連問題
 
@@ -622,9 +697,20 @@ pnpm audit --fix
 
 ### 参考資料
 
+#### 開発環境・セットアップ
+
+- [Docker環境セットアップガイド](./docs/docker-setup-guide.md) - Docker環境の詳細セットアップ手順
+- [Docker環境トラブルシューティングガイド](./docs/docker-troubleshooting.md) - Docker関連問題の解決方法
+- [環境変数設定ガイド](./docs/environment-variables.md) - 環境変数の詳細設定
+
+#### アーキテクチャ・設計
+
 - [モノレポアーキテクチャ](./docs/monorepo-architecture.md) - パッケージ構成と依存関係
 - [統合テストガイド](./docs/integration-testing.md) - テスト実行方法
 - [CI用バージョン設定](./docs/ci-version-settings.md) - 環境設定詳細
+
+#### プロダクト仕様
+
 - [プロダクト概要](./.kiro/steering/1-product-overview.md) - システム概要
 - [技術スタック](./.kiro/steering/2-technology-stack.md) - 使用技術詳細
 

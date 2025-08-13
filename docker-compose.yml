@@ -1,0 +1,98 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: goal-mandala-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: goal_mandala_dev
+      POSTGRES_USER: goal_mandala_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-your_secure_password_here}
+      # PostgreSQL最適化設定
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --locale=C"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./tools/docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U goal_mandala_user -d goal_mandala_dev"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - goal-mandala-network
+    restart: unless-stopped
+    # リソース制限設定
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: "0.5"
+        reservations:
+          memory: 256M
+          cpus: "0.25"
+    # セキュリティ設定
+    security_opt:
+      - no-new-privileges:true
+    # ログ設定
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  cognito-local:
+    image: jagregory/cognito-local:latest
+    container_name: goal-mandala-cognito-local
+    ports:
+      - "9229:9229"
+    environment:
+      COGNITO_LOCAL_PORT: 9229
+      COGNITO_LOCAL_HOSTNAME: localhost
+      NODE_ENV: development
+    volumes:
+      - cognito-data:/app/.cognito
+      - ./tools/docker/cognito-local/config.json:/app/.cognito/config.json
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9229/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - goal-mandala-network
+    restart: unless-stopped
+    # PostgreSQLの起動を待つ
+    depends_on:
+      postgres:
+        condition: service_healthy
+    # リソース制限設定
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: "0.25"
+        reservations:
+          memory: 128M
+          cpus: "0.1"
+    # セキュリティ設定
+    security_opt:
+      - no-new-privileges:true
+    # ログ設定
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  postgres-data:
+    driver: local
+  cognito-data:
+    driver: local
+
+networks:
+  goal-mandala-network:
+    driver: bridge

@@ -21,12 +21,12 @@
   - [x] 1.1.1.5 各パッケージのpackage.json設定
   - [x] 1.1.1.6 共通依存関係の整理
 
-- 1.1.2 Docker Compose環境構築
-  - 1.1.2.1 docker-compose.yml作成
-  - 1.1.2.2 PostgreSQL設定
-  - 1.1.2.3 cognito-local設定
-  - 1.1.2.4 環境変数設定（.env.example）
-  - 1.1.2.5 初期化スクリプト作成
+- 1.1.2 Docker Compose環境構築 (Spec: 1.1.2-docker-compose-setup)
+  - [ ] 1.1.2.1 docker-compose.yml作成
+  - [ ] 1.1.2.2 PostgreSQL設定
+  - [ ] 1.1.2.3 cognito-local設定
+  - [ ] 1.1.2.4 環境変数設定（.env.example）
+  - [ ] 1.1.2.5 初期化スクリプト作成
 
 - 1.1.3 AWS SAM CLI環境構築
   - 1.1.3.1 template.yaml作成
@@ -439,8 +439,8 @@
 
 ### フェーズ1成果物
 
-- [x] モノレポ環境構築 (Spec: monorepo-setup - 進行中)
-- [ ] Docker Compose設定
+- [x] モノレポ環境構築 (Spec: 1.1.1-monorepo-setup - 完了)
+- [ ] Docker Compose設定 (Spec: 1.1.2-docker-compose-setup - 計画中)
 - [ ] CDKインフラコード
 - [ ] 認証システム
 - [ ] データベーススキーマ
@@ -488,11 +488,13 @@
 
 ### 進行中のSpec
 
+### 完了済みSpec
+
 #### 1.1.1-monorepo-setup (モノレポ構成設定)
 
-- **状態**: 進行中
+- **状態**: 完了
 - **対応WBSタスク**: 1.1.1, 1.1.4
-- **進捗**: 12タスク中 11完了、1進行中
+- **進捗**: 12タスク中 12完了
 - **主要タスク**:
   - [x] ルートpackage.json設定
   - [x] pnpm workspace設定
@@ -502,15 +504,29 @@
   - [x] パッケージディレクトリ構造作成
   - [x] バージョン管理設定確認
   - [x] 統合テスト実装
-  - [-] ドキュメント更新（進行中）
+  - [x] ドキュメント更新
 
-### 完了済みSpec
+### 進行中のSpec
 
-(なし)  
+#### 1.1.2-docker-compose-setup (Docker Compose環境構築)
+
+- **状態**: 進行中
+- **対応WBSタスク**: 1.1.2
+- **進捗**: 10タスク中 3完了、2進行中、5計画中
+- **主要タスク**:
+  - [x] Docker Compose基本設定ファイル作成
+  - [x] PostgreSQL初期化設定実装
+  - [x] cognito-local設定実装
+  - [-] 環境変数管理システム実装
+  - [-] 初期化スクリプト作成
+  - [ ] ヘルスチェック機能実装
+  - [ ] Docker設定ファイル最適化
+  - [ ] 開発用ユーティリティスクリプト作成
+  - [ ] 統合テスト実装
+  - [ ] ドキュメント作成
 
 ### 計画中のSpec
 
-- Docker環境構築
 - CDKインフラ設定
 - 認証システム構築
 - データベース設計実装

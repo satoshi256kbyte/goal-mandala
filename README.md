@@ -12,6 +12,73 @@
 
 開発者向けドキュメントは [CONTRIBUTING.md](./CONTRIBUTING.md) を参照してください。
 
+## クイックスタート
+
+### 1. 環境変数の設定
+
+```bash
+# .env.exampleから.envファイルを作成
+cp .env.example .env
+
+# .envファイルを編集して適切な値を設定
+# 特にJWT_SECRETとPOSTGRES_PASSWORDはデフォルト値から変更してください
+```
+
+### 2. 環境変数の検証
+
+```bash
+# 環境変数が正しく設定されているかチェック
+pnpm run env:check
+```
+
+詳細な環境変数設定については [環境変数設定ガイド](./docs/environment-variables.md) を参照してください。
+
+Docker環境の詳細なセットアップ手順については [Docker環境セットアップガイド](./docs/docker-setup-guide.md) を参照してください。
+
+### 3. Docker環境の起動
+
+```bash
+# 開発環境の起動
+docker-compose up -d
+
+# または、Makefileを使用（推奨）
+make -C tools/docker up
+
+# サービスの状態確認
+make -C tools/docker health
+```
+
+### Docker環境の管理
+
+Docker環境の操作には、便利なMakefileコマンドが利用できます：
+
+```bash
+# 利用可能なコマンドを表示
+make -C tools/docker help
+
+# 主要なコマンド
+make -C tools/docker up      # 環境起動
+make -C tools/docker down    # 環境停止
+make -C tools/docker restart # 環境再起動
+make -C tools/docker logs    # ログ表示
+make -C tools/docker health  # ヘルスチェック
+make -C tools/docker clean   # 環境クリーンアップ
+```
+
+## ドキュメント
+
+### 開発者向けドキュメント
+
+- [CONTRIBUTING.md](./CONTRIBUTING.md) - 開発者向け詳細ガイド
+- [Docker環境セットアップガイド](./docs/docker-setup-guide.md) - Docker環境の詳細セットアップ手順
+- [Docker環境トラブルシューティングガイド](./docs/docker-troubleshooting.md) - Docker関連問題の解決方法
+- [環境変数設定ガイド](./docs/environment-variables.md) - 環境変数の詳細設定
+
+### アーキテクチャドキュメント
+
+- [モノレポアーキテクチャ](./docs/monorepo-architecture.md) - パッケージ構成と依存関係
+- [統合テストガイド](./docs/integration-testing.md) - テスト実行方法
+
 ## 開発の進捗
 
 [WBS](.kiro/steering/4-wbs.md)をご覧ください。

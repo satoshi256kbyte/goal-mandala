@@ -1,0 +1,136 @@
+{
+  "UserPools": {
+    "local_user_pool_id": {
+      "Id": "local_user_pool_id",
+      "Name": "GoalMandalaUserPool",
+      "Policies": {
+        "PasswordPolicy": {
+          "MinimumLength": 8,
+          "RequireUppercase": true,
+          "RequireLowercase": true,
+          "RequireNumbers": true,
+          "RequireSymbols": false
+        }
+      },
+      "UsernameAttributes": ["email"],
+      "AutoVerifiedAttributes": ["email"],
+      "VerificationMessageTemplate": {
+        "DefaultEmailOption": "CONFIRM_WITH_CODE"
+      },
+      "EmailConfiguration": {
+        "EmailSendingAccount": "COGNITO_DEFAULT"
+      },
+      "AdminCreateUserConfig": {
+        "AllowAdminCreateUserOnly": false,
+        "UnusedAccountValidityDays": 7
+      },
+      "CreationDate": "2024-01-01T00:00:00.000Z",
+      "LastModifiedDate": "2024-01-01T00:00:00.000Z"
+    }
+  },
+  "UserPoolClients": {
+    "local_client_id": {
+      "UserPoolId": "local_user_pool_id",
+      "ClientId": "local_client_id",
+      "ClientName": "GoalMandalaClient",
+      "GenerateSecret": false,
+      "RefreshTokenValidity": 30,
+      "AccessTokenValidity": 60,
+      "IdTokenValidity": 60,
+      "TokenValidityUnits": {
+        "AccessToken": "minutes",
+        "IdToken": "minutes",
+        "RefreshToken": "days"
+      },
+      "ExplicitAuthFlows": [
+        "ADMIN_NO_SRP_AUTH",
+        "USER_PASSWORD_AUTH",
+        "ALLOW_USER_PASSWORD_AUTH",
+        "ALLOW_REFRESH_TOKEN_AUTH"
+      ],
+      "SupportedIdentityProviders": ["COGNITO"],
+      "PreventUserExistenceErrors": "ENABLED",
+      "CreationDate": "2024-01-01T00:00:00.000Z",
+      "LastModifiedDate": "2024-01-01T00:00:00.000Z"
+    }
+  },
+  "Users": {
+    "local_user_pool_id": {
+      "test@example.com": {
+        "Username": "test@example.com",
+        "Attributes": [
+          {
+            "Name": "sub",
+            "Value": "test-user-sub-id"
+          },
+          {
+            "Name": "email",
+            "Value": "test@example.com"
+          },
+          {
+            "Name": "email_verified",
+            "Value": "true"
+          },
+          {
+            "Name": "name",
+            "Value": "Test User"
+          }
+        ],
+        "UserStatus": "CONFIRMED",
+        "Password": "TestPassword123!",
+        "UserCreateDate": "2024-01-01T00:00:00.000Z",
+        "UserLastModifiedDate": "2024-01-01T00:00:00.000Z"
+      },
+      "dev@goalmandalasystem.com": {
+        "Username": "dev@goalmandalasystem.com",
+        "Attributes": [
+          {
+            "Name": "sub",
+            "Value": "dev-user-sub-id"
+          },
+          {
+            "Name": "email",
+            "Value": "dev@goalmandalasystem.com"
+          },
+          {
+            "Name": "email_verified",
+            "Value": "true"
+          },
+          {
+            "Name": "name",
+            "Value": "Developer User"
+          }
+        ],
+        "UserStatus": "CONFIRMED",
+        "Password": "DevPassword123!",
+        "UserCreateDate": "2024-01-01T00:00:00.000Z",
+        "UserLastModifiedDate": "2024-01-01T00:00:00.000Z"
+      },
+      "admin@goalmandalasystem.com": {
+        "Username": "admin@goalmandalasystem.com",
+        "Attributes": [
+          {
+            "Name": "sub",
+            "Value": "admin-user-sub-id"
+          },
+          {
+            "Name": "email",
+            "Value": "admin@goalmandalasystem.com"
+          },
+          {
+            "Name": "email_verified",
+            "Value": "true"
+          },
+          {
+            "Name": "name",
+            "Value": "Admin User"
+          }
+        ],
+        "UserStatus": "CONFIRMED",
+        "Password": "AdminPassword123!",
+        "UserCreateDate": "2024-01-01T00:00:00.000Z",
+        "UserLastModifiedDate": "2024-01-01T00:00:00.000Z"
+      }
+    }
+  }
+}

@@ -1,0 +1,81 @@
+{
+  "testSuites": {
+    "quick": {
+      "description": "基本的な動作確認のみを行う軽量テスト",
+      "script": "test-docker-quick.sh",
+      "timeout": 120,
+      "tests": [
+        "docker-compose-config",
+        "container-startup",
+        "postgresql-connection",
+        "cognito-local-connection"
+      ]
+    },
+    "full": {
+      "description": "全機能を網羅する完全なテスト",
+      "script": "test-docker-env.sh",
+      "timeout": 300,
+      "tests": [
+        "docker-compose-files",
+        "docker-compose-config",
+        "env-files",
+        "container-startup",
+        "container-status",
+        "postgresql-startup",
+        "postgresql-connection",
+        "database-existence",
+        "uuid-extension",
+        "cognito-local-startup",
+        "cognito-local-connection",
+        "cognito-local-config",
+        "network-connectivity",
+        "volume-persistence",
+        "resource-usage",
+        "log-output"
+      ]
+    },
+    "ci": {
+      "description": "CI/CD環境での自動テスト",
+      "script": "test-docker-ci.sh",
+      "timeout": 180,
+      "tests": [
+        "docker-compose-config",
+        "container-build-startup",
+        "service-health-check",
+        "postgresql-connection",
+        "cognito-local-connection",
+        "database-functionality"
+      ]
+    }
+  },
+  "requirements": {
+    "1.1": "Docker Composeでサービスが正常に起動すること",
+    "1.2": "PostgreSQLとcognito-localが正常に動作すること",
+    "2.1": "データベース接続が正常に行えること",
+    "2.2": "認証サービスが正常に動作すること"
+  },
+  "expectedServices": [
+    {
+      "name": "postgres",
+      "port": 5432,
+      "healthCheck": "pg_isready -U goal_mandala_user -d goal_mandala_dev",
+      "timeout": 30
+    },
+    {
+      "name": "cognito-local",
+      "port": 9229,
+      "healthCheck": "curl -f http://localhost:9229/health",
+      "timeout": 30
+    }
+  ],
+  "testData": {
+    "postgresql": {
+      "testTable": "integration_test_table",
+      "testData": "integration_test_data"
+    },
+    "cognitoLocal": {
+      "userPoolId": "local_user_pool_id",
+      "clientId": "local_client_id"
+    }
+  }
+}
