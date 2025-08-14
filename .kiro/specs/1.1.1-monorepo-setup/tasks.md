@@ -67,8 +67,15 @@
   - パッケージ間依存関係の正常動作を検証する
   - _要件: 1.1, 1.2, 1.3, 1.4, 2.1, 2.2_
 
-- [x] 12. ドキュメント更新
+- [-] 12. ドキュメント更新
   - README.mdファイルを更新し、モノレポの使用方法を記載する
   - 開発者向けのセットアップガイドを作成する
   - 各パッケージの役割と依存関係を説明する
   - _要件: 1.1, 2.1_
+
+- [ ] 13. Git hooks設定（husky + lint-staged）
+  - huskyとlint-stagedをdevDependenciesに追加する
+  - pre-commitフックを設定し、ステージされたファイルに対してlintとformatを実行する
+  - commit-msgフックを設定し、Conventional Commitsの形式をチェックする
+  - package.jsonにhusky installスクリプトを追加する
+  - _要件: 3.1, 3.2_

@@ -56,3 +56,14 @@
 1. WHEN .tool-versionsファイルが存在する THEN Node.js 23.10.0とPython 3.13.3が指定されている
 2. WHEN asdfを使用する THEN 指定されたバージョンが自動的に使用される
 3. WHEN CIで実行する THEN 同じバージョンが使用される
+
+### 要件6
+
+**ユーザーストーリー:** 開発者として、コミット前に自動的にコード品質チェックを実行したい
+
+#### 受入基準
+
+1. WHEN 開発者がgit commitを実行する THEN ステージされたファイルに対してlintとformatが自動実行される
+2. WHEN lintエラーがある THEN コミットが中断される
+3. WHEN コミットメッセージがConventional Commits形式でない THEN コミットが中断される
+4. WHEN 全てのチェックが通る THEN コミットが正常に完了する

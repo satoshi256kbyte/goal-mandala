@@ -50,7 +50,6 @@
       "./node_modules/.bin/tsc *",
       "corepack *",
       "asdf *",
-
       "bash *",
       "cat *",
       "chmod *",
@@ -67,10 +66,8 @@
       "sam *",
       "sleep *",
       "timeout *",
-
       "docker *",
       "docker-compose *",
-
       "./tools/docker/cognito-local/validate-config.sh *",
       "./tools/scripts/diagnose-issues.sh *",
       "./tools/scripts/docker-db-connect.sh *",
@@ -85,6 +82,7 @@
       "./tools/scripts/validate-docker-compose.sh *",
       "./tools/scripts/validate-postgres-setup.sh *",
       "./validate-config.sh *",
-      "tools/scripts/sam-build.sh *"
+      "tools/scripts/sam-build.sh *",
+      "git *"
     ]
 }
