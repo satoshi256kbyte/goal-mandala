@@ -35,12 +35,12 @@
   - [ ] 1.1.3.4 Lambda関数テンプレート作成
   - [ ] 1.1.3.5 API Gateway設定
 
-- [ ] 1.1.4 開発ツール設定 (Spec: 1.1.1-monorepo-setup)
+- [x] 1.1.4 開発ツール設定 (Spec: 1.1.1-monorepo-setup)
   - [x] 1.1.4.1 ESLint設定ファイル作成
   - [x] 1.1.4.2 Prettier設定ファイル作成
   - [x] 1.1.4.3 TypeScript設定ファイル作成
   - [x] 1.1.4.4 VS Code設定ファイル作成
-  - [ ] 1.1.4.5 Git hooks設定（husky + lint-staged）
+  - [x] 1.1.4.5 Git hooks設定（husky + lint-staged）
 
 - [ ] 1.1.5 GitHub Actions基本設定 (Spec: 1.1.5-github-actions-setup)
   - [ ] 1.1.5.1 CI/CDワークフロー作成
