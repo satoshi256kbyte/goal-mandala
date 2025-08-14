@@ -1,0 +1,123 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: Goal Mandala Backend API
+
+# Global settings for all functions
+Globals:
+  Function:
+    Timeout: 30
+    Runtime: nodejs22.x
+    MemorySize: 512
+    Environment:
+      Variables:
+        NODE_ENV: !Ref Environment
+        DATABASE_URL: !Ref DatabaseUrl
+        JWT_SECRET: !Ref JwtSecret
+        FRONTEND_URL: !Ref FrontendUrl
+
+# Parameters for environment-specific configuration
+Parameters:
+  Environment:
+    Type: String
+    Default: development
+    AllowedValues:
+      - development
+      - staging
+      - production
+    Description: Environment name
+
+  DatabaseUrl:
+    Type: String
+    Default: postgresql://postgres:password@localhost:5432/goal_mandala
+    Description: Database connection URL
+
+  JwtSecret:
+    Type: String
+    Default: development-secret-key-change-in-production
+    NoEcho: true
+    Description: JWT secret key for token signing
+
+  FrontendUrl:
+    Type: String
+    Default: http://localhost:5173
+    Description: Frontend application URL for CORS
+
+# Resources
+Resources:
+  # API Gateway
+  ApiGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: !Ref Environment
+      Cors:
+        AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS'"
+        AllowHeaders: "'Content-Type,Authorization,X-Requested-With'"
+        AllowOrigin: !Sub "'${FrontendUrl}'"
+        AllowCredentials: true
+        MaxAge: "'600'"
+      GatewayResponses:
+        DEFAULT_4XX:
+          ResponseParameters:
+            Headers:
+              Access-Control-Allow-Origin: !Sub "'${FrontendUrl}'"
+              Access-Control-Allow-Headers: "'Content-Type,Authorization,X-Requested-With'"
+              Access-Control-Allow-Methods: "'GET,POST,PUT,DELETE,OPTIONS'"
+        DEFAULT_5XX:
+          ResponseParameters:
+            Headers:
+              Access-Control-Allow-Origin: !Sub "'${FrontendUrl}'"
+              Access-Control-Allow-Headers: "'Content-Type,Authorization,X-Requested-With'"
+              Access-Control-Allow-Methods: "'GET,POST,PUT,DELETE,OPTIONS'"
+
+  # Main API Lambda Function
+  ApiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "goal-mandala-${Environment}-api-function"
+      CodeUri: dist/
+      Handler: index.handler
+      Description: Main API handler for Goal Mandala application
+      Events:
+        # Catch-all proxy for all API routes
+        ApiProxy:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /{proxy+}
+            Method: ANY
+        # Root path handler
+        ApiRoot:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /
+            Method: ANY
+    # Build configuration for TypeScript
+    Metadata:
+      BuildMethod: nodejs22.x
+
+# Outputs
+Outputs:
+  ApiGatewayUrl:
+    Description: API Gateway endpoint URL
+    Value: !Sub "https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${Environment}/"
+    Export:
+      Name: !Sub "${AWS::StackName}-ApiGatewayUrl"
+
+  ApiGatewayId:
+    Description: API Gateway ID
+    Value: !Ref ApiGateway
+    Export:
+      Name: !Sub "${AWS::StackName}-ApiGatewayId"
+
+  ApiFunctionArn:
+    Description: API Lambda Function ARN
+    Value: !GetAtt ApiFunction.Arn
+    Export:
+      Name: !Sub "${AWS::StackName}-ApiFunctionArn"
+
+  ApiFunctionName:
+    Description: API Lambda Function Name
+    Value: !Ref ApiFunction
+    Export:
+      Name: !Sub "${AWS::StackName}-ApiFunctionName"

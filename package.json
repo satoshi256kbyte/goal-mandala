@@ -35,7 +35,12 @@
     "test:integration:shell": "bash tools/scripts/integration-test.sh",
     "env:validate": "bash tools/scripts/validate-env.sh",
     "env:validate:node": "node tools/scripts/validate-env.js",
-    "env:check": "pnpm run env:validate"
+    "env:check": "pnpm run env:validate",
+    "sam:start": "bash tools/scripts/sam-local-start.sh",
+    "sam:start:debug": "bash tools/scripts/sam-local-start.sh --debug",
+    "sam:start:dev": "bash tools/scripts/sam-local-start.sh -e dev",
+    "test:integration:sam": "node tools/scripts/integration-test-sam.js",
+    "test:integration:sam:simple": "node tools/scripts/integration-test-sam-simple.js"
   },
   "dependencies": {
     "dotenv": "^16.4.5",

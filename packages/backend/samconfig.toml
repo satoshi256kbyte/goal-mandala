@@ -1,0 +1,78 @@
+version = 0.1
+
+[default]
+[default.build]
+[default.build.parameters]
+cached = true
+parallel = true
+
+[default.local_start_api]
+[default.local_start_api.parameters]
+port = 3001
+host = "0.0.0.0"
+warm_containers = "EAGER"
+parameter_overrides = "DatabaseUrl=postgresql://goal_mandala_user:goal_mandala_dev_password_2024@localhost:5432/goal_mandala_dev"
+
+[default.deploy]
+[default.deploy.parameters]
+stack_name = "goal-mandala-api"
+s3_bucket = "goal-mandala-sam-artifacts"
+s3_prefix = "goal-mandala-api"
+region = "ap-northeast-1"
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "DatabaseUrl=postgresql://goal_mandala_user:${DB_PASSWORD}@goal-mandala-aurora-cluster.cluster-xyz.ap-northeast-1.rds.amazonaws.com:5432/goal_mandala"
+
+# 開発環境設定
+[dev]
+[dev.build]
+[dev.build.parameters]
+cached = true
+parallel = true
+
+[dev.local_start_api]
+[dev.local_start_api.parameters]
+port = 3001
+host = "0.0.0.0"
+warm_containers = "EAGER"
+parameter_overrides = "DatabaseUrl=postgresql://goal_mandala_user:goal_mandala_dev_password_2024@localhost:5432/goal_mandala_dev"
+
+[dev.deploy]
+[dev.deploy.parameters]
+stack_name = "goal-mandala-api-dev"
+s3_bucket = "goal-mandala-sam-artifacts-dev"
+s3_prefix = "goal-mandala-api-dev"
+region = "ap-northeast-1"
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "DatabaseUrl=postgresql://goal_mandala_user:${DB_PASSWORD}@goal-mandala-aurora-cluster-dev.cluster-xyz.ap-northeast-1.rds.amazonaws.com:5432/goal_mandala_dev"
+
+# ステージング環境設定
+[staging]
+[staging.build]
+[staging.build.parameters]
+cached = true
+parallel = true
+
+[staging.deploy]
+[staging.deploy.parameters]
+stack_name = "goal-mandala-api-staging"
+s3_bucket = "goal-mandala-sam-artifacts-staging"
+s3_prefix = "goal-mandala-api-staging"
+region = "ap-northeast-1"
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "DatabaseUrl=postgresql://goal_mandala_user:${DB_PASSWORD}@goal-mandala-aurora-cluster-staging.cluster-xyz.ap-northeast-1.rds.amazonaws.com:5432/goal_mandala_staging"
+
+# 本番環境設定
+[production]
+[production.build]
+[production.build.parameters]
+cached = true
+parallel = true
+
+[production.deploy]
+[production.deploy.parameters]
+stack_name = "goal-mandala-api-prod"
+s3_bucket = "goal-mandala-sam-artifacts-prod"
+s3_prefix = "goal-mandala-api-prod"
+region = "ap-northeast-1"
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "DatabaseUrl=postgresql://goal_mandala_user:${DB_PASSWORD}@goal-mandala-aurora-cluster-prod.cluster-xyz.ap-northeast-1.rds.amazonaws.com:5432/goal_mandala_prod"

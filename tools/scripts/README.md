@@ -517,6 +517,63 @@ log_info "カスタム処理を実行中..."
 log_success "カスタム処理が完了しました"
 ```
 
+## AWS SAM CLI関連スクリプト
+
+### SAM Local API起動スクリプト
+
+```bash
+./tools/scripts/sam-local-start.sh [オプション]
+```
+
+**機能:**
+
+- AWS SAM CLIを使用したローカルAPI起動
+- 依存関係の自動ビルド
+- ホットリロード機能
+- 環境変数の自動読み込み
+- デバッグモード対応
+
+**オプション:**
+
+- `-p, --port PORT`: APIサーバーのポート番号 (デフォルト: 3001)
+- `-h, --host HOST`: APIサーバーのホスト (デフォルト: 0.0.0.0)
+- `-e, --env ENV`: 環境設定 (default|dev|staging|production, デフォルト: default)
+- `--no-build`: ビルドをスキップ
+- `--debug`: デバッグモードで実行
+- `--help`: ヘルプを表示
+
+**使用例:**
+
+```bash
+# デフォルト設定で起動
+./tools/scripts/sam-local-start.sh
+
+# ポート3002で起動
+./tools/scripts/sam-local-start.sh -p 3002
+
+# dev環境設定で起動
+./tools/scripts/sam-local-start.sh -e dev
+
+# ビルドをスキップして起動
+./tools/scripts/sam-local-start.sh --no-build
+
+# デバッグモードで起動
+./tools/scripts/sam-local-start.sh --debug
+
+# pnpmスクリプト経由で起動
+pnpm run sam:start
+pnpm run sam:start:debug
+pnpm run sam:start:dev
+```
+
+**機能詳細:**
+
+- **依存関係チェック**: AWS SAM CLI、Node.js、pnpmの存在確認
+- **自動ビルド**: TypeScriptのビルドと依存関係のインストール
+- **環境変数読み込み**: .envファイルからの環境変数自動読み込み
+- **ホットリロード**: warm-containers機能による高速起動
+- **設定管理**: samconfig.tomlからの設定自動読み込み
+
 ## 開発用ユーティリティスクリプト
 
 ### 1. Docker環境管理スクリプト

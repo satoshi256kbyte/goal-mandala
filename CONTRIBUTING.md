@@ -20,6 +20,7 @@
 - **asdf**: バージョン管理ツール
 - **Docker**: ローカル開発環境用
 - **Git**: バージョン管理
+- **AWS SAM CLI**: Lambda関数のローカル実行用
 
 ### 1. リポジトリのクローン
 
@@ -41,6 +42,32 @@ asdf install
 
 # pnpmが正しくインストールされているか確認
 pnpm --version  # 8.15.0が表示されるはず
+```
+
+### 2.1. AWS SAM CLIのインストール
+
+AWS SAM CLIは、Lambda関数とAPI Gatewayをローカルでエミュレートするために必要です。
+
+**macOS (Homebrew使用)**:
+
+```bash
+brew tap aws/tap
+brew install aws-sam-cli
+
+# インストール確認
+sam --version
+```
+
+**その他のOS**:
+[AWS SAM CLI公式インストールガイド](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/install-sam-cli.html)を参照してください。
+
+**Docker Desktopの確認**:
+SAM CLIはDockerを使用してLambda実行環境をエミュレートします。
+
+```bash
+# Dockerが起動していることを確認
+docker --version
+docker ps
 ```
 
 ### 3. 依存関係のインストール
@@ -95,6 +122,17 @@ pnpm build
 
 # テストを実行
 pnpm test
+
+# SAM CLI環境の確認
+cd packages/backend
+sam validate --template template.yaml
+sam build
+
+# ローカルAPI起動テスト
+sam local start-api --port 3001 &
+sleep 10
+curl http://localhost:3001/health
+kill %1  # バックグラウンドプロセスを終了
 
 # 開発サーバーを起動
 pnpm dev
@@ -427,12 +465,81 @@ make -C tools/docker help
 
 #### AWS SAM CLI使用
 
+AWS SAM CLIを使用してLambda関数とAPI Gatewayをローカルでエミュレートできます。
+
+**前提条件**:
+
+- AWS SAM CLIがインストールされていること
+- Docker Desktopが起動していること
+
+**SAM CLI環境のセットアップ**:
+
 ```bash
-# Lambda + API Gatewayをローカル起動
+# SAM CLIのインストール確認
+sam --version
+
+# backendディレクトリに移動
+cd packages/backend
+
+# SAMテンプレートの確認
+cat template.yaml
+
+# SAM設定の確認
+cat samconfig.toml
+```
+
+**ローカルAPI起動**:
+
+```bash
+# 方法1: pnpmスクリプト使用（推奨）
 pnpm --filter @goal-mandala/backend dev
 
+# 方法2: 直接SAMコマンド使用
+cd packages/backend
+sam build
+sam local start-api --port 3001 --host 0.0.0.0
+
+# 方法3: 専用スクリプト使用
+./tools/scripts/sam-local-start.sh
+```
+
+**フロントエンドとの連携**:
+
+```bash
 # 別ターミナルでフロントエンド起動
 pnpm --filter @goal-mandala/frontend dev
+
+# APIエンドポイント確認
+curl http://localhost:3001/health
+```
+
+**SAM CLI開発のワークフロー**:
+
+1. **コード変更**: `packages/backend/src/` 内のファイルを編集
+2. **自動ビルド**: ファイル変更を検知して自動的にリビルド
+3. **ホットリロード**: 変更が即座にローカルAPIに反映
+4. **テスト**: ブラウザまたはcurlでAPIをテスト
+
+**SAMビルドとテスト**:
+
+```bash
+# SAMビルド実行
+pnpm --filter @goal-mandala/backend build
+
+# または直接実行
+cd packages/backend
+sam build
+
+# ビルド成果物の確認
+ls -la .aws-sam/build/
+
+# Lambda関数の単体テスト
+sam local invoke ApiFunction --event events/test-event.json
+
+# API Gateway統合テスト
+curl -X POST http://localhost:3001/api/v1/goals \
+  -H "Content-Type: application/json" \
+  -d '{"title":"Test Goal","description":"Test Description"}'
 ```
 
 ### ステージング・本番環境
@@ -583,7 +690,38 @@ docker-compose exec postgres psql -U goal_mandala_user -d goal_mandala_dev
 
 Docker環境の詳細なトラブルシューティングについては [Docker環境トラブルシューティングガイド](./docs/docker-troubleshooting.md) を参照してください。
 
-#### 5. AWS関連問題
+#### 5. AWS SAM CLI関連問題
+
+```bash
+# SAM CLIバージョン確認
+sam --version
+
+# Dockerが起動しているか確認
+docker ps
+
+# SAMビルドエラーの場合
+cd packages/backend
+rm -rf .aws-sam
+sam build --debug
+
+# SAMローカルAPI起動エラーの場合
+sam local start-api --debug --log-file sam-debug.log
+
+# Lambda関数のログ確認
+sam logs -n ApiFunction --stack-name goal-mandala-api --tail
+
+# SAM設定ファイルの検証
+sam validate --template template.yaml
+
+# ポート競合の場合
+lsof -i :3001  # ポート3001を使用しているプロセスを確認
+kill -9 <PID>  # 必要に応じてプロセスを終了
+
+# Lambda関数の環境変数確認
+sam local start-api --parameter-overrides DatabaseUrl=postgresql://postgres:password@host.docker.internal:5432/goal_mandala
+```
+
+#### 6. AWS関連問題
 
 ```bash
 # AWS認証情報確認
@@ -605,14 +743,32 @@ pnpm --filter @goal-mandala/infrastructure run cdk bootstrap
 pnpm --filter @goal-mandala/frontend dev --debug
 ```
 
-#### バックエンド
+#### バックエンド (SAM CLI)
 
 ```bash
 # SAM CLIのデバッグモード
-sam local start-api --debug
+sam local start-api --debug --log-file sam-debug.log
 
-# Lambdaログの確認
-sam logs -n YourFunctionName --stack-name your-stack-name
+# Lambda関数の詳細ログ
+sam local start-api --debug-port 5858 --debug-args "-e debugger"
+
+# 特定のLambda関数を単体実行
+sam local invoke ApiFunction --event events/test-event.json --debug
+
+# Lambda関数のログをリアルタイム表示
+sam logs -n ApiFunction --stack-name goal-mandala-api --tail
+
+# 環境変数を指定してデバッグ
+sam local start-api --parameter-overrides \
+  DatabaseUrl=postgresql://postgres:password@host.docker.internal:5432/goal_mandala \
+  JwtSecret=debug-secret
+
+# SAMテンプレートの検証
+sam validate --template template.yaml --lint
+
+# ビルド成果物の確認
+ls -la .aws-sam/build/ApiFunction/
+cat .aws-sam/build/ApiFunction/package.json
 ```
 
 #### インフラ
@@ -702,6 +858,7 @@ pnpm audit --fix
 - [Docker環境セットアップガイド](./docs/docker-setup-guide.md) - Docker環境の詳細セットアップ手順
 - [Docker環境トラブルシューティングガイド](./docs/docker-troubleshooting.md) - Docker関連問題の解決方法
 - [環境変数設定ガイド](./docs/environment-variables.md) - 環境変数の詳細設定
+- [AWS SAM CLI公式ドキュメント](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/) - SAM CLIの詳細な使用方法
 
 #### アーキテクチャ・設計
 

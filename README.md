@@ -48,7 +48,9 @@ make -C tools/docker up
 make -C tools/docker health
 ```
 
-### Docker環境の管理
+### 4. ローカル開発環境の起動
+
+#### Docker環境の管理
 
 Docker環境の操作には、便利なMakefileコマンドが利用できます：
 
@@ -65,14 +67,35 @@ make -C tools/docker health  # ヘルスチェック
 make -C tools/docker clean   # 環境クリーンアップ
 ```
 
+#### AWS SAM CLI環境の起動
+
+バックエンドAPIをローカルで実行するには、AWS SAM CLIを使用します：
+
+```bash
+# バックエンドAPI起動（Lambda + API Gateway エミュレート）
+pnpm --filter @goal-mandala/backend dev
+
+# または、専用スクリプトを使用
+./tools/scripts/sam-local-start.sh
+
+# 別ターミナルでフロントエンド起動
+pnpm --filter @goal-mandala/frontend dev
+
+# APIの動作確認
+curl http://localhost:3001/health
+```
+
+**前提条件**: AWS SAM CLIとDocker Desktopがインストールされている必要があります。詳細は [CONTRIBUTING.md](./CONTRIBUTING.md) を参照してください。
+
 ## ドキュメント
 
 ### 開発者向けドキュメント
 
-- [CONTRIBUTING.md](./CONTRIBUTING.md) - 開発者向け詳細ガイド
+- [CONTRIBUTING.md](./CONTRIBUTING.md) - 開発者向け詳細ガイド（SAM CLI環境の使用方法を含む）
 - [Docker環境セットアップガイド](./docs/docker-setup-guide.md) - Docker環境の詳細セットアップ手順
 - [Docker環境トラブルシューティングガイド](./docs/docker-troubleshooting.md) - Docker関連問題の解決方法
 - [環境変数設定ガイド](./docs/environment-variables.md) - 環境変数の詳細設定
+- [AWS SAM CLI公式ドキュメント](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/) - SAM CLIの詳細な使用方法
 
 ### アーキテクチャドキュメント
 
