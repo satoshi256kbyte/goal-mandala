@@ -24,10 +24,24 @@
             ],
             "cache": true
         },
+        "test:coverage": {
+            "dependsOn": [
+                "build"
+            ],
+            "outputs": [
+                "coverage/**"
+            ],
+            "cache": true
+        },
         "lint": {
             "dependsOn": [],
             "outputs": [],
             "cache": true
+        },
+        "lint:fix": {
+            "dependsOn": [],
+            "outputs": [],
+            "cache": false
         },
         "type-check": {
             "dependsOn": [

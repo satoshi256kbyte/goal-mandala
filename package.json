@@ -52,7 +52,10 @@
     "act:debug": "act pull_request --debug",
     "act:dry-run": "act pull_request --dry-run",
     "act:help": "act --help",
-    "act:validate": "bash tools/scripts/validate-act-setup.sh"
+    "act:validate": "bash tools/scripts/validate-act-setup.sh",
+    "husky:install": "husky install",
+    "husky:test": ".husky/pre-commit",
+    "lint-staged:test": "lint-staged"
   },
   "dependencies": {
     "dotenv": "^16.4.5",

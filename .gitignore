@@ -314,3 +314,8 @@ cdk.out/
 # Backup files
 *.bak
 *.backup
+
+# act (GitHub Actions local runner)
+.secrets.local
+.env.local
+.actrc.local

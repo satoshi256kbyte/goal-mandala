@@ -5,10 +5,7 @@ export default {
     es2022: true,
     node: true,
   },
-  extends: [
-    'eslint:recommended',
-    'prettier',
-  ],
+  extends: ['eslint:recommended', '@typescript-eslint/recommended', 'prettier'],
   parser: '@typescript-eslint/parser',
   parserOptions: {
     ecmaVersion: 'latest',
@@ -17,10 +14,7 @@ export default {
       jsx: true,
     },
   },
-  plugins: [
-    '@typescript-eslint',
-    'import',
-  ],
+  plugins: ['@typescript-eslint', 'import'],
   rules: {
     // TypeScript関連のルール（@typescript-eslint/recommendedの主要ルールを手動で追加）
     '@typescript-eslint/no-unused-vars': [
@@ -55,14 +49,7 @@ export default {
     'import/order': [
       'error',
       {
-        groups: [
-          'builtin',
-          'external',
-          'internal',
-          'parent',
-          'sibling',
-          'index',
-        ],
+        groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'index'],
         'newlines-between': 'always',
         alphabetize: {
           order: 'asc',
@@ -84,10 +71,19 @@ export default {
     'no-multiple-empty-lines': ['error', { max: 1 }],
     'eol-last': 'error',
     'comma-dangle': ['error', 'always-multiline'],
-    'semi': ['error', 'always'],
-    'quotes': ['error', 'single', { avoidEscape: true }],
+    semi: ['error', 'always'],
+    quotes: ['error', 'single', { avoidEscape: true }],
   },
   overrides: [
+    // TypeScript files
+    {
+      files: ['**/*.{ts,tsx}'],
+      parser: '@typescript-eslint/parser',
+      parserOptions: {
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+      },
+    },
     // React/Frontend固有の設定
     {
       files: ['packages/frontend/**/*.{ts,tsx}'],

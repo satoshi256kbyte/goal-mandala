@@ -1,11 +1,16 @@
 module.exports = {
   root: true,
   env: { node: true, es2022: true },
-  extends: ['eslint:recommended'],
+  extends: ['eslint:recommended', '@typescript-eslint/recommended'],
+  parser: '@typescript-eslint/parser',
+  plugins: ['@typescript-eslint'],
   ignorePatterns: ['dist', '.eslintrc.cjs', 'cdk.out', '*.test.ts'],
   parserOptions: {
     ecmaVersion: 'latest',
     sourceType: 'module',
   },
-  rules: {},
+  rules: {
+    '@typescript-eslint/no-unused-vars': 'error',
+    '@typescript-eslint/no-explicit-any': 'warn',
+  },
 };

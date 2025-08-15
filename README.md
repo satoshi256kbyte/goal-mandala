@@ -12,6 +12,41 @@
 
 開発者向けドキュメントは [CONTRIBUTING.md](./CONTRIBUTING.md) を参照してください。
 
+## CI/CD
+
+このプロジェクトではGitHub Actionsを使用してCI/CDパイプラインを構築しています。
+
+### ワークフロー
+
+- **プルリクエスト**: コード品質チェック（Lint、型チェック、テスト、フォーマット）
+- **mainブランチ**: 包括的CI（ビルド、カバレッジ、E2E、セキュリティスキャン）
+
+### ローカルテスト
+
+GitHub Actionsワークフローをローカルでテストできます：
+
+```bash
+# actのセットアップ（環境変数とシークレットファイルの作成）
+pnpm run act:setup
+
+# act設定の検証
+pnpm run act:validate
+
+# プルリクエストワークフローをテスト
+pnpm run act:pr-check
+
+# mainブランチワークフローをテスト  
+pnpm run act:main-ci
+
+# デバッグモードでの実行
+pnpm run act:debug
+
+# ドライラン（実際には実行しない）
+pnpm run act:dry-run
+```
+
+詳細は [act使用ガイド](./docs/act-usage-guide.md) を参照してください。
+
 ## クイックスタート
 
 ### 1. 環境変数の設定
