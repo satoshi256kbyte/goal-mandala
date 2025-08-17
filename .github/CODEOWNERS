@@ -1,0 +1,37 @@
+# Global owners
+* @goal-mandala-team
+
+# Frontend specific
+/packages/frontend/ @frontend-team @goal-mandala-team
+
+# Backend specific
+/packages/backend/ @backend-team @goal-mandala-team
+
+# Infrastructure specific
+/packages/infrastructure/ @devops-team @goal-mandala-team
+
+# Shared packages
+/packages/shared/ @goal-mandala-team
+
+# CI/CD workflows
+/.github/ @devops-team @goal-mandala-team
+
+# Documentation
+/docs/ @goal-mandala-team
+README.md @goal-mandala-team
+CONTRIBUTING.md @goal-mandala-team
+
+# Configuration files
+package.json @goal-mandala-team
+pnpm-workspace.yaml @goal-mandala-team
+turbo.json @goal-mandala-team
+.tool-versions @goal-mandala-team
+
+# Docker and development environment
+docker-compose.yml @devops-team @goal-mandala-team
+Dockerfile* @devops-team @goal-mandala-team
+.env.example @devops-team @goal-mandala-team
+
+# Security and compliance
+.github/workflows/ @devops-team @goal-mandala-team
+.husky/ @goal-mandala-team
