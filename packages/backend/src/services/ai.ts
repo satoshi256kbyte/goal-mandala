@@ -1,4 +1,4 @@
 // AIサービス
 export const aiService = () => {
-    // TODO: 実装予定
+  // TODO: 実装予定
 };

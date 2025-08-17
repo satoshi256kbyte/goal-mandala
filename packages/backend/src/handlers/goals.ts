@@ -1,4 +1,4 @@
 // 目標ハンドラー
 export const goalsHandler = () => {
-    // TODO: 実装予定
+  // TODO: 実装予定
 };

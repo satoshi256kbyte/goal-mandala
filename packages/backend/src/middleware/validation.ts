@@ -1,4 +1,4 @@
 // バリデーションミドルウェア
 export const validationMiddleware = () => {
-    // TODO: 実装予定
+  // TODO: 実装予定
 };

@@ -55,7 +55,19 @@
     "act:validate": "bash tools/scripts/validate-act-setup.sh",
     "husky:install": "husky install",
     "husky:test": ".husky/pre-commit",
-    "lint-staged:test": "lint-staged"
+    "husky:prepare": "husky install",
+    "lint-staged:test": "lint-staged",
+    "ci:pr": "pnpm run lint && pnpm run type-check && pnpm run test",
+    "ci:main": "pnpm run build && pnpm run test:coverage && pnpm run lint && pnpm run type-check",
+    "ci:local": "pnpm run ci:pr",
+    "ci:validate": "pnpm run lint && pnpm run type-check && pnpm run test && pnpm run build",
+    "github:pr-check": "act pull_request -W .github/workflows/pr-check.yml",
+    "github:main-ci": "act push -W .github/workflows/main-ci.yml",
+    "github:validate": "pnpm run act:validate && pnpm run ci:validate",
+    "setup:dev": "pnpm install && pnpm run husky:install && pnpm run act:setup",
+    "setup:ci": "pnpm install && pnpm run build",
+    "quality:check": "pnpm run lint && pnpm run type-check && pnpm run format:check",
+    "quality:fix": "pnpm run lint:fix && pnpm run format"
   },
   "dependencies": {
     "dotenv": "^16.4.5",
@@ -92,7 +104,7 @@
   "author": "Goal Mandala Team",
   "license": "MIT",
   "lint-staged": {
-    "*.{js,jsx,ts,tsx}": [
+    "packages/**/*.{js,jsx,ts,tsx}": [
       "eslint --fix",
       "prettier --write"
     ],

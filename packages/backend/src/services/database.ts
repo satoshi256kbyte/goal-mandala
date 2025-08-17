@@ -1,4 +1,4 @@
 // データベースサービス
 export const databaseService = () => {
-    // TODO: 実装予定
+  // TODO: 実装予定
 };

@@ -1,4 +1,4 @@
 // Lambda コンストラクト
 export class LambdaConstruct {
-    // TODO: 実装予定
+  // TODO: 実装予定
 }

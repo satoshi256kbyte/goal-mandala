@@ -1,4 +1,4 @@
 // バリデーションユーティリティ
 export const validateInput = () => {
-    // TODO: 実装予定
+  // TODO: 実装予定
 };
