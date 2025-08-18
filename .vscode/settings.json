@@ -90,6 +90,7 @@
         "act *",
         "brew *",
         "find packages -name \"*.ts\" -type f | head -5",
-        ".husky/pre-commit *"
+        ".husky/pre-commit *",
+        "cdk *"
     ]
 }

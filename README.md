@@ -137,6 +137,39 @@ curl http://localhost:3001/health
 - [モノレポアーキテクチャ](./docs/monorepo-architecture.md) - パッケージ構成と依存関係
 - [統合テストガイド](./docs/integration-testing.md) - テスト実行方法
 
+## インフラストラクチャ（AWS CDK）
+
+このプロジェクトでは、AWS CDKを使用してインフラストラクチャをコードで管理しています。
+
+### CDKプロジェクト構成
+
+- **DatabaseStack**: VPC、Aurora Serverless V2、Secrets Manager
+- **ApiStack**: API Gateway、Lambda Functions、IAM Roles
+- **FrontendStack**: S3、CloudFront、Origin Access Control
+
+### CDKの使用方法
+
+```bash
+# CDKプロジェクトディレクトリに移動
+cd packages/infrastructure
+
+# 依存関係のインストール
+pnpm install
+
+# CDK Synthテスト（テンプレート生成）
+pnpm run cdk:synth
+
+# デプロイテスト（ドライラン）
+pnpm run deploy:test
+
+# 実際のデプロイ（注意：AWSリソースが作成されます）
+pnpm run deploy:test:actual
+```
+
+詳細な使用方法は [CDKプロジェクト使用方法](./packages/infrastructure/README.md) を参照してください。
+
+トラブルシューティングについては [CDKトラブルシューティングガイド](./packages/infrastructure/TROUBLESHOOTING.md) を参照してください。
+
 ## 開発の進捗
 
 [WBS](.kiro/steering/4-wbs.md)をご覧ください。

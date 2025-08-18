@@ -1,0 +1,17 @@
+# Build outputs
+dist/
+cdk.out/
+node_modules/
+
+# Generated files
+*.d.ts
+*.js.map
+
+# CDK generated files
+cdk.context.json
+
+# Test coverage
+coverage/
+
+# Logs
+*.log

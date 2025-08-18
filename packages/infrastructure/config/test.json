@@ -1,0 +1,32 @@
+{
+  "stackPrefix": "goal-mandala-test",
+  "region": "ap-northeast-1",
+  "account": "123456789012",
+  "database": {
+    "instanceClass": "serverless",
+    "minCapacity": 0.5,
+    "maxCapacity": 1,
+    "databaseName": "goal_mandala_test",
+    "backupRetentionDays": 1,
+    "deletionProtection": false
+  },
+  "lambda": {
+    "timeout": 30,
+    "memorySize": 256,
+    "runtime": "nodejs20.x"
+  },
+  "frontend": {
+    "domainName": null,
+    "certificateArn": null,
+    "customErrorResponses": true
+  },
+  "monitoring": {
+    "logRetentionDays": 7,
+    "enableDetailedMonitoring": false
+  },
+  "tags": {
+    "Environment": "test",
+    "Project": "GoalMandala",
+    "Purpose": "Testing"
+  }
+}

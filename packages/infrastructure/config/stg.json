@@ -1,0 +1,28 @@
+{
+  "stackPrefix": "goal-mandala-stg",
+  "region": "ap-northeast-1",
+  "database": {
+    "instanceClass": "serverless",
+    "minCapacity": 1,
+    "maxCapacity": 2,
+    "backupRetentionDays": 14,
+    "deletionProtection": true
+  },
+  "lambda": {
+    "timeout": 30,
+    "memorySize": 512
+  },
+  "frontend": {
+    "domainName": null,
+    "certificateArn": null,
+    "customErrorResponses": true
+  },
+  "monitoring": {
+    "logRetentionDays": 30,
+    "enableDetailedMonitoring": true
+  },
+  "tags": {
+    "Environment": "staging",
+    "CostCenter": "engineering"
+  }
+}

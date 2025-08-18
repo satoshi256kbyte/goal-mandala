@@ -1,0 +1,28 @@
+{
+  "stackPrefix": "goal-mandala-dev",
+  "region": "ap-northeast-1",
+  "database": {
+    "instanceClass": "serverless",
+    "minCapacity": 0.5,
+    "maxCapacity": 1,
+    "backupRetentionDays": 7,
+    "deletionProtection": false
+  },
+  "lambda": {
+    "timeout": 30,
+    "memorySize": 256
+  },
+  "frontend": {
+    "domainName": null,
+    "certificateArn": null,
+    "customErrorResponses": true
+  },
+  "monitoring": {
+    "logRetentionDays": 14,
+    "enableDetailedMonitoring": false
+  },
+  "tags": {
+    "Environment": "development",
+    "CostCenter": "engineering"
+  }
+}

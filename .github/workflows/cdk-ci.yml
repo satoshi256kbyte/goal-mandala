@@ -1,0 +1,160 @@
+name: CDK CI
+
+on:
+  pull_request:
+    paths:
+      - "packages/infrastructure/**"
+      - ".github/workflows/cdk-*.yml"
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - "packages/infrastructure/**"
+      - ".github/workflows/cdk-*.yml"
+
+jobs:
+  cdk-validation:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".tool-versions"
+          cache: "pnpm"
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint infrastructure code
+        run: pnpm --filter infrastructure lint
+
+      - name: Type check infrastructure code
+        run: pnpm --filter infrastructure type-check
+
+      - name: Build infrastructure package
+        run: pnpm --filter infrastructure build
+
+      - name: Run infrastructure tests
+        run: pnpm --filter infrastructure test
+
+      - name: Configure AWS credentials (for CDK synth)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION || 'ap-northeast-1' }}
+
+      - name: CDK synth validation (dev)
+        working-directory: packages/infrastructure
+        run: |
+          echo "🔍 Validating CDK synthesis for dev environment"
+          pnpm cdk synth --context environment=dev
+
+      - name: CDK synth validation (stg)
+        working-directory: packages/infrastructure
+        run: |
+          echo "🔍 Validating CDK synthesis for stg environment"
+          pnpm cdk synth --context environment=stg
+
+      - name: CDK synth validation (prod)
+        working-directory: packages/infrastructure
+        run: |
+          echo "🔍 Validating CDK synthesis for prod environment"
+          pnpm cdk synth --context environment=prod
+
+      - name: CDK Nag security checks
+        working-directory: packages/infrastructure
+        run: |
+          echo "🔒 Running CDK Nag security checks"
+          # CDK Nagが導入されている場合のみ実行
+          if grep -q "cdk-nag" package.json; then
+            pnpm cdk synth --context environment=dev --app "npx ts-node --prefer-ts-exts src/index.ts"
+          else
+            echo "CDK Nag not configured, skipping security checks"
+          fi
+
+  cdk-diff:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".tool-versions"
+          cache: "pnpm"
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build infrastructure package
+        run: pnpm --filter infrastructure build
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION || 'ap-northeast-1' }}
+
+      - name: CDK diff (dev environment)
+        working-directory: packages/infrastructure
+        run: |
+          echo "📋 Showing CDK diff for dev environment"
+          pnpm cdk diff --context environment=dev || true
+
+      - name: Comment PR with CDK diff
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+
+            // CDK diffの結果をコメントとして投稿
+            const comment = `## 🏗️ CDK Infrastructure Changes
+
+            This PR contains changes to the infrastructure code. Please review the CDK diff output above.
+
+            ### Deployment Instructions
+            After merging this PR, deploy the changes using:
+            \`\`\`bash
+            # For development environment
+            gh workflow run cdk-deploy.yml -f environment=dev -f confirm_deployment=deploy
+
+            # For staging environment
+            gh workflow run cdk-deploy.yml -f environment=stg -f confirm_deployment=deploy
+
+            # For production environment
+            gh workflow run cdk-deploy.yml -f environment=prod -f confirm_deployment=deploy
+            \`\`\`
+
+            ### Security Checklist
+            - [ ] Reviewed IAM permissions and policies
+            - [ ] Verified resource naming follows conventions
+            - [ ] Confirmed environment-specific configurations
+            - [ ] Checked for sensitive data exposure
+            `;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });

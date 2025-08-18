@@ -1,0 +1,29 @@
+{
+  "stackPrefix": "goal-mandala-prod",
+  "region": "ap-northeast-1",
+  "database": {
+    "instanceClass": "serverless",
+    "minCapacity": 2,
+    "maxCapacity": 4,
+    "backupRetentionDays": 30,
+    "deletionProtection": true
+  },
+  "lambda": {
+    "timeout": 30,
+    "memorySize": 1024
+  },
+  "frontend": {
+    "domainName": null,
+    "certificateArn": null,
+    "customErrorResponses": true
+  },
+  "monitoring": {
+    "logRetentionDays": 90,
+    "enableDetailedMonitoring": true
+  },
+  "tags": {
+    "Environment": "production",
+    "CostCenter": "operations",
+    "Backup": "required"
+  }
+}

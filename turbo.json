@@ -72,6 +72,114 @@
             "dependsOn": [],
             "outputs": [],
             "cache": true
+        },
+        "cdk:synth": {
+            "dependsOn": [
+                "build"
+            ],
+            "outputs": [
+                "cdk.out/**"
+            ],
+            "cache": true
+        },
+        "cdk:deploy": {
+            "dependsOn": [
+                "cdk:synth"
+            ],
+            "outputs": [],
+            "cache": false
+        },
+        "cdk:destroy": {
+            "dependsOn": [],
+            "outputs": [],
+            "cache": false
+        },
+        "cdk:diff": {
+            "dependsOn": [
+                "build"
+            ],
+            "outputs": [],
+            "cache": false
+        },
+        "cdk:synth:dev": {
+            "dependsOn": [
+                "build"
+            ],
+            "outputs": [
+                "cdk.out/**"
+            ],
+            "cache": true
+        },
+        "cdk:synth:stg": {
+            "dependsOn": [
+                "build"
+            ],
+            "outputs": [
+                "cdk.out/**"
+            ],
+            "cache": true
+        },
+        "cdk:synth:prod": {
+            "dependsOn": [
+                "build"
+            ],
+            "outputs": [
+                "cdk.out/**"
+            ],
+            "cache": true
+        },
+        "cdk:synth:all": {
+            "dependsOn": [
+                "cdk:synth:dev",
+                "cdk:synth:stg",
+                "cdk:synth:prod"
+            ],
+            "outputs": [
+                "cdk.out/**"
+            ],
+            "cache": true
+        },
+        "deploy:dev": {
+            "dependsOn": [
+                "cdk:synth:dev"
+            ],
+            "outputs": [],
+            "cache": false
+        },
+        "deploy:stg": {
+            "dependsOn": [
+                "cdk:synth:stg"
+            ],
+            "outputs": [],
+            "cache": false
+        },
+        "deploy:prod": {
+            "dependsOn": [
+                "cdk:synth:prod"
+            ],
+            "outputs": [],
+            "cache": false
+        },
+        "security:check": {
+            "dependsOn": [
+                "build",
+                "cdk:synth:all"
+            ],
+            "outputs": [],
+            "cache": true
+        },
+        "ci:validate": {
+            "dependsOn": [
+                "lint",
+                "type-check",
+                "test",
+                "cdk:synth:all"
+            ],
+            "outputs": [
+                "coverage/**",
+                "cdk.out/**"
+            ],
+            "cache": true
         }
     },
     "globalDependencies": [
@@ -85,6 +193,10 @@
     "globalEnv": [
         "NODE_ENV",
         "AWS_REGION",
-        "AWS_PROFILE"
+        "AWS_PROFILE",
+        "CDK_DEFAULT_ACCOUNT",
+        "CDK_DEFAULT_REGION",
+        "AWS_ACCESS_KEY_ID",
+        "AWS_SECRET_ACCESS_KEY"
     ]
 }

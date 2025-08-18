@@ -1,3 +1,3 @@
 // CDK コンストラクトのエクスポート
-export * from './lambda-construct';
 export * from './database-construct';
+export * from './lambda-construct';
