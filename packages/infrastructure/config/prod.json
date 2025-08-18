@@ -1,6 +1,12 @@
 {
   "stackPrefix": "goal-mandala-prod",
   "region": "ap-northeast-1",
+  "network": {
+    "natGateways": 2,
+    "enableVpcEndpoints": true,
+    "vpcCidr": "10.0.0.0/16",
+    "maxAzs": 2
+  },
   "database": {
     "instanceClass": "serverless",
     "minCapacity": 2,

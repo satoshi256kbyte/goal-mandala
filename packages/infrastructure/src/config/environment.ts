@@ -6,6 +6,12 @@ export interface EnvironmentConfig {
   stackPrefix: string;
   region: ValidRegion;
   account?: string;
+  network: {
+    natGateways: number;
+    enableVpcEndpoints: boolean;
+    vpcCidr?: string;
+    maxAzs?: number;
+  };
   database: {
     instanceClass: ValidInstanceClass;
     minCapacity: number;
@@ -73,6 +79,10 @@ function validateConfig(config: any, environment: string): EnvironmentConfig {
     errors.push('region is required and must be a string');
   }
 
+  if (!config.network || typeof config.network !== 'object') {
+    errors.push('network configuration is required and must be an object');
+  }
+
   if (!config.database || typeof config.database !== 'object') {
     errors.push('database configuration is required and must be an object');
   }
@@ -95,6 +105,9 @@ function validateConfig(config: any, environment: string): EnvironmentConfig {
 
   // リージョンの詳細検証
   validateRegion(config.region, errors);
+
+  // ネットワーク設定の詳細検証
+  validateNetworkConfig(config.network, errors);
 
   // データベース設定の詳細検証
   validateDatabaseConfig(config.database, errors);
@@ -129,6 +142,11 @@ function validateConfig(config: any, environment: string): EnvironmentConfig {
   // デフォルト値の設定
   const validatedConfig: EnvironmentConfig = {
     ...config,
+    network: {
+      ...config.network,
+      vpcCidr: config.network.vpcCidr || '10.0.0.0/16',
+      maxAzs: config.network.maxAzs || 2,
+    },
     database: {
       ...config.database,
       databaseName: config.database.databaseName || constants.DATABASE.DEFAULT_DATABASE_NAME,
@@ -180,6 +198,38 @@ function validateStackPrefix(stackPrefix: string, errors: string[]): void {
 function validateRegion(region: string, errors: string[]): void {
   if (!constants.VALID_REGIONS.includes(region as ValidRegion)) {
     errors.push(`region must be one of: ${constants.VALID_REGIONS.join(', ')}`);
+  }
+}
+
+function validateNetworkConfig(network: any, errors: string[]): void {
+  if (
+    typeof network.natGateways !== 'number' ||
+    network.natGateways < 1 ||
+    network.natGateways > 2
+  ) {
+    errors.push('network.natGateways must be a number between 1 and 2');
+  }
+
+  if (typeof network.enableVpcEndpoints !== 'boolean') {
+    errors.push('network.enableVpcEndpoints must be a boolean');
+  }
+
+  if (network.vpcCidr && typeof network.vpcCidr !== 'string') {
+    errors.push('network.vpcCidr must be a string');
+  }
+
+  if (network.vpcCidr) {
+    // CIDR形式の基本的な検証
+    const cidrPattern = /^(\d{1,3}\.){3}\d{1,3}\/\d{1,2}$/;
+    if (!cidrPattern.test(network.vpcCidr)) {
+      errors.push('network.vpcCidr must be a valid CIDR notation (e.g., 10.0.0.0/16)');
+    }
+  }
+
+  if (network.maxAzs !== undefined) {
+    if (typeof network.maxAzs !== 'number' || network.maxAzs < 2 || network.maxAzs > 6) {
+      errors.push('network.maxAzs must be a number between 2 and 6');
+    }
   }
 }
 

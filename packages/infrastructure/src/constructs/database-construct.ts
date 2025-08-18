@@ -8,38 +8,22 @@ import { EnvironmentConfig } from '../config/environment';
 
 export interface DatabaseConstructProps {
   vpc: ec2.IVpc;
+  databaseSecurityGroup: ec2.ISecurityGroup;
   config: EnvironmentConfig;
 }
 
 export class DatabaseConstruct extends Construct {
   public readonly cluster: rds.DatabaseCluster;
   public readonly secret: secretsmanager.ISecret;
-  public readonly securityGroup: ec2.SecurityGroup;
+  public readonly securityGroup: ec2.ISecurityGroup;
 
   constructor(scope: Construct, id: string, props: DatabaseConstructProps) {
     super(scope, id);
 
-    const { vpc, config } = props;
+    const { vpc, databaseSecurityGroup, config } = props;
 
-    // データベース用セキュリティグループ
-    this.securityGroup = new ec2.SecurityGroup(this, 'DatabaseSecurityGroup', {
-      vpc,
-      description: 'Security group for Aurora PostgreSQL database',
-      allowAllOutbound: false,
-    });
-
-    // Lambda関数からのアクセスを許可するセキュリティグループ
-    const lambdaSecurityGroup = new ec2.SecurityGroup(this, 'LambdaSecurityGroup', {
-      vpc,
-      description: 'Security group for Lambda functions accessing database',
-    });
-
-    // データベースセキュリティグループにLambdaからのアクセスを許可
-    this.securityGroup.addIngressRule(
-      lambdaSecurityGroup,
-      ec2.Port.tcp(5432),
-      'Allow Lambda access to PostgreSQL'
-    );
+    // VpcStackから提供されたセキュリティグループを使用
+    this.securityGroup = databaseSecurityGroup;
 
     // データベース認証情報のシークレット
     this.secret = new secretsmanager.Secret(this, 'DatabaseSecret', {
@@ -53,12 +37,12 @@ export class DatabaseConstruct extends Construct {
       },
     });
 
-    // サブネットグループ
+    // サブネットグループ（データベース用分離サブネットを使用）
     const subnetGroup = new rds.SubnetGroup(this, 'DatabaseSubnetGroup', {
       vpc,
       description: 'Subnet group for Aurora PostgreSQL database',
       vpcSubnets: {
-        subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS,
+        subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
       },
     });
 
@@ -105,7 +89,7 @@ export class DatabaseConstruct extends Construct {
       serverlessV2MaxCapacity: config.database.maxCapacity,
       vpc,
       vpcSubnets: {
-        subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS,
+        subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
       },
       securityGroups: [this.securityGroup],
       subnetGroup,
@@ -160,10 +144,10 @@ export class DatabaseConstruct extends Construct {
       exportName: `${config.stackPrefix}-database-secret-arn`,
     });
 
-    new cdk.CfnOutput(this, 'LambdaSecurityGroupId', {
-      value: lambdaSecurityGroup.securityGroupId,
-      description: 'Security group ID for Lambda functions',
-      exportName: `${config.stackPrefix}-lambda-security-group-id`,
+    new cdk.CfnOutput(this, 'DatabaseSecurityGroupId', {
+      value: this.securityGroup.securityGroupId,
+      description: 'Security group ID for database',
+      exportName: `${config.stackPrefix}-database-security-group-id`,
     });
   }
 }

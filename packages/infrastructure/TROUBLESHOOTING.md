@@ -423,7 +423,26 @@ aws cloudfront get-distribution-config --id E1234567890123
 
 ## セキュリティ問題
 
-### セキュリティグループの設定
+### VPCとネットワーク関連の問題
+
+#### 統合テストスクリプトの活用
+
+VPCスタックの問題診断には、専用のテストスクリプトを使用できます：
+
+```bash
+# VPCスタック全体の統合テスト
+./packages/infrastructure/scripts/test-vpc-integration.sh
+
+# VPC接続性の詳細テスト
+./packages/infrastructure/scripts/test-vpc-connectivity.sh
+
+# セキュリティグループルールのテスト
+./packages/infrastructure/scripts/test-security-group-rules.sh
+```
+
+これらのスクリプトは自動的に問題を検出し、詳細な診断情報を提供します。
+
+#### セキュリティグループの設定
 
 **症状**: ネットワーク接続ができない
 
@@ -435,6 +454,15 @@ aws ec2 describe-security-groups --group-names goal-mandala-dev-database-sg
 
 # VPCの設定確認
 aws ec2 describe-vpcs --filters "Name=tag:Name,Values=goal-mandala-dev-vpc"
+
+# VPCフローログの確認
+aws logs filter-log-events \
+  --log-group-name "/aws/vpc/flowlogs/goal-mandala-dev" \
+  --start-time $(date -d '1 hour ago' +%s)000 \
+  --filter-pattern "{ $.action = \"REJECT\" }"
+
+# 自動診断スクリプトの実行
+STACK_NAME=goal-mandala-dev-vpc ./packages/infrastructure/scripts/test-security-group-rules.sh
 ```
 
 **解決方法**:
@@ -442,6 +470,117 @@ aws ec2 describe-vpcs --filters "Name=tag:Name,Values=goal-mandala-dev-vpc"
 - セキュリティグループのルールを確認
 - 必要なポートが開放されているか確認
 - ソースIPアドレスの設定を確認
+- 最小権限の原則に従っているか確認
+
+#### VPCエンドポイントの問題
+
+**症状**: AWSサービスへの接続が失敗する（本番環境）
+
+**診断手順**:
+
+```bash
+# VPCエンドポイントの状態確認
+aws ec2 describe-vpc-endpoints --filters "Name=vpc-id,Values=vpc-12345678"
+
+# VPCエンドポイントのDNS解決確認
+nslookup s3.ap-northeast-1.amazonaws.com
+
+# VPCエンドポイント用セキュリティグループの確認
+aws ec2 describe-security-groups --group-names goal-mandala-prod-vpc-endpoint-sg
+```
+
+**解決方法**:
+
+```bash
+# VPCエンドポイントのポリシー確認
+aws ec2 describe-vpc-endpoints --vpc-endpoint-ids vpce-12345678 \
+  --query 'VpcEndpoints[0].PolicyDocument'
+
+# セキュリティグループでHTTPS(443)が許可されているか確認
+# 必要に応じてVPCエンドポイントを再作成
+```
+
+#### NATゲートウェイの問題
+
+**症状**: プライベートサブネットからインターネットアクセスができない
+
+**診断手順**:
+
+```bash
+# NATゲートウェイの状態確認
+aws ec2 describe-nat-gateways --filter "Name=vpc-id,Values=vpc-12345678"
+
+# ルートテーブルの確認
+aws ec2 describe-route-tables --filters "Name=vpc-id,Values=vpc-12345678"
+
+# Elastic IPの確認
+aws ec2 describe-addresses --filters "Name=domain,Values=vpc"
+```
+
+**解決方法**:
+
+- NATゲートウェイの状態が「available」であることを確認
+- ルートテーブルに0.0.0.0/0 -> NAT Gatewayのルートが存在することを確認
+- Elastic IPが正しく割り当てられていることを確認
+
+#### サブネット設定の問題
+
+**症状**: リソースが期待されるサブネットに配置されない
+
+**診断手順**:
+
+```bash
+# サブネットの確認
+aws ec2 describe-subnets --filters "Name=vpc-id,Values=vpc-12345678"
+
+# サブネットのタグ確認
+aws ec2 describe-subnets --subnet-ids subnet-12345678 \
+  --query 'Subnets[0].Tags'
+
+# アベイラビリティゾーンの確認
+aws ec2 describe-availability-zones --region ap-northeast-1
+```
+
+**解決方法**:
+
+- サブネットのCIDRブロックが重複していないか確認
+- 適切なアベイラビリティゾーンに配置されているか確認
+- サブネットタイプ（パブリック/プライベート/分離）が正しいか確認
+
+#### VPCフローログの問題
+
+**症状**: ネットワークトラフィックのログが記録されない
+
+**診断手順**:
+
+```bash
+# VPCフローログの状態確認
+aws ec2 describe-flow-logs --filter "Name=resource-id,Values=vpc-12345678"
+
+# CloudWatch Logsグループの確認
+aws logs describe-log-groups --log-group-name-prefix "/aws/vpc/flowlogs"
+
+# IAMロールの権限確認
+aws iam get-role-policy --role-name goal-mandala-dev-vpc-flowlog-role \
+  --policy-name VpcFlowLogRoleDefaultPolicy
+```
+
+**解決方法**:
+
+```bash
+# VPCフローログの再作成
+aws ec2 create-flow-log \
+  --resource-type VPC \
+  --resource-ids vpc-12345678 \
+  --traffic-type ALL \
+  --log-destination-type cloud-watch-logs \
+  --log-group-name /aws/vpc/flowlogs/goal-mandala-dev \
+  --deliver-logs-permission-arn arn:aws:iam::123456789012:role/flowlogsRole
+
+# CloudWatch Logsの権限確認
+aws logs put-log-events --log-group-name /aws/vpc/flowlogs/goal-mandala-dev \
+  --log-stream-name test-stream --log-events timestamp=$(date +%s)000,message="test"
+```
 
 ### IAMロールの権限不足
 

@@ -10,10 +10,10 @@ import { LambdaConstruct } from '../constructs/lambda-construct';
 import { EnvironmentConfig } from '../config/environment';
 
 export interface ApiStackProps extends cdk.StackProps {
+  config: EnvironmentConfig;
   vpc: ec2.IVpc;
   lambdaSecurityGroup: ec2.ISecurityGroup;
   databaseSecret: secretsmanager.ISecret;
-  config: EnvironmentConfig;
 }
 
 export class ApiStack extends cdk.Stack {
@@ -23,13 +23,7 @@ export class ApiStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: ApiStackProps) {
     super(scope, id, props);
 
-    const { vpc, lambdaSecurityGroup, databaseSecret, config } = props;
-
-    // プロパティを保存
-    this.vpc = vpc;
-    this.lambdaSecurityGroup = lambdaSecurityGroup;
-    this.databaseSecret = databaseSecret;
-    this.config = config;
+    const { config, vpc, lambdaSecurityGroup, databaseSecret } = props;
 
     // Lambda コンストラクト作成
     this.lambdaConstruct = new LambdaConstruct(this, 'LambdaConstruct', {
@@ -108,10 +102,10 @@ export class ApiStack extends cdk.Stack {
     });
 
     // Lambda 関数作成
-    this.createLambdaFunctions();
+    this.createLambdaFunctions(config);
 
     // API エンドポイント設定
-    this.setupApiEndpoints();
+    this.setupApiEndpoints(config);
 
     // タグ設定
     if (config.tags) {
@@ -138,10 +132,10 @@ export class ApiStack extends cdk.Stack {
   /**
    * Lambda 関数を作成する
    */
-  private createLambdaFunctions(): void {
+  private createLambdaFunctions(config: EnvironmentConfig): void {
     // 認証関連 Lambda 関数
     this.lambdaConstruct.createApiFunction({
-      functionName: `${this.config.stackPrefix}-auth`,
+      functionName: `${config.stackPrefix}-auth`,
       codePath: '../backend/dist', // バックエンドのビルド成果物
       description: 'Authentication and authorization handler',
       environment: {
@@ -151,7 +145,7 @@ export class ApiStack extends cdk.Stack {
 
     // 目標管理 Lambda 関数
     this.lambdaConstruct.createApiFunction({
-      functionName: `${this.config.stackPrefix}-goals`,
+      functionName: `${config.stackPrefix}-goals`,
       codePath: '../backend/dist',
       description: 'Goals management handler',
       environment: {
@@ -161,7 +155,7 @@ export class ApiStack extends cdk.Stack {
 
     // タスク管理 Lambda 関数
     this.lambdaConstruct.createApiFunction({
-      functionName: `${this.config.stackPrefix}-tasks`,
+      functionName: `${config.stackPrefix}-tasks`,
       codePath: '../backend/dist',
       description: 'Tasks management handler',
       environment: {
@@ -171,7 +165,7 @@ export class ApiStack extends cdk.Stack {
 
     // AI処理 Lambda 関数（Bedrock統合）
     this.lambdaConstruct.createBedrockFunction({
-      functionName: `${this.config.stackPrefix}-ai-processor`,
+      functionName: `${config.stackPrefix}-ai-processor`,
       codePath: '../backend/dist',
       description: 'AI processing with Amazon Bedrock',
       timeout: cdk.Duration.minutes(15), // AI処理は時間がかかる
@@ -185,10 +179,10 @@ export class ApiStack extends cdk.Stack {
   /**
    * API エンドポイントを設定する
    */
-  private setupApiEndpoints(): void {
+  private setupApiEndpoints(config: EnvironmentConfig): void {
     // 認証エンドポイント
     const authResource = this.api.root.addResource('auth');
-    const authFunction = this.lambdaConstruct.getFunction(`${this.config.stackPrefix}-auth`);
+    const authFunction = this.lambdaConstruct.getFunction(`${config.stackPrefix}-auth`);
     if (authFunction) {
       authResource.addMethod('POST', new apigateway.LambdaIntegration(authFunction), {
         authorizationType: apigateway.AuthorizationType.NONE,
@@ -197,7 +191,7 @@ export class ApiStack extends cdk.Stack {
 
     // 目標管理エンドポイント
     const goalsResource = this.api.root.addResource('goals');
-    const goalsFunction = this.lambdaConstruct.getFunction(`${this.config.stackPrefix}-goals`);
+    const goalsFunction = this.lambdaConstruct.getFunction(`${config.stackPrefix}-goals`);
     if (goalsFunction) {
       // 目標一覧取得・作成
       goalsResource.addMethod('GET', new apigateway.LambdaIntegration(goalsFunction));
@@ -232,7 +226,7 @@ export class ApiStack extends cdk.Stack {
 
     // タスク管理エンドポイント
     const tasksResource = this.api.root.addResource('tasks');
-    const tasksFunction = this.lambdaConstruct.getFunction(`${this.config.stackPrefix}-tasks`);
+    const tasksFunction = this.lambdaConstruct.getFunction(`${config.stackPrefix}-tasks`);
     if (tasksFunction) {
       // タスク一覧取得・作成
       tasksResource.addMethod('GET', new apigateway.LambdaIntegration(tasksFunction));
@@ -251,7 +245,7 @@ export class ApiStack extends cdk.Stack {
 
     // AI処理エンドポイント
     const aiResource = this.api.root.addResource('ai');
-    const aiFunction = this.lambdaConstruct.getFunction(`${this.config.stackPrefix}-ai-processor`);
+    const aiFunction = this.lambdaConstruct.getFunction(`${config.stackPrefix}-ai-processor`);
     if (aiFunction) {
       // サブ目標生成
       const generateSubGoalsResource = aiResource.addResource('generate-subgoals');
@@ -299,9 +293,4 @@ export class ApiStack extends cdk.Stack {
       }
     );
   }
-
-  private readonly vpc: ec2.IVpc;
-  private readonly lambdaSecurityGroup: ec2.ISecurityGroup;
-  private readonly databaseSecret: secretsmanager.ISecret;
-  private readonly config: EnvironmentConfig;
 }

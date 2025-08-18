@@ -143,9 +143,57 @@ curl http://localhost:3001/health
 
 ### CDKプロジェクト構成
 
-- **DatabaseStack**: VPC、Aurora Serverless V2、Secrets Manager
+- **VpcStack**: VPC、サブネット、セキュリティグループ、VPCフローログ、VPCエンドポイント
+- **DatabaseStack**: Aurora Serverless V2、Secrets Manager
 - **ApiStack**: API Gateway、Lambda Functions、IAM Roles
 - **FrontendStack**: S3、CloudFront、Origin Access Control
+
+#### VpcStack（ネットワーク基盤）
+
+VpcStackは、アプリケーション全体のネットワーク基盤を提供します：
+
+**主要機能:**
+
+- **3層アーキテクチャ**: パブリック、プライベート、データベース用サブネット
+- **高可用性**: 2つのアベイラビリティゾーンに分散配置
+- **セキュリティ**: 最小権限の原則に基づくセキュリティグループ設定
+- **監視**: VPCフローログによる全ネットワークトラフィック記録
+- **環境別最適化**: 本番環境では冗長NATゲートウェイ、開発環境ではコスト最適化
+
+**ネットワーク構成:**
+
+- VPC CIDR: 10.0.0.0/16
+- パブリックサブネット: インターネットゲートウェイ経由でインターネットアクセス
+- プライベートサブネット: NATゲートウェイ経由でアウトバウンド通信
+- データベースサブネット: 完全分離（インターネットアクセスなし）
+
+**セキュリティグループ:**
+
+- ALB用: HTTP(80)/HTTPS(443)のインバウンド許可
+- Lambda用: 外部APIへのアウトバウンド通信許可
+- データベース用: Lambda SGからのPostgreSQL(5432)のみ許可
+
+**VPCエンドポイント（本番環境のみ）:**
+
+- Gateway型: S3、DynamoDB
+- Interface型: Secrets Manager、CloudWatch Logs、Bedrock
+
+**統合テスト:**
+
+VPCスタックの動作確認には、以下のテストスクリプトを使用できます：
+
+```bash
+# VPCスタック全体の統合テスト
+./packages/infrastructure/scripts/test-vpc-integration.sh
+
+# VPC接続性の詳細テスト
+./packages/infrastructure/scripts/test-vpc-connectivity.sh
+
+# セキュリティグループルールのテスト
+./packages/infrastructure/scripts/test-security-group-rules.sh
+```
+
+これらのテストスクリプトは、VPCリソースの存在確認、接続性テスト、セキュリティグループルールの検証を自動化し、インフラストラクチャの正常性を確保します。
 
 ### CDKの使用方法
 

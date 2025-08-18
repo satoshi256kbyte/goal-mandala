@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import * as cdk from 'aws-cdk-lib';
-import { DatabaseStack, ApiStack, FrontendStack } from './stacks';
+import { VpcStack, DatabaseStack, ApiStack, FrontendStack } from './stacks';
 import { getEnvironmentConfig } from './config/environment';
 
 const app = new cdk.App();
@@ -20,22 +20,34 @@ try {
   console.log(`Region: ${config.region}`);
   console.log(`Account: ${env.account}`);
 
-  // データベーススタック作成
+  // VPCスタック作成
+  const vpcStack = new VpcStack(app, `${config.stackPrefix}-vpc`, {
+    env,
+    config,
+    environment,
+    description: `VPC stack for ${config.stackPrefix} environment`,
+  });
+
+  // データベーススタック作成（VPCスタックに依存）
   const databaseStack = new DatabaseStack(app, `${config.stackPrefix}-database`, {
     env,
     config,
+    vpc: vpcStack.vpc,
+    databaseSecurityGroup: vpcStack.databaseSecurityGroup,
     description: `Database stack for ${config.stackPrefix} environment`,
   });
+  databaseStack.addDependency(vpcStack);
 
-  // APIスタック作成（データベーススタックに依存）
+  // APIスタック作成（VPCスタックとデータベーススタックに依存）
   const apiStack = new ApiStack(app, `${config.stackPrefix}-api`, {
     env,
     config,
-    vpc: databaseStack.vpc,
-    lambdaSecurityGroup: databaseStack.database.securityGroup,
+    vpc: vpcStack.vpc,
+    lambdaSecurityGroup: vpcStack.lambdaSecurityGroup,
     databaseSecret: databaseStack.database.secret,
     description: `API stack for ${config.stackPrefix} environment`,
   });
+  apiStack.addDependency(vpcStack);
   apiStack.addDependency(databaseStack);
 
   // フロントエンドスタック作成（APIスタックに依存）
@@ -64,4 +76,4 @@ try {
 }
 
 // エクスポート（テスト用）
-export { DatabaseStack, ApiStack, FrontendStack };
+export { VpcStack, DatabaseStack, ApiStack, FrontendStack };

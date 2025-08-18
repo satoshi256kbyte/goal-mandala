@@ -2,6 +2,12 @@
   "stackPrefix": "goal-mandala-test",
   "region": "ap-northeast-1",
   "account": "123456789012",
+  "network": {
+    "natGateways": 1,
+    "enableVpcEndpoints": false,
+    "vpcCidr": "10.0.0.0/16",
+    "maxAzs": 2
+  },
   "database": {
     "instanceClass": "serverless",
     "minCapacity": 0.5,
