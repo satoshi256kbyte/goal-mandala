@@ -1,6 +1,7 @@
 {
   "stackPrefix": "goal-mandala-dev",
   "region": "ap-northeast-1",
+  "environment": "development",
   "network": {
     "natGateways": 1,
     "enableVpcEndpoints": false,
@@ -10,9 +11,30 @@
   "database": {
     "instanceClass": "serverless",
     "minCapacity": 0.5,
-    "maxCapacity": 1,
+    "maxCapacity": 2.0,
+    "multiAz": false,
     "backupRetentionDays": 7,
-    "deletionProtection": false
+    "deletionProtection": false,
+    "performanceInsights": true,
+    "monitoringInterval": 60,
+    "enableAuditLog": true,
+    "enableSlowQueryLog": true,
+    "slowQueryLogThreshold": 1000,
+    "databaseName": "goalmandalamain",
+    "enableEncryption": true,
+    "enableIamDatabaseAuthentication": true,
+    "enableSslConnection": true,
+    "enableAutomaticSnapshots": true,
+    "snapshotRetentionDays": 7,
+    "preferredBackupWindow": "03:00-04:00",
+    "preferredMaintenanceWindow": "sun:04:00-sun:05:00",
+    "tags": {
+      "DatabaseType": "aurora-serverless-v2",
+      "Engine": "postgresql",
+      "EngineVersion": "15.4",
+      "Purpose": "application-data",
+      "Tier": "development"
+    }
   },
   "lambda": {
     "timeout": 30,
@@ -25,10 +47,17 @@
   },
   "monitoring": {
     "logRetentionDays": 14,
-    "enableDetailedMonitoring": false
+    "enableDetailedMonitoring": false,
+    "enableAlerts": false,
+    "alertEmail": null
   },
   "tags": {
+    "Project": "GoalMandala",
     "Environment": "development",
-    "CostCenter": "engineering"
+    "CostCenter": "engineering",
+    "Owner": "development-team",
+    "Purpose": "development-testing",
+    "DataClassification": "internal",
+    "BackupRequired": "true"
   }
 }

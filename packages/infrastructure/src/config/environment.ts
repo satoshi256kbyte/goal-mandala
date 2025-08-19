@@ -6,6 +6,7 @@ export interface EnvironmentConfig {
   stackPrefix: string;
   region: ValidRegion;
   account?: string;
+  environment?: string;
   network: {
     natGateways: number;
     enableVpcEndpoints: boolean;
@@ -16,9 +17,23 @@ export interface EnvironmentConfig {
     instanceClass: ValidInstanceClass;
     minCapacity: number;
     maxCapacity: number;
+    multiAz: boolean;
     databaseName?: string;
     backupRetentionDays?: number;
     deletionProtection?: boolean;
+    performanceInsights?: boolean;
+    monitoringInterval?: number;
+    enableAuditLog?: boolean;
+    enableSlowQueryLog?: boolean;
+    slowQueryLogThreshold?: number;
+    enableEncryption?: boolean;
+    enableIamDatabaseAuthentication?: boolean;
+    enableSslConnection?: boolean;
+    enableAutomaticSnapshots?: boolean;
+    snapshotRetentionDays?: number;
+    preferredBackupWindow?: string;
+    preferredMaintenanceWindow?: string;
+    tags?: Record<string, string>;
   };
   lambda: {
     timeout: number;
@@ -33,6 +48,8 @@ export interface EnvironmentConfig {
   monitoring?: {
     logRetentionDays?: number;
     enableDetailedMonitoring?: boolean;
+    enableAlerts?: boolean;
+    alertEmail?: string;
   };
   tags?: Record<string, string>;
 }
@@ -154,6 +171,14 @@ function validateConfig(config: any, environment: string): EnvironmentConfig {
         config.database.backupRetentionDays || constants.DATABASE.BACKUP_RETENTION_DAYS,
       deletionProtection:
         config.database.deletionProtection ?? constants.DATABASE.DELETION_PROTECTION,
+      performanceInsights: config.database.performanceInsights ?? true,
+      monitoringInterval: config.database.monitoringInterval ?? 60,
+      enableAuditLog: config.database.enableAuditLog ?? true,
+      enableSlowQueryLog: config.database.enableSlowQueryLog ?? true,
+      slowQueryLogThreshold: config.database.slowQueryLogThreshold ?? 1000,
+      enableEncryption: config.database.enableEncryption ?? true,
+      enableIamDatabaseAuthentication: config.database.enableIamDatabaseAuthentication ?? true,
+      enableSslConnection: config.database.enableSslConnection ?? true,
     },
     lambda: {
       ...config.lambda,
@@ -258,6 +283,10 @@ function validateDatabaseConfig(database: any, errors: string[]): void {
     errors.push('database.maxCapacity must be greater than or equal to minCapacity');
   }
 
+  if (typeof database.multiAz !== 'boolean') {
+    errors.push('database.multiAz is required and must be a boolean');
+  }
+
   // Aurora Serverless V2の容量制限チェック
   if (database.instanceClass === 'serverless') {
     if (database.minCapacity < 0.5 || database.minCapacity > 128) {
@@ -284,6 +313,62 @@ function validateDatabaseConfig(database: any, errors: string[]): void {
     typeof database.deletionProtection !== 'boolean'
   ) {
     errors.push('database.deletionProtection must be a boolean');
+  }
+
+  if (
+    database.performanceInsights !== undefined &&
+    typeof database.performanceInsights !== 'boolean'
+  ) {
+    errors.push('database.performanceInsights must be a boolean');
+  }
+
+  if (database.monitoringInterval !== undefined) {
+    const validIntervals = [0, 1, 5, 10, 15, 30, 60];
+    if (
+      typeof database.monitoringInterval !== 'number' ||
+      !validIntervals.includes(database.monitoringInterval)
+    ) {
+      errors.push(`database.monitoringInterval must be one of: ${validIntervals.join(', ')}`);
+    }
+  }
+
+  if (database.enableAuditLog !== undefined && typeof database.enableAuditLog !== 'boolean') {
+    errors.push('database.enableAuditLog must be a boolean');
+  }
+
+  if (
+    database.enableSlowQueryLog !== undefined &&
+    typeof database.enableSlowQueryLog !== 'boolean'
+  ) {
+    errors.push('database.enableSlowQueryLog must be a boolean');
+  }
+
+  if (database.slowQueryLogThreshold !== undefined) {
+    if (typeof database.slowQueryLogThreshold !== 'number' || database.slowQueryLogThreshold < 0) {
+      errors.push('database.slowQueryLogThreshold must be a non-negative number (milliseconds)');
+    }
+  }
+
+  if (database.enableEncryption !== undefined && typeof database.enableEncryption !== 'boolean') {
+    errors.push('database.enableEncryption must be a boolean');
+  }
+
+  if (
+    database.enableIamDatabaseAuthentication !== undefined &&
+    typeof database.enableIamDatabaseAuthentication !== 'boolean'
+  ) {
+    errors.push('database.enableIamDatabaseAuthentication must be a boolean');
+  }
+
+  if (
+    database.enableSslConnection !== undefined &&
+    typeof database.enableSslConnection !== 'boolean'
+  ) {
+    errors.push('database.enableSslConnection must be a boolean');
+  }
+
+  if (database.tags !== undefined) {
+    validateTagsConfig(database.tags, errors);
   }
 }
 
@@ -363,6 +448,22 @@ function validateMonitoringConfig(monitoring: any, errors: string[]): void {
     typeof monitoring.enableDetailedMonitoring !== 'boolean'
   ) {
     errors.push('monitoring.enableDetailedMonitoring must be a boolean');
+  }
+
+  if (monitoring.enableAlerts !== undefined && typeof monitoring.enableAlerts !== 'boolean') {
+    errors.push('monitoring.enableAlerts must be a boolean');
+  }
+
+  if (monitoring.alertEmail !== undefined && monitoring.alertEmail !== null) {
+    if (typeof monitoring.alertEmail !== 'string') {
+      errors.push('monitoring.alertEmail must be a string or null');
+    } else {
+      // 基本的なメールアドレス形式チェック
+      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailPattern.test(monitoring.alertEmail)) {
+        errors.push('monitoring.alertEmail must be a valid email address');
+      }
+    }
   }
 }
 
