@@ -33,6 +33,17 @@ export interface EnvironmentConfig {
     snapshotRetentionDays?: number;
     preferredBackupWindow?: string;
     preferredMaintenanceWindow?: string;
+    enableRotation?: boolean;
+    rotationIntervalDays?: number;
+    tags?: Record<string, string>;
+  };
+  secretsManager?: {
+    enableEncryption?: boolean;
+    enableRotation?: boolean;
+    rotationIntervalDays?: number;
+    enableCaching?: boolean;
+    cacheTtlMinutes?: number;
+    enableMonitoring?: boolean;
     tags?: Record<string, string>;
   };
   lambda: {
@@ -140,6 +151,10 @@ function validateConfig(config: any, environment: string): EnvironmentConfig {
     validateMonitoringConfig(config.monitoring, errors);
   }
 
+  if (config.secretsManager) {
+    validateSecretsManagerConfig(config.secretsManager, errors);
+  }
+
   if (config.tags) {
     validateTagsConfig(config.tags, errors);
   }
@@ -179,6 +194,15 @@ function validateConfig(config: any, environment: string): EnvironmentConfig {
       enableEncryption: config.database.enableEncryption ?? true,
       enableIamDatabaseAuthentication: config.database.enableIamDatabaseAuthentication ?? true,
       enableSslConnection: config.database.enableSslConnection ?? true,
+    },
+    secretsManager: {
+      enableEncryption: config.secretsManager?.enableEncryption ?? true,
+      enableRotation: config.secretsManager?.enableRotation ?? false,
+      rotationIntervalDays: config.secretsManager?.rotationIntervalDays ?? 30,
+      enableCaching: config.secretsManager?.enableCaching ?? true,
+      cacheTtlMinutes: config.secretsManager?.cacheTtlMinutes ?? 5,
+      enableMonitoring: config.secretsManager?.enableMonitoring ?? true,
+      ...config.secretsManager,
     },
     lambda: {
       ...config.lambda,
@@ -464,6 +488,60 @@ function validateMonitoringConfig(monitoring: any, errors: string[]): void {
         errors.push('monitoring.alertEmail must be a valid email address');
       }
     }
+  }
+}
+
+function validateSecretsManagerConfig(secretsManager: any, errors: string[]): void {
+  if (
+    secretsManager.enableEncryption !== undefined &&
+    typeof secretsManager.enableEncryption !== 'boolean'
+  ) {
+    errors.push('secretsManager.enableEncryption must be a boolean');
+  }
+
+  if (
+    secretsManager.enableRotation !== undefined &&
+    typeof secretsManager.enableRotation !== 'boolean'
+  ) {
+    errors.push('secretsManager.enableRotation must be a boolean');
+  }
+
+  if (secretsManager.rotationIntervalDays !== undefined) {
+    if (
+      typeof secretsManager.rotationIntervalDays !== 'number' ||
+      secretsManager.rotationIntervalDays < 1 ||
+      secretsManager.rotationIntervalDays > 365
+    ) {
+      errors.push('secretsManager.rotationIntervalDays must be a number between 1 and 365');
+    }
+  }
+
+  if (
+    secretsManager.enableCaching !== undefined &&
+    typeof secretsManager.enableCaching !== 'boolean'
+  ) {
+    errors.push('secretsManager.enableCaching must be a boolean');
+  }
+
+  if (secretsManager.cacheTtlMinutes !== undefined) {
+    if (
+      typeof secretsManager.cacheTtlMinutes !== 'number' ||
+      secretsManager.cacheTtlMinutes < 1 ||
+      secretsManager.cacheTtlMinutes > 60
+    ) {
+      errors.push('secretsManager.cacheTtlMinutes must be a number between 1 and 60');
+    }
+  }
+
+  if (
+    secretsManager.enableMonitoring !== undefined &&
+    typeof secretsManager.enableMonitoring !== 'boolean'
+  ) {
+    errors.push('secretsManager.enableMonitoring must be a boolean');
+  }
+
+  if (secretsManager.tags !== undefined) {
+    validateTagsConfig(secretsManager.tags, errors);
   }
 }
 

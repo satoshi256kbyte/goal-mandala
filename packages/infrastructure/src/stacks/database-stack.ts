@@ -2,6 +2,8 @@ import * as cdk from 'aws-cdk-lib';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import { Construct } from 'constructs';
 import { DatabaseConstruct } from '../constructs/database-construct';
+import { SecretsManagerConstruct } from '../constructs/secrets-manager-construct';
+import { SecretsManagerIntegrationTest } from '../constructs/secrets-manager-integration-test';
 import { EnvironmentConfig } from '../config/environment';
 
 export interface DatabaseStackProps extends cdk.StackProps {
@@ -12,6 +14,7 @@ export interface DatabaseStackProps extends cdk.StackProps {
 
 export class DatabaseStack extends cdk.Stack {
   public readonly database: DatabaseConstruct;
+  public readonly secretsManager: SecretsManagerConstruct;
   public readonly cluster: import('aws-cdk-lib/aws-rds').DatabaseCluster;
   public readonly secret: import('aws-cdk-lib/aws-secretsmanager').ISecret;
   public readonly securityGroup: ec2.ISecurityGroup;
@@ -26,6 +29,16 @@ export class DatabaseStack extends cdk.Stack {
       vpc,
       databaseSecurityGroup,
       config,
+    });
+
+    // SecretsManagerコンストラクト作成（Aurora Serverlessクラスターとの連携）
+    this.secretsManager = new SecretsManagerConstruct(this, 'SecretsManager', {
+      environment: this.extractEnvironmentFromStackPrefix(config.stackPrefix),
+      config,
+      databaseCluster: this.database.cluster,
+      enableRotation:
+        config.secretsManager?.enableRotation ?? config.database.enableRotation ?? false,
+      encryptionKey: this.database.encryptionKey,
     });
 
     // パブリックプロパティの設定（他のスタックからの参照用）
@@ -47,6 +60,9 @@ export class DatabaseStack extends cdk.Stack {
 
     // セキュリティ設定の出力
     this.outputSecurityConfiguration(config);
+
+    // 統合テストの実行
+    this.runIntegrationTest(config, vpc, databaseSecurityGroup);
 
     // 統合完了ログ
     this.logIntegrationStatus(config);
@@ -244,6 +260,36 @@ export class DatabaseStack extends cdk.Stack {
       description: 'VPC integration configuration for database',
       exportName: `${config.stackPrefix}-database-stack-vpc-integration`,
     });
+
+    // SecretsManager統合情報の出力
+    new cdk.CfnOutput(this, 'DatabaseStackSecretsManagerIntegration', {
+      value: JSON.stringify({
+        databaseSecretArn: this.secretsManager.databaseSecret.secretArn,
+        jwtSecretArn: this.secretsManager.jwtSecret.secretArn,
+        externalApisSecretArn: this.secretsManager.externalApisSecret.secretArn,
+        encryptionKeyArn: this.secretsManager.encryptionKey.keyArn,
+        lambdaExecutionRoleArn: this.secretsManager.lambdaExecutionRole.roleArn,
+        environment: this.extractEnvironmentFromStackPrefix(config.stackPrefix),
+      }),
+      description: 'Secrets Manager integration configuration for database',
+      exportName: `${config.stackPrefix}-database-stack-secrets-integration`,
+    });
+
+    // データベース認証情報の構造化情報出力
+    const dbCredentialsStructure = this.secretsManager.getDatabaseCredentialsStructure();
+    new cdk.CfnOutput(this, 'DatabaseStackCredentialsStructure', {
+      value: JSON.stringify(dbCredentialsStructure),
+      description: 'Database credentials structure for application integration',
+      exportName: `${config.stackPrefix}-database-stack-credentials-structure`,
+    });
+
+    // 環境別シークレット命名規則の出力
+    const namingConvention = this.secretsManager.getSecretNamingConvention();
+    new cdk.CfnOutput(this, 'DatabaseStackSecretNaming', {
+      value: JSON.stringify(namingConvention),
+      description: 'Environment-specific secret naming convention',
+      exportName: `${config.stackPrefix}-database-stack-secret-naming`,
+    });
   }
 
   /**
@@ -287,6 +333,34 @@ export class DatabaseStack extends cdk.Stack {
   }
 
   /**
+   * 統合テストの実行
+   */
+  private runIntegrationTest(
+    config: EnvironmentConfig,
+    vpc: ec2.IVpc,
+    databaseSecurityGroup: ec2.ISecurityGroup
+  ): void {
+    // 統合テストの実行（開発環境とテスト環境のみ）
+    const environment = this.extractEnvironmentFromStackPrefix(config.stackPrefix);
+    if (environment === 'dev' || environment === 'test' || environment === 'local') {
+      console.log('\n=== SecretsManager統合テスト実行中 ===');
+
+      const integrationTest = new SecretsManagerIntegrationTest(this, 'IntegrationTest', {
+        config,
+        vpc,
+        databaseSecurityGroup,
+        databaseCluster: this.database.cluster,
+        secretsManagerConstruct: this.secretsManager,
+      });
+
+      console.log('SecretsManager統合テストが完了しました');
+      console.log('=====================================\n');
+    } else {
+      console.log(`環境 ${environment} では統合テストをスキップします（本番環境のため）`);
+    }
+  }
+
+  /**
    * 統合完了ログの出力
    */
   private logIntegrationStatus(config: EnvironmentConfig): void {
@@ -294,6 +368,7 @@ export class DatabaseStack extends cdk.Stack {
     console.log(`✅ DatabaseStackが正常に作成されました`);
     console.log(`✅ VpcStackとの統合が完了しました`);
     console.log(`✅ DatabaseConstructが統合されました`);
+    console.log(`✅ SecretsManagerConstructが統合されました`);
     console.log(`✅ CloudFormation出力が設定されました`);
     console.log(`✅ セキュリティ設定が適用されました`);
     console.log(`✅ タグ管理が設定されました`);
@@ -311,6 +386,34 @@ export class DatabaseStack extends cdk.Stack {
       `Performance Insights: ${connectionInfo.performanceInsightsEnabled ? '有効' : '無効'}`
     );
     console.log(`監視アラート: ${connectionInfo.monitoringEnabled ? '有効' : '無効'}`);
+
+    // SecretsManager統合情報
+    const secretsInfo = this.secretsManager.getSecretsInfo();
+    console.log('\n--- Secrets Manager統合情報 ---');
+    console.log(`データベースシークレット: ${secretsInfo.database.secretName}`);
+    console.log(`JWTシークレット: ${secretsInfo.jwt.secretName}`);
+    console.log(`外部APIシークレット: ${secretsInfo.externalApis.secretName}`);
+    console.log(`暗号化キー: ${secretsInfo.encryption.keyId}`);
+    console.log(`Lambda実行ロール: ${secretsInfo.iam.lambdaRoleName}`);
+    console.log(`環境: ${secretsInfo.environment}`);
+    console.log(`暗号化有効: ${secretsInfo.encryptionEnabled ? '有効' : '無効'}`);
+
+    // Aurora Serverless連携確認
+    const clusterIntegration = this.secretsManager.validateClusterIntegration(
+      this.database.cluster
+    );
+    console.log('\n--- Aurora Serverless連携状況 ---');
+    console.log(`連携状態: ${clusterIntegration.isIntegrated ? '正常' : '問題あり'}`);
+    if (clusterIntegration.clusterInfo) {
+      console.log(`クラスター識別子: ${clusterIntegration.clusterInfo.identifier}`);
+      console.log(`エンドポイント: ${clusterIntegration.clusterInfo.endpoint}`);
+      console.log(`ポート: ${clusterIntegration.clusterInfo.port}`);
+    }
+    if (clusterIntegration.issues.length > 0) {
+      console.log('⚠️  連携に関する問題:');
+      clusterIntegration.issues.forEach(issue => console.log(`   - ${issue}`));
+    }
+
     console.log('============================\n');
   }
 

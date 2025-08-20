@@ -105,20 +105,20 @@ import { RDS } from 'aws-sdk';
 // IAM認証トークンを生成
 const rds = new RDS({ region: 'ap-northeast-1' });
 const token = rds.getAuthToken({
-    region: 'ap-northeast-1',
-    hostname: process.env.DB_HOST,
-    port: 5432,
-    username: 'lambda_user'
+  region: 'ap-northeast-1',
+  hostname: process.env.DB_HOST,
+  port: 5432,
+  username: 'lambda_user',
 });
 
 // データベースに接続
 const client = new Client({
-    host: process.env.DB_HOST,
-    port: 5432,
-    database: 'goalmandalamain',
-    user: 'lambda_user',
-    password: token,
-    ssl: { rejectUnauthorized: false }
+  host: process.env.DB_HOST,
+  port: 5432,
+  database: 'goalmandalamain',
+  user: 'lambda_user',
+  password: token,
+  ssl: { rejectUnauthorized: false },
 });
 
 await client.connect();
@@ -133,19 +133,19 @@ import { Client } from 'pg';
 // Secrets Managerから認証情報を取得
 const secretsClient = new SecretsManagerClient({ region: 'ap-northeast-1' });
 const secretResponse = await secretsClient.send(
-    new GetSecretValueCommand({ SecretId: process.env.DATABASE_SECRET_ARN })
+  new GetSecretValueCommand({ SecretId: process.env.DATABASE_SECRET_ARN })
 );
 
 const secret = JSON.parse(secretResponse.SecretString!);
 
 // データベースに接続
 const client = new Client({
-    host: secret.host,
-    port: secret.port,
-    database: secret.dbname,
-    user: secret.username,
-    password: secret.password,
-    ssl: { rejectUnauthorized: false }
+  host: secret.host,
+  port: secret.port,
+  database: secret.dbname,
+  user: secret.username,
+  password: secret.password,
+  ssl: { rejectUnauthorized: false },
 });
 
 await client.connect();

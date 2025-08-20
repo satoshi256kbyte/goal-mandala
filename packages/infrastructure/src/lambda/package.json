@@ -1,20 +1,19 @@
 {
-  "name": "database-iam-setup-lambda",
+  "name": "secrets-manager-lambda-functions",
   "version": "1.0.0",
-  "description": "Lambda function for IAM database authentication setup",
-  "main": "database-iam-setup.js",
+  "description": "Lambda functions for SecretsManager integration",
+  "main": "index.js",
   "scripts": {
     "build": "tsc",
-    "clean": "rm -rf dist",
-    "prebuild": "npm run clean"
+    "test": "echo \"No tests specified\" && exit 0"
   },
   "dependencies": {
-    "pg": "^8.11.3",
-    "@aws-sdk/client-secrets-manager": "^3.450.0",
-    "@aws-sdk/client-rds": "^3.450.0"
+    "@aws-sdk/client-secrets-manager": "^3.470.0",
+    "@aws-sdk/client-rds": "^3.470.0",
+    "@types/aws-lambda": "^8.10.130"
   },
   "devDependencies": {
-    "@types/pg": "^8.10.7",
-    "typescript": "^5.2.2"
+    "typescript": "^5.2.2",
+    "@types/node": "^20.10.0"
   }
 }

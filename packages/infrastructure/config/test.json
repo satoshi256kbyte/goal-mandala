@@ -33,6 +33,21 @@
       "EngineVersion": "15.4",
       "Purpose": "application-data",
       "Tier": "testing"
+    },
+    "enableRotation": false,
+    "rotationIntervalDays": 30
+  },
+  "secretsManager": {
+    "enableEncryption": true,
+    "enableRotation": false,
+    "rotationIntervalDays": 30,
+    "enableCaching": false,
+    "cacheTtlMinutes": 5,
+    "enableMonitoring": false,
+    "tags": {
+      "Component": "secrets-manager",
+      "Purpose": "application-secrets",
+      "Tier": "testing"
     }
   },
   "lambda": {
