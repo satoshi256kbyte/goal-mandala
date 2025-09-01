@@ -1,300 +1,345 @@
-# Infrastructure Package
+# インフラストラクチャ
 
-AWS CDKを使用したインフラストラクチャ管理パッケージです。
+このディレクトリには、AWS CDKを使用したインフラストラクチャコードが含まれています。
 
 ## 概要
 
-このパッケージは、目標管理曼荼羅システムのAWSインフラストラクチャをコードで管理します。
+- **VPC・ネットワーク**: セキュアなネットワーク環境
+- **Aurora Serverless V2**: スケーラブルなデータベース
+- **Secrets Manager**: 機密情報の安全な管理
+- **CloudFront + S3**: 高速なフロントエンド配信
+- **監視・ログ**: CloudWatch による包括的な監視
 
-### 主要機能
-
-- 環境別スタック管理（local/dev/stg/prod）
-- Aurora Serverless V2データベース
-- Lambda + API Gateway
-- CloudFront + S3静的サイトホスティング
-- Cognito認証
-- Secrets Manager機密情報管理
-
-## クイックスタート
-
-### 1. 依存関係のインストール
-
-```bash
-# ルートディレクトリから
-pnpm install
-
-# または、このパッケージのみ
-cd packages/infrastructure
-pnpm install
-```
-
-### 2. AWS認証設定
-
-```bash
-# AWS CLIの設定
-aws configure
-
-# または環境変数で設定
-export AWS_ACCESS_KEY_ID=your-access-key
-export AWS_SECRET_ACCESS_KEY=your-secret-key
-export AWS_REGION=ap-northeast-1
-```
-
-### 3. CDK Bootstrap（初回のみ）
-
-```bash
-pnpm run cdk:bootstrap
-```
-
-### 4. 開発環境デプロイ
-
-```bash
-# 差分確認
-pnpm run deploy:dev:diff
-
-# デプロイ実行
-pnpm run deploy:dev
-```
-
-## 利用可能なコマンド
-
-### 基本コマンド
-
-```bash
-# ビルド
-pnpm run build
-
-# テスト実行
-pnpm run test
-pnpm run test:coverage
-
-# Lint & Format
-pnpm run lint
-pnpm run format
-
-# 型チェック
-pnpm run type-check
-```
-
-### CDKコマンド
-
-```bash
-# CloudFormationテンプレート生成
-pnpm run cdk:synth
-pnpm run cdk:synth:dev
-pnpm run cdk:synth:stg
-pnpm run cdk:synth:prod
-pnpm run cdk:synth:all
-
-# 差分表示
-pnpm run cdk:diff
-pnpm run cdk:diff:dev
-pnpm run cdk:diff:stg
-pnpm run cdk:diff:prod
-
-# スタック一覧
-pnpm run cdk:list
-pnpm run cdk:list:dev
-pnpm run cdk:list:stg
-pnpm run cdk:list:prod
-
-# CDK診断
-pnpm run cdk:doctor
-```
-
-### デプロイコマンド
-
-```bash
-# 環境別デプロイ
-pnpm run deploy:dev
-pnpm run deploy:stg
-pnpm run deploy:prod
-
-# 差分のみ表示
-pnpm run deploy:dev:diff
-pnpm run deploy:stg:diff
-pnpm run deploy:prod:diff
-
-# ヘルパースクリプト使用
-pnpm run cdk:helper synth dev
-pnpm run cdk:helper deploy stg
-pnpm run cdk:helper diff prod
-```
-
-### CI/CD関連コマンド
-
-```bash
-# CI検証（全チェック）
-pnpm run ci:validate
-
-# セキュリティチェック
-pnpm run security:check
-```
-
-## プロジェクト構造
+## ディレクトリ構造
 
 ```
 packages/infrastructure/
-├── src/
-│   ├── config/           # 環境設定
-│   ├── constructs/       # 再利用可能なコンストラクト
-│   ├── stacks/          # CDKスタック定義
-│   └── index.ts         # エントリーポイント
-├── config/              # 環境別設定ファイル
-├── scripts/             # デプロイ・ヘルパースクリプト
-├── docs/               # ドキュメント
-├── cdk.json            # CDK設定
-├── package.json        # パッケージ設定
-└── README.md          # このファイル
+├── src/                    # CDKソースコード
+│   ├── config/            # 環境設定
+│   ├── constructs/        # 再利用可能なコンストラクト
+│   ├── stacks/           # CDKスタック定義
+│   └── lambda/           # Lambda関数コード
+├── scripts/              # 運用スクリプト
+├── docs/                 # ドキュメント
+├── config/               # 環境別設定ファイル
+└── test-results/         # テスト結果（自動生成）
 ```
 
-## 環境設定
+## セットアップ
 
-### 環境別設定ファイル
+### 前提条件
 
-各環境の設定は`config/`ディレクトリで管理：
+- Node.js 23.10.0
+- AWS CLI設定済み
+- AWS CDK CLI (`npm install -g aws-cdk`)
 
-- `local.json` - ローカル開発環境
-- `dev.json` - 開発環境
-- `stg.json` - ステージング環境
-- `prod.json` - 本番環境
+### 初期セットアップ
 
-### 設定例
+```bash
+# 依存関係のインストール
+pnpm install
 
-```json
-{
-  "stackPrefix": "goal-mandala-dev",
-  "region": "ap-northeast-1",
-  "database": {
-    "instanceClass": "serverless",
-    "minCapacity": 0.5,
-    "maxCapacity": 1
-  },
-  "lambda": {
-    "timeout": 30,
-    "memorySize": 256
-  }
-}
+# CDK Bootstrap（初回のみ）
+pnpm cdk bootstrap
+
+# 設定ファイルの確認
+ls config/
 ```
 
-## GitHub Actions CI/CD
+## デプロイ
 
-### ワークフロー
+### 開発環境
 
-1. **CDK CI** (`.github/workflows/cdk-ci.yml`)
-   - プルリクエスト時の検証
-   - Lint、テスト、CDK synth
-   - セキュリティチェック
+```bash
+# 差分確認
+pnpm cdk diff VpcStack-dev DatabaseStack-dev FrontendStack-dev
 
-2. **CDK Deploy** (`.github/workflows/cdk-deploy.yml`)
-   - 手動デプロイワークフロー
-   - 環境選択可能
-   - 承認フロー付き
+# デプロイ
+pnpm cdk deploy VpcStack-dev DatabaseStack-dev FrontendStack-dev
+```
 
-### 必要なSecrets
+### 本番環境
 
-GitHubリポジトリに以下のSecretsを設定：
+```bash
+# 差分確認
+pnpm cdk diff VpcStack-prd DatabaseStack-prd FrontendStack-prd
 
-- `AWS_ACCESS_KEY_ID`
-- `AWS_SECRET_ACCESS_KEY`
+# デプロイ
+pnpm cdk deploy VpcStack-prd DatabaseStack-prd FrontendStack-prd
+```
+
+## フロントエンド配信環境
+
+### 構成
+
+- **S3バケット**: 静的ファイルの保存
+- **CloudFront**: CDN配信とキャッシュ
+- **ACM証明書**: SSL/TLS暗号化
+- **OAC**: オリジンアクセス制御
 
 ### デプロイ手順
 
 ```bash
-# GitHub CLIを使用
-gh workflow run cdk-deploy.yml \
-  -f environment=dev \
-  -f confirm_deployment=deploy
+# 1. インフラのデプロイ
+pnpm cdk deploy FrontendStack-{環境名}
 
-# または、GitHubのWebUIから実行
+# 2. フロントエンドのビルドとアップロード
+cd ../frontend
+pnpm build
+aws s3 sync dist/ s3://{バケット名}/ --delete
+
+# 3. CloudFrontキャッシュの無効化
+aws cloudfront create-invalidation \
+  --distribution-id {ディストリビューションID} \
+  --paths "/*"
 ```
+
+### 自動デプロイ
+
+```bash
+# 統合デプロイスクリプト
+./scripts/deploy-frontend.sh {環境名}
+```
+
+## テスト
+
+### 機能テスト
+
+```bash
+# 基本的な機能テスト
+./scripts/functional-test.sh {ドメイン名} {環境名}
+
+# 例
+./scripts/functional-test.sh localhost local
+./scripts/functional-test.sh goal-mandala.example.com prd
+```
+
+### パフォーマンステスト
+
+```bash
+# パフォーマンステスト
+./scripts/performance-test.sh {ドメイン名} {環境名}
+
+# 例
+./scripts/performance-test.sh goal-mandala.example.com prd
+```
+
+### 統合テスト
+
+```bash
+# 全体的な統合テスト
+./scripts/integration-test.sh {環境名} [ドメイン名]
+
+# 例
+./scripts/integration-test.sh local
+./scripts/integration-test.sh prd goal-mandala.example.com
+```
+
+## 監視・運用
+
+### CloudWatchメトリクス
+
+主要なメトリクス：
+
+- **CloudFront**: リクエスト数、エラー率、キャッシュヒット率
+- **S3**: オブジェクト数、バケットサイズ
+- **Aurora**: CPU使用率、接続数、レプリケーションラグ
+
+### アラート
+
+設定済みアラート：
+
+- 高エラー率（5%以上）
+- 低キャッシュヒット率（80%未満）
+- データベース接続エラー
+
+### ログ
+
+- **CloudTrail**: API呼び出しログ
+- **S3アクセスログ**: ウェブサイトアクセス記録
+- **CloudFrontログ**: 配信ログ
 
 ## セキュリティ
 
-### セキュリティチェックリスト
+### 実装済みセキュリティ機能
 
-デプロイ前に[セキュリティチェックリスト](./docs/security-checklist.md)を確認してください。
+- **OAC**: S3への直接アクセス制限
+- **SSL/TLS**: 全通信の暗号化
+- **セキュリティヘッダー**: XSS、CSRF等の攻撃防止
+- **IAM**: 最小権限の原則
+- **Secrets Manager**: 機密情報の暗号化保存
 
-### 主要なセキュリティ設定
+### セキュリティチェック
 
-- IAM最小権限の原則
-- VPCプライベートサブネット
-- 保存時・転送時暗号化
-- Secrets Manager機密情報管理
-- CloudTrail監査ログ
+```bash
+# セキュリティヘッダーの確認
+curl -I https://{ドメイン名}
+
+# SSL証明書の確認
+openssl s_client -connect {ドメイン名}:443 -servername {ドメイン名}
+```
 
 ## トラブルシューティング
 
 ### よくある問題
 
-#### 1. 認証エラー
+1. **403 Forbidden エラー**
+   - OAC設定の確認
+   - S3バケットポリシーの確認
+
+2. **キャッシュが効かない**
+   - キャッシュポリシーの確認
+   - Cache-Controlヘッダーの設定
+
+3. **SSL証明書エラー**
+   - ACM証明書の状態確認
+   - DNS検証の完了確認
+
+### ログの確認
 
 ```bash
-# 認証状態確認
-aws sts get-caller-identity
+# CloudFormationイベントの確認
+aws cloudformation describe-stack-events --stack-name {スタック名}
 
-# プロファイル確認
-aws configure list
+# CloudWatchログの確認
+aws logs describe-log-groups
+aws logs filter-log-events --log-group-name {ロググループ名}
 ```
 
-#### 2. CDK Bootstrap エラー
+## ドキュメント
+
+### 運用ドキュメント
+
+- [フロントエンド配信環境 運用ガイド](./docs/frontend-deployment-guide.md)
+- [トラブルシューティングガイド](./docs/frontend-troubleshooting-guide.md)
+- [セキュリティガイド](./docs/frontend-security-guide.md)
+
+### 技術ドキュメント
+
+- [Aurora Serverless セットアップ](./docs/aurora-serverless-setup-summary.md)
+- [Secrets Manager 実装](./docs/secrets-manager-implementation-summary.md)
+- [IAM データベース認証](./docs/iam-database-authentication-setup.md)
+
+## 環境設定
+
+### 環境別設定ファイル
+
+- `config/local.json`: ローカル開発環境
+- `config/dev.json`: 開発環境
+- `config/stg.json`: ステージング環境
+- `config/prod.json`: 本番環境
+
+### 設定項目
+
+```json
+{
+  "serviceName": "goal-mandala",
+  "environment": "dev",
+  "region": "ap-northeast-1",
+  "vpc": {
+    "cidr": "10.0.0.0/16",
+    "enableNatGateway": true
+  },
+  "database": {
+    "engine": "aurora-postgresql",
+    "version": "15.4",
+    "minCapacity": 0.5,
+    "maxCapacity": 1
+  },
+  "frontend": {
+    "domainName": "dev.goal-mandala.example.com",
+    "certificateArn": "arn:aws:acm:us-east-1:...",
+    "priceClass": "PriceClass_100"
+  }
+}
+```
+
+## コマンドリファレンス
+
+### CDK コマンド
 
 ```bash
-# Bootstrap実行
-pnpm run cdk:bootstrap
+# スタック一覧
+pnpm cdk list
 
-# 特定環境でBootstrap
-cdk bootstrap --context environment=dev
+# 差分確認
+pnpm cdk diff {スタック名}
+
+# デプロイ
+pnpm cdk deploy {スタック名}
+
+# 削除
+pnpm cdk destroy {スタック名}
+
+# 合成（CloudFormationテンプレート生成）
+pnpm cdk synth {スタック名}
 ```
 
-#### 3. 権限不足
-
-IAMユーザーに必要な権限を付与：
-
-- CloudFormation操作権限
-- 各AWSサービスの操作権限
-- CDKに必要な権限
-
-### デバッグ方法
+### テストコマンド
 
 ```bash
-# 詳細ログ有効化
-export CDK_DEBUG=true
+# ユニットテスト
+pnpm test
 
-# CDK診断
-pnpm run cdk:doctor
+# カバレッジ付きテスト
+pnpm test:coverage
 
-# 設定確認
-cat config/dev.json
+# 統合テスト
+pnpm test:integration
+
+# 全テスト実行
+pnpm test:all
 ```
 
-## 開発ガイド
+### 運用コマンド
 
-### 新しいスタックの追加
+```bash
+# フロントエンドデプロイ
+./scripts/deploy-frontend.sh {環境名}
 
-1. `src/stacks/`に新しいスタッククラスを作成
-2. `src/index.ts`でスタックをインスタンス化
-3. 必要に応じて`config/`の設定を更新
-4. テストを作成
+# パフォーマンステスト
+./scripts/performance-test.sh {ドメイン名} {環境名}
 
-### 新しいコンストラクトの追加
+# セキュリティチェック
+./scripts/security-check.sh {ドメイン名}
 
-1. `src/constructs/`に新しいコンストラクトを作成
-2. 適切なプロパティインターフェースを定義
-3. ユニットテストを作成
-4. ドキュメントを更新
+# 統合テスト
+./scripts/integration-test.sh {環境名}
+```
 
-## 参考資料
+## 開発ガイドライン
 
-- [AWS CDK Developer Guide](https://docs.aws.amazon.com/cdk/v2/guide/)
-- [CDK API Reference](https://docs.aws.amazon.com/cdk/api/v2/)
-- [AWS Well-Architected Framework](https://aws.amazon.com/architecture/well-architected/)
+### コーディング規約
+
+- TypeScript strict モード使用
+- ESLint + Prettier による自動フォーマット
+- 単体テストカバレッジ 80% 以上
+
+### コミット規約
+
+- Conventional Commits に従う
+- feat: 新機能
+- fix: バグ修正
+- docs: ドキュメント更新
+- test: テスト追加・修正
+
+### プルリクエスト
+
+- 全テストが通ること
+- コードレビューの承認
+- ドキュメントの更新
 
 ## サポート
 
-問題や質問がある場合は、以下を確認してください：
+### 問い合わせ先
 
-1. [トラブルシューティングガイド](./TROUBLESHOOTING.md)
-2. [セキュリティチェックリスト](./docs/security-checklist.md)
-3. [環境変数設定ガイド](./docs/environment-variables.md)
-4. [GitHub Actions設定ガイド](./docs/github-actions-setup.md)
+- **開発チーム**: [開発者メール]
+- **インフラチーム**: [インフラ担当者メール]
+- **緊急時**: [緊急連絡先]
+
+### 参考資料
+
+- [AWS CDK ドキュメント](https://docs.aws.amazon.com/cdk/)
+- [AWS CloudFront ドキュメント](https://docs.aws.amazon.com/cloudfront/)
+- [AWS Aurora ドキュメント](https://docs.aws.amazon.com/aurora/)
+- [プロジェクト Wiki](https://github.com/your-org/goal-mandala/wiki)

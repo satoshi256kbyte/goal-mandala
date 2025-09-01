@@ -45,7 +45,7 @@ export const handler = async (event: SetupEvent): Promise<SetupResponse> => {
     console.log('✅ データベース認証情報を取得しました');
 
     // 2. データベースクラスター情報を取得
-    const clusterInfo = await getClusterInfo(clusterIdentifier, region);
+    await getClusterInfo(clusterIdentifier, region);
     console.log('✅ データベースクラスター情報を取得しました');
 
     // 3. データベースに接続

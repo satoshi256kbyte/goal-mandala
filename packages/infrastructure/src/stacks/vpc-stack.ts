@@ -96,7 +96,7 @@ export class VpcStack extends cdk.Stack {
     this.applyTags(config);
 
     // 出力設定
-    this.createOutputs(config, environment);
+    this.createOutputs(config);
   }
 
   /**
@@ -704,7 +704,7 @@ export class VpcStack extends cdk.Stack {
     return stackPrefix;
   }
 
-  private createOutputs(config: EnvironmentConfig, environment: string): void {
+  private createOutputs(config: EnvironmentConfig): void {
     // VPC関連の出力
     new cdk.CfnOutput(this, 'VpcId', {
       value: this.vpc.vpcId,

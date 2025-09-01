@@ -1,6 +1,7 @@
 {
-  "stackPrefix": "goal-mandala-test",
+  "stackPrefix": "test-goal-mandala",
   "region": "ap-northeast-1",
+  "environment": "test",
   "network": {
     "natGateways": 1,
     "enableVpcEndpoints": false,
@@ -12,30 +13,25 @@
     "minCapacity": 0.5,
     "maxCapacity": 1.0,
     "multiAz": false,
-    "databaseName": "goal_mandala_test",
     "backupRetentionDays": 1,
     "deletionProtection": false,
     "performanceInsights": false,
     "monitoringInterval": 0,
     "enableAuditLog": false,
-    "enableSlowQueryLog": true,
-    "slowQueryLogThreshold": 5000,
+    "enableSlowQueryLog": false,
+    "databaseName": "goalmandalamain",
     "enableEncryption": true,
     "enableIamDatabaseAuthentication": false,
     "enableSslConnection": true,
     "enableAutomaticSnapshots": false,
-    "snapshotRetentionDays": 1,
-    "preferredBackupWindow": "03:00-04:00",
-    "preferredMaintenanceWindow": "sun:04:00-sun:05:00",
     "tags": {
       "DatabaseType": "aurora-serverless-v2",
       "Engine": "postgresql",
       "EngineVersion": "15.4",
-      "Purpose": "application-data",
-      "Tier": "testing"
+      "Purpose": "test-data",
+      "Tier": "test"
     },
-    "enableRotation": false,
-    "rotationIntervalDays": 30
+    "enableRotation": false
   },
   "secretsManager": {
     "enableEncryption": true,
@@ -46,22 +42,65 @@
     "enableMonitoring": false,
     "tags": {
       "Component": "secrets-manager",
-      "Purpose": "application-secrets",
-      "Tier": "testing"
+      "Purpose": "test-secrets",
+      "Tier": "test"
     }
   },
   "lambda": {
     "timeout": 30,
-    "memorySize": 256,
-    "runtime": "nodejs20.x"
+    "memorySize": 128
   },
   "frontend": {
     "domainName": null,
     "certificateArn": null,
-    "customErrorResponses": true
+    "customErrorResponses": true,
+    "security": {
+      "enableHsts": false,
+      "hstsMaxAge": 31536000,
+      "hstsIncludeSubdomains": false,
+      "hstsPreload": false,
+      "enableContentTypeOptions": true,
+      "enableFrameOptions": true,
+      "frameOptionsValue": "DENY",
+      "enableReferrerPolicy": true,
+      "referrerPolicyValue": "strict-origin-when-cross-origin",
+      "enableCsp": false,
+      "cspDirectives": {
+        "default-src": ["'self'"],
+        "script-src": ["'self'", "'unsafe-inline'"],
+        "style-src": ["'self'", "'unsafe-inline'"],
+        "img-src": ["'self'", "data:", "https:"],
+        "font-src": ["'self'", "https:"],
+        "connect-src": ["'self'"],
+        "frame-ancestors": ["'none'"]
+      },
+      "customHeaders": {
+        "X-Custom-Header": "goal-mandala-test"
+      }
+    },
+    "s3": {
+      "enableVersioning": false,
+      "enableLogging": false,
+      "lifecyclePolicyEnabled": false,
+      "oldVersionExpirationDays": 7,
+      "incompleteMultipartUploadDays": 1
+    },
+    "monitoring": {
+      "enableAccessLogs": false,
+      "enableCloudFrontLogs": false,
+      "enableCostMonitoring": false,
+      "logRetentionDays": 7,
+      "retainLogsOnDelete": false,
+      "alertEmail": null,
+      "slackWebhookUrl": null,
+      "errorRateThreshold": 10,
+      "cacheHitRateThreshold": 70,
+      "s3RequestsThreshold": 5000,
+      "monthlyBudgetLimit": 10
+    }
   },
   "monitoring": {
-    "logRetentionDays": 7,
+    "logRetentionDays": 1,
     "enableDetailedMonitoring": false,
     "enableAlerts": false,
     "alertEmail": null
@@ -69,10 +108,10 @@
   "tags": {
     "Project": "GoalMandala",
     "Environment": "test",
-    "CostCenter": "engineering",
-    "Owner": "development-team",
+    "CostCenter": "testing",
+    "Owner": "test-team",
     "Purpose": "automated-testing",
-    "DataClassification": "internal",
+    "DataClassification": "test",
     "BackupRequired": "false"
   }
 }

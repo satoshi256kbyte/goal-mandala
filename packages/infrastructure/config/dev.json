@@ -58,7 +58,71 @@
   "frontend": {
     "domainName": null,
     "certificateArn": null,
-    "customErrorResponses": true
+    "customErrorResponses": true,
+    "security": {
+      "enableHsts": false,
+      "hstsMaxAge": 31536000,
+      "hstsIncludeSubdomains": true,
+      "hstsPreload": false,
+      "enableContentTypeOptions": true,
+      "enableFrameOptions": true,
+      "frameOptionsValue": "DENY",
+      "enableReferrerPolicy": true,
+      "referrerPolicyValue": "strict-origin-when-cross-origin",
+      "enableCsp": false,
+      "cspDirectives": {
+        "default-src": ["'self'"],
+        "script-src": ["'self'", "'unsafe-inline'"],
+        "style-src": ["'self'", "'unsafe-inline'"],
+        "img-src": ["'self'", "data:", "https:"],
+        "font-src": ["'self'", "https:"],
+        "connect-src": ["'self'"],
+        "frame-ancestors": ["'none'"]
+      },
+      "customHeaders": {
+        "X-Custom-Header": "goal-mandala-dev"
+      }
+    },
+    "s3": {
+      "enableVersioning": true,
+      "enableLogging": false,
+      "lifecyclePolicyEnabled": true,
+      "oldVersionExpirationDays": 30,
+      "incompleteMultipartUploadDays": 7
+    },
+    "monitoring": {
+      "enableAccessLogs": false,
+      "enableCloudFrontLogs": false,
+      "enableCostMonitoring": false,
+      "logRetentionDays": 30,
+      "retainLogsOnDelete": false,
+      "alertEmail": null,
+      "slackWebhookUrl": null,
+      "errorRateThreshold": 10,
+      "cacheHitRateThreshold": 70,
+      "s3RequestsThreshold": 2000,
+      "monthlyBudgetLimit": 20
+    },
+    "deployment": {
+      "buildCommand": "pnpm --filter frontend build",
+      "buildDirectory": "packages/frontend/dist",
+      "excludePatterns": ["*.map", "*.DS_Store", "node_modules/**", ".git/**"],
+      "invalidationPaths": ["/*"],
+      "retainOnDelete": false,
+      "enableBuildCache": true,
+      "enableCompressionUpload": true,
+      "enableParallelUpload": true,
+      "maxConcurrentUploads": 10,
+      "uploadTimeout": 300,
+      "cacheControl": {
+        "html": "public, max-age=300, must-revalidate",
+        "css": "public, max-age=31536000, immutable",
+        "js": "public, max-age=31536000, immutable",
+        "images": "public, max-age=31536000, immutable",
+        "fonts": "public, max-age=31536000, immutable",
+        "default": "public, max-age=86400"
+      }
+    }
   },
   "monitoring": {
     "logRetentionDays": 14,

@@ -11,6 +11,7 @@ import * as cloudwatchActions from 'aws-cdk-lib/aws-cloudwatch-actions';
 import * as sns from 'aws-cdk-lib/aws-sns';
 import * as events from 'aws-cdk-lib/aws-events';
 import * as eventsTargets from 'aws-cdk-lib/aws-events-targets';
+import * as logs from 'aws-cdk-lib/aws-logs';
 import { Construct } from 'constructs';
 import { EnvironmentConfig } from '../config/environment';
 import * as path from 'path';
@@ -616,7 +617,7 @@ export class SecretsManagerConstruct extends Construct {
    */
   private validateAndOutputExternalApiSecret(
     secret: secretsmanager.Secret,
-    structuredConfig: any
+    structuredConfig: Record<string, unknown>
   ): void {
     // 環境別外部API設定の検証
     this.validateEnvironmentSpecificApiConfig(structuredConfig);
@@ -627,20 +628,20 @@ export class SecretsManagerConstruct extends Construct {
         environment: this.environment,
         secretArn: secret.secretArn,
         secretName: secret.secretName,
-        services: structuredConfig.metadata.services,
+        services: (structuredConfig.metadata as Record<string, unknown>)?.services,
         bedrock: {
-          region: structuredConfig.bedrock.region,
-          modelId: structuredConfig.bedrock.modelId,
-          service: structuredConfig.bedrock.service,
+          region: (structuredConfig.bedrock as Record<string, unknown>)?.region,
+          modelId: (structuredConfig.bedrock as Record<string, unknown>)?.modelId,
+          service: (structuredConfig.bedrock as Record<string, unknown>)?.service,
         },
         ses: {
-          region: structuredConfig.ses.region,
-          fromEmail: structuredConfig.ses.fromEmail,
-          replyToEmail: structuredConfig.ses.replyToEmail,
-          service: structuredConfig.ses.service,
+          region: (structuredConfig.ses as Record<string, unknown>)?.region,
+          fromEmail: (structuredConfig.ses as Record<string, unknown>)?.fromEmail,
+          replyToEmail: (structuredConfig.ses as Record<string, unknown>)?.replyToEmail,
+          service: (structuredConfig.ses as Record<string, unknown>)?.service,
         },
         encryptionKeyArn: this.encryptionKey.keyArn,
-        createdAt: structuredConfig.metadata.createdAt,
+        createdAt: (structuredConfig.metadata as Record<string, unknown>)?.createdAt,
       }),
       description: 'External API configuration summary with environment-specific settings',
       exportName: `${this.config.stackPrefix}-${this.environment}-external-api-config-summary`,
@@ -650,11 +651,12 @@ export class SecretsManagerConstruct extends Construct {
     new cdk.CfnOutput(this, 'BedrockApiConfiguration', {
       value: JSON.stringify({
         environment: this.environment,
-        region: structuredConfig.bedrock.region,
-        modelId: structuredConfig.bedrock.modelId,
-        service: structuredConfig.bedrock.service,
-        version: structuredConfig.bedrock.version,
-        additionalConfig: structuredConfig.bedrock.additionalConfig || {},
+        region: (structuredConfig.bedrock as Record<string, unknown>)?.region,
+        modelId: (structuredConfig.bedrock as Record<string, unknown>)?.modelId,
+        service: (structuredConfig.bedrock as Record<string, unknown>)?.service,
+        version: (structuredConfig.bedrock as Record<string, unknown>)?.version,
+        additionalConfig:
+          (structuredConfig.bedrock as Record<string, unknown>)?.additionalConfig || {},
       }),
       description: 'Bedrock API configuration for AI integration',
       exportName: `${this.config.stackPrefix}-${this.environment}-bedrock-api-config`,
@@ -664,12 +666,12 @@ export class SecretsManagerConstruct extends Construct {
     new cdk.CfnOutput(this, 'SesApiConfiguration', {
       value: JSON.stringify({
         environment: this.environment,
-        region: structuredConfig.ses.region,
-        fromEmail: structuredConfig.ses.fromEmail,
-        replyToEmail: structuredConfig.ses.replyToEmail,
-        service: structuredConfig.ses.service,
-        version: structuredConfig.ses.version,
-        additionalConfig: structuredConfig.ses.additionalConfig || {},
+        region: (structuredConfig.ses as Record<string, unknown>)?.region,
+        fromEmail: (structuredConfig.ses as Record<string, unknown>)?.fromEmail,
+        replyToEmail: (structuredConfig.ses as Record<string, unknown>)?.replyToEmail,
+        service: (structuredConfig.ses as Record<string, unknown>)?.service,
+        version: (structuredConfig.ses as Record<string, unknown>)?.version,
+        additionalConfig: (structuredConfig.ses as Record<string, unknown>)?.additionalConfig || {},
       }),
       description: 'SES API configuration for email delivery',
       exportName: `${this.config.stackPrefix}-${this.environment}-ses-api-config`,
@@ -693,36 +695,38 @@ export class SecretsManagerConstruct extends Construct {
   /**
    * 環境別外部API設定の検証
    */
-  private validateEnvironmentSpecificApiConfig(config: any): void {
+  private validateEnvironmentSpecificApiConfig(config: Record<string, unknown>): void {
     const environmentConfig = this.getEnvironmentSpecificApiSettings();
     const validationErrors: string[] = [];
 
     // Bedrock設定の検証
-    if (!config.bedrock.region) {
+    const bedrockConfig = config.bedrock as Record<string, unknown>;
+    if (!bedrockConfig?.region) {
       validationErrors.push('Bedrock region is not specified');
     }
-    if (!config.bedrock.modelId) {
+    if (!bedrockConfig?.modelId) {
       validationErrors.push('Bedrock model ID is not specified');
     }
-    if (config.bedrock.environment !== this.environment) {
+    if (bedrockConfig?.environment !== this.environment) {
       validationErrors.push(
-        `Bedrock environment mismatch: expected ${this.environment}, got ${config.bedrock.environment}`
+        `Bedrock environment mismatch: expected ${this.environment}, got ${bedrockConfig?.environment}`
       );
     }
 
     // SES設定の検証
-    if (!config.ses.region) {
+    const sesConfig = config.ses as Record<string, unknown>;
+    if (!sesConfig?.region) {
       validationErrors.push('SES region is not specified');
     }
-    if (!config.ses.fromEmail || !config.ses.fromEmail.includes('@')) {
+    if (!sesConfig?.fromEmail || !(sesConfig.fromEmail as string)?.includes('@')) {
       validationErrors.push('SES fromEmail is invalid');
     }
-    if (!config.ses.replyToEmail || !config.ses.replyToEmail.includes('@')) {
+    if (!sesConfig?.replyToEmail || !(sesConfig.replyToEmail as string)?.includes('@')) {
       validationErrors.push('SES replyToEmail is invalid');
     }
-    if (config.ses.environment !== this.environment) {
+    if (sesConfig?.environment !== this.environment) {
       validationErrors.push(
-        `SES environment mismatch: expected ${this.environment}, got ${config.ses.environment}`
+        `SES environment mismatch: expected ${this.environment}, got ${sesConfig?.environment}`
       );
     }
 
@@ -947,7 +951,7 @@ export class SecretsManagerConstruct extends Construct {
   /**
    * CloudWatch Log Groupを作成
    */
-  private createCloudWatchLogGroup(): any {
+  private createCloudWatchLogGroup(): logs.ILogGroup | undefined {
     // CloudWatch Logsの設定は簡略化（必要に応じて詳細設定可能）
     return undefined; // CloudTrailが自動でLog Groupを作成
   }
@@ -1846,7 +1850,9 @@ export class SecretsManagerConstruct extends Construct {
   /**
    * 外部API認証情報の構造化された情報を取得
    */
-  public getExternalApiCredentialsStructure(): ExternalApiCredentials & { metadata: any } {
+  public getExternalApiCredentialsStructure(): ExternalApiCredentials & {
+    metadata: Record<string, unknown>;
+  } {
     const environmentConfig = this.getEnvironmentSpecificApiSettings();
 
     return {

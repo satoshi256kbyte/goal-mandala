@@ -47,7 +47,7 @@ export class DatabaseStack extends cdk.Stack {
     this.securityGroup = this.database.securityGroup;
 
     // VpcStackとの統合確認
-    this.validateVpcIntegration(vpc, databaseSecurityGroup, config);
+    this.validateVpcIntegration(vpc, databaseSecurityGroup);
 
     // セキュリティ設定の検証と出力
     this.validateSecurityConfiguration(config);
@@ -65,18 +65,14 @@ export class DatabaseStack extends cdk.Stack {
     this.runIntegrationTest(config, vpc, databaseSecurityGroup);
 
     // 統合完了ログ
-    this.logIntegrationStatus(config);
+    this.logIntegrationStatus();
   }
 
   /**
    * VpcStackとの統合確認
    * 要件5.1, 5.2対応：既存VpcStackとの統合を実装
    */
-  private validateVpcIntegration(
-    vpc: ec2.IVpc,
-    databaseSecurityGroup: ec2.ISecurityGroup,
-    config: EnvironmentConfig
-  ): void {
+  private validateVpcIntegration(vpc: ec2.IVpc, databaseSecurityGroup: ec2.ISecurityGroup): void {
     console.log('\n=== VpcStackとの統合確認 ===');
 
     // VPC統合の確認
@@ -345,7 +341,7 @@ export class DatabaseStack extends cdk.Stack {
     if (environment === 'dev' || environment === 'test' || environment === 'local') {
       console.log('\n=== SecretsManager統合テスト実行中 ===');
 
-      const integrationTest = new SecretsManagerIntegrationTest(this, 'IntegrationTest', {
+      new SecretsManagerIntegrationTest(this, 'IntegrationTest', {
         config,
         vpc,
         databaseSecurityGroup,
@@ -363,7 +359,7 @@ export class DatabaseStack extends cdk.Stack {
   /**
    * 統合完了ログの出力
    */
-  private logIntegrationStatus(config: EnvironmentConfig): void {
+  private logIntegrationStatus(): void {
     console.log('\n=== DatabaseStack統合完了 ===');
     console.log(`✅ DatabaseStackが正常に作成されました`);
     console.log(`✅ VpcStackとの統合が完了しました`);

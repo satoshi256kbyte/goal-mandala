@@ -96,7 +96,17 @@
     "cdk:diff:stg": "cd packages/infrastructure && pnpm run cdk:diff:stg",
     "cdk:diff:prod": "cd packages/infrastructure && pnpm run cdk:diff:prod",
     "security:check": "cd packages/infrastructure && pnpm run security:check",
-    "ci:cdk": "cd packages/infrastructure && pnpm run ci:validate"
+    "ci:cdk": "cd packages/infrastructure && pnpm run ci:validate",
+    "frontend:deploy": "cd packages/infrastructure && pnpm run frontend:deploy",
+    "frontend:deploy:dev": "cd packages/infrastructure && pnpm run frontend:deploy:dev",
+    "frontend:deploy:stg": "cd packages/infrastructure && pnpm run frontend:deploy:stg",
+    "frontend:deploy:prod": "cd packages/infrastructure && pnpm run frontend:deploy:prod",
+    "frontend:deploy:build-only": "cd packages/infrastructure && pnpm run frontend:deploy:build-only",
+    "frontend:deploy:dry-run": "cd packages/infrastructure && pnpm run frontend:deploy:dry-run",
+    "frontend:invalidate": "cd packages/infrastructure && pnpm run frontend:invalidate",
+    "frontend:invalidate:dev": "cd packages/infrastructure && pnpm run frontend:invalidate:dev",
+    "frontend:invalidate:stg": "cd packages/infrastructure && pnpm run frontend:invalidate:stg",
+    "frontend:invalidate:prod": "cd packages/infrastructure && pnpm run frontend:invalidate:prod"
   },
   "dependencies": {
     "dotenv": "^16.4.5",

@@ -22,7 +22,7 @@ interface TestRequest {
  */
 interface TestResponse {
   success: boolean;
-  data?: any;
+  data?: Record<string, unknown>;
   error?: string;
   duration: number;
   timestamp: string;
@@ -59,7 +59,7 @@ export const handler = async (
     const region = process.env.AWS_REGION || 'ap-northeast-1';
     const secretsManagerClient = new SecretsManagerClient({ region });
 
-    let result: any;
+    let result: Record<string, unknown>;
 
     switch (testRequest.action) {
       case 'getSecret':
@@ -148,7 +148,10 @@ export const handler = async (
 /**
  * 単一シークレット取得テスト
  */
-async function testGetSecret(client: SecretsManagerClient, secretName: string): Promise<any> {
+async function testGetSecret(
+  client: SecretsManagerClient,
+  secretName: string
+): Promise<Record<string, unknown>> {
   console.log(`Testing secret retrieval: ${secretName}`);
 
   const startTime = Date.now();
@@ -163,7 +166,7 @@ async function testGetSecret(client: SecretsManagerClient, secretName: string): 
     return {
       secretName,
       exists: true,
-      encrypted: !!(result as any).KmsKeyId,
+      encrypted: !!(result as unknown as Record<string, unknown>).KmsKeyId,
       versionId: result.VersionId,
       versionStage: result.VersionStages?.[0],
       createdDate: result.CreatedDate,
@@ -188,7 +191,7 @@ async function testGetSecret(client: SecretsManagerClient, secretName: string): 
 /**
  * 全シークレット取得テスト
  */
-async function testGetAllSecrets(client: SecretsManagerClient): Promise<any> {
+async function testGetAllSecrets(client: SecretsManagerClient): Promise<Record<string, unknown>> {
   console.log('Testing retrieval of all secrets');
 
   const environment = process.env.ENVIRONMENT || 'test';
@@ -201,7 +204,6 @@ async function testGetAllSecrets(client: SecretsManagerClient): Promise<any> {
   ];
 
   const startTime = Date.now();
-  const results = [];
 
   // 並列でシークレットを取得
   const promises = secretNames.map(secretName => testGetSecret(client, secretName));
@@ -229,7 +231,7 @@ async function testPerformance(
   client: SecretsManagerClient,
   testDuration: number,
   concurrency: number
-): Promise<any> {
+): Promise<Record<string, unknown>> {
   console.log(`Starting performance test: ${testDuration}ms duration, ${concurrency} concurrency`);
 
   const environment = process.env.ENVIRONMENT || 'test';

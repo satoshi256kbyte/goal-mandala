@@ -5,13 +5,13 @@
   "network": {
     "natGateways": 2,
     "enableVpcEndpoints": true,
-    "vpcCidr": "10.0.0.0/16",
+    "vpcCidr": "10.1.0.0/16",
     "maxAzs": 2
   },
   "database": {
     "instanceClass": "serverless",
     "minCapacity": 1.0,
-    "maxCapacity": 16.0,
+    "maxCapacity": 4.0,
     "multiAz": true,
     "backupRetentionDays": 14,
     "deletionProtection": true,
@@ -56,24 +56,87 @@
     "memorySize": 512
   },
   "frontend": {
-    "domainName": null,
+    "domainName": "stg.goal-mandala.example.com",
     "certificateArn": null,
-    "customErrorResponses": true
+    "customErrorResponses": true,
+    "security": {
+      "enableHsts": true,
+      "hstsMaxAge": 31536000,
+      "hstsIncludeSubdomains": true,
+      "hstsPreload": false,
+      "enableContentTypeOptions": true,
+      "enableFrameOptions": true,
+      "frameOptionsValue": "DENY",
+      "enableReferrerPolicy": true,
+      "referrerPolicyValue": "strict-origin-when-cross-origin",
+      "enableCsp": true,
+      "cspDirectives": {
+        "default-src": ["'self'"],
+        "script-src": ["'self'", "'unsafe-inline'"],
+        "style-src": ["'self'", "'unsafe-inline'"],
+        "img-src": ["'self'", "data:", "https:"],
+        "font-src": ["'self'", "https:"],
+        "connect-src": ["'self'"],
+        "frame-ancestors": ["'none'"]
+      },
+      "customHeaders": {
+        "X-Custom-Header": "goal-mandala-stg"
+      }
+    },
+    "s3": {
+      "enableVersioning": true,
+      "enableLogging": true,
+      "lifecyclePolicyEnabled": true,
+      "oldVersionExpirationDays": 30,
+      "incompleteMultipartUploadDays": 7
+    },
+    "monitoring": {
+      "enableAccessLogs": true,
+      "enableCloudFrontLogs": true,
+      "enableCostMonitoring": true,
+      "logRetentionDays": 60,
+      "retainLogsOnDelete": true,
+      "alertEmail": "alerts@example.com",
+      "slackWebhookUrl": null,
+      "errorRateThreshold": 5,
+      "cacheHitRateThreshold": 85,
+      "s3RequestsThreshold": 1500,
+      "monthlyBudgetLimit": 100
+    },
+    "deployment": {
+      "buildCommand": "pnpm --filter frontend build",
+      "buildDirectory": "packages/frontend/dist",
+      "excludePatterns": ["*.map", "*.DS_Store", "node_modules/**", ".git/**"],
+      "invalidationPaths": ["/*"],
+      "retainOnDelete": true,
+      "enableBuildCache": true,
+      "enableCompressionUpload": true,
+      "enableParallelUpload": true,
+      "maxConcurrentUploads": 15,
+      "uploadTimeout": 600,
+      "cacheControl": {
+        "html": "public, max-age=300, must-revalidate",
+        "css": "public, max-age=31536000, immutable",
+        "js": "public, max-age=31536000, immutable",
+        "images": "public, max-age=31536000, immutable",
+        "fonts": "public, max-age=31536000, immutable",
+        "default": "public, max-age=86400"
+      }
+    }
   },
   "monitoring": {
     "logRetentionDays": 30,
     "enableDetailedMonitoring": true,
     "enableAlerts": true,
-    "alertEmail": "admin@example.com"
+    "alertEmail": "alerts@example.com"
   },
   "tags": {
     "Project": "GoalMandala",
     "Environment": "staging",
     "CostCenter": "engineering",
-    "Owner": "platform-team",
-    "Purpose": "pre-production-testing",
-    "DataClassification": "confidential",
-    "BackupRequired": "true",
-    "ComplianceRequired": "true"
+    "Owner": "development-team",
+    "Purpose": "staging-testing",
+    "DataClassification": "internal",
+    "BackupRequired": "true"
   }
 }

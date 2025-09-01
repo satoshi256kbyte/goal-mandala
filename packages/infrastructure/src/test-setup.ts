@@ -18,7 +18,7 @@ process.env.TZ = 'Asia/Tokyo';
 
 // CDK の警告を抑制
 const originalConsoleWarn = console.warn;
-console.warn = (message: any, ...args: any[]) => {
+console.warn = (message: unknown, ...args: unknown[]) => {
   // CDK の特定の警告メッセージを抑制
   if (
     typeof message === 'string' &&
@@ -48,9 +48,16 @@ jest.setTimeout(30000);
 
 // CDK テスト用のカスタムマッチャー
 expect.extend({
-  toHaveResourceProperties(received: any, resourceType: string, properties: any) {
+  toHaveResourceProperties(
+    received: unknown,
+    resourceType: string,
+    properties: Record<string, unknown>
+  ) {
     try {
-      received.hasResourceProperties(resourceType, properties);
+      const template = received as unknown as {
+        hasResourceProperties: (resourceType: string, properties: Record<string, unknown>) => void;
+      };
+      template.hasResourceProperties(resourceType, properties);
       return {
         message: () => `Expected template to have resource ${resourceType} with properties`,
         pass: true,
@@ -67,9 +74,10 @@ expect.extend({
 
 // TypeScript の型定義を拡張
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace jest {
     interface Matchers<R> {
-      toHaveResourceProperties(resourceType: string, properties: any): R;
+      toHaveResourceProperties(resourceType: string, properties: Record<string, unknown>): R;
     }
   }
 }

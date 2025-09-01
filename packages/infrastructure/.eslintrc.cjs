@@ -1,5 +1,5 @@
 module.exports = {
-  root: false, // ルート設定を継承
+  root: true, // このディレクトリをESLintのルートとして設定
   env: { node: true, es2022: true },
   extends: [
     'eslint:recommended', // ルート設定の基本ルールを継承
@@ -8,7 +8,7 @@ module.exports = {
   ],
   parser: '@typescript-eslint/parser',
   plugins: ['@typescript-eslint'],
-  ignorePatterns: ['dist', '.eslintrc.cjs', 'cdk.out', '*.test.ts', 'node_modules'],
+  ignorePatterns: ['dist', '.eslintrc.cjs', 'cdk.out', '**/*.test.ts', 'node_modules'],
   parserOptions: {
     ecmaVersion: 'latest',
     sourceType: 'module',

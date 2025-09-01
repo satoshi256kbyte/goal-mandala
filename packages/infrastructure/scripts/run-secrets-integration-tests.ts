@@ -11,17 +11,16 @@
  * - パフォーマンステストの実装
  */
 
-import * as AWS from 'aws-sdk';
 import {
   SecretsManagerClient,
   GetSecretValueCommand,
   DescribeSecretCommand,
 } from '@aws-sdk/client-secrets-manager';
-import { LambdaClient, InvokeCommand } from '@awent-lambda';
+import { LambdaClient, InvokeCommand } from '@aws-sdk/client-lambda';
 import { CloudWatchClient, GetMetricStatisticsCommand } from '@aws-sdk/client-cloudwatch';
 import { IAMClient, GetRoleCommand, ListAttachedRolePoliciesCommand } from '@aws-sdk/client-iam';
 import { KMSClient, DescribeKeyCommand } from '@aws-sdk/client-kms';
-import { RDSClient, DescribeDBClustersCommand } from '@aws-sdk/client-rds';
+import { RDSClient } from '@aws-sdk/client-rds';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -44,7 +43,7 @@ interface TestResult {
   testName: string;
   success: boolean;
   duration: number;
-  details: any;
+  details: Record<string, unknown>;
   error?: string;
 }
 
@@ -479,11 +478,6 @@ export class SecretsManagerIntegrationTestRunner {
         try {
           const lambdaFunctionName = rotationResults.rotationLambdaArn.split(':').pop();
           if (lambdaFunctionName) {
-            const lambdaCommand = new InvokeCommand({
-              FunctionName: lambdaFunctionName,
-              Payload: JSON.stringify({ test: true }),
-            });
-
             // 実際には実行せず、関数の存在確認のみ
             console.log(`    🔍 Rotation Lambda function exists: ${lambdaFunctionName}`);
             rotationLambdaExists = true;
@@ -689,7 +683,7 @@ export class SecretsManagerIntegrationTestRunner {
         // KMSキーの詳細確認
         try {
           const kmsCommand = new DescribeKeyCommand({ KeyId: secretResult.KmsKeyId });
-          const kmsResult = await this.kmsClient.send(command);
+          const kmsResult = await this.kmsClient.send(kmsCommand);
           console.log(
             `    ✅ KMS key rotation enabled: ${kmsResult.KeyMetadata?.KeyRotationStatus}`
           );
@@ -704,7 +698,7 @@ export class SecretsManagerIntegrationTestRunner {
       const roleName = `${this.config.stackPrefix}-${this.config.environment}-lambda-secrets-role`;
       try {
         const roleCommand = new GetRoleCommand({ RoleName: roleName });
-        const roleResult = await this.iamClient.send(roleCommand);
+        await this.iamClient.send(roleCommand);
         securityResults.iamRoleExists = true;
         console.log('    ✅ Lambda execution role exists');
 

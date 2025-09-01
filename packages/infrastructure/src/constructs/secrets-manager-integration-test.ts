@@ -3,7 +3,7 @@ import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as rds from 'aws-cdk-lib/aws-rds';
 import { Construct } from 'constructs';
 import { SecretsManagerConstruct } from './secrets-manager-construct';
-import { DatabaseConstruct } from './database-construct';
+// import { DatabaseConstruct } from './database-construct';
 import { EnvironmentConfig } from '../config/environment';
 
 /**
@@ -17,12 +17,15 @@ import { EnvironmentConfig } from '../config/environment';
  */
 export class SecretsManagerIntegrationTest extends Construct {
   public readonly testResults: IntegrationTestResults;
+  private readonly props: SecretsManagerIntegrationTestProps;
 
   constructor(scope: Construct, id: string, props: SecretsManagerIntegrationTestProps) {
     super(scope, id);
 
+    this.props = props;
+
     // 統合テストの実行
-    this.testResults = this.runIntegrationTests(props);
+    this.testResults = this.runIntegrationTests();
 
     // テスト結果の出力
     this.outputTestResults();
@@ -31,7 +34,7 @@ export class SecretsManagerIntegrationTest extends Construct {
   /**
    * 統合テストを実行
    */
-  private runIntegrationTests(props: SecretsManagerIntegrationTestProps): IntegrationTestResults {
+  private runIntegrationTests(): IntegrationTestResults {
     const results: IntegrationTestResults = {
       databaseIntegration: false,
       vpcIntegration: false,
@@ -47,28 +50,28 @@ export class SecretsManagerIntegrationTest extends Construct {
 
     try {
       // 1. DatabaseStackとの連携テスト
-      results.databaseIntegration = this.testDatabaseIntegration(props);
+      results.databaseIntegration = this.testDatabaseIntegration();
 
       // 2. VpcStackからのセキュリティグループ参照テスト
-      results.vpcIntegration = this.testVpcIntegration(props);
+      results.vpcIntegration = this.testVpcIntegration();
 
       // 3. 環境設定ファイルの適用テスト
-      results.environmentConfiguration = this.testEnvironmentConfiguration(props);
+      results.environmentConfiguration = this.testEnvironmentConfiguration();
 
       // 4. スタック間依存関係のテスト
-      results.stackDependencies = this.testStackDependencies(props);
+      results.stackDependencies = this.testStackDependencies();
 
       // 5. シークレットアクセステスト
-      results.secretsAccess = this.testSecretsAccess(props);
+      results.secretsAccess = this.testSecretsAccess();
 
       // 6. IAM権限テスト
-      results.iamPermissions = this.testIamPermissions(props);
+      results.iamPermissions = this.testIamPermissions();
 
       // 7. 暗号化設定テスト
-      results.encryptionConfiguration = this.testEncryptionConfiguration(props);
+      results.encryptionConfiguration = this.testEncryptionConfiguration();
 
       // 8. 監視設定テスト
-      results.monitoringSetup = this.testMonitoringSetup(props);
+      results.monitoringSetup = this.testMonitoringSetup();
     } catch (error) {
       results.errors.push(`Integration test execution failed: ${error}`);
     }
@@ -79,30 +82,30 @@ export class SecretsManagerIntegrationTest extends Construct {
   /**
    * DatabaseStackとの連携テスト
    */
-  private testDatabaseIntegration(props: SecretsManagerIntegrationTestProps): boolean {
+  private testDatabaseIntegration(): boolean {
     try {
       // Aurora Serverlessクラスターとの連携確認
-      if (!props.databaseCluster) {
+      if (!this.props.databaseCluster) {
         this.testResults.warnings.push('Database cluster not provided for integration test');
         return false;
       }
 
       // SecretsManagerConstructがデータベースクラスターを正しく参照しているか確認
-      const secretsManager = props.secretsManagerConstruct;
+      const secretsManager = this.props.secretsManagerConstruct;
       if (!secretsManager.databaseSecret) {
         this.testResults.errors.push('Database secret not created in SecretsManagerConstruct');
         return false;
       }
 
       // データベース接続情報の構造確認
-      const connectionInfo = this.validateDatabaseConnectionStructure(props);
+      const connectionInfo = this.validateDatabaseConnectionStructure();
       if (!connectionInfo.isValid) {
         this.testResults.errors.push('Database connection structure validation failed');
         return false;
       }
 
       // Aurora Serverless V2との連携確認
-      const clusterIntegration = this.validateClusterIntegration(props);
+      const clusterIntegration = this.validateClusterIntegration();
       if (!clusterIntegration.isIntegrated) {
         this.testResults.errors.push('Aurora Serverless cluster integration failed');
         return false;
@@ -119,28 +122,28 @@ export class SecretsManagerIntegrationTest extends Construct {
   /**
    * VpcStackからのセキュリティグループ参照テスト
    */
-  private testVpcIntegration(props: SecretsManagerIntegrationTestProps): boolean {
+  private testVpcIntegration(): boolean {
     try {
       // VPCとセキュリティグループの参照確認
-      if (!props.vpc) {
+      if (!this.props.vpc) {
         this.testResults.errors.push('VPC not provided for integration test');
         return false;
       }
 
-      if (!props.databaseSecurityGroup) {
+      if (!this.props.databaseSecurityGroup) {
         this.testResults.errors.push('Database security group not provided for integration test');
         return false;
       }
 
       // セキュリティグループの設定確認
-      const securityGroupValidation = this.validateSecurityGroupConfiguration(props);
+      const securityGroupValidation = this.validateSecurityGroupConfiguration();
       if (!securityGroupValidation.isValid) {
         this.testResults.errors.push('Security group configuration validation failed');
         return false;
       }
 
       // VPCエンドポイントとの統合確認（環境によって異なる）
-      const vpcEndpointIntegration = this.validateVpcEndpointIntegration(props);
+      const vpcEndpointIntegration = this.validateVpcEndpointIntegration();
       if (!vpcEndpointIntegration.isValid) {
         this.testResults.warnings.push('VPC endpoint integration validation has issues');
       }
@@ -156,9 +159,9 @@ export class SecretsManagerIntegrationTest extends Construct {
   /**
    * 環境設定ファイルの適用テスト
    */
-  private testEnvironmentConfiguration(props: SecretsManagerIntegrationTestProps): boolean {
+  private testEnvironmentConfiguration(): boolean {
     try {
-      const config = props.config;
+      const config = this.props.config;
 
       // SecretsManager設定の確認
       if (!config.secretsManager) {
@@ -169,14 +172,14 @@ export class SecretsManagerIntegrationTest extends Construct {
       }
 
       // 環境別設定の検証
-      const environmentValidation = this.validateEnvironmentSpecificConfiguration(props);
+      const environmentValidation = this.validateEnvironmentSpecificConfiguration();
       if (!environmentValidation.isValid) {
         this.testResults.errors.push('Environment-specific configuration validation failed');
         return false;
       }
 
       // 設定値の適用確認
-      const configurationApplication = this.validateConfigurationApplication(props);
+      const configurationApplication = this.validateConfigurationApplication();
       if (!configurationApplication.isApplied) {
         this.testResults.errors.push('Configuration application validation failed');
         return false;
@@ -193,17 +196,17 @@ export class SecretsManagerIntegrationTest extends Construct {
   /**
    * スタック間依存関係のテスト
    */
-  private testStackDependencies(props: SecretsManagerIntegrationTestProps): boolean {
+  private testStackDependencies(): boolean {
     try {
       // DatabaseStackがVpcStackに依存していることを確認
       // CDKの依存関係は実行時に確認されるため、ここでは設定の妥当性を確認
 
       // 必要なリソースが提供されているか確認
       const requiredResources = [
-        { name: 'VPC', resource: props.vpc },
-        { name: 'Database Security Group', resource: props.databaseSecurityGroup },
-        { name: 'Database Cluster', resource: props.databaseCluster },
-        { name: 'SecretsManager Construct', resource: props.secretsManagerConstruct },
+        { name: 'VPC', resource: this.props.vpc },
+        { name: 'Database Security Group', resource: this.props.databaseSecurityGroup },
+        { name: 'Database Cluster', resource: this.props.databaseCluster },
+        { name: 'SecretsManager Construct', resource: this.props.secretsManagerConstruct },
       ];
 
       const missingResources = requiredResources.filter(r => !r.resource);
@@ -215,7 +218,7 @@ export class SecretsManagerIntegrationTest extends Construct {
       }
 
       // スタック間の参照が正しく設定されているか確認
-      const stackReferences = this.validateStackReferences(props);
+      const stackReferences = this.validateStackReferences();
       if (!stackReferences.isValid) {
         this.testResults.errors.push('Stack references validation failed');
         return false;
@@ -232,9 +235,9 @@ export class SecretsManagerIntegrationTest extends Construct {
   /**
    * シークレットアクセステスト
    */
-  private testSecretsAccess(props: SecretsManagerIntegrationTestProps): boolean {
+  private testSecretsAccess(): boolean {
     try {
-      const secretsManager = props.secretsManagerConstruct;
+      const secretsManager = this.props.secretsManagerConstruct;
 
       // 必要なシークレットが作成されているか確認
       const requiredSecrets = [
@@ -252,14 +255,14 @@ export class SecretsManagerIntegrationTest extends Construct {
       }
 
       // シークレットの命名規則確認
-      const namingValidation = this.validateSecretNaming(props);
+      const namingValidation = this.validateSecretNaming();
       if (!namingValidation.isValid) {
         this.testResults.errors.push('Secret naming validation failed');
         return false;
       }
 
       // シークレットの暗号化確認
-      const encryptionValidation = this.validateSecretEncryption(props);
+      const encryptionValidation = this.validateSecretEncryption();
       if (!encryptionValidation.isEncrypted) {
         this.testResults.errors.push('Secret encryption validation failed');
         return false;
@@ -276,9 +279,9 @@ export class SecretsManagerIntegrationTest extends Construct {
   /**
    * IAM権限テスト
    */
-  private testIamPermissions(props: SecretsManagerIntegrationTestProps): boolean {
+  private testIamPermissions(): boolean {
     try {
-      const secretsManager = props.secretsManagerConstruct;
+      const secretsManager = this.props.secretsManagerConstruct;
 
       // Lambda実行ロールが作成されているか確認
       if (!secretsManager.lambdaExecutionRole) {
@@ -293,7 +296,7 @@ export class SecretsManagerIntegrationTest extends Construct {
       }
 
       // 最小権限の原則が適用されているか確認
-      const permissionValidation = this.validateMinimalPermissions(props);
+      const permissionValidation = this.validateMinimalPermissions();
       if (!permissionValidation.isMinimal) {
         this.testResults.warnings.push(
           'IAM permissions may not follow minimal privilege principle'
@@ -301,7 +304,7 @@ export class SecretsManagerIntegrationTest extends Construct {
       }
 
       // 環境分離が適用されているか確認
-      const environmentIsolation = this.validateEnvironmentIsolation(props);
+      const environmentIsolation = this.validateEnvironmentIsolation();
       if (!environmentIsolation.isIsolated) {
         this.testResults.errors.push('Environment isolation validation failed');
         return false;
@@ -318,9 +321,9 @@ export class SecretsManagerIntegrationTest extends Construct {
   /**
    * 暗号化設定テスト
    */
-  private testEncryptionConfiguration(props: SecretsManagerIntegrationTestProps): boolean {
+  private testEncryptionConfiguration(): boolean {
     try {
-      const secretsManager = props.secretsManagerConstruct;
+      const secretsManager = this.props.secretsManagerConstruct;
 
       // 暗号化キーが作成されているか確認
       if (!secretsManager.encryptionKey) {
@@ -329,13 +332,13 @@ export class SecretsManagerIntegrationTest extends Construct {
       }
 
       // キーローテーションが有効になっているか確認
-      const keyRotationValidation = this.validateKeyRotation(props);
+      const keyRotationValidation = this.validateKeyRotation();
       if (!keyRotationValidation.isEnabled) {
         this.testResults.warnings.push('Key rotation may not be enabled');
       }
 
       // シークレットの暗号化設定確認
-      const secretEncryption = this.validateSecretEncryption(props);
+      const secretEncryption = this.validateSecretEncryption();
       if (!secretEncryption.isEncrypted) {
         this.testResults.errors.push('Secrets are not properly encrypted');
         return false;
@@ -352,49 +355,47 @@ export class SecretsManagerIntegrationTest extends Construct {
   /**
    * 監視設定テスト（タスク11対応）
    */
-  private testMonitoringSetup(props: SecretsManagerIntegrationTestProps): boolean {
+  private testMonitoringSetup(): boolean {
     try {
-      const secretsManager = props.secretsManagerConstruct;
-
       // SNS通知設定の確認
-      const snsValidation = this.validateSnsConfiguration(props);
+      const snsValidation = this.validateSnsConfiguration();
       if (!snsValidation.isConfigured) {
         this.testResults.errors.push('SNS monitoring topic not properly configured');
         return false;
       }
 
       // CloudWatchメトリクス設定の確認
-      const metricsValidation = this.validateCloudWatchMetrics(props);
+      const metricsValidation = this.validateCloudWatchMetrics();
       if (!metricsValidation.isConfigured) {
         this.testResults.errors.push('CloudWatch metrics not properly configured');
         return false;
       }
 
       // シークレット取得成功/失敗率監視の確認
-      const secretAccessMonitoring = this.validateSecretAccessMonitoring(props);
+      const secretAccessMonitoring = this.validateSecretAccessMonitoring();
       if (!secretAccessMonitoring.isConfigured) {
         this.testResults.errors.push('Secret access monitoring not properly configured');
         return false;
       }
 
       // ローテーション成功/失敗率監視の確認
-      const rotationMonitoring = this.validateRotationMonitoring(props);
+      const rotationMonitoring = this.validateRotationMonitoring();
       if (!rotationMonitoring.isConfigured) {
         this.testResults.warnings.push('Rotation monitoring may not be properly configured');
       }
 
       // 異常アクセスパターン検知の確認
-      const anomalyDetection = this.validateAnomalyDetection(props);
+      const anomalyDetection = this.validateAnomalyDetection();
       if (!anomalyDetection.isConfigured) {
         this.testResults.errors.push('Anomaly detection not properly configured');
         return false;
       }
 
       // CloudTrailの設定確認（環境によって異なる）
-      const cloudTrailValidation = this.validateCloudTrailSetup(props);
+      const cloudTrailValidation = this.validateCloudTrailSetup();
       if (
         !cloudTrailValidation.isConfigured &&
-        ['prod', 'stg'].includes(props.config.environment || '')
+        ['prod', 'stg'].includes(this.props.config.environment || '')
       ) {
         this.testResults.warnings.push(
           'CloudTrail monitoring may not be properly configured for production/staging'
@@ -402,13 +403,13 @@ export class SecretsManagerIntegrationTest extends Construct {
       }
 
       // カスタムメトリクスの確認
-      const customMetrics = this.validateCustomMetrics(props);
+      const customMetrics = this.validateCustomMetrics();
       if (!customMetrics.isConfigured) {
         this.testResults.warnings.push('Custom metrics may not be properly configured');
       }
 
       // 監視設定の包括的な検証
-      const comprehensiveValidation = this.validateComprehensiveMonitoring(props);
+      const comprehensiveValidation = this.validateComprehensiveMonitoring();
       if (!comprehensiveValidation.isValid) {
         this.testResults.warnings.push('Comprehensive monitoring validation has issues');
       }
@@ -423,92 +424,92 @@ export class SecretsManagerIntegrationTest extends Construct {
 
   // ヘルパーメソッド群
 
-  private validateDatabaseConnectionStructure(props: SecretsManagerIntegrationTestProps): {
+  private validateDatabaseConnectionStructure(): {
     isValid: boolean;
   } {
     // データベース接続情報の構造を検証
     return { isValid: true }; // 実装は簡略化
   }
 
-  private validateClusterIntegration(props: SecretsManagerIntegrationTestProps): {
+  private validateClusterIntegration(): {
     isIntegrated: boolean;
   } {
     // Aurora Serverlessクラスターとの統合を検証
     return { isIntegrated: true }; // 実装は簡略化
   }
 
-  private validateSecurityGroupConfiguration(props: SecretsManagerIntegrationTestProps): {
+  private validateSecurityGroupConfiguration(): {
     isValid: boolean;
   } {
     // セキュリティグループの設定を検証
     return { isValid: true }; // 実装は簡略化
   }
 
-  private validateVpcEndpointIntegration(props: SecretsManagerIntegrationTestProps): {
+  private validateVpcEndpointIntegration(): {
     isValid: boolean;
   } {
     // VPCエンドポイントとの統合を検証
     return { isValid: true }; // 実装は簡略化
   }
 
-  private validateEnvironmentSpecificConfiguration(props: SecretsManagerIntegrationTestProps): {
+  private validateEnvironmentSpecificConfiguration(): {
     isValid: boolean;
   } {
     // 環境別設定を検証
     return { isValid: true }; // 実装は簡略化
   }
 
-  private validateConfigurationApplication(props: SecretsManagerIntegrationTestProps): {
+  private validateConfigurationApplication(): {
     isApplied: boolean;
   } {
     // 設定の適用を検証
     return { isApplied: true }; // 実装は簡略化
   }
 
-  private validateStackReferences(props: SecretsManagerIntegrationTestProps): { isValid: boolean } {
+  private validateStackReferences(): { isValid: boolean } {
     // スタック間参照を検証
     return { isValid: true }; // 実装は簡略化
   }
 
-  private validateSecretNaming(props: SecretsManagerIntegrationTestProps): { isValid: boolean } {
+  private validateSecretNaming(): { isValid: boolean } {
     // シークレットの命名規則を検証
     return { isValid: true }; // 実装は簡略化
   }
 
-  private validateSecretEncryption(props: SecretsManagerIntegrationTestProps): {
+  private validateSecretEncryption(): {
     isEncrypted: boolean;
   } {
     // シークレットの暗号化を検証
     return { isEncrypted: true }; // 実装は簡略化
   }
 
-  private validateMinimalPermissions(props: SecretsManagerIntegrationTestProps): {
+  private validateMinimalPermissions(): {
     isMinimal: boolean;
   } {
     // 最小権限の原則を検証
     return { isMinimal: true }; // 実装は簡略化
   }
 
-  private validateEnvironmentIsolation(props: SecretsManagerIntegrationTestProps): {
+  private validateEnvironmentIsolation(): {
     isIsolated: boolean;
   } {
     // 環境分離を検証
     return { isIsolated: true }; // 実装は簡略化
   }
 
-  private validateKeyRotation(props: SecretsManagerIntegrationTestProps): { isEnabled: boolean } {
+  private validateKeyRotation(): { isEnabled: boolean } {
     // キーローテーションを検証
     return { isEnabled: true }; // 実装は簡略化
   }
 
-  private validateCloudTrailSetup(props: SecretsManagerIntegrationTestProps): {
+  private validateCloudTrailSetup(): {
     isConfigured: boolean;
   } {
     // CloudTrail設定を検証
     return { isConfigured: true }; // 実装は簡略化
   }
 
-  private validateAlertConfiguration(props: SecretsManagerIntegrationTestProps): {
+  private validateAlertConfiguration(): {
     isConfigured: boolean;
   } {
     // アラート設定を検証
@@ -518,11 +519,11 @@ export class SecretsManagerIntegrationTest extends Construct {
   /**
    * SNS設定の検証（タスク11対応）
    */
-  private validateSnsConfiguration(props: SecretsManagerIntegrationTestProps): {
+  private validateSnsConfiguration(): {
     isConfigured: boolean;
   } {
     try {
-      const secretsManager = props.secretsManagerConstruct;
+      const secretsManager = this.props.secretsManagerConstruct;
 
       // SNSトピックが作成されているか確認
       if (!secretsManager.monitoringTopic) {
@@ -530,7 +531,7 @@ export class SecretsManagerIntegrationTest extends Construct {
       }
 
       // 環境別の通知設定確認
-      const environment = props.config.environment;
+      const environment = this.props.config.environment;
       if (['prod', 'stg'].includes(environment || '')) {
         // 本番・ステージング環境では通知設定が必要
         console.log(`SNS configuration validated for ${environment} environment`);
@@ -546,11 +547,11 @@ export class SecretsManagerIntegrationTest extends Construct {
   /**
    * CloudWatchメトリクス設定の検証
    */
-  private validateCloudWatchMetrics(props: SecretsManagerIntegrationTestProps): {
+  private validateCloudWatchMetrics(): {
     isConfigured: boolean;
   } {
     try {
-      const secretsManager = props.secretsManagerConstruct;
+      const secretsManager = this.props.secretsManagerConstruct;
 
       // 監視設定の状態を取得
       const monitoringStatus = secretsManager.getMonitoringStatus();
@@ -580,11 +581,11 @@ export class SecretsManagerIntegrationTest extends Construct {
   /**
    * シークレットアクセス監視の検証
    */
-  private validateSecretAccessMonitoring(props: SecretsManagerIntegrationTestProps): {
+  private validateSecretAccessMonitoring(): {
     isConfigured: boolean;
   } {
     try {
-      const secretsManager = props.secretsManagerConstruct;
+      const secretsManager = this.props.secretsManagerConstruct;
 
       // シークレットアクセスアラームが設定されているか確認
       if (!secretsManager.secretAccessAlarms || secretsManager.secretAccessAlarms.length === 0) {
@@ -609,16 +610,16 @@ export class SecretsManagerIntegrationTest extends Construct {
   /**
    * ローテーション監視の検証
    */
-  private validateRotationMonitoring(props: SecretsManagerIntegrationTestProps): {
+  private validateRotationMonitoring(): {
     isConfigured: boolean;
   } {
     try {
       // ローテーション機能が有効な場合のみ検証
-      if (!props.databaseCluster) {
+      if (!this.props.databaseCluster) {
         return { isConfigured: true }; // データベースクラスターがない場合はスキップ
       }
 
-      const secretsManager = props.secretsManagerConstruct;
+      const secretsManager = this.props.secretsManagerConstruct;
       const monitoringStatus = secretsManager.getMonitoringStatus();
 
       // ローテーション関連のアラームが設定されているか確認
@@ -636,11 +637,11 @@ export class SecretsManagerIntegrationTest extends Construct {
   /**
    * 異常アクセスパターン検知の検証
    */
-  private validateAnomalyDetection(props: SecretsManagerIntegrationTestProps): {
+  private validateAnomalyDetection(): {
     isConfigured: boolean;
   } {
     try {
-      const secretsManager = props.secretsManagerConstruct;
+      const secretsManager = this.props.secretsManagerConstruct;
 
       // 異常検知アラームが設定されているか確認
       if (
@@ -651,7 +652,7 @@ export class SecretsManagerIntegrationTest extends Construct {
       }
 
       // 環境別の異常検知設定確認
-      const environment = props.config.environment;
+      const environment = this.props.config.environment;
       const expectedAnomalyAlarms = environment === 'prod' ? 3 : 2; // 本番環境では深夜アクセス検知も含む
 
       if (secretsManager.anomalyDetectionAlarms.length < expectedAnomalyAlarms) {
@@ -670,11 +671,11 @@ export class SecretsManagerIntegrationTest extends Construct {
   /**
    * カスタムメトリクスの検証
    */
-  private validateCustomMetrics(props: SecretsManagerIntegrationTestProps): {
+  private validateCustomMetrics(): {
     isConfigured: boolean;
   } {
     try {
-      const secretsManager = props.secretsManagerConstruct;
+      const secretsManager = this.props.secretsManagerConstruct;
 
       // カスタムメトリクス設定の確認
       const monitoringStatus = secretsManager.getMonitoringStatus();
@@ -700,11 +701,11 @@ export class SecretsManagerIntegrationTest extends Construct {
   /**
    * 包括的な監視設定の検証
    */
-  private validateComprehensiveMonitoring(props: SecretsManagerIntegrationTestProps): {
+  private validateComprehensiveMonitoring(): {
     isValid: boolean;
   } {
     try {
-      const secretsManager = props.secretsManagerConstruct;
+      const secretsManager = this.props.secretsManagerConstruct;
 
       // 監視設定の検証を実行
       const validationResult = secretsManager.validateMonitoringConfiguration();
@@ -732,7 +733,7 @@ export class SecretsManagerIntegrationTest extends Construct {
       }
 
       // 環境別の監視設定確認
-      const environment = props.config.environment;
+      const environment = this.props.config.environment;
       if (environment === 'prod') {
         // 本番環境では厳格な監視が必要
         if (validationResult.summary.totalAlarms < 8) {

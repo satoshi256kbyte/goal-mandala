@@ -302,7 +302,7 @@ export class DatabaseConstruct extends Construct {
     }
 
     // CloudWatch Logs グループ
-    const logGroup = new logs.LogGroup(this, 'DatabaseLogGroup', {
+    new logs.LogGroup(this, 'DatabaseLogGroup', {
       logGroupName: `/aws/rds/cluster/${config.stackPrefix}-aurora-postgresql/postgresql`,
       retention: this.getLogRetentionDays(config.monitoring?.logRetentionDays),
       removalPolicy: cdk.RemovalPolicy.DESTROY,
@@ -741,7 +741,7 @@ export class DatabaseConstruct extends Construct {
     // VPCエンドポイント設定（本番・ステージング環境のみ）
     if (this.config.network.enableVpcEndpoints) {
       // RDS VPCエンドポイント
-      const rdsVpcEndpoint = new ec2.InterfaceVpcEndpoint(this, 'RdsVpcEndpoint', {
+      new ec2.InterfaceVpcEndpoint(this, 'RdsVpcEndpoint', {
         vpc,
         service: ec2.InterfaceVpcEndpointAwsService.RDS,
         subnets: {
@@ -751,7 +751,7 @@ export class DatabaseConstruct extends Construct {
       });
 
       // Secrets Manager VPCエンドポイント
-      const secretsVpcEndpoint = new ec2.InterfaceVpcEndpoint(this, 'SecretsManagerVpcEndpoint', {
+      new ec2.InterfaceVpcEndpoint(this, 'SecretsManagerVpcEndpoint', {
         vpc,
         service: ec2.InterfaceVpcEndpointAwsService.SECRETS_MANAGER,
         subnets: {
@@ -761,7 +761,7 @@ export class DatabaseConstruct extends Construct {
       });
 
       // KMS VPCエンドポイント
-      const kmsVpcEndpoint = new ec2.InterfaceVpcEndpoint(this, 'KmsVpcEndpoint', {
+      new ec2.InterfaceVpcEndpoint(this, 'KmsVpcEndpoint', {
         vpc,
         service: ec2.InterfaceVpcEndpointAwsService.KMS,
         subnets: {
@@ -771,7 +771,7 @@ export class DatabaseConstruct extends Construct {
       });
 
       // CloudWatch Logs VPCエンドポイント
-      const logsVpcEndpoint = new ec2.InterfaceVpcEndpoint(this, 'CloudWatchLogsVpcEndpoint', {
+      new ec2.InterfaceVpcEndpoint(this, 'CloudWatchLogsVpcEndpoint', {
         vpc,
         service: ec2.InterfaceVpcEndpointAwsService.CLOUDWATCH_LOGS,
         subnets: {

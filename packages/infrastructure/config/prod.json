@@ -5,27 +5,27 @@
   "network": {
     "natGateways": 2,
     "enableVpcEndpoints": true,
-    "vpcCidr": "10.0.0.0/16",
-    "maxAzs": 2
+    "vpcCidr": "10.2.0.0/16",
+    "maxAzs": 3
   },
   "database": {
     "instanceClass": "serverless",
-    "minCapacity": 1.0,
+    "minCapacity": 2.0,
     "maxCapacity": 16.0,
     "multiAz": true,
-    "backupRetentionDays": 30,
+    "backupRetentionDays": 35,
     "deletionProtection": true,
     "performanceInsights": true,
     "monitoringInterval": 60,
     "enableAuditLog": true,
     "enableSlowQueryLog": true,
-    "slowQueryLogThreshold": 1000,
+    "slowQueryLogThreshold": 500,
     "databaseName": "goalmandalamain",
     "enableEncryption": true,
     "enableIamDatabaseAuthentication": true,
     "enableSslConnection": true,
     "enableAutomaticSnapshots": true,
-    "snapshotRetentionDays": 30,
+    "snapshotRetentionDays": 35,
     "preferredBackupWindow": "03:00-04:00",
     "preferredMaintenanceWindow": "sun:04:00-sun:05:00",
     "tags": {
@@ -56,25 +56,87 @@
     "memorySize": 1024
   },
   "frontend": {
-    "domainName": null,
+    "domainName": "goal-mandala.example.com",
     "certificateArn": null,
-    "customErrorResponses": true
+    "customErrorResponses": true,
+    "security": {
+      "enableHsts": true,
+      "hstsMaxAge": 31536000,
+      "hstsIncludeSubdomains": true,
+      "hstsPreload": true,
+      "enableContentTypeOptions": true,
+      "enableFrameOptions": true,
+      "frameOptionsValue": "DENY",
+      "enableReferrerPolicy": true,
+      "referrerPolicyValue": "strict-origin-when-cross-origin",
+      "enableCsp": true,
+      "cspDirectives": {
+        "default-src": ["'self'"],
+        "script-src": ["'self'"],
+        "style-src": ["'self'"],
+        "img-src": ["'self'", "data:", "https:"],
+        "font-src": ["'self'", "https:"],
+        "connect-src": ["'self'"],
+        "frame-ancestors": ["'none'"]
+      },
+      "customHeaders": {
+        "X-Custom-Header": "goal-mandala-prod"
+      }
+    },
+    "s3": {
+      "enableVersioning": true,
+      "enableLogging": true,
+      "lifecyclePolicyEnabled": true,
+      "oldVersionExpirationDays": 90,
+      "incompleteMultipartUploadDays": 7
+    },
+    "monitoring": {
+      "enableAccessLogs": true,
+      "enableCloudFrontLogs": true,
+      "enableCostMonitoring": true,
+      "logRetentionDays": 365,
+      "retainLogsOnDelete": true,
+      "alertEmail": "alerts@example.com",
+      "slackWebhookUrl": null,
+      "errorRateThreshold": 3,
+      "cacheHitRateThreshold": 90,
+      "s3RequestsThreshold": 1000,
+      "monthlyBudgetLimit": 500
+    },
+    "deployment": {
+      "buildCommand": "pnpm --filter frontend build",
+      "buildDirectory": "packages/frontend/dist",
+      "excludePatterns": ["*.map", "*.DS_Store", "node_modules/**", ".git/**", "*.log"],
+      "invalidationPaths": ["/*"],
+      "retainOnDelete": true,
+      "enableBuildCache": true,
+      "enableCompressionUpload": true,
+      "enableParallelUpload": true,
+      "maxConcurrentUploads": 20,
+      "uploadTimeout": 900,
+      "cacheControl": {
+        "html": "public, max-age=300, must-revalidate",
+        "css": "public, max-age=31536000, immutable",
+        "js": "public, max-age=31536000, immutable",
+        "images": "public, max-age=31536000, immutable",
+        "fonts": "public, max-age=31536000, immutable",
+        "default": "public, max-age=86400"
+      }
+    }
   },
   "monitoring": {
     "logRetentionDays": 90,
     "enableDetailedMonitoring": true,
     "enableAlerts": true,
-    "alertEmail": "admin@example.com"
+    "alertEmail": "alerts@example.com"
   },
   "tags": {
     "Project": "GoalMandala",
     "Environment": "production",
-    "CostCenter": "operations",
-    "Owner": "platform-team",
-    "Purpose": "production-workload",
-    "DataClassification": "confidential",
-    "BackupRequired": "true",
-    "ComplianceRequired": "true",
-    "BusinessCritical": "true"
+    "CostCenter": "engineering",
+    "Owner": "development-team",
+    "Purpose": "production-service",
+    "DataClassification": "internal",
+    "BackupRequired": "true"
   }
 }

@@ -50,14 +50,13 @@ try {
   apiStack.addDependency(vpcStack);
   apiStack.addDependency(databaseStack);
 
-  // フロントエンドスタック作成（APIスタックに依存）
-  const frontendStack = new FrontendStack(app, `${config.stackPrefix}-frontend`, {
+  // フロントエンドスタック作成（独立）
+  new FrontendStack(app, `${config.stackPrefix}-frontend`, {
     env,
     config,
-    api: apiStack.api,
+    environment,
     description: `Frontend stack for ${config.stackPrefix} environment`,
   });
-  frontendStack.addDependency(apiStack);
 
   // 共通タグの設定
   if (config.tags) {

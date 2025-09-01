@@ -58,7 +58,51 @@
   "frontend": {
     "domainName": null,
     "certificateArn": null,
-    "customErrorResponses": true
+    "customErrorResponses": true,
+    "security": {
+      "enableHsts": false,
+      "hstsMaxAge": 31536000,
+      "hstsIncludeSubdomains": false,
+      "hstsPreload": false,
+      "enableContentTypeOptions": true,
+      "enableFrameOptions": true,
+      "frameOptionsValue": "DENY",
+      "enableReferrerPolicy": true,
+      "referrerPolicyValue": "strict-origin-when-cross-origin",
+      "enableCsp": false,
+      "cspDirectives": {
+        "default-src": ["'self'"],
+        "script-src": ["'self'", "'unsafe-inline'"],
+        "style-src": ["'self'", "'unsafe-inline'"],
+        "img-src": ["'self'", "data:", "https:"],
+        "font-src": ["'self'", "https:"],
+        "connect-src": ["'self'"],
+        "frame-ancestors": ["'none'"]
+      },
+      "customHeaders": {
+        "X-Custom-Header": "goal-mandala-local"
+      }
+    },
+    "s3": {
+      "enableVersioning": false,
+      "enableLogging": false,
+      "lifecyclePolicyEnabled": false,
+      "oldVersionExpirationDays": 7,
+      "incompleteMultipartUploadDays": 1
+    },
+    "monitoring": {
+      "enableAccessLogs": false,
+      "enableCloudFrontLogs": false,
+      "enableCostMonitoring": false,
+      "logRetentionDays": 7,
+      "retainLogsOnDelete": false,
+      "alertEmail": null,
+      "slackWebhookUrl": null,
+      "errorRateThreshold": 20,
+      "cacheHitRateThreshold": 50,
+      "s3RequestsThreshold": 5000,
+      "monthlyBudgetLimit": 10
+    }
   },
   "monitoring": {
     "logRetentionDays": 7,

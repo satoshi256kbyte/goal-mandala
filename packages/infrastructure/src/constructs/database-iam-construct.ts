@@ -405,7 +405,7 @@ export class DatabaseIamConstruct extends Construct {
     accessLevel: 'full' | 'readonly' | 'admin' = 'full'
   ): void {
     switch (accessLevel) {
-      case 'readonly':
+      case 'readonly': {
         // 読み取り専用権限のみ付与
         // 新しいポリシーを作成してアタッチ
         const readOnlyStatements = [
@@ -419,7 +419,8 @@ export class DatabaseIamConstruct extends Construct {
         ];
         readOnlyStatements.forEach(statement => lambdaRole.addToPrincipalPolicy(statement));
         break;
-      case 'admin':
+      }
+      case 'admin': {
         // 管理者権限を付与
         const adminStatements = [
           new iam.PolicyStatement({
@@ -432,6 +433,7 @@ export class DatabaseIamConstruct extends Construct {
         ];
         adminStatements.forEach(statement => lambdaRole.addToPrincipalPolicy(statement));
         break;
+      }
       case 'full':
       default:
         // 標準のデータベースアクセス権限を付与

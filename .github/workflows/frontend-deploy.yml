@@ -1,0 +1,372 @@
+name: Frontend Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Environment to deploy to"
+        required: true
+        default: "dev"
+        type: choice
+        options:
+          - dev
+          - stg
+          - prod
+      skip_build:
+        description: "Skip build step (use existing dist)"
+        required: false
+        default: false
+        type: boolean
+      skip_invalidation:
+        description: "Skip CloudFront cache invalidation"
+        required: false
+        default: false
+        type: boolean
+      confirm_deployment:
+        description: 'Confirm deployment (type "deploy" to proceed)'
+        required: true
+        type: string
+
+  push:
+    branches:
+      - main
+    paths:
+      - "packages/frontend/**"
+      - ".github/workflows/frontend-deploy.yml"
+
+  pull_request:
+    paths:
+      - "packages/frontend/**"
+      - ".github/workflows/frontend-deploy.yml"
+
+env:
+  AWS_REGION: ap-northeast-1
+  NODE_VERSION_FILE: .tool-versions
+
+jobs:
+  # プルリクエスト時のビルドテスト
+  build-test:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ${{ env.NODE_VERSION_FILE }}
+          cache: "pnpm"
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint frontend code
+        run: pnpm --filter frontend lint
+
+      - name: Type check frontend code
+        run: pnpm --filter frontend type-check
+
+      - name: Run frontend tests
+        run: pnpm --filter frontend test
+
+      - name: Build frontend
+        run: pnpm --filter frontend build
+
+      - name: Check build output
+        run: |
+          echo "Build output files:"
+          find packages/frontend/dist -type f -name "*.html" -o -name "*.js" -o -name "*.css" | head -20
+
+          if [ ! -f "packages/frontend/dist/index.html" ]; then
+            echo "❌ index.html not found in build output"
+            exit 1
+          fi
+
+          echo "✅ Build completed successfully"
+
+  # 手動デプロイ時の入力検証
+  validate-manual-deploy:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Validate deployment confirmation
+        if: ${{ github.event.inputs.confirm_deployment != 'deploy' }}
+        run: |
+          echo "❌ Deployment confirmation failed. Please type 'deploy' to proceed."
+          exit 1
+
+      - name: Validate environment
+        run: |
+          case "${{ github.event.inputs.environment }}" in
+            dev|stg|prod)
+              echo "✅ Valid environment: ${{ github.event.inputs.environment }}"
+              ;;
+            *)
+              echo "❌ Invalid environment: ${{ github.event.inputs.environment }}"
+              exit 1
+              ;;
+          esac
+
+  # 自動デプロイ（mainブランチプッシュ時）
+  auto-deploy:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: dev
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ${{ env.NODE_VERSION_FILE }}
+          cache: "pnpm"
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Deploy to development
+        run: |
+          echo "🚀 Auto-deploying to development environment"
+          chmod +x packages/infrastructure/scripts/deploy-frontend.sh
+          packages/infrastructure/scripts/deploy-frontend.sh dev
+        env:
+          VERBOSE: true
+
+      - name: Comment on commit
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const sha = context.sha.substring(0, 7);
+            const comment = `## 🚀 Frontend Auto-Deploy Completed
+
+            **Environment:** Development
+            **Commit:** ${sha}
+            **Deployed at:** ${new Date().toISOString()}
+
+            The frontend has been automatically deployed to the development environment.
+
+            ### Next Steps
+            - Verify the deployment at the development URL
+            - If everything looks good, consider deploying to staging
+
+            ### Manual Deploy Commands
+            \`\`\`bash
+            # Deploy to staging
+            gh workflow run frontend-deploy.yml -f environment=stg -f confirm_deployment=deploy
+
+            # Deploy to production
+            gh workflow run frontend-deploy.yml -f environment=prod -f confirm_deployment=deploy
+            \`\`\`
+            `;
+
+            github.rest.repos.createCommitComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              commit_sha: context.sha,
+              body: comment
+            });
+
+  # 手動デプロイ
+  manual-deploy:
+    if: github.event_name == 'workflow_dispatch'
+    needs: validate-manual-deploy
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ${{ env.NODE_VERSION_FILE }}
+          cache: "pnpm"
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Deploy frontend
+        run: |
+          echo "🚀 Deploying to ${{ github.event.inputs.environment }} environment"
+          chmod +x packages/infrastructure/scripts/deploy-frontend.sh
+          packages/infrastructure/scripts/deploy-frontend.sh ${{ github.event.inputs.environment }}
+        env:
+          SKIP_BUILD: ${{ github.event.inputs.skip_build }}
+          SKIP_INVALIDATION: ${{ github.event.inputs.skip_invalidation }}
+          VERBOSE: true
+
+      - name: Get deployment info
+        id: deployment-info
+        run: |
+          # CDKスタック情報を取得
+          STACK_NAME="GoalMandalaFrontendStack-${{ github.event.inputs.environment }}"
+
+          WEBSITE_URL=$(aws cloudformation describe-stacks \
+            --stack-name "${STACK_NAME}" \
+            --query 'Stacks[0].Outputs[?OutputKey==`WebsiteUrl`].OutputValue' \
+            --output text)
+
+          S3_BUCKET=$(aws cloudformation describe-stacks \
+            --stack-name "${STACK_NAME}" \
+            --query 'Stacks[0].Outputs[?OutputKey==`S3BucketName`].OutputValue' \
+            --output text)
+
+          DISTRIBUTION_ID=$(aws cloudformation describe-stacks \
+            --stack-name "${STACK_NAME}" \
+            --query 'Stacks[0].Outputs[?OutputKey==`CloudFrontDistributionId`].OutputValue' \
+            --output text)
+
+          echo "website_url=${WEBSITE_URL}" >> $GITHUB_OUTPUT
+          echo "s3_bucket=${S3_BUCKET}" >> $GITHUB_OUTPUT
+          echo "distribution_id=${DISTRIBUTION_ID}" >> $GITHUB_OUTPUT
+
+      - name: Create deployment summary
+        run: |
+          cat >> $GITHUB_STEP_SUMMARY << EOF
+          ## 🚀 Frontend Deployment Completed
+
+          **Environment:** ${{ github.event.inputs.environment }}
+          **Deployed at:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+          **Commit:** ${GITHUB_SHA:0:7}
+
+          ### Deployment Details
+          - **Website URL:** ${{ steps.deployment-info.outputs.website_url }}
+          - **S3 Bucket:** ${{ steps.deployment-info.outputs.s3_bucket }}
+          - **CloudFront Distribution:** ${{ steps.deployment-info.outputs.distribution_id }}
+
+          ### Configuration
+          - **Skip Build:** ${{ github.event.inputs.skip_build }}
+          - **Skip Cache Invalidation:** ${{ github.event.inputs.skip_invalidation }}
+
+          ### Next Steps
+          1. Verify the deployment at: ${{ steps.deployment-info.outputs.website_url }}
+          2. Test the application functionality
+          3. Monitor CloudWatch metrics for any issues
+
+          ### Rollback Instructions
+          If you need to rollback this deployment:
+          \`\`\`bash
+          # Rollback to previous version (if available)
+          git checkout <previous-commit>
+          gh workflow run frontend-deploy.yml -f environment=${{ github.event.inputs.environment }} -f confirm_deployment=deploy
+          \`\`\`
+          EOF
+
+      - name: Notify deployment completion
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const status = '${{ job.status }}' === 'success' ? '✅ Success' : '❌ Failed';
+            const environment = '${{ github.event.inputs.environment }}';
+            const websiteUrl = '${{ steps.deployment-info.outputs.website_url }}';
+
+            const comment = `## 🚀 Frontend Deployment ${status}
+
+            **Environment:** ${environment}
+            **Deployed at:** ${new Date().toISOString()}
+            **Commit:** ${context.sha.substring(0, 7)}
+
+            ${status === '✅ Success' ?
+              `### Deployment Successful
+              - **Website URL:** ${websiteUrl}
+              - **S3 Bucket:** ${{ steps.deployment-info.outputs.s3_bucket }}
+              - **CloudFront Distribution:** ${{ steps.deployment-info.outputs.distribution_id }}
+
+              The frontend has been successfully deployed and should be available within a few minutes.` :
+              `### Deployment Failed
+              Please check the workflow logs for details and retry the deployment if necessary.`
+            }
+
+            ### Configuration
+            - **Skip Build:** ${{ github.event.inputs.skip_build }}
+            - **Skip Cache Invalidation:** ${{ github.event.inputs.skip_invalidation }}
+            `;
+
+            // コミットにコメントを追加
+            github.rest.repos.createCommitComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              commit_sha: context.sha,
+              body: comment
+            });
+
+  # セキュリティスキャン（本番デプロイ時のみ）
+  security-scan:
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'prod'
+    needs: validate-manual-deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ${{ env.NODE_VERSION_FILE }}
+          cache: "pnpm"
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run security audit
+        run: |
+          echo "🔒 Running security audit..."
+          pnpm audit --audit-level moderate
+
+      - name: Check for vulnerable dependencies
+        run: |
+          echo "🔍 Checking for vulnerable dependencies..."
+          pnpm --filter frontend audit --audit-level high
+
+      - name: Build security report
+        run: |
+          echo "📋 Generating security report..."
+          pnpm audit --json > security-audit.json || true
+
+          if [ -f security-audit.json ]; then
+            echo "Security audit completed. Check the logs for any vulnerabilities."
+          fi
+
+      - name: Upload security report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-audit-report
+          path: security-audit.json
+          retention-days: 30

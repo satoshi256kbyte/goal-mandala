@@ -34,7 +34,7 @@ export class LambdaConstruct extends Construct {
     super(scope, id);
 
     this.props = props;
-    const { vpc, securityGroup, databaseSecret, config } = props;
+    const { databaseSecret, config } = props;
 
     // Lambda実行ロール
     this.executionRole = new iam.Role(this, 'LambdaExecutionRole', {

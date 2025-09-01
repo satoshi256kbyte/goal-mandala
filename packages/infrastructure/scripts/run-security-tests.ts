@@ -344,7 +344,7 @@ class SecurityTestRunner {
 
       // TLS必須ポリシーが設定されていることを確認
       const denyInsecureTransport = policyDocument.Statement?.find(
-        (statement: any) =>
+        (statement: Record<string, unknown>) =>
           statement.Effect === 'Deny' &&
           statement.Condition?.Bool?.['aws:SecureTransport'] === 'false'
       );
