@@ -6,6 +6,7 @@
 
 - **VPC・ネットワーク**: セキュアなネットワーク環境
 - **Aurora Serverless V2**: スケーラブルなデータベース
+- **Amazon Cognito**: ユーザー認証・認可システム
 - **Secrets Manager**: 機密情報の安全な管理
 - **CloudFront + S3**: 高速なフロントエンド配信
 - **監視・ログ**: CloudWatch による包括的な監視
@@ -52,20 +53,48 @@ ls config/
 
 ```bash
 # 差分確認
-pnpm cdk diff VpcStack-dev DatabaseStack-dev FrontendStack-dev
+pnpm cdk diff VpcStack-dev DatabaseStack-dev CognitoStack-dev FrontendStack-dev
 
 # デプロイ
-pnpm cdk deploy VpcStack-dev DatabaseStack-dev FrontendStack-dev
+pnpm cdk deploy VpcStack-dev DatabaseStack-dev CognitoStack-dev FrontendStack-dev
 ```
 
 ### 本番環境
 
 ```bash
 # 差分確認
-pnpm cdk diff VpcStack-prd DatabaseStack-prd FrontendStack-prd
+pnpm cdk diff VpcStack-prd DatabaseStack-prd CognitoStack-prd FrontendStack-prd
 
 # デプロイ
-pnpm cdk deploy VpcStack-prd DatabaseStack-prd FrontendStack-prd
+pnpm cdk deploy VpcStack-prd DatabaseStack-prd CognitoStack-prd FrontendStack-prd
+```
+
+## 認証システム (Amazon Cognito)
+
+### 構成
+
+- **User Pool**: ユーザー情報とパスワード管理
+- **User Pool Client**: フロントエンドアプリケーション用設定
+- **カスタム属性**: 業種、組織規模、職種、役職
+- **IAM Role**: Lambda関数用のCognito アクセス権限
+
+### 主要機能
+
+- **セキュアな認証**: SRP認証フロー
+- **パスワードポリシー**: 8文字以上、大文字・小文字・数字・記号必須
+- **メール検証**: 自動メール検証によるアカウント有効化
+- **高度なセキュリティ**: 異常なサインイン試行の検出
+
+### デプロイ手順
+
+```bash
+# Cognitoスタックのデプロイ
+pnpm cdk deploy CognitoStack-{環境名}
+
+# 出力値の確認
+aws cloudformation describe-stacks \
+  --stack-name CognitoStack-{環境名} \
+  --query 'Stacks[0].Outputs'
 ```
 
 ## フロントエンド配信環境
@@ -144,6 +173,7 @@ aws cloudfront create-invalidation \
 - **CloudFront**: リクエスト数、エラー率、キャッシュヒット率
 - **S3**: オブジェクト数、バケットサイズ
 - **Aurora**: CPU使用率、接続数、レプリケーションラグ
+- **Cognito**: ログイン成功数、エラー数、レート制限発生数
 
 ### アラート
 
@@ -152,12 +182,15 @@ aws cloudfront create-invalidation \
 - 高エラー率（5%以上）
 - 低キャッシュヒット率（80%未満）
 - データベース接続エラー
+- Cognito認証エラー率（5%以上）
+- 異常なサインイン試行の検出
 
 ### ログ
 
 - **CloudTrail**: API呼び出しログ
 - **S3アクセスログ**: ウェブサイトアクセス記録
 - **CloudFrontログ**: 配信ログ
+- **Cognitoログ**: 認証イベント、エラーログ
 
 ## セキュリティ
 
@@ -168,6 +201,8 @@ aws cloudfront create-invalidation \
 - **セキュリティヘッダー**: XSS、CSRF等の攻撃防止
 - **IAM**: 最小権限の原則
 - **Secrets Manager**: 機密情報の暗号化保存
+- **Cognito認証**: SRP認証、JWT検証、パスワードポリシー
+- **高度なセキュリティ**: 異常なサインイン試行の検出と保護
 
 ### セキュリティチェック
 
@@ -195,6 +230,11 @@ openssl s_client -connect {ドメイン名}:443 -servername {ドメイン名}
    - ACM証明書の状態確認
    - DNS検証の完了確認
 
+4. **認証エラー**
+   - Cognitoユーザープール設定の確認
+   - JWT検証の実装確認
+   - パスワードポリシー違反の確認
+
 ### ログの確認
 
 ```bash
@@ -211,7 +251,9 @@ aws logs filter-log-events --log-group-name {ロググループ名}
 ### 運用ドキュメント
 
 - [フロントエンド配信環境 運用ガイド](./docs/frontend-deployment-guide.md)
+- [Cognito デプロイガイド](./docs/cognito-deployment-guide.md)
 - [トラブルシューティングガイド](./docs/frontend-troubleshooting-guide.md)
+- [Cognito トラブルシューティングガイド](./docs/cognito-troubleshooting-guide.md)
 - [セキュリティガイド](./docs/frontend-security-guide.md)
 
 ### 技術ドキュメント
@@ -250,6 +292,17 @@ aws logs filter-log-events --log-group-name {ロググループ名}
     "domainName": "dev.goal-mandala.example.com",
     "certificateArn": "arn:aws:acm:us-east-1:...",
     "priceClass": "PriceClass_100"
+  },
+  "cognito": {
+    "userPoolName": "goal-mandala-dev-cognito-user-pool",
+    "clientName": "goal-mandala-dev-cognito-client",
+    "passwordPolicy": {
+      "minLength": 8,
+      "requireUppercase": true,
+      "requireLowercase": true,
+      "requireNumbers": true,
+      "requireSymbols": true
+    }
   }
 }
 ```

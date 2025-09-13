@@ -482,7 +482,10 @@ export class CloudFrontConstruct extends Construct {
 
     errorRateAlarm.addAlarmAction(new cloudwatchActions.SnsAction(alertTopic));
 
-    // オリジンレイテンシーアラーム
+    // オリジンレイテンシーアラーム（publishAdditionalMetricsが有効な場合のみ）
+    // CloudFrontのオリジンレイテンシーメトリクスは追加メトリクスが有効な場合のみ利用可能
+    // 現在は基本メトリクスのみを使用するため、このアラームはコメントアウト
+    /*
     const latencyAlarm = new cloudwatch.Alarm(this, 'LatencyAlarm', {
       alarmName: `${this.node.id}-origin-latency`,
       alarmDescription: 'CloudFront origin latency is high',
@@ -496,8 +499,12 @@ export class CloudFrontConstruct extends Construct {
     });
 
     latencyAlarm.addAlarmAction(new cloudwatchActions.SnsAction(alertTopic));
+    */
 
     // キャッシュヒット率アラーム（低い場合）
+    // CloudFrontのキャッシュヒット率メトリクスは追加メトリクスが有効な場合のみ利用可能
+    // 現在は基本メトリクスのみを使用するため、このアラームはコメントアウト
+    /*
     const cacheHitRateAlarm = new cloudwatch.Alarm(this, 'CacheHitRateAlarm', {
       alarmName: `${this.node.id}-cache-hit-rate`,
       alarmDescription: 'CloudFront cache hit rate is low',
@@ -512,6 +519,7 @@ export class CloudFrontConstruct extends Construct {
     });
 
     cacheHitRateAlarm.addAlarmAction(new cloudwatchActions.SnsAction(alertTopic));
+    */
   }
 
   /**

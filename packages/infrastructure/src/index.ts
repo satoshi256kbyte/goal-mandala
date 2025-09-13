@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import * as cdk from 'aws-cdk-lib';
-import { VpcStack, DatabaseStack, ApiStack, FrontendStack } from './stacks';
+import { VpcStack, DatabaseStack, CognitoStack, ApiStack, FrontendStack } from './stacks';
 import { getEnvironmentConfig } from './config/environment';
 
 const app = new cdk.App();
@@ -38,25 +38,41 @@ try {
   });
   databaseStack.addDependency(vpcStack);
 
-  // APIスタック作成（VPCスタックとデータベーススタックに依存）
+  // Cognitoスタック作成（独立）
+  const cognitoStack = new CognitoStack(app, `${config.stackPrefix}-cognito`, {
+    env,
+    config,
+    environment,
+    description: `Cognito stack for ${config.stackPrefix} environment`,
+  });
+
+  // APIスタック作成（VPCスタック、データベーススタック、Cognitoスタックに依存）
   const apiStack = new ApiStack(app, `${config.stackPrefix}-api`, {
     env,
     config,
     vpc: vpcStack.vpc,
     lambdaSecurityGroup: vpcStack.lambdaSecurityGroup,
     databaseSecret: databaseStack.database.secret,
+    userPool: cognitoStack.userPool,
+    userPoolClient: cognitoStack.userPoolClient,
+    cognitoLambdaRole: cognitoStack.lambdaRole,
     description: `API stack for ${config.stackPrefix} environment`,
   });
   apiStack.addDependency(vpcStack);
   apiStack.addDependency(databaseStack);
+  apiStack.addDependency(cognitoStack);
 
-  // フロントエンドスタック作成（独立）
-  new FrontendStack(app, `${config.stackPrefix}-frontend`, {
+  // フロントエンドスタック作成（Cognitoスタックに依存）
+  const frontendStack = new FrontendStack(app, `${config.stackPrefix}-frontend`, {
     env,
     config,
     environment,
+    userPool: cognitoStack.userPool,
+    userPoolClient: cognitoStack.userPoolClient,
+    userPoolDomain: cognitoStack.userPoolDomain,
     description: `Frontend stack for ${config.stackPrefix} environment`,
   });
+  frontendStack.addDependency(cognitoStack);
 
   // 共通タグの設定
   if (config.tags) {
@@ -75,4 +91,4 @@ try {
 }
 
 // エクスポート（テスト用）
-export { VpcStack, DatabaseStack, ApiStack, FrontendStack };
+export { VpcStack, DatabaseStack, CognitoStack, ApiStack, FrontendStack };

@@ -4,6 +4,7 @@ import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as logs from 'aws-cdk-lib/aws-logs';
 import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
+import * as cognito from 'aws-cdk-lib/aws-cognito';
 import { Construct } from 'constructs';
 import { EnvironmentConfig } from '../config/environment';
 
@@ -12,6 +13,9 @@ export interface LambdaConstructProps {
   securityGroup: ec2.ISecurityGroup;
   databaseSecret: secretsmanager.ISecret;
   config: EnvironmentConfig;
+  userPool?: cognito.IUserPool;
+  userPoolClient?: cognito.IUserPoolClient;
+  cognitoLambdaRole?: iam.IRole;
 }
 
 export interface LambdaFunctionConfig {
@@ -34,40 +38,57 @@ export class LambdaConstruct extends Construct {
     super(scope, id);
 
     this.props = props;
-    const { databaseSecret, config } = props;
+    const { databaseSecret, config, cognitoLambdaRole } = props;
 
-    // Lambda実行ロール
-    this.executionRole = new iam.Role(this, 'LambdaExecutionRole', {
-      assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
-      description: 'Execution role for Lambda functions',
-      managedPolicies: [
-        iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaVPCAccessExecutionRole'),
-      ],
-      inlinePolicies: {
-        DatabaseAccess: new iam.PolicyDocument({
-          statements: [
-            // Secrets Manager アクセス権限
-            new iam.PolicyStatement({
-              effect: iam.Effect.ALLOW,
-              actions: ['secretsmanager:GetSecretValue', 'secretsmanager:DescribeSecret'],
-              resources: [databaseSecret.secretArn],
-            }),
-            // CloudWatch Logs 権限
-            new iam.PolicyStatement({
-              effect: iam.Effect.ALLOW,
-              actions: ['logs:CreateLogGroup', 'logs:CreateLogStream', 'logs:PutLogEvents'],
-              resources: [`arn:aws:logs:${config.region}:*:log-group:/aws/lambda/*`],
-            }),
-            // X-Ray トレーシング権限
-            new iam.PolicyStatement({
-              effect: iam.Effect.ALLOW,
-              actions: ['xray:PutTraceSegments', 'xray:PutTelemetryRecords'],
-              resources: ['*'],
-            }),
-          ],
-        }),
-      },
-    });
+    // Lambda実行ロール（Cognitoロールが提供されている場合はそれを使用、そうでなければ新規作成）
+    if (cognitoLambdaRole) {
+      // CognitoStackから提供されたロールを使用
+      this.executionRole = cognitoLambdaRole as iam.Role;
+
+      // データベースアクセス権限を追加
+      this.executionRole.addToPolicy(
+        new iam.PolicyStatement({
+          effect: iam.Effect.ALLOW,
+          actions: ['secretsmanager:GetSecretValue', 'secretsmanager:DescribeSecret'],
+          resources: [databaseSecret.secretArn],
+        })
+      );
+    } else {
+      // 新規ロール作成（Cognitoが利用できない場合のフォールバック）
+      this.executionRole = new iam.Role(this, 'LambdaExecutionRole', {
+        assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
+        description: 'Execution role for Lambda functions',
+        managedPolicies: [
+          iam.ManagedPolicy.fromAwsManagedPolicyName(
+            'service-role/AWSLambdaVPCAccessExecutionRole'
+          ),
+        ],
+        inlinePolicies: {
+          DatabaseAccess: new iam.PolicyDocument({
+            statements: [
+              // Secrets Manager アクセス権限
+              new iam.PolicyStatement({
+                effect: iam.Effect.ALLOW,
+                actions: ['secretsmanager:GetSecretValue', 'secretsmanager:DescribeSecret'],
+                resources: [databaseSecret.secretArn],
+              }),
+              // CloudWatch Logs 権限
+              new iam.PolicyStatement({
+                effect: iam.Effect.ALLOW,
+                actions: ['logs:CreateLogGroup', 'logs:CreateLogStream', 'logs:PutLogEvents'],
+                resources: [`arn:aws:logs:${config.region}:*:log-group:/aws/lambda/*`],
+              }),
+              // X-Ray トレーシング権限
+              new iam.PolicyStatement({
+                effect: iam.Effect.ALLOW,
+                actions: ['xray:PutTraceSegments', 'xray:PutTelemetryRecords'],
+                resources: ['*'],
+              }),
+            ],
+          }),
+        },
+      });
+    }
 
     // タグ設定
     if (config.tags) {
@@ -241,11 +262,22 @@ export class LambdaConstruct extends Construct {
    * 共通環境変数を取得する
    */
   private getCommonEnvironment(): Record<string, string> {
-    return {
+    const commonEnv: Record<string, string> = {
       NODE_ENV: 'production',
       DATABASE_SECRET_ARN: this.props.databaseSecret.secretArn,
       APP_REGION: this.props.config.region, // AWS_REGIONは予約語のため変更
       LOG_LEVEL: 'info',
     };
+
+    // Cognitoリソースが利用可能な場合は環境変数に追加
+    if (this.props.userPool) {
+      commonEnv.COGNITO_USER_POOL_ID = this.props.userPool.userPoolId;
+    }
+
+    if (this.props.userPoolClient) {
+      commonEnv.COGNITO_USER_POOL_CLIENT_ID = this.props.userPoolClient.userPoolClientId;
+    }
+
+    return commonEnv;
   }
 }

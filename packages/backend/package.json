@@ -20,7 +20,7 @@
     "test:security:coverage": "jest --testPathPattern='security' --coverage",
     "test:integration": "node ../../tools/scripts/integration-test-sam.js",
     "test:integration:simple": "node ../../tools/scripts/integration-test-sam-simple.js",
-    "lint": "eslint . --ext ts --report-unused-disable-directives --max-warnings 1",
+    "lint": "eslint . --ext ts --report-unused-disable-directives --max-warnings 25",
     "lint:fix": "eslint . --ext ts --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",

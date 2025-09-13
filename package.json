@@ -106,7 +106,20 @@
     "frontend:invalidate": "cd packages/infrastructure && pnpm run frontend:invalidate",
     "frontend:invalidate:dev": "cd packages/infrastructure && pnpm run frontend:invalidate:dev",
     "frontend:invalidate:stg": "cd packages/infrastructure && pnpm run frontend:invalidate:stg",
-    "frontend:invalidate:prod": "cd packages/infrastructure && pnpm run frontend:invalidate:prod"
+    "frontend:invalidate:prod": "cd packages/infrastructure && pnpm run frontend:invalidate:prod",
+    "cognito:deploy:dev": "cd packages/infrastructure && pnpm run cognito:deploy:dev",
+    "cognito:deploy:stg": "cd packages/infrastructure && pnpm run cognito:deploy:stg",
+    "cognito:deploy:prod": "cd packages/infrastructure && pnpm run cognito:deploy:prod",
+    "cognito:diff:dev": "cd packages/infrastructure && pnpm run cognito:diff:dev",
+    "cognito:diff:stg": "cd packages/infrastructure && pnpm run cognito:diff:stg",
+    "cognito:diff:prod": "cd packages/infrastructure && pnpm run cognito:diff:prod",
+    "cognito:synth:dev": "cd packages/infrastructure && pnpm run cognito:synth:dev",
+    "cognito:synth:stg": "cd packages/infrastructure && pnpm run cognito:synth:stg",
+    "cognito:synth:prod": "cd packages/infrastructure && pnpm run cognito:synth:prod",
+    "cognito:validate": "cd packages/infrastructure && pnpm run cognito:validate",
+    "cognito:validate:dev": "cd packages/infrastructure && pnpm run cognito:validate:dev",
+    "cognito:validate:stg": "cd packages/infrastructure && pnpm run cognito:validate:stg",
+    "cognito:validate:prod": "cd packages/infrastructure && pnpm run cognito:validate:prod"
   },
   "dependencies": {
     "dotenv": "^16.4.5",

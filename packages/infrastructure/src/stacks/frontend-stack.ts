@@ -3,6 +3,7 @@ import * as sns from 'aws-cdk-lib/aws-sns';
 import * as snsSubscriptions from 'aws-cdk-lib/aws-sns-subscriptions';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
+import * as cognito from 'aws-cdk-lib/aws-cognito';
 import { Construct } from 'constructs';
 import { EnvironmentConfig } from '../config/environment';
 import { S3FrontendConstruct } from '../constructs/s3-frontend-construct';
@@ -12,6 +13,9 @@ import { MonitoringConstruct } from '../constructs/monitoring-construct';
 export interface FrontendStackProps extends cdk.StackProps {
   config: EnvironmentConfig;
   environment: string;
+  userPool?: cognito.IUserPool;
+  userPoolClient?: cognito.IUserPoolClient;
+  userPoolDomain?: cognito.IUserPoolDomain;
 }
 
 /**
@@ -36,7 +40,7 @@ export class FrontendStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: FrontendStackProps) {
     super(scope, id, props);
 
-    const { config, environment } = props;
+    const { config, environment, userPool, userPoolClient, userPoolDomain } = props;
 
     // アラート用SNSトピックの作成
     this.alertTopic = this.createAlertTopic(config, environment);
@@ -71,7 +75,7 @@ export class FrontendStack extends cdk.Stack {
     this.validateConfiguration(config);
 
     // CloudFormation出力の設定
-    this.createOutputs();
+    this.createOutputs(config, userPool, userPoolClient, userPoolDomain);
 
     // スタックタグの設定
     this.addStackTags(config, environment);
@@ -114,7 +118,12 @@ export class FrontendStack extends cdk.Stack {
   /**
    * CloudFormation出力の設定
    */
-  private createOutputs(): void {
+  private createOutputs(
+    config: EnvironmentConfig,
+    userPool?: cognito.IUserPool,
+    userPoolClient?: cognito.IUserPoolClient,
+    userPoolDomain?: cognito.IUserPoolDomain
+  ): void {
     // S3バケット情報
     new cdk.CfnOutput(this, 'S3BucketName', {
       value: this.s3Construct.bucket.bucketName,
@@ -173,6 +182,50 @@ export class FrontendStack extends cdk.Stack {
       value: this.alertTopic.topicArn,
       description: 'SNS topic ARN for alerts',
       exportName: `${this.stackName}-AlertTopicArn`,
+    });
+
+    // Cognito設定情報（フロントエンドアプリケーション用）
+    if (userPool) {
+      new cdk.CfnOutput(this, 'CognitoUserPoolId', {
+        value: userPool.userPoolId,
+        description: 'Cognito User Pool ID for frontend',
+        exportName: `${this.stackName}-CognitoUserPoolId`,
+      });
+    }
+
+    if (userPoolClient) {
+      new cdk.CfnOutput(this, 'CognitoUserPoolClientId', {
+        value: userPoolClient.userPoolClientId,
+        description: 'Cognito User Pool Client ID for frontend',
+        exportName: `${this.stackName}-CognitoUserPoolClientId`,
+      });
+    }
+
+    if (userPoolDomain) {
+      new cdk.CfnOutput(this, 'CognitoUserPoolDomain', {
+        value: userPoolDomain.domainName,
+        description: 'Cognito User Pool Domain for frontend',
+        exportName: `${this.stackName}-CognitoUserPoolDomain`,
+      });
+
+      new cdk.CfnOutput(this, 'CognitoUserPoolDomainBaseUrl', {
+        value: `https://${userPoolDomain.domainName}.auth.${this.region}.amazoncognito.com`,
+        description: 'Cognito User Pool Domain Base URL for frontend',
+        exportName: `${this.stackName}-CognitoUserPoolDomainBaseUrl`,
+      });
+    }
+
+    // フロントエンド環境変数用の設定情報
+    const frontendConfig = this.createFrontendConfig(
+      config,
+      userPool,
+      userPoolClient,
+      userPoolDomain
+    );
+    new cdk.CfnOutput(this, 'FrontendConfig', {
+      value: JSON.stringify(frontendConfig),
+      description: 'Frontend configuration (JSON format)',
+      exportName: `${this.stackName}-FrontendConfig`,
     });
 
     // 監視関連の出力（監視が有効な場合）
@@ -713,6 +766,49 @@ export class FrontendStack extends cdk.Stack {
     if (errors.length > 0) {
       throw new Error(`Frontend Stack Configuration Errors:\n${errors.join('\n')}`);
     }
+  }
+
+  /**
+   * フロントエンド用の設定情報を作成
+   */
+  private createFrontendConfig(
+    config: EnvironmentConfig,
+    userPool?: cognito.IUserPool,
+    userPoolClient?: cognito.IUserPoolClient,
+    userPoolDomain?: cognito.IUserPoolDomain
+  ): Record<string, any> {
+    const frontendConfig: Record<string, any> = {
+      region: config.region,
+      environment: config.environment,
+      apiUrl: `https://api.${config.stackPrefix}.example.com`, // APIスタックから取得する場合は後で更新
+      websiteUrl: `https://${this.cloudFrontConstruct.distribution.distributionDomainName}`,
+    };
+
+    // Cognito設定を追加
+    if (userPool && userPoolClient) {
+      frontendConfig.cognito = {
+        userPoolId: userPool.userPoolId,
+        userPoolClientId: userPoolClient.userPoolClientId,
+        region: config.region,
+      };
+
+      if (userPoolDomain) {
+        frontendConfig.cognito.domain = userPoolDomain.domainName;
+        frontendConfig.cognito.baseUrl = `https://${userPoolDomain.domainName}.auth.${config.region}.amazoncognito.com`;
+      }
+
+      // OAuth設定
+      const oAuthConfig = config.cognito.userPoolClient.oAuth;
+      if (oAuthConfig) {
+        frontendConfig.cognito.oauth = {
+          scopes: oAuthConfig.scopes,
+          callbackUrls: oAuthConfig.callbackUrls,
+          logoutUrls: oAuthConfig.logoutUrls,
+        };
+      }
+    }
+
+    return frontendConfig;
   }
 
   /**

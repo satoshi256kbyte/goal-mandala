@@ -6,3 +6,4 @@ export * from './secrets-manager-construct';
 export * from './s3-frontend-construct';
 export * from './cloudfront-construct';
 export * from './monitoring-construct';
+export * from './ses-construct';

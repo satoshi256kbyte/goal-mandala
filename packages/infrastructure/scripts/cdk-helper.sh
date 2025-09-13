@@ -45,6 +45,8 @@ CDKヘルパースクリプト
     doctor      CDK環境の診断
     list        利用可能なスタックを一覧表示
     outputs     スタックの出力値を表示
+    cognito     Cognitoスタック専用操作
+    validate    設定ファイルの検証
 
 環境:
     local       ローカル開発環境
@@ -221,6 +223,16 @@ case $COMMAND in
         aws cloudformation describe-stacks \
             --query "Stacks[?contains(StackName, '${STACK_PREFIX}')].{StackName:StackName,Outputs:Outputs}" \
             --output table 2>/dev/null || log_warning "出力値の取得に失敗しました"
+        ;;
+
+    cognito)
+        log_info "Cognitoスタック専用操作を実行中..."
+        ./scripts/deploy-cognito.sh "$ENVIRONMENT" "$@"
+        ;;
+
+    validate)
+        log_info "設定ファイルを検証中..."
+        ./scripts/validate-cognito-config.sh "$ENVIRONMENT"
         ;;
 
     *)

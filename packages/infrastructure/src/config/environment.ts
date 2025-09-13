@@ -72,6 +72,166 @@ export interface EnvironmentConfig {
     enableMonitoring?: boolean;
     tags?: Record<string, string>;
   };
+  cognito: {
+    userPool: {
+      passwordPolicy: {
+        minLength: number;
+        requireLowercase: boolean;
+        requireUppercase: boolean;
+        requireNumbers: boolean;
+        requireSymbols: boolean;
+        tempPasswordValidityDays: number;
+      };
+      selfSignUpEnabled: boolean;
+      autoVerify: string[];
+      standardAttributes: {
+        email: {
+          required: boolean;
+          mutable: boolean;
+        };
+        name: {
+          required: boolean;
+          mutable: boolean;
+        };
+      };
+      customAttributes: {
+        industry: {
+          mutable: boolean;
+        };
+        company_size: {
+          mutable: boolean;
+        };
+        job_title: {
+          mutable: boolean;
+        };
+        position: {
+          mutable: boolean;
+        };
+      };
+      emailSettings: {
+        fromEmail: string;
+        fromName: string;
+        replyToEmail: string;
+        useSes?: boolean;
+        sesConfigurationSet?: string;
+        customTemplates?: {
+          verification?: {
+            emailSubject?: string;
+            emailMessage?: string;
+            emailMessageByLink?: string;
+          };
+          invitation?: {
+            emailSubject?: string;
+            emailMessage?: string;
+          };
+          forgotPassword?: {
+            emailSubject?: string;
+            emailMessage?: string;
+            emailMessageByLink?: string;
+          };
+        };
+      };
+      accountRecovery: string[];
+      deletionProtection: boolean;
+      security?: {
+        enableAdvancedSecurity: boolean;
+        enableCompromisedCredentialsCheck: boolean;
+        enableRiskBasedAccessControl: boolean;
+        mfaConfiguration: string;
+        mfaTypes: string[];
+        deviceConfiguration: {
+          challengeRequiredOnNewDevice: boolean;
+          deviceOnlyRememberedOnUserPrompt: boolean;
+        };
+        userInvitation: {
+          emailSubject: string;
+          emailMessage: string;
+          smsMessage: string;
+        };
+        verification: {
+          emailSubject: string;
+          emailMessage: string;
+          smsMessage: string;
+        };
+      };
+    };
+    userPoolClient: {
+      authFlows: {
+        allowUserSrpAuth: boolean;
+        allowRefreshTokenAuth: boolean;
+        allowUserPasswordAuth: boolean;
+        allowAdminUserPasswordAuth?: boolean;
+        allowCustomAuth?: boolean;
+      };
+      tokenValidity: {
+        accessToken: number;
+        idToken: number;
+        refreshToken: number;
+      };
+      oAuth: {
+        flows?: {
+          authorizationCodeGrant?: boolean;
+          implicitCodeGrant?: boolean;
+          clientCredentials?: boolean;
+        };
+        scopes: string[];
+        callbackUrls: string[];
+        logoutUrls: string[];
+      };
+      preventUserExistenceErrors: boolean;
+      enableTokenRevocation: boolean;
+      generateSecret?: boolean;
+      supportedIdentityProviders?: string[];
+      readAttributes?: string[];
+      writeAttributes?: string[];
+      explicitAuthFlows?: string[];
+      enablePropagateAdditionalUserContextData?: boolean;
+      authSessionValidity?: number;
+    };
+    tags?: Record<string, string>;
+    iam?: {
+      lambdaRole?: {
+        enableDetailedLogging?: boolean;
+        cognitoPermissions?: {
+          userOperations?: {
+            enabled?: boolean;
+            actions?: string[];
+          };
+          groupOperations?: {
+            enabled?: boolean;
+            actions?: string[];
+          };
+          authOperations?: {
+            enabled?: boolean;
+            actions?: string[];
+          };
+          adminOperations?: {
+            enabled?: boolean;
+            actions?: string[];
+          };
+        };
+        additionalPolicies?: {
+          sesAccess?: {
+            enabled?: boolean;
+            actions?: string[];
+          };
+          secretsManagerAccess?: {
+            enabled?: boolean;
+            actions?: string[];
+          };
+          logsAccess?: {
+            enabled?: boolean;
+            actions?: string[];
+          };
+        };
+        resourceRestrictions?: {
+          enableResourceBasedAccess?: boolean;
+          allowedUserPoolArns?: string[];
+          allowedSecretArns?: string[];
+        };
+      };
+    };
+  };
   lambda: {
     timeout: number;
     memorySize: number;
@@ -175,6 +335,88 @@ function isValidEnvironment(environment: string): environment is Environment {
   return Object.values(constants.ENVIRONMENTS).includes(environment as Environment);
 }
 
+function parseIamConfig(
+  cognitoConfig: Record<string, unknown>
+): EnvironmentConfig['cognito']['iam'] {
+  const iamConfig = getRecord(cognitoConfig, 'iam');
+  const lambdaRoleConfig = getRecord(iamConfig, 'lambdaRole');
+  const cognitoPermissions = getRecord(lambdaRoleConfig, 'cognitoPermissions');
+  const additionalPolicies = getRecord(lambdaRoleConfig, 'additionalPolicies');
+  const resourceRestrictions = getRecord(lambdaRoleConfig, 'resourceRestrictions');
+
+  return {
+    lambdaRole: {
+      enableDetailedLogging: getBoolean(lambdaRoleConfig, 'enableDetailedLogging', false),
+      cognitoPermissions: {
+        userOperations: {
+          enabled: getBoolean(getRecord(cognitoPermissions, 'userOperations'), 'enabled', true),
+          actions: (getRecord(cognitoPermissions, 'userOperations').actions as string[]) || [
+            'cognito-idp:GetUser',
+            'cognito-idp:AdminGetUser',
+            'cognito-idp:AdminUpdateUserAttributes',
+          ],
+        },
+        groupOperations: {
+          enabled: getBoolean(getRecord(cognitoPermissions, 'groupOperations'), 'enabled', true),
+          actions: (getRecord(cognitoPermissions, 'groupOperations').actions as string[]) || [
+            'cognito-idp:AdminListGroupsForUser',
+            'cognito-idp:AdminAddUserToGroup',
+            'cognito-idp:AdminRemoveUserFromGroup',
+          ],
+        },
+        authOperations: {
+          enabled: getBoolean(getRecord(cognitoPermissions, 'authOperations'), 'enabled', true),
+          actions: (getRecord(cognitoPermissions, 'authOperations').actions as string[]) || [
+            'cognito-idp:InitiateAuth',
+            'cognito-idp:RespondToAuthChallenge',
+            'cognito-idp:ConfirmSignUp',
+          ],
+        },
+        adminOperations: {
+          enabled: getBoolean(getRecord(cognitoPermissions, 'adminOperations'), 'enabled', false),
+          actions: (getRecord(cognitoPermissions, 'adminOperations').actions as string[]) || [],
+        },
+      },
+      additionalPolicies: {
+        sesAccess: {
+          enabled: getBoolean(getRecord(additionalPolicies, 'sesAccess'), 'enabled', false),
+          actions: (getRecord(additionalPolicies, 'sesAccess').actions as string[]) || [
+            'ses:SendEmail',
+            'ses:SendRawEmail',
+          ],
+        },
+        secretsManagerAccess: {
+          enabled: getBoolean(
+            getRecord(additionalPolicies, 'secretsManagerAccess'),
+            'enabled',
+            true
+          ),
+          actions: (getRecord(additionalPolicies, 'secretsManagerAccess').actions as string[]) || [
+            'secretsmanager:GetSecretValue',
+          ],
+        },
+        logsAccess: {
+          enabled: getBoolean(getRecord(additionalPolicies, 'logsAccess'), 'enabled', true),
+          actions: (getRecord(additionalPolicies, 'logsAccess').actions as string[]) || [
+            'logs:CreateLogGroup',
+            'logs:CreateLogStream',
+            'logs:PutLogEvents',
+          ],
+        },
+      },
+      resourceRestrictions: {
+        enableResourceBasedAccess: getBoolean(
+          resourceRestrictions,
+          'enableResourceBasedAccess',
+          true
+        ),
+        allowedUserPoolArns: (resourceRestrictions.allowedUserPoolArns as string[]) || ['*'],
+        allowedSecretArns: (resourceRestrictions.allowedSecretArns as string[]) || ['*'],
+      },
+    },
+  };
+}
+
 function validateConfig(config: unknown, environment: string): EnvironmentConfig {
   const errors: string[] = [];
 
@@ -202,6 +444,10 @@ function validateConfig(config: unknown, environment: string): EnvironmentConfig
     errors.push('database configuration is required and must be an object');
   }
 
+  if (!configObj.cognito || typeof configObj.cognito !== 'object') {
+    errors.push('cognito configuration is required and must be an object');
+  }
+
   if (!configObj.lambda || typeof configObj.lambda !== 'object') {
     errors.push('lambda configuration is required and must be an object');
   }
@@ -226,6 +472,9 @@ function validateConfig(config: unknown, environment: string): EnvironmentConfig
 
   // データベース設定の詳細検証
   validateDatabaseConfig(configObj.database as Record<string, unknown>, errors);
+
+  // Cognito設定の詳細検証
+  validateCognitoConfig(configObj.cognito as Record<string, unknown>, errors);
 
   // Lambda設定の詳細検証
   validateLambdaConfig(configObj.lambda as Record<string, unknown>, errors);
@@ -262,6 +511,7 @@ function validateConfig(config: unknown, environment: string): EnvironmentConfig
   const networkConfig = getRecord(configObj, 'network');
   const databaseConfig = getRecord(configObj, 'database');
   const secretsManagerConfig = getRecord(configObj, 'secretsManager');
+  const cognitoConfig = getRecord(configObj, 'cognito');
   const lambdaConfig = getRecord(configObj, 'lambda');
   const frontendConfig = getRecord(configObj, 'frontend');
   const monitoringConfig = getRecord(configObj, 'monitoring');
@@ -322,6 +572,489 @@ function validateConfig(config: unknown, environment: string): EnvironmentConfig
       cacheTtlMinutes: getNumber(secretsManagerConfig, 'cacheTtlMinutes', 5),
       enableMonitoring: getBoolean(secretsManagerConfig, 'enableMonitoring', true),
       tags: getRecord(secretsManagerConfig, 'tags') as Record<string, string>,
+    },
+    cognito: {
+      userPool: {
+        passwordPolicy: {
+          minLength: getNumber(
+            getRecord(getRecord(cognitoConfig, 'userPool'), 'passwordPolicy'),
+            'minLength',
+            8
+          ),
+          requireLowercase: getBoolean(
+            getRecord(getRecord(cognitoConfig, 'userPool'), 'passwordPolicy'),
+            'requireLowercase',
+            true
+          ),
+          requireUppercase: getBoolean(
+            getRecord(getRecord(cognitoConfig, 'userPool'), 'passwordPolicy'),
+            'requireUppercase',
+            true
+          ),
+          requireNumbers: getBoolean(
+            getRecord(getRecord(cognitoConfig, 'userPool'), 'passwordPolicy'),
+            'requireNumbers',
+            true
+          ),
+          requireSymbols: getBoolean(
+            getRecord(getRecord(cognitoConfig, 'userPool'), 'passwordPolicy'),
+            'requireSymbols',
+            true
+          ),
+          tempPasswordValidityDays: getNumber(
+            getRecord(getRecord(cognitoConfig, 'userPool'), 'passwordPolicy'),
+            'tempPasswordValidityDays',
+            7
+          ),
+        },
+        selfSignUpEnabled: getBoolean(
+          getRecord(cognitoConfig, 'userPool'),
+          'selfSignUpEnabled',
+          true
+        ),
+        autoVerify: (getRecord(cognitoConfig, 'userPool').autoVerify as string[]) || ['email'],
+        standardAttributes: {
+          email: {
+            required: getBoolean(
+              getRecord(
+                getRecord(getRecord(cognitoConfig, 'userPool'), 'standardAttributes'),
+                'email'
+              ),
+              'required',
+              true
+            ),
+            mutable: getBoolean(
+              getRecord(
+                getRecord(getRecord(cognitoConfig, 'userPool'), 'standardAttributes'),
+                'email'
+              ),
+              'mutable',
+              true
+            ),
+          },
+          name: {
+            required: getBoolean(
+              getRecord(
+                getRecord(getRecord(cognitoConfig, 'userPool'), 'standardAttributes'),
+                'name'
+              ),
+              'required',
+              true
+            ),
+            mutable: getBoolean(
+              getRecord(
+                getRecord(getRecord(cognitoConfig, 'userPool'), 'standardAttributes'),
+                'name'
+              ),
+              'mutable',
+              true
+            ),
+          },
+        },
+        customAttributes: {
+          industry: {
+            mutable: getBoolean(
+              getRecord(
+                getRecord(getRecord(cognitoConfig, 'userPool'), 'customAttributes'),
+                'industry'
+              ),
+              'mutable',
+              true
+            ),
+          },
+          company_size: {
+            mutable: getBoolean(
+              getRecord(
+                getRecord(getRecord(cognitoConfig, 'userPool'), 'customAttributes'),
+                'company_size'
+              ),
+              'mutable',
+              true
+            ),
+          },
+          job_title: {
+            mutable: getBoolean(
+              getRecord(
+                getRecord(getRecord(cognitoConfig, 'userPool'), 'customAttributes'),
+                'job_title'
+              ),
+              'mutable',
+              true
+            ),
+          },
+          position: {
+            mutable: getBoolean(
+              getRecord(
+                getRecord(getRecord(cognitoConfig, 'userPool'), 'customAttributes'),
+                'position'
+              ),
+              'mutable',
+              true
+            ),
+          },
+        },
+        emailSettings: {
+          fromEmail: getString(
+            getRecord(getRecord(cognitoConfig, 'userPool'), 'emailSettings'),
+            'fromEmail',
+            'noreply@example.com'
+          ),
+          fromName: getString(
+            getRecord(getRecord(cognitoConfig, 'userPool'), 'emailSettings'),
+            'fromName',
+            'Goal Mandala'
+          ),
+          replyToEmail: getString(
+            getRecord(getRecord(cognitoConfig, 'userPool'), 'emailSettings'),
+            'replyToEmail',
+            'support@example.com'
+          ),
+          useSes: getBoolean(
+            getRecord(getRecord(cognitoConfig, 'userPool'), 'emailSettings'),
+            'useSes',
+            false
+          ),
+          sesConfigurationSet: getString(
+            getRecord(getRecord(cognitoConfig, 'userPool'), 'emailSettings'),
+            'sesConfigurationSet',
+            ''
+          ),
+          customTemplates: getRecord(getRecord(cognitoConfig, 'userPool'), 'emailSettings')
+            .customTemplates
+            ? {
+                verification: getRecord(
+                  getRecord(
+                    getRecord(getRecord(cognitoConfig, 'userPool'), 'emailSettings'),
+                    'customTemplates'
+                  ),
+                  'verification'
+                )
+                  ? {
+                      emailSubject: getString(
+                        getRecord(
+                          getRecord(
+                            getRecord(getRecord(cognitoConfig, 'userPool'), 'emailSettings'),
+                            'customTemplates'
+                          ),
+                          'verification'
+                        ),
+                        'emailSubject',
+                        ''
+                      ),
+                      emailMessage: getString(
+                        getRecord(
+                          getRecord(
+                            getRecord(getRecord(cognitoConfig, 'userPool'), 'emailSettings'),
+                            'customTemplates'
+                          ),
+                          'verification'
+                        ),
+                        'emailMessage',
+                        ''
+                      ),
+                      emailMessageByLink: getString(
+                        getRecord(
+                          getRecord(
+                            getRecord(getRecord(cognitoConfig, 'userPool'), 'emailSettings'),
+                            'customTemplates'
+                          ),
+                          'verification'
+                        ),
+                        'emailMessageByLink',
+                        ''
+                      ),
+                    }
+                  : undefined,
+                invitation: getRecord(
+                  getRecord(
+                    getRecord(getRecord(cognitoConfig, 'userPool'), 'emailSettings'),
+                    'customTemplates'
+                  ),
+                  'invitation'
+                )
+                  ? {
+                      emailSubject: getString(
+                        getRecord(
+                          getRecord(
+                            getRecord(getRecord(cognitoConfig, 'userPool'), 'emailSettings'),
+                            'customTemplates'
+                          ),
+                          'invitation'
+                        ),
+                        'emailSubject',
+                        ''
+                      ),
+                      emailMessage: getString(
+                        getRecord(
+                          getRecord(
+                            getRecord(getRecord(cognitoConfig, 'userPool'), 'emailSettings'),
+                            'customTemplates'
+                          ),
+                          'invitation'
+                        ),
+                        'emailMessage',
+                        ''
+                      ),
+                    }
+                  : undefined,
+                forgotPassword: getRecord(
+                  getRecord(
+                    getRecord(getRecord(cognitoConfig, 'userPool'), 'emailSettings'),
+                    'customTemplates'
+                  ),
+                  'forgotPassword'
+                )
+                  ? {
+                      emailSubject: getString(
+                        getRecord(
+                          getRecord(
+                            getRecord(getRecord(cognitoConfig, 'userPool'), 'emailSettings'),
+                            'customTemplates'
+                          ),
+                          'forgotPassword'
+                        ),
+                        'emailSubject',
+                        ''
+                      ),
+                      emailMessage: getString(
+                        getRecord(
+                          getRecord(
+                            getRecord(getRecord(cognitoConfig, 'userPool'), 'emailSettings'),
+                            'customTemplates'
+                          ),
+                          'forgotPassword'
+                        ),
+                        'emailMessage',
+                        ''
+                      ),
+                      emailMessageByLink: getString(
+                        getRecord(
+                          getRecord(
+                            getRecord(getRecord(cognitoConfig, 'userPool'), 'emailSettings'),
+                            'customTemplates'
+                          ),
+                          'forgotPassword'
+                        ),
+                        'emailMessageByLink',
+                        ''
+                      ),
+                    }
+                  : undefined,
+              }
+            : undefined,
+        },
+        accountRecovery: (getRecord(cognitoConfig, 'userPool').accountRecovery as string[]) || [
+          'verified_email',
+        ],
+        deletionProtection: getBoolean(
+          getRecord(cognitoConfig, 'userPool'),
+          'deletionProtection',
+          false
+        ),
+        security: getRecord(cognitoConfig, 'userPool').security
+          ? {
+              enableAdvancedSecurity: getBoolean(
+                getRecord(getRecord(cognitoConfig, 'userPool'), 'security'),
+                'enableAdvancedSecurity',
+                false
+              ),
+              enableCompromisedCredentialsCheck: getBoolean(
+                getRecord(getRecord(cognitoConfig, 'userPool'), 'security'),
+                'enableCompromisedCredentialsCheck',
+                false
+              ),
+              enableRiskBasedAccessControl: getBoolean(
+                getRecord(getRecord(cognitoConfig, 'userPool'), 'security'),
+                'enableRiskBasedAccessControl',
+                false
+              ),
+              mfaConfiguration: getString(
+                getRecord(getRecord(cognitoConfig, 'userPool'), 'security'),
+                'mfaConfiguration',
+                'OFF'
+              ),
+              mfaTypes:
+                (getRecord(getRecord(cognitoConfig, 'userPool'), 'security')
+                  .mfaTypes as string[]) || [],
+              deviceConfiguration: {
+                challengeRequiredOnNewDevice: getBoolean(
+                  getRecord(
+                    getRecord(getRecord(cognitoConfig, 'userPool'), 'security'),
+                    'deviceConfiguration'
+                  ),
+                  'challengeRequiredOnNewDevice',
+                  false
+                ),
+                deviceOnlyRememberedOnUserPrompt: getBoolean(
+                  getRecord(
+                    getRecord(getRecord(cognitoConfig, 'userPool'), 'security'),
+                    'deviceConfiguration'
+                  ),
+                  'deviceOnlyRememberedOnUserPrompt',
+                  false
+                ),
+              },
+              userInvitation: {
+                emailSubject: getString(
+                  getRecord(
+                    getRecord(getRecord(cognitoConfig, 'userPool'), 'security'),
+                    'userInvitation'
+                  ),
+                  'emailSubject',
+                  'Goal Mandala - アカウント作成のご案内'
+                ),
+                emailMessage: getString(
+                  getRecord(
+                    getRecord(getRecord(cognitoConfig, 'userPool'), 'security'),
+                    'userInvitation'
+                  ),
+                  'emailMessage',
+                  'Goal Mandalaへようこそ！\n\nユーザー名: {username}\n一時パスワード: {####}\n\n初回ログイン時にパスワードの変更が必要です。'
+                ),
+                smsMessage: getString(
+                  getRecord(
+                    getRecord(getRecord(cognitoConfig, 'userPool'), 'security'),
+                    'userInvitation'
+                  ),
+                  'smsMessage',
+                  'Goal Mandala - ユーザー名: {username} 一時パスワード: {####}'
+                ),
+              },
+              verification: {
+                emailSubject: getString(
+                  getRecord(
+                    getRecord(getRecord(cognitoConfig, 'userPool'), 'security'),
+                    'verification'
+                  ),
+                  'emailSubject',
+                  'Goal Mandala - メールアドレス確認'
+                ),
+                emailMessage: getString(
+                  getRecord(
+                    getRecord(getRecord(cognitoConfig, 'userPool'), 'security'),
+                    'verification'
+                  ),
+                  'emailMessage',
+                  'Goal Mandalaのメールアドレス確認コード: {####}'
+                ),
+                smsMessage: getString(
+                  getRecord(
+                    getRecord(getRecord(cognitoConfig, 'userPool'), 'security'),
+                    'verification'
+                  ),
+                  'smsMessage',
+                  'Goal Mandala確認コード: {####}'
+                ),
+              },
+            }
+          : undefined,
+      },
+      userPoolClient: {
+        authFlows: {
+          allowUserSrpAuth: getBoolean(
+            getRecord(getRecord(cognitoConfig, 'userPoolClient'), 'authFlows'),
+            'allowUserSrpAuth',
+            true
+          ),
+          allowRefreshTokenAuth: getBoolean(
+            getRecord(getRecord(cognitoConfig, 'userPoolClient'), 'authFlows'),
+            'allowRefreshTokenAuth',
+            true
+          ),
+          allowUserPasswordAuth: getBoolean(
+            getRecord(getRecord(cognitoConfig, 'userPoolClient'), 'authFlows'),
+            'allowUserPasswordAuth',
+            false
+          ),
+          allowAdminUserPasswordAuth: getBoolean(
+            getRecord(getRecord(cognitoConfig, 'userPoolClient'), 'authFlows'),
+            'allowAdminUserPasswordAuth',
+            false
+          ),
+          allowCustomAuth: getBoolean(
+            getRecord(getRecord(cognitoConfig, 'userPoolClient'), 'authFlows'),
+            'allowCustomAuth',
+            false
+          ),
+        },
+        tokenValidity: {
+          accessToken: getNumber(
+            getRecord(getRecord(cognitoConfig, 'userPoolClient'), 'tokenValidity'),
+            'accessToken',
+            60
+          ),
+          idToken: getNumber(
+            getRecord(getRecord(cognitoConfig, 'userPoolClient'), 'tokenValidity'),
+            'idToken',
+            60
+          ),
+          refreshToken: getNumber(
+            getRecord(getRecord(cognitoConfig, 'userPoolClient'), 'tokenValidity'),
+            'refreshToken',
+            43200
+          ),
+        },
+        oAuth: {
+          flows: {
+            authorizationCodeGrant: getBoolean(
+              getRecord(getRecord(getRecord(cognitoConfig, 'userPoolClient'), 'oAuth'), 'flows'),
+              'authorizationCodeGrant',
+              true
+            ),
+            implicitCodeGrant: getBoolean(
+              getRecord(getRecord(getRecord(cognitoConfig, 'userPoolClient'), 'oAuth'), 'flows'),
+              'implicitCodeGrant',
+              false
+            ),
+            clientCredentials: getBoolean(
+              getRecord(getRecord(getRecord(cognitoConfig, 'userPoolClient'), 'oAuth'), 'flows'),
+              'clientCredentials',
+              false
+            ),
+          },
+          scopes: (getRecord(getRecord(cognitoConfig, 'userPoolClient'), 'oAuth')
+            .scopes as string[]) || ['openid', 'email', 'profile'],
+          callbackUrls: (getRecord(getRecord(cognitoConfig, 'userPoolClient'), 'oAuth')
+            .callbackUrls as string[]) || ['http://localhost:3000/auth/callback'],
+          logoutUrls: (getRecord(getRecord(cognitoConfig, 'userPoolClient'), 'oAuth')
+            .logoutUrls as string[]) || ['http://localhost:3000/auth/logout'],
+        },
+        preventUserExistenceErrors: getBoolean(
+          getRecord(cognitoConfig, 'userPoolClient'),
+          'preventUserExistenceErrors',
+          true
+        ),
+        enableTokenRevocation: getBoolean(
+          getRecord(cognitoConfig, 'userPoolClient'),
+          'enableTokenRevocation',
+          true
+        ),
+        generateSecret: getBoolean(
+          getRecord(cognitoConfig, 'userPoolClient'),
+          'generateSecret',
+          false
+        ),
+        supportedIdentityProviders: (getRecord(cognitoConfig, 'userPoolClient')
+          .supportedIdentityProviders as string[]) || ['COGNITO'],
+        readAttributes:
+          (getRecord(cognitoConfig, 'userPoolClient').readAttributes as string[]) || undefined,
+        writeAttributes:
+          (getRecord(cognitoConfig, 'userPoolClient').writeAttributes as string[]) || undefined,
+        explicitAuthFlows:
+          (getRecord(cognitoConfig, 'userPoolClient').explicitAuthFlows as string[]) || undefined,
+        enablePropagateAdditionalUserContextData: getBoolean(
+          getRecord(cognitoConfig, 'userPoolClient'),
+          'enablePropagateAdditionalUserContextData',
+          false
+        ),
+        authSessionValidity: getNumber(
+          getRecord(cognitoConfig, 'userPoolClient'),
+          'authSessionValidity',
+          3
+        ),
+      },
+      tags: getRecord(cognitoConfig, 'tags') as Record<string, string>,
+      iam: parseIamConfig(cognitoConfig),
     },
     lambda: {
       runtime: getString(lambdaConfig, 'runtime', constants.LAMBDA.RUNTIME),
@@ -894,6 +1627,229 @@ function validateSecretsManagerConfig(
 
   if (secretsManager.tags !== undefined) {
     validateTagsConfig(secretsManager.tags as Record<string, unknown>, errors);
+  }
+}
+
+function validateCognitoConfig(cognito: Record<string, unknown>, errors: string[]): void {
+  if (!cognito.userPool || typeof cognito.userPool !== 'object') {
+    errors.push('cognito.userPool is required and must be an object');
+    return;
+  }
+
+  if (!cognito.userPoolClient || typeof cognito.userPoolClient !== 'object') {
+    errors.push('cognito.userPoolClient is required and must be an object');
+    return;
+  }
+
+  const userPool = cognito.userPool as Record<string, unknown>;
+  const userPoolClient = cognito.userPoolClient as Record<string, unknown>;
+
+  // User Pool設定の検証
+  if (!userPool.passwordPolicy || typeof userPool.passwordPolicy !== 'object') {
+    errors.push('cognito.userPool.passwordPolicy is required and must be an object');
+  } else {
+    const passwordPolicy = userPool.passwordPolicy as Record<string, unknown>;
+
+    if (
+      typeof passwordPolicy.minLength !== 'number' ||
+      passwordPolicy.minLength < 6 ||
+      passwordPolicy.minLength > 99
+    ) {
+      errors.push('cognito.userPool.passwordPolicy.minLength must be a number between 6 and 99');
+    }
+
+    if (typeof passwordPolicy.requireLowercase !== 'boolean') {
+      errors.push('cognito.userPool.passwordPolicy.requireLowercase must be a boolean');
+    }
+
+    if (typeof passwordPolicy.requireUppercase !== 'boolean') {
+      errors.push('cognito.userPool.passwordPolicy.requireUppercase must be a boolean');
+    }
+
+    if (typeof passwordPolicy.requireNumbers !== 'boolean') {
+      errors.push('cognito.userPool.passwordPolicy.requireNumbers must be a boolean');
+    }
+
+    if (typeof passwordPolicy.requireSymbols !== 'boolean') {
+      errors.push('cognito.userPool.passwordPolicy.requireSymbols must be a boolean');
+    }
+
+    if (
+      typeof passwordPolicy.tempPasswordValidityDays !== 'number' ||
+      passwordPolicy.tempPasswordValidityDays < 1 ||
+      passwordPolicy.tempPasswordValidityDays > 365
+    ) {
+      errors.push(
+        'cognito.userPool.passwordPolicy.tempPasswordValidityDays must be a number between 1 and 365'
+      );
+    }
+  }
+
+  if (typeof userPool.selfSignUpEnabled !== 'boolean') {
+    errors.push('cognito.userPool.selfSignUpEnabled must be a boolean');
+  }
+
+  if (!Array.isArray(userPool.autoVerify)) {
+    errors.push('cognito.userPool.autoVerify must be an array');
+  } else {
+    const validAutoVerifyOptions = ['email', 'phone_number'];
+    for (const option of userPool.autoVerify as unknown[]) {
+      if (typeof option !== 'string' || !validAutoVerifyOptions.includes(option)) {
+        errors.push(
+          `cognito.userPool.autoVerify must contain only: ${validAutoVerifyOptions.join(', ')}`
+        );
+        break;
+      }
+    }
+  }
+
+  if (!userPool.standardAttributes || typeof userPool.standardAttributes !== 'object') {
+    errors.push('cognito.userPool.standardAttributes is required and must be an object');
+  }
+
+  if (!userPool.customAttributes || typeof userPool.customAttributes !== 'object') {
+    errors.push('cognito.userPool.customAttributes is required and must be an object');
+  }
+
+  if (!userPool.emailSettings || typeof userPool.emailSettings !== 'object') {
+    errors.push('cognito.userPool.emailSettings is required and must be an object');
+  } else {
+    const emailSettings = userPool.emailSettings as Record<string, unknown>;
+
+    if (typeof emailSettings.fromEmail !== 'string') {
+      errors.push('cognito.userPool.emailSettings.fromEmail must be a string');
+    } else {
+      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailPattern.test(emailSettings.fromEmail)) {
+        errors.push('cognito.userPool.emailSettings.fromEmail must be a valid email address');
+      }
+    }
+
+    if (typeof emailSettings.fromName !== 'string') {
+      errors.push('cognito.userPool.emailSettings.fromName must be a string');
+    }
+
+    if (typeof emailSettings.replyToEmail !== 'string') {
+      errors.push('cognito.userPool.emailSettings.replyToEmail must be a string');
+    } else {
+      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailPattern.test(emailSettings.replyToEmail)) {
+        errors.push('cognito.userPool.emailSettings.replyToEmail must be a valid email address');
+      }
+    }
+  }
+
+  if (!Array.isArray(userPool.accountRecovery)) {
+    errors.push('cognito.userPool.accountRecovery must be an array');
+  } else {
+    const validRecoveryOptions = ['verified_email', 'verified_phone_number', 'admin_only'];
+    for (const option of userPool.accountRecovery as unknown[]) {
+      if (typeof option !== 'string' || !validRecoveryOptions.includes(option)) {
+        errors.push(
+          `cognito.userPool.accountRecovery must contain only: ${validRecoveryOptions.join(', ')}`
+        );
+        break;
+      }
+    }
+  }
+
+  if (typeof userPool.deletionProtection !== 'boolean') {
+    errors.push('cognito.userPool.deletionProtection must be a boolean');
+  }
+
+  // User Pool Client設定の検証
+  if (!userPoolClient.authFlows || typeof userPoolClient.authFlows !== 'object') {
+    errors.push('cognito.userPoolClient.authFlows is required and must be an object');
+  } else {
+    const authFlows = userPoolClient.authFlows as Record<string, unknown>;
+
+    if (typeof authFlows.allowUserSrpAuth !== 'boolean') {
+      errors.push('cognito.userPoolClient.authFlows.allowUserSrpAuth must be a boolean');
+    }
+
+    if (typeof authFlows.allowRefreshTokenAuth !== 'boolean') {
+      errors.push('cognito.userPoolClient.authFlows.allowRefreshTokenAuth must be a boolean');
+    }
+
+    if (typeof authFlows.allowUserPasswordAuth !== 'boolean') {
+      errors.push('cognito.userPoolClient.authFlows.allowUserPasswordAuth must be a boolean');
+    }
+  }
+
+  if (!userPoolClient.tokenValidity || typeof userPoolClient.tokenValidity !== 'object') {
+    errors.push('cognito.userPoolClient.tokenValidity is required and must be an object');
+  } else {
+    const tokenValidity = userPoolClient.tokenValidity as Record<string, unknown>;
+
+    if (
+      typeof tokenValidity.accessToken !== 'number' ||
+      tokenValidity.accessToken < 5 ||
+      tokenValidity.accessToken > 86400
+    ) {
+      errors.push(
+        'cognito.userPoolClient.tokenValidity.accessToken must be a number between 5 and 86400 minutes'
+      );
+    }
+
+    if (
+      typeof tokenValidity.idToken !== 'number' ||
+      tokenValidity.idToken < 5 ||
+      tokenValidity.idToken > 86400
+    ) {
+      errors.push(
+        'cognito.userPoolClient.tokenValidity.idToken must be a number between 5 and 86400 minutes'
+      );
+    }
+
+    if (
+      typeof tokenValidity.refreshToken !== 'number' ||
+      tokenValidity.refreshToken < 60 ||
+      tokenValidity.refreshToken > 315360000
+    ) {
+      errors.push(
+        'cognito.userPoolClient.tokenValidity.refreshToken must be a number between 60 and 315360000 minutes'
+      );
+    }
+  }
+
+  if (!userPoolClient.oAuth || typeof userPoolClient.oAuth !== 'object') {
+    errors.push('cognito.userPoolClient.oAuth is required and must be an object');
+  } else {
+    const oAuth = userPoolClient.oAuth as Record<string, unknown>;
+
+    if (!Array.isArray(oAuth.scopes)) {
+      errors.push('cognito.userPoolClient.oAuth.scopes must be an array');
+    } else {
+      const validScopes = ['openid', 'email', 'profile', 'phone', 'aws.cognito.signin.user.admin'];
+      for (const scope of oAuth.scopes as unknown[]) {
+        if (typeof scope !== 'string' || !validScopes.includes(scope)) {
+          errors.push(
+            `cognito.userPoolClient.oAuth.scopes must contain only: ${validScopes.join(', ')}`
+          );
+          break;
+        }
+      }
+    }
+
+    if (!Array.isArray(oAuth.callbackUrls)) {
+      errors.push('cognito.userPoolClient.oAuth.callbackUrls must be an array');
+    }
+
+    if (!Array.isArray(oAuth.logoutUrls)) {
+      errors.push('cognito.userPoolClient.oAuth.logoutUrls must be an array');
+    }
+  }
+
+  if (typeof userPoolClient.preventUserExistenceErrors !== 'boolean') {
+    errors.push('cognito.userPoolClient.preventUserExistenceErrors must be a boolean');
+  }
+
+  if (typeof userPoolClient.enableTokenRevocation !== 'boolean') {
+    errors.push('cognito.userPoolClient.enableTokenRevocation must be a boolean');
+  }
+
+  if (cognito.tags !== undefined) {
+    validateTagsConfig(cognito.tags as Record<string, unknown>, errors);
   }
 }
 

@@ -51,6 +51,212 @@
       "Tier": "development"
     }
   },
+  "cognito": {
+    "userPool": {
+      "passwordPolicy": {
+        "minLength": 8,
+        "requireLowercase": true,
+        "requireUppercase": true,
+        "requireNumbers": true,
+        "requireSymbols": true,
+        "tempPasswordValidityDays": 7
+      },
+      "selfSignUpEnabled": true,
+      "autoVerify": ["email"],
+      "standardAttributes": {
+        "email": {
+          "required": true,
+          "mutable": true
+        },
+        "name": {
+          "required": true,
+          "mutable": true
+        }
+      },
+      "customAttributes": {
+        "industry": {
+          "mutable": true
+        },
+        "company_size": {
+          "mutable": true
+        },
+        "job_title": {
+          "mutable": true
+        },
+        "position": {
+          "mutable": true
+        }
+      },
+      "emailSettings": {
+        "fromEmail": "noreply@goal-mandala-dev.example.com",
+        "fromName": "Goal Mandala Dev",
+        "replyToEmail": "support@goal-mandala-dev.example.com",
+        "useSes": false,
+        "sesConfigurationSet": null,
+        "customTemplates": {
+          "verification": {
+            "emailSubject": "Goal Mandala - メールアドレス確認",
+            "emailMessage": "Goal Mandalaへようこそ！\n\nメールアドレスの確認を行ってください。\n\n確認コード: {####}\n\nこのコードをアプリケーションに入力してください。\n\n※このメールに心当たりがない場合は、このメールを無視してください。",
+            "emailMessageByLink": "Goal Mandalaへようこそ！\n\nメールアドレスの確認を行ってください。\n\n以下のリンクをクリックして確認を完了してください：\n{##確認リンク##}\n\n※このメールに心当たりがない場合は、このメールを無視してください。"
+          },
+          "invitation": {
+            "emailSubject": "Goal Mandala - アカウント作成のご案内",
+            "emailMessage": "Goal Mandalaへようこそ！\n\nアカウントが作成されました。以下の情報でログインしてください。\n\nユーザー名: {username}\n一時パスワード: {####}\n\n初回ログイン時にパスワードの変更が必要です。\n\nログインURL: https://goal-mandala-dev.example.com/login\n\nご不明な点がございましたら、サポートまでお問い合わせください。"
+          },
+          "forgotPassword": {
+            "emailSubject": "Goal Mandala - パスワードリセット",
+            "emailMessage": "Goal Mandalaのパスワードリセット要求を受け付けました。\n\n確認コード: {####}\n\nこのコードを使用して新しいパスワードを設定してください。\n\n※このメールに心当たりがない場合は、このメールを無視してください。",
+            "emailMessageByLink": "Goal Mandalaのパスワードリセット要求を受け付けました。\n\n以下のリンクをクリックして新しいパスワードを設定してください：\n{##リセットリンク##}\n\n※このメールに心当たりがない場合は、このメールを無視してください。"
+          }
+        }
+      },
+      "accountRecovery": ["verified_email"],
+      "deletionProtection": false,
+      "security": {
+        "enableAdvancedSecurity": false,
+        "enableCompromisedCredentialsCheck": false,
+        "enableRiskBasedAccessControl": false,
+        "mfaConfiguration": "OFF",
+        "mfaTypes": [],
+        "deviceConfiguration": {
+          "challengeRequiredOnNewDevice": false,
+          "deviceOnlyRememberedOnUserPrompt": false
+        },
+        "userInvitation": {
+          "emailSubject": "Goal Mandala - アカウント作成のご案内",
+          "emailMessage": "Goal Mandalaへようこそ！\n\nユーザー名: {username}\n一時パスワード: {####}\n\n初回ログイン時にパスワードの変更が必要です。",
+          "smsMessage": "Goal Mandala - ユーザー名: {username} 一時パスワード: {####}"
+        },
+        "verification": {
+          "emailSubject": "Goal Mandala - メールアドレス確認",
+          "emailMessage": "Goal Mandalaのメールアドレス確認コード: {####}",
+          "smsMessage": "Goal Mandala確認コード: {####}"
+        }
+      }
+    },
+    "userPoolClient": {
+      "authFlows": {
+        "allowUserSrpAuth": true,
+        "allowRefreshTokenAuth": true,
+        "allowUserPasswordAuth": false,
+        "allowAdminUserPasswordAuth": false,
+        "allowCustomAuth": false
+      },
+      "tokenValidity": {
+        "accessToken": 60,
+        "idToken": 60,
+        "refreshToken": 43200
+      },
+      "oAuth": {
+        "flows": {
+          "authorizationCodeGrant": true,
+          "implicitCodeGrant": false,
+          "clientCredentials": false
+        },
+        "scopes": ["openid", "email", "profile"],
+        "callbackUrls": ["http://localhost:3000/auth/callback", "http://localhost:3000/"],
+        "logoutUrls": ["http://localhost:3000/auth/logout", "http://localhost:3000/"]
+      },
+      "preventUserExistenceErrors": true,
+      "enableTokenRevocation": true,
+      "generateSecret": false,
+      "supportedIdentityProviders": ["COGNITO"],
+      "readAttributes": [
+        "email",
+        "name",
+        "custom:industry",
+        "custom:company_size",
+        "custom:job_title",
+        "custom:position"
+      ],
+      "writeAttributes": [
+        "name",
+        "custom:industry",
+        "custom:company_size",
+        "custom:job_title",
+        "custom:position"
+      ],
+      "explicitAuthFlows": ["ALLOW_USER_SRP_AUTH", "ALLOW_REFRESH_TOKEN_AUTH"],
+      "enablePropagateAdditionalUserContextData": false,
+      "authSessionValidity": 3
+    },
+    "tags": {
+      "Component": "cognito",
+      "Purpose": "user-authentication",
+      "Tier": "development"
+    },
+    "iam": {
+      "lambdaRole": {
+        "enableDetailedLogging": true,
+        "cognitoPermissions": {
+          "userOperations": {
+            "enabled": true,
+            "actions": [
+              "cognito-idp:GetUser",
+              "cognito-idp:ListUsers",
+              "cognito-idp:AdminGetUser",
+              "cognito-idp:AdminUpdateUserAttributes",
+              "cognito-idp:AdminSetUserPassword",
+              "cognito-idp:AdminCreateUser",
+              "cognito-idp:AdminDeleteUser",
+              "cognito-idp:AdminDisableUser",
+              "cognito-idp:AdminEnableUser"
+            ]
+          },
+          "groupOperations": {
+            "enabled": true,
+            "actions": [
+              "cognito-idp:ListGroups",
+              "cognito-idp:GetGroup",
+              "cognito-idp:AdminListGroupsForUser",
+              "cognito-idp:AdminAddUserToGroup",
+              "cognito-idp:AdminRemoveUserFromGroup"
+            ]
+          },
+          "authOperations": {
+            "enabled": true,
+            "actions": [
+              "cognito-idp:InitiateAuth",
+              "cognito-idp:RespondToAuthChallenge",
+              "cognito-idp:ConfirmSignUp",
+              "cognito-idp:ResendConfirmationCode",
+              "cognito-idp:ForgotPassword",
+              "cognito-idp:ConfirmForgotPassword"
+            ]
+          },
+          "adminOperations": {
+            "enabled": true,
+            "actions": [
+              "cognito-idp:AdminConfirmSignUp",
+              "cognito-idp:AdminInitiateAuth",
+              "cognito-idp:AdminRespondToAuthChallenge",
+              "cognito-idp:AdminResetUserPassword",
+              "cognito-idp:AdminSetUserMFAPreference"
+            ]
+          }
+        },
+        "additionalPolicies": {
+          "sesAccess": {
+            "enabled": false,
+            "actions": ["ses:SendEmail", "ses:SendRawEmail"]
+          },
+          "secretsManagerAccess": {
+            "enabled": true,
+            "actions": ["secretsmanager:GetSecretValue"]
+          },
+          "logsAccess": {
+            "enabled": true,
+            "actions": ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"]
+          }
+        },
+        "resourceRestrictions": {
+          "enableResourceBasedAccess": true,
+          "allowedUserPoolArns": ["*"],
+          "allowedSecretArns": ["*"]
+        }
+      }
+    }
+  },
   "lambda": {
     "timeout": 30,
     "memorySize": 256

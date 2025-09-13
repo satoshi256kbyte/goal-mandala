@@ -46,6 +46,198 @@
       "Tier": "test"
     }
   },
+  "cognito": {
+    "userPool": {
+      "passwordPolicy": {
+        "minLength": 6,
+        "requireLowercase": false,
+        "requireUppercase": false,
+        "requireNumbers": false,
+        "requireSymbols": false,
+        "tempPasswordValidityDays": 7
+      },
+      "selfSignUpEnabled": true,
+      "autoVerify": ["email"],
+      "standardAttributes": {
+        "email": {
+          "required": true,
+          "mutable": true
+        },
+        "name": {
+          "required": true,
+          "mutable": true
+        }
+      },
+      "customAttributes": {
+        "industry": {
+          "mutable": true
+        },
+        "company_size": {
+          "mutable": true
+        },
+        "job_title": {
+          "mutable": true
+        },
+        "position": {
+          "mutable": true
+        }
+      },
+      "emailSettings": {
+        "fromEmail": "noreply@test.goal-mandala.example.com",
+        "fromName": "Goal Mandala Test",
+        "replyToEmail": "support@test.goal-mandala.example.com"
+      },
+      "accountRecovery": ["verified_email"],
+      "deletionProtection": false,
+      "security": {
+        "enableAdvancedSecurity": false,
+        "enableCompromisedCredentialsCheck": false,
+        "enableRiskBasedAccessControl": false,
+        "mfaConfiguration": "OFF",
+        "mfaTypes": [],
+        "deviceConfiguration": {
+          "challengeRequiredOnNewDevice": false,
+          "deviceOnlyRememberedOnUserPrompt": false
+        },
+        "userInvitation": {
+          "emailSubject": "Goal Mandala Test - アカウント作成のご案内",
+          "emailMessage": "Goal Mandala Testへようこそ！\n\nユーザー名: {username}\n一時パスワード: {####}\n\n初回ログイン時にパスワードの変更が必要です。",
+          "smsMessage": "Goal Mandala Test - ユーザー名: {username} 一時パスワード: {####}"
+        },
+        "verification": {
+          "emailSubject": "Goal Mandala Test - メールアドレス確認",
+          "emailMessage": "Goal Mandala Testのメールアドレス確認コード: {####}",
+          "smsMessage": "Goal Mandala Test確認コード: {####}"
+        }
+      }
+    },
+    "userPoolClient": {
+      "authFlows": {
+        "allowUserSrpAuth": true,
+        "allowRefreshTokenAuth": true,
+        "allowUserPasswordAuth": true,
+        "allowAdminUserPasswordAuth": true,
+        "allowCustomAuth": false
+      },
+      "tokenValidity": {
+        "accessToken": 60,
+        "idToken": 60,
+        "refreshToken": 43200
+      },
+      "oAuth": {
+        "flows": {
+          "authorizationCodeGrant": true,
+          "implicitCodeGrant": false,
+          "clientCredentials": false
+        },
+        "scopes": ["openid", "email", "profile"],
+        "callbackUrls": ["http://localhost:3000/auth/callback", "http://localhost:3000/"],
+        "logoutUrls": ["http://localhost:3000/auth/logout", "http://localhost:3000/"]
+      },
+      "preventUserExistenceErrors": false,
+      "enableTokenRevocation": false,
+      "generateSecret": false,
+      "supportedIdentityProviders": ["COGNITO"],
+      "readAttributes": [
+        "email",
+        "name",
+        "custom:industry",
+        "custom:company_size",
+        "custom:job_title",
+        "custom:position"
+      ],
+      "writeAttributes": [
+        "name",
+        "custom:industry",
+        "custom:company_size",
+        "custom:job_title",
+        "custom:position"
+      ],
+      "explicitAuthFlows": [
+        "ALLOW_USER_SRP_AUTH",
+        "ALLOW_REFRESH_TOKEN_AUTH",
+        "ALLOW_USER_PASSWORD_AUTH"
+      ],
+      "enablePropagateAdditionalUserContextData": false,
+      "authSessionValidity": 3
+    },
+    "tags": {
+      "Component": "cognito",
+      "Purpose": "user-authentication",
+      "Tier": "test"
+    },
+    "iam": {
+      "lambdaRole": {
+        "enableDetailedLogging": true,
+        "cognitoPermissions": {
+          "userOperations": {
+            "enabled": true,
+            "actions": [
+              "cognito-idp:GetUser",
+              "cognito-idp:ListUsers",
+              "cognito-idp:AdminGetUser",
+              "cognito-idp:AdminUpdateUserAttributes",
+              "cognito-idp:AdminSetUserPassword",
+              "cognito-idp:AdminCreateUser",
+              "cognito-idp:AdminDeleteUser",
+              "cognito-idp:AdminDisableUser",
+              "cognito-idp:AdminEnableUser"
+            ]
+          },
+          "groupOperations": {
+            "enabled": true,
+            "actions": [
+              "cognito-idp:ListGroups",
+              "cognito-idp:GetGroup",
+              "cognito-idp:AdminListGroupsForUser",
+              "cognito-idp:AdminAddUserToGroup",
+              "cognito-idp:AdminRemoveUserFromGroup"
+            ]
+          },
+          "authOperations": {
+            "enabled": true,
+            "actions": [
+              "cognito-idp:InitiateAuth",
+              "cognito-idp:RespondToAuthChallenge",
+              "cognito-idp:ConfirmSignUp",
+              "cognito-idp:ResendConfirmationCode",
+              "cognito-idp:ForgotPassword",
+              "cognito-idp:ConfirmForgotPassword"
+            ]
+          },
+          "adminOperations": {
+            "enabled": true,
+            "actions": [
+              "cognito-idp:AdminConfirmSignUp",
+              "cognito-idp:AdminInitiateAuth",
+              "cognito-idp:AdminRespondToAuthChallenge",
+              "cognito-idp:AdminResetUserPassword",
+              "cognito-idp:AdminSetUserMFAPreference"
+            ]
+          }
+        },
+        "additionalPolicies": {
+          "sesAccess": {
+            "enabled": false,
+            "actions": ["ses:SendEmail", "ses:SendRawEmail"]
+          },
+          "secretsManagerAccess": {
+            "enabled": true,
+            "actions": ["secretsmanager:GetSecretValue"]
+          },
+          "logsAccess": {
+            "enabled": true,
+            "actions": ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"]
+          }
+        },
+        "resourceRestrictions": {
+          "enableResourceBasedAccess": false,
+          "allowedUserPoolArns": ["*"],
+          "allowedSecretArns": ["*"]
+        }
+      }
+    }
+  },
   "lambda": {
     "timeout": 30,
     "memorySize": 128

@@ -3,8 +3,9 @@ import * as apigateway from 'aws-cdk-lib/aws-apigateway';
 // import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
+import * as cognito from 'aws-cdk-lib/aws-cognito';
+import * as iam from 'aws-cdk-lib/aws-iam';
 import * as logs from 'aws-cdk-lib/aws-logs';
-// import * as iam from 'aws-cdk-lib/aws-iam';
 import { Construct } from 'constructs';
 import { LambdaConstruct } from '../constructs/lambda-construct';
 import { EnvironmentConfig } from '../config/environment';
@@ -14,6 +15,9 @@ export interface ApiStackProps extends cdk.StackProps {
   vpc: ec2.IVpc;
   lambdaSecurityGroup: ec2.ISecurityGroup;
   databaseSecret: secretsmanager.ISecret;
+  userPool: cognito.IUserPool;
+  userPoolClient: cognito.IUserPoolClient;
+  cognitoLambdaRole: iam.IRole;
 }
 
 export class ApiStack extends cdk.Stack {
@@ -23,7 +27,15 @@ export class ApiStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: ApiStackProps) {
     super(scope, id, props);
 
-    const { config, vpc, lambdaSecurityGroup, databaseSecret } = props;
+    const {
+      config,
+      vpc,
+      lambdaSecurityGroup,
+      databaseSecret,
+      userPool,
+      userPoolClient,
+      cognitoLambdaRole,
+    } = props;
 
     // Lambda コンストラクト作成
     this.lambdaConstruct = new LambdaConstruct(this, 'LambdaConstruct', {
@@ -31,6 +43,9 @@ export class ApiStack extends cdk.Stack {
       securityGroup: lambdaSecurityGroup,
       databaseSecret,
       config,
+      userPool,
+      userPoolClient,
+      cognitoLambdaRole,
     });
 
     // API Gateway アクセスログ用 CloudWatch Logs グループ
@@ -38,6 +53,13 @@ export class ApiStack extends cdk.Stack {
       logGroupName: `/aws/apigateway/${config.stackPrefix}-api`,
       retention: logs.RetentionDays.ONE_MONTH,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
+    });
+
+    // Cognito Authorizer作成
+    const cognitoAuthorizer = new apigateway.CognitoUserPoolsAuthorizer(this, 'CognitoAuthorizer', {
+      cognitoUserPools: [userPool],
+      authorizerName: `${config.stackPrefix}-cognito-authorizer`,
+      identitySource: 'method.request.header.Authorization',
     });
 
     // API Gateway 作成
@@ -105,7 +127,7 @@ export class ApiStack extends cdk.Stack {
     this.createLambdaFunctions(config);
 
     // API エンドポイント設定
-    this.setupApiEndpoints(config);
+    this.setupApiEndpoints(config, cognitoAuthorizer);
 
     // タグ設定
     if (config.tags) {
@@ -126,6 +148,25 @@ export class ApiStack extends cdk.Stack {
       value: this.api.restApiId,
       description: 'API Gateway ID',
       exportName: `${config.stackPrefix}-api-id`,
+    });
+
+    // Cognito統合情報の出力
+    new cdk.CfnOutput(this, 'CognitoUserPoolId', {
+      value: userPool.userPoolId,
+      description: 'Cognito User Pool ID used by API',
+      exportName: `${config.stackPrefix}-api-cognito-user-pool-id`,
+    });
+
+    new cdk.CfnOutput(this, 'CognitoUserPoolClientId', {
+      value: userPoolClient.userPoolClientId,
+      description: 'Cognito User Pool Client ID used by API',
+      exportName: `${config.stackPrefix}-api-cognito-user-pool-client-id`,
+    });
+
+    new cdk.CfnOutput(this, 'CognitoAuthorizerName', {
+      value: cognitoAuthorizer.authorizerId,
+      description: 'Cognito Authorizer ID',
+      exportName: `${config.stackPrefix}-api-cognito-authorizer-id`,
     });
   }
 
@@ -179,7 +220,10 @@ export class ApiStack extends cdk.Stack {
   /**
    * API エンドポイントを設定する
    */
-  private setupApiEndpoints(config: EnvironmentConfig): void {
+  private setupApiEndpoints(
+    config: EnvironmentConfig,
+    cognitoAuthorizer: apigateway.CognitoUserPoolsAuthorizer
+  ): void {
     // 認証エンドポイント
     const authResource = this.api.root.addResource('auth');
     const authFunction = this.lambdaConstruct.getFunction(`${config.stackPrefix}-auth`);
@@ -189,75 +233,147 @@ export class ApiStack extends cdk.Stack {
       });
     }
 
-    // 目標管理エンドポイント
+    // 目標管理エンドポイント（認証必須）
     const goalsResource = this.api.root.addResource('goals');
     const goalsFunction = this.lambdaConstruct.getFunction(`${config.stackPrefix}-goals`);
     if (goalsFunction) {
       // 目標一覧取得・作成
-      goalsResource.addMethod('GET', new apigateway.LambdaIntegration(goalsFunction));
-      goalsResource.addMethod('POST', new apigateway.LambdaIntegration(goalsFunction));
+      goalsResource.addMethod('GET', new apigateway.LambdaIntegration(goalsFunction), {
+        authorizer: cognitoAuthorizer,
+        authorizationType: apigateway.AuthorizationType.COGNITO,
+      });
+      goalsResource.addMethod('POST', new apigateway.LambdaIntegration(goalsFunction), {
+        authorizer: cognitoAuthorizer,
+        authorizationType: apigateway.AuthorizationType.COGNITO,
+      });
 
       // 個別目標操作
       const goalResource = goalsResource.addResource('{goalId}');
-      goalResource.addMethod('GET', new apigateway.LambdaIntegration(goalsFunction));
-      goalResource.addMethod('PUT', new apigateway.LambdaIntegration(goalsFunction));
-      goalResource.addMethod('DELETE', new apigateway.LambdaIntegration(goalsFunction));
+      goalResource.addMethod('GET', new apigateway.LambdaIntegration(goalsFunction), {
+        authorizer: cognitoAuthorizer,
+        authorizationType: apigateway.AuthorizationType.COGNITO,
+      });
+      goalResource.addMethod('PUT', new apigateway.LambdaIntegration(goalsFunction), {
+        authorizer: cognitoAuthorizer,
+        authorizationType: apigateway.AuthorizationType.COGNITO,
+      });
+      goalResource.addMethod('DELETE', new apigateway.LambdaIntegration(goalsFunction), {
+        authorizer: cognitoAuthorizer,
+        authorizationType: apigateway.AuthorizationType.COGNITO,
+      });
 
       // サブ目標操作
       const subGoalsResource = goalResource.addResource('subgoals');
-      subGoalsResource.addMethod('GET', new apigateway.LambdaIntegration(goalsFunction));
-      subGoalsResource.addMethod('POST', new apigateway.LambdaIntegration(goalsFunction));
+      subGoalsResource.addMethod('GET', new apigateway.LambdaIntegration(goalsFunction), {
+        authorizer: cognitoAuthorizer,
+        authorizationType: apigateway.AuthorizationType.COGNITO,
+      });
+      subGoalsResource.addMethod('POST', new apigateway.LambdaIntegration(goalsFunction), {
+        authorizer: cognitoAuthorizer,
+        authorizationType: apigateway.AuthorizationType.COGNITO,
+      });
 
       const subGoalResource = subGoalsResource.addResource('{subGoalId}');
-      subGoalResource.addMethod('GET', new apigateway.LambdaIntegration(goalsFunction));
-      subGoalResource.addMethod('PUT', new apigateway.LambdaIntegration(goalsFunction));
-      subGoalResource.addMethod('DELETE', new apigateway.LambdaIntegration(goalsFunction));
+      subGoalResource.addMethod('GET', new apigateway.LambdaIntegration(goalsFunction), {
+        authorizer: cognitoAuthorizer,
+        authorizationType: apigateway.AuthorizationType.COGNITO,
+      });
+      subGoalResource.addMethod('PUT', new apigateway.LambdaIntegration(goalsFunction), {
+        authorizer: cognitoAuthorizer,
+        authorizationType: apigateway.AuthorizationType.COGNITO,
+      });
+      subGoalResource.addMethod('DELETE', new apigateway.LambdaIntegration(goalsFunction), {
+        authorizer: cognitoAuthorizer,
+        authorizationType: apigateway.AuthorizationType.COGNITO,
+      });
 
       // アクション操作
       const actionsResource = subGoalResource.addResource('actions');
-      actionsResource.addMethod('GET', new apigateway.LambdaIntegration(goalsFunction));
-      actionsResource.addMethod('POST', new apigateway.LambdaIntegration(goalsFunction));
+      actionsResource.addMethod('GET', new apigateway.LambdaIntegration(goalsFunction), {
+        authorizer: cognitoAuthorizer,
+        authorizationType: apigateway.AuthorizationType.COGNITO,
+      });
+      actionsResource.addMethod('POST', new apigateway.LambdaIntegration(goalsFunction), {
+        authorizer: cognitoAuthorizer,
+        authorizationType: apigateway.AuthorizationType.COGNITO,
+      });
 
       const actionResource = actionsResource.addResource('{actionId}');
-      actionResource.addMethod('GET', new apigateway.LambdaIntegration(goalsFunction));
-      actionResource.addMethod('PUT', new apigateway.LambdaIntegration(goalsFunction));
-      actionResource.addMethod('DELETE', new apigateway.LambdaIntegration(goalsFunction));
+      actionResource.addMethod('GET', new apigateway.LambdaIntegration(goalsFunction), {
+        authorizer: cognitoAuthorizer,
+        authorizationType: apigateway.AuthorizationType.COGNITO,
+      });
+      actionResource.addMethod('PUT', new apigateway.LambdaIntegration(goalsFunction), {
+        authorizer: cognitoAuthorizer,
+        authorizationType: apigateway.AuthorizationType.COGNITO,
+      });
+      actionResource.addMethod('DELETE', new apigateway.LambdaIntegration(goalsFunction), {
+        authorizer: cognitoAuthorizer,
+        authorizationType: apigateway.AuthorizationType.COGNITO,
+      });
     }
 
-    // タスク管理エンドポイント
+    // タスク管理エンドポイント（認証必須）
     const tasksResource = this.api.root.addResource('tasks');
     const tasksFunction = this.lambdaConstruct.getFunction(`${config.stackPrefix}-tasks`);
     if (tasksFunction) {
       // タスク一覧取得・作成
-      tasksResource.addMethod('GET', new apigateway.LambdaIntegration(tasksFunction));
-      tasksResource.addMethod('POST', new apigateway.LambdaIntegration(tasksFunction));
+      tasksResource.addMethod('GET', new apigateway.LambdaIntegration(tasksFunction), {
+        authorizer: cognitoAuthorizer,
+        authorizationType: apigateway.AuthorizationType.COGNITO,
+      });
+      tasksResource.addMethod('POST', new apigateway.LambdaIntegration(tasksFunction), {
+        authorizer: cognitoAuthorizer,
+        authorizationType: apigateway.AuthorizationType.COGNITO,
+      });
 
       // 個別タスク操作
       const taskResource = tasksResource.addResource('{taskId}');
-      taskResource.addMethod('GET', new apigateway.LambdaIntegration(tasksFunction));
-      taskResource.addMethod('PUT', new apigateway.LambdaIntegration(tasksFunction));
-      taskResource.addMethod('DELETE', new apigateway.LambdaIntegration(tasksFunction));
+      taskResource.addMethod('GET', new apigateway.LambdaIntegration(tasksFunction), {
+        authorizer: cognitoAuthorizer,
+        authorizationType: apigateway.AuthorizationType.COGNITO,
+      });
+      taskResource.addMethod('PUT', new apigateway.LambdaIntegration(tasksFunction), {
+        authorizer: cognitoAuthorizer,
+        authorizationType: apigateway.AuthorizationType.COGNITO,
+      });
+      taskResource.addMethod('DELETE', new apigateway.LambdaIntegration(tasksFunction), {
+        authorizer: cognitoAuthorizer,
+        authorizationType: apigateway.AuthorizationType.COGNITO,
+      });
 
       // タスク状態更新
       const taskStatusResource = taskResource.addResource('status');
-      taskStatusResource.addMethod('PUT', new apigateway.LambdaIntegration(tasksFunction));
+      taskStatusResource.addMethod('PUT', new apigateway.LambdaIntegration(tasksFunction), {
+        authorizer: cognitoAuthorizer,
+        authorizationType: apigateway.AuthorizationType.COGNITO,
+      });
     }
 
-    // AI処理エンドポイント
+    // AI処理エンドポイント（認証必須）
     const aiResource = this.api.root.addResource('ai');
     const aiFunction = this.lambdaConstruct.getFunction(`${config.stackPrefix}-ai-processor`);
     if (aiFunction) {
       // サブ目標生成
       const generateSubGoalsResource = aiResource.addResource('generate-subgoals');
-      generateSubGoalsResource.addMethod('POST', new apigateway.LambdaIntegration(aiFunction));
+      generateSubGoalsResource.addMethod('POST', new apigateway.LambdaIntegration(aiFunction), {
+        authorizer: cognitoAuthorizer,
+        authorizationType: apigateway.AuthorizationType.COGNITO,
+      });
 
       // アクション生成
       const generateActionsResource = aiResource.addResource('generate-actions');
-      generateActionsResource.addMethod('POST', new apigateway.LambdaIntegration(aiFunction));
+      generateActionsResource.addMethod('POST', new apigateway.LambdaIntegration(aiFunction), {
+        authorizer: cognitoAuthorizer,
+        authorizationType: apigateway.AuthorizationType.COGNITO,
+      });
 
       // タスク生成
       const generateTasksResource = aiResource.addResource('generate-tasks');
-      generateTasksResource.addMethod('POST', new apigateway.LambdaIntegration(aiFunction));
+      generateTasksResource.addMethod('POST', new apigateway.LambdaIntegration(aiFunction), {
+        authorizer: cognitoAuthorizer,
+        authorizationType: apigateway.AuthorizationType.COGNITO,
+      });
     }
 
     // ヘルスチェックエンドポイント
