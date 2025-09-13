@@ -1,110 +1,6 @@
 {
-  "name": "default-agent",
-  "version": "1.0.0",
+  "name": "amazon_q_default",
   "description": "Default agent configuration",
-  "mcpServers": {
-    "awslabs.core-mcp-server": {
-      "command": "uvx",
-      "args": [
-        "awslabs.core-mcp-server@latest"
-      ],
-      "env": {
-        "FASTMCP_LOG_LEVEL": "ERROR"
-      }
-    },
-    "awslabs.aws-documentation-mcp-server": {
-      "command": "uvx",
-      "args": [
-        "awslabs.aws-documentation-mcp-server@latest"
-      ],
-      "env": {
-        "FASTMCP_LOG_LEVEL": "ERROR"
-      }
-    },
-    "awslabs.cdk-mcp-server": {
-      "command": "uvx",
-      "args": [
-        "awslabs.cdk-mcp-server@latest"
-      ],
-      "env": {
-        "FASTMCP_LOG_LEVEL": "ERROR"
-      }
-    },
-    "awslabs.aws-api-mcp-server": {
-      "command": "uvx",
-      "args": [
-        "awslabs.aws-api-mcp-server@latest"
-      ],
-      "env": {
-        "AWS_REGION": "us-east-1"
-      }
-    },
-    "aws-knowledge-mcp-server": {
-      "command": "uvx",
-      "args": [
-        "mcp-proxy",
-        "--transport",
-        "streamablehttp",
-        "https://knowledge-mcp.global.api.aws"
-      ]
-    },
-    "awslabs.bedrock-kb-retrieval-mcp-server": {
-      "command": "uvx",
-      "args": [
-        "awslabs.bedrock-kb-retrieval-mcp-server@latest"
-      ],
-      "env": {
-        "AWS_REGION": "us-east-1",
-        "FASTMCP_LOG_LEVEL": "ERROR",
-        "KB_INCLUSION_TAG_KEY": "optional-tag-key-to-filter-kbs",
-        "BEDROCK_KB_RERANKING_ENABLED": "false"
-      }
-    },
-    "awslabs.aws-diagram-mcp-server": {
-      "command": "uvx",
-      "args": [
-        "awslabs.aws-diagram-mcp-server"
-      ],
-      "env": {
-        "FASTMCP_LOG_LEVEL": "ERROR"
-      }
-    },
-    "awslabs.frontend-mcp-server": {
-      "command": "uvx",
-      "args": [
-        "awslabs.frontend-mcp-server@latest"
-      ],
-      "env": {
-        "FASTMCP_LOG_LEVEL": "ERROR"
-      }
-    },
-    "context7": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@upstash/context7-mcp"
-      ]
-    }
-  },
-  "tools": [
-    "@awslabs.core-mcp-server",
-    "@awslabs.aws-documentation-mcp-server",
-    "@awslabs.cdk-mcp-server",
-    "@awslabs.aws-api-mcp-server",
-    "@aws-knowledge-mcp-server",
-    "@awslabs.bedrock-kb-retrieval-mcp-server",
-    "@awslabs.aws-diagram-mcp-server",
-    "@awslabs.frontend-mcp-server",
-    "@context7",
-    "fsRead",
-    "fsWrite",
-    "fsReplace",
-    "listDirectory",
-    "fileSearch",
-    "executeBash",
-    "codeReview",
-    "displayFindings"
-  ],
   "allowedTools": [
     "fsRead",
     "listDirectory",
@@ -128,11 +24,18 @@
       ]
     }
   },
-  "includedFiles": [
-    "AmazonQ.md",
-    "README.md",
-    ".amazonq/rules/**/*.md"
+  "resources": [
+    "file://README.md",
+    "file://CONTRIBUTING.md.md",
+    "file://.kiro/steering/**/*.md",
+    "file://.kiro/specs/**/*.md",
+    "file://docs/**/*.md"
   ],
-  "resources": [],
-  "promptHooks": []
+  "prompt": "",
+  "toolAliases": {},
+  "useLegacyMcpJson": false,
+  "hooks": {
+    "agentSpawn": [],
+    "userPromptSubmit": []
+  }
 }
