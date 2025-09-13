@@ -4,8 +4,9 @@
 
 - ワークパッケージごとにSpecを作成してください。
 - Specのフォルダ名は、`WBS番号-ワークパッケージ名の英語名のハイフン区切り`としてください。
-- [ ] 1つのワークパッケージに対して複数のSpecがある場合は、`WBS番号-`に連番を付与してください。
+- 1つのワークパッケージに対して複数のSpecがある場合は、`WBS番号-`に連番を付与してください。
 - Specの`tasks.md`の作業を全て完了した場合、ワークパッケージにチェックを入れてください。
+- Specに落とし込む時、最後に必ず`npm run format`を実行した上で、`npm run lint`を通してエラーがない状態にするタスクを入れてください。
 
 ## プロジェクト構造
 
@@ -91,12 +92,12 @@
 
 #### 1.3 認証システム構築
 
-- [ ] 1.3.1 Amazon Cognito設定
-  - [ ] 1.3.1.1 User Pool作成
-  - [ ] 1.3.1.2 User Pool Client設定
-  - [ ] 1.3.1.3 パスワードポリシー設定
-  - [ ] 1.3.1.4 属性設定（email, name等）
-  - [ ] 1.3.1.5 Lambda Trigger設定（必要に応じて）
+- [x] 1.3.1 Amazon Cognito設定 (Spec: 1.3.1-cognito-setup)
+  - [x] 1.3.1.1 User Pool作成
+  - [x] 1.3.1.2 User Pool Client設定
+  - [x] 1.3.1.3 パスワードポリシー設定
+  - [x] 1.3.1.4 属性設定（email, name等）
+  - [x] 1.3.1.5 Lambda Trigger設定（必要に応じて）
 
 - [ ] 1.3.2 JWT認証ミドルウェア実装
   - [ ] 1.3.2.1 JWT検証ライブラリ選定・導入
@@ -444,7 +445,7 @@
 - [x] AWS SAM CLI環境 (Spec: 1.1.3-aws-sam-cli-setup - 完了)
 - [x] CDKインフラコード (Spec: 1.2.1-cdk-project-init, 1.2.2-vpc-network-setup, 1.2.3-aurora-serverless-setup, 1.2.4-secrets-manager-setup - 完了)
 - [x] CloudFront + S3構成 (Spec: 1.2.5-cloudfront-s3-setup - 完了)
-- [ ] 認証システム
+- [x] 認証システム (Spec: 1.3.1-cognito-setup - 完了)
 - [ ] データベーススキーマ
 
 ### フェーズ2成果物
@@ -614,24 +615,6 @@
   - [x] ユニットテストの実装
   - [x] 統合テストとドキュメント更新
 
-### 進行中のSpec
-
-#### 1.1.1-monorepo-setup (モノレポ構成設定)
-
-- **状態**: 進行中
-- **対応WBSタスク**: 1.1.1, 1.1.4
-- **進捗**: 12タスク中 11完了
-- **主要タスク**:
-  - [x] ルートpackage.json設定
-  - [x] pnpm workspace設定
-  - [x] turbo.json設定
-  - [x] TypeScript設定
-  - [x] ESLint/Prettier設定
-  - [x] パッケージディレクトリ構造作成
-  - [x] バージョン管理設定確認
-  - [x] 統合テスト実装
-  - [ ] ドキュメント更新
-
 ### 完了済みSpec（新規追加）
 
 #### 1.1.3-aws-sam-cli-setup (AWS SAM CLI環境構築)
@@ -708,6 +691,41 @@
   - [x] ユニットテスト実装
   - [x] 統合テスト実装
   - [x] ドキュメント作成と最終確認
+
+#### 1.3.1-cognito-setup (Amazon Cognito設定)
+
+- **状態**: 完了
+- **対応WBSタスク**: 1.3.1
+- **進捗**: 10タスク中 10完了
+- **主要タスク**:
+  - [x] CognitoStackの基本構造とUser Pool作成
+  - [x] パスワードポリシーとセキュリティ設定実装
+  - [x] User Pool Client設定とOAuth設定実装
+  - [x] メール設定とカスタムテンプレート実装
+  - [x] カスタム属性とユーザー属性設定実装
+  - [x] IAMロールとポリシー設定実装
+  - [x] CloudFormation出力とスタック統合実装
+  - [x] 環境設定ファイルとデプロイ設定実装
+  - [x] ユニットテストの実装
+  - [x] 統合テストとドキュメント作成
+
+### 進行中のSpec
+
+#### 1.1.1-monorepo-setup (モノレポ構成設定)
+
+- **状態**: 進行中
+- **対応WBSタスク**: 1.1.1, 1.1.4
+- **進捗**: 12タスク中 11完了
+- **主要タスク**:
+  - [x] ルートpackage.json設定
+  - [x] pnpm workspace設定
+  - [x] turbo.json設定
+  - [x] TypeScript設定
+  - [x] ESLint/Prettier設定
+  - [x] パッケージディレクトリ構造作成
+  - [x] バージョン管理設定確認
+  - [x] 統合テスト実装
+  - [ ] ドキュメント更新
 
 ### 計画中のSpec
 
