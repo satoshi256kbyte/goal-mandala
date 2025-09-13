@@ -5,14 +5,18 @@
       "args": ["awslabs.aws-documentation-mcp-server@latest"],
       "env": {
         "FASTMCP_LOG_LEVEL": "ERROR"
-      }
+      },
+      "disabled": false,
+      "autoApprove": ["search_documentation"]
     },
     "awslabs.cdk-mcp-server": {
       "command": "uvx",
       "args": ["awslabs.cdk-mcp-server@latest"],
       "env": {
         "FASTMCP_LOG_LEVEL": "ERROR"
-      }
+      },
+      "disabled": false,
+      "autoApprove": []
     },
     "aws-knowledge-mcp-server": {
       "command": "uvx",
@@ -21,7 +25,9 @@
         "--transport",
         "streamablehttp",
         "https://knowledge-mcp.global.api.aws"
-      ]
+      ],
+      "disabled": false,
+      "autoApprove": []
     },
     "awslabs.bedrock-kb-retrieval-mcp-server": {
       "command": "uvx",
@@ -41,8 +47,8 @@
       "env": {
         "FASTMCP_LOG_LEVEL": "ERROR"
       },
-      "autoApprove": [],
-      "disabled": false
+      "disabled": false,
+      "autoApprove": []
     },
     "awslabs.frontend-mcp-server": {
       "command": "uvx",
@@ -55,7 +61,9 @@
     },
     "context7": {
       "command": "npx",
-      "args": ["-y", "@upstash/context7-mcp"]
+      "args": ["-y", "@upstash/context7-mcp"],
+      "disabled": false,
+      "autoApprove": []
     }
   }
 }
