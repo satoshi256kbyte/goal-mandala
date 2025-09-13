@@ -423,6 +423,7 @@ InvalidPasswordException: Password did not conform with policy
    ```
 
 2. **ユーザー向けガイダンス**
+
    ```javascript
    // フロントエンドでのパスワード検証
    const validatePassword = password => {
