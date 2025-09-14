@@ -8,7 +8,7 @@ module.exports = {
   extends: ['eslint:recommended', 'plugin:@typescript-eslint/recommended', 'prettier'],
   parser: '@typescript-eslint/parser',
   plugins: ['@typescript-eslint'],
-  ignorePatterns: ['dist', '.eslintrc.cjs', '*.test.ts'],
+  ignorePatterns: ['dist', '.eslintrc.cjs', '*.test.ts', 'src/middleware/config-examples/**'],
   parserOptions: {
     ecmaVersion: 'latest',
     sourceType: 'module',

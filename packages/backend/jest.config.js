@@ -16,6 +16,7 @@ export default {
       },
     ],
   },
+  transformIgnorePatterns: ['node_modules/(?!(jose|@aws-sdk)/)'],
   collectCoverageFrom: [
     'src/**/*.ts',
     '!src/**/*.d.ts',

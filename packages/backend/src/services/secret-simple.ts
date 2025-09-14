@@ -43,7 +43,28 @@ export interface ExternalApiCredentials {
  * シークレット値の汎用型定義
  */
 export interface SecretValue {
-  [key: string]: any;
+  [key: string]: unknown;
+}
+
+// 型安全な値取得ヘルパー関数
+function getStringValue(obj: SecretValue, key: string, defaultValue = ''): string {
+  const value = obj[key];
+  return typeof value === 'string' ? value : defaultValue;
+}
+
+function getNumberValue(obj: SecretValue, key: string, defaultValue = 0): number {
+  const value = obj[key];
+  if (typeof value === 'number') return value;
+  if (typeof value === 'string') {
+    const parsed = parseInt(value, 10);
+    return isNaN(parsed) ? defaultValue : parsed;
+  }
+  return defaultValue;
+}
+
+function getObjectValue(obj: SecretValue, key: string): Record<string, unknown> {
+  const value = obj[key];
+  return typeof value === 'object' && value !== null ? (value as Record<string, unknown>) : {};
 }
 
 /**
@@ -83,7 +104,7 @@ export interface AlertService {
   sendAlert(
     severity: 'low' | 'medium' | 'high' | 'critical',
     message: string,
-    context?: any
+    context?: Record<string, unknown>
   ): Promise<void>;
 }
 
@@ -92,7 +113,7 @@ export interface AlertService {
  */
 export class SecretService {
   private readonly client: SecretsManagerClient;
-  private readonly cache = new Map<string, { value: any; expiry: number }>();
+  private readonly cache = new Map<string, { value: unknown; expiry: number }>();
   private readonly CACHE_TTL: number;
   private readonly MAX_RETRIES = 3;
   private readonly BASE_DELAY = 1000;
@@ -117,13 +138,13 @@ export class SecretService {
       this.validateDatabaseCredentials(secretValue);
 
       return {
-        username: secretValue.username,
-        password: secretValue.password,
-        engine: secretValue.engine,
-        host: secretValue.host,
-        port: parseInt(secretValue.port.toString(), 10),
-        dbname: secretValue.dbname,
-        dbClusterIdentifier: secretValue.dbClusterIdentifier,
+        username: getStringValue(secretValue, 'username'),
+        password: getStringValue(secretValue, 'password'),
+        engine: getStringValue(secretValue, 'engine'),
+        host: getStringValue(secretValue, 'host'),
+        port: getNumberValue(secretValue, 'port'),
+        dbname: getStringValue(secretValue, 'dbname'),
+        dbClusterIdentifier: getStringValue(secretValue, 'dbClusterIdentifier'),
       };
     } catch (error) {
       const errorCode = this.getErrorCode(error);
@@ -155,7 +176,7 @@ export class SecretService {
         throw new Error('JWT secret not found in secret value');
       }
 
-      return secretValue.secret;
+      return getStringValue(secretValue, 'secret');
     } catch (error) {
       const errorCode = this.getErrorCode(error);
       const errorMessage = `Failed to get JWT secret: ${error instanceof Error ? error.message : 'Unknown error'}`;
@@ -184,10 +205,10 @@ export class SecretService {
       this.validateJwtConfig(secretValue);
 
       return {
-        secret: secretValue.secret,
-        algorithm: secretValue.algorithm || 'HS256',
-        issuer: secretValue.issuer || `goal-mandala-${this.environment}`,
-        expiresIn: secretValue.expiresIn || '24h',
+        secret: getStringValue(secretValue, 'secret'),
+        algorithm: getStringValue(secretValue, 'algorithm', 'HS256'),
+        issuer: getStringValue(secretValue, 'issuer', `goal-mandala-${this.environment}`),
+        expiresIn: getStringValue(secretValue, 'expiresIn', '24h'),
       };
     } catch (error) {
       const errorCode = this.getErrorCode(error);
@@ -216,15 +237,18 @@ export class SecretService {
       const secretValue = await this.getSecretValue(secretId);
       this.validateExternalApiCredentials(secretValue);
 
+      const bedrockConfig = getObjectValue(secretValue, 'bedrock');
+      const sesConfig = getObjectValue(secretValue, 'ses');
+
       return {
         bedrock: {
-          region: secretValue.bedrock?.region || 'ap-northeast-1',
-          modelId: secretValue.bedrock?.modelId || 'amazon.nova-micro-v1:0',
+          region: getStringValue(bedrockConfig, 'region', 'ap-northeast-1'),
+          modelId: getStringValue(bedrockConfig, 'modelId', 'amazon.nova-micro-v1:0'),
         },
         ses: {
-          region: secretValue.ses?.region || 'ap-northeast-1',
-          fromEmail: secretValue.ses?.fromEmail || 'noreply@goal-mandala.com',
-          replyToEmail: secretValue.ses?.replyToEmail || 'support@goal-mandala.com',
+          region: getStringValue(sesConfig, 'region', 'ap-northeast-1'),
+          fromEmail: getStringValue(sesConfig, 'fromEmail', 'noreply@goal-mandala.com'),
+          replyToEmail: getStringValue(sesConfig, 'replyToEmail', 'support@goal-mandala.com'),
         },
       };
     } catch (error) {
@@ -251,7 +275,7 @@ export class SecretService {
     // キャッシュチェック
     const cached = this.cache.get(secretId);
     if (cached && cached.expiry > Date.now()) {
-      return cached.value;
+      return cached.value as SecretValue;
     }
 
     let lastError: Error | undefined;
@@ -453,12 +477,12 @@ export class SecretService {
     const now = Date.now();
     let removedCount = 0;
 
-    for (const [key, entry] of this.cache.entries()) {
+    this.cache.forEach((entry, key) => {
       if (entry.expiry <= now) {
         this.cache.delete(key);
         removedCount++;
       }
-    }
+    });
 
     return removedCount;
   }
@@ -505,7 +529,7 @@ export class SecretService {
       timeToExpiry: number;
     }> = [];
 
-    for (const [secretId, entry] of this.cache.entries()) {
+    this.cache.forEach((entry, secretId) => {
       details.push({
         secretId,
         createdAt: now,
@@ -515,7 +539,7 @@ export class SecretService {
         age: 0,
         timeToExpiry: entry.expiry - now,
       });
-    }
+    });
 
     return details;
   }

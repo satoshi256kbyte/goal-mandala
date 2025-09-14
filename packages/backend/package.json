@@ -24,7 +24,11 @@
     "lint:fix": "eslint . --ext ts --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "validate:config": "node src/middleware/config-examples/validate-config.js",
+    "validate:config:dev": "node src/middleware/config-examples/validate-config.js --env=development",
+    "validate:config:prod": "node src/middleware/config-examples/validate-config.js --env=production",
+    "docs:auth": "echo 'JWT Authentication Middleware Documentation:' && echo '• Usage Guide: src/middleware/auth-usage-guide.md' && echo '• Environment Setup: src/middleware/auth-environment-example.md' && echo '• Troubleshooting: src/middleware/auth-troubleshooting-guide.md' && echo '• API Documentation: src/middleware/auth-api-documentation.md'"
   },
   "dependencies": {
     "@aws-sdk/client-bedrock-runtime": "^3.470.0",
@@ -33,6 +37,7 @@
     "@hono/node-server": "^1.3.1",
     "@prisma/client": "^5.7.0",
     "hono": "^4.6.0",
+    "jose": "^6.1.0",
     "jsonwebtoken": "^9.0.2",
     "zod": "^3.22.4"
   },

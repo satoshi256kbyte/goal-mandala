@@ -3,7 +3,12 @@
  */
 
 export interface LogContext {
-  [key: string]: any;
+  [key: string]: unknown;
+}
+
+// 型安全なログコンテキスト変換関数
+export function toLogContext(obj: unknown): LogContext {
+  return obj as LogContext;
 }
 
 export interface LogEntry {
