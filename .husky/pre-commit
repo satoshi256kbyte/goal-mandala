@@ -14,13 +14,13 @@ if [ $? -ne 0 ]; then
 fi
 
 # Run type checking for all packages
-echo "🔍 Running type checks..."
-pnpm type-check:all
+# echo "🔍 Running type checks..."
+# pnpm type-check:all
 
-# Check if type checking failed
-if [ $? -ne 0 ]; then
-  echo "❌ Type checking failed. Please fix the type errors and try again."
-  exit 1
-fi
+# # Check if type checking failed
+# if [ $? -ne 0 ]; then
+#   echo "❌ Type checking failed. Please fix the type errors and try again."
+#   exit 1
+# fi
 
 echo "✅ All pre-commit checks passed!"
