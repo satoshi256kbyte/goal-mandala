@@ -1,0 +1,51 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+    - link "メインコンテンツにスキップ" [ref=e4] [cursor=pointer]:
+        - /url: '#main-content'
+    - main "ログイン" [ref=e5]:
+        - generic [ref=e6]:
+            - heading "ログイン" [level=1] [ref=e7]
+            - paragraph [ref=e8]: アカウントにサインインしてください
+        - form "ログインフォーム" [ref=e9]:
+            - alert [ref=e10]:
+                - generic [ref=e11]:
+                    - img [ref=e13]
+                    - generic [ref=e15]:
+                        - heading "ログインエラー" [level=3] [ref=e16]
+                        - paragraph [ref=e18]: エラーが発生しました。しばらく待ってから再試行してください
+                        - button "閉じる" [ref=e21]
+                    - button "エラーメッセージを閉じる" [ref=e24]
+            - form "ログインフォーム" [ref=e26]:
+                - group "ログイン情報を入力してください" [ref=e27]:
+                    - generic [ref=e28]: ログイン情報を入力してください
+                    - generic [ref=e29]:
+                        - generic [ref=e30]:
+                            - text: メールアドレス
+                            - generic "必須" [ref=e31]: '*'
+                        - generic [ref=e32]:
+                            - textbox "メールアドレス（必須）" [ref=e33]: unconfirmed@example.com
+                            - generic [ref=e34]: 有効なメールアドレスを入力してください
+                    - generic [ref=e35]:
+                        - generic [ref=e36]:
+                            - text: パスワード
+                            - generic "必須" [ref=e37]: '*'
+                        - generic [ref=e38]:
+                            - textbox "パスワード（必須）" [ref=e39]: UnconfirmedPassword123!
+                            - generic [ref=e40]: アカウント作成時に設定したパスワードを入力してください
+                - generic [ref=e42]:
+                    - link "パスワードを忘れた場合" [ref=e43] [cursor=pointer]:
+                        - /url: /password-reset
+                    - generic [ref=e44]: パスワードリセット画面に移動します
+                - generic [ref=e45]:
+                    - button "ログインボタン" [ref=e46]:
+                        - generic [ref=e47]: ログイン
+                    - generic [ref=e48]: 入力した情報でログインを実行します
+                - generic [ref=e49]:
+                    - paragraph [ref=e50]:
+                        - text: アカウントをお持ちでない場合は
+                        - link "新規登録" [ref=e51] [cursor=pointer]:
+                            - /url: /signup
+                    - generic [ref=e52]: 新規アカウント作成画面に移動します
+```

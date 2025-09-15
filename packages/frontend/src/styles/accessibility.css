@@ -1,0 +1,231 @@
+/* アクセシビリティ用のCSSユーティリティクラス */
+
+/* スクリーンリーダー専用テキスト */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* フォーカス時にスクリーンリーダー専用テキストを表示 */
+.sr-only:focus,
+.focus\:not-sr-only:focus {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: inherit;
+  margin: inherit;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+
+/* 高コントラストモード対応 */
+@media (prefers-contrast: high) {
+  /* ボーダーを太くする */
+  .border {
+    border-width: 2px !important;
+  }
+
+  .border-2 {
+    border-width: 3px !important;
+  }
+
+  /* フォーカス時のアウトラインを強調 */
+  .focus\:ring-2:focus {
+    outline: 3px solid currentColor !important;
+    outline-offset: 2px !important;
+  }
+
+  /* テキストのコントラストを最大化 */
+  .text-gray-600 {
+    color: #000000 !important;
+  }
+
+  .text-gray-700 {
+    color: #000000 !important;
+  }
+
+  .text-gray-900 {
+    color: #000000 !important;
+  }
+
+  /* 背景色のコントラストを調整 */
+  .bg-gray-50 {
+    background-color: #ffffff !important;
+  }
+
+  .bg-gray-100 {
+    background-color: #f5f5f5 !important;
+  }
+}
+
+/* 動きを減らす設定 */
+@media (prefers-reduced-motion: reduce) {
+  /* アニメーションを無効化 */
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .animate-spin {
+    animation: none !important;
+  }
+
+  .transition-all,
+  .transition-colors,
+  .transition-opacity {
+    transition: none !important;
+  }
+}
+
+/* フォーカス表示の改善 */
+.focus-visible\:ring-2:focus-visible {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px var(--ring-color, #3b82f6);
+}
+
+.focus-visible\:ring-blue-500:focus-visible {
+  --ring-color: #3b82f6;
+}
+
+.focus-visible\:ring-red-500:focus-visible {
+  --ring-color: #ef4444;
+}
+
+.focus-visible\:ring-green-500:focus-visible {
+  --ring-color: #10b981;
+}
+
+/* 色覚対応のための追加スタイル */
+.colorblind-safe {
+  /* 赤緑色覚異常対応 */
+  --success-color: #0066cc; /* 青系 */
+  --error-color: #ff6600; /* オレンジ系 */
+  --warning-color: #9900cc; /* 紫系 */
+}
+
+/* 成功状態（緑の代替） */
+.bg-success-safe {
+  background-color: #e6f3ff;
+}
+
+.border-success-safe {
+  border-color: #0066cc;
+}
+
+.text-success-safe {
+  color: #004499;
+}
+
+/* エラー状態（赤の代替） */
+.bg-error-safe {
+  background-color: #fff0e6;
+}
+
+.border-error-safe {
+  border-color: #ff6600;
+}
+
+.text-error-safe {
+  color: #cc4400;
+}
+
+/* 警告状態（黄色の代替） */
+.bg-warning-safe {
+  background-color: #f0e6ff;
+}
+
+.border-warning-safe {
+  border-color: #9900cc;
+}
+
+.text-warning-safe {
+  color: #660099;
+}
+
+/* キーボードナビゲーション用のスタイル */
+.keyboard-focusable:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+  z-index: 10;
+}
+
+/* タッチデバイス用の最小タップ領域 */
+@media (pointer: coarse) {
+  button,
+  input,
+  select,
+  textarea,
+  a {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* 大きなフォントサイズ設定時の対応 */
+@media (min-resolution: 2dppx) {
+  .text-sm {
+    font-size: 0.9rem;
+  }
+
+  .text-base {
+    font-size: 1.1rem;
+  }
+}
+
+/* Windows高コントラストモード対応 */
+@media (-ms-high-contrast: active) {
+  .border {
+    border: 2px solid windowText !important;
+  }
+
+  .bg-blue-600 {
+    background-color: highlight !important;
+    color: highlightText !important;
+  }
+
+  .text-gray-600,
+  .text-gray-700,
+  .text-gray-900 {
+    color: windowText !important;
+  }
+}
+
+/* ダークモード対応 */
+@media (prefers-color-scheme: dark) {
+  .bg-gray-50 {
+    background-color: #1f2937;
+  }
+
+  .bg-white {
+    background-color: #374151;
+  }
+
+  .text-gray-900 {
+    color: #f9fafb;
+  }
+
+  .text-gray-700 {
+    color: #d1d5db;
+  }
+
+  .text-gray-600 {
+    color: #9ca3af;
+  }
+
+  .border-gray-300 {
+    border-color: #4b5563;
+  }
+}

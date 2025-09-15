@@ -29,7 +29,8 @@
     "**/*.test.ts",
     "**/*.test.tsx",
     "**/*.spec.ts",
-    "**/*.spec.tsx"
+    "**/*.spec.tsx",
+    "src/test/accessibility-helpers.ts"
   ],
   "references": [
     {

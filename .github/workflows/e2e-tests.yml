@@ -1,0 +1,67 @@
+name: E2E Tests
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - "packages/frontend/**"
+      - ".github/workflows/e2e-tests.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "packages/frontend/**"
+      - ".github/workflows/e2e-tests.yml"
+
+jobs:
+  e2e-tests:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        browser: [chromium, firefox, webkit]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "23.10.0"
+          cache: "pnpm"
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright Browsers
+        run: pnpm --filter @goal-mandala/frontend exec playwright install --with-deps ${{ matrix.browser }}
+
+      - name: Build frontend
+        run: pnpm --filter @goal-mandala/frontend build
+
+      - name: Run E2E tests
+        run: pnpm --filter @goal-mandala/frontend test:e2e --project=${{ matrix.browser }}
+        env:
+          CI: true
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report-${{ matrix.browser }}
+          path: packages/frontend/playwright-report/
+          retention-days: 30
+
+      - name: Upload test videos
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-videos-${{ matrix.browser }}
+          path: packages/frontend/test-results/
+          retention-days: 30

@@ -1,0 +1,48 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+    - link "メインコンテンツにスキップ" [ref=e4] [cursor=pointer]:
+        - /url: '#main-content'
+    - main "ログイン" [ref=e5]:
+        - generic [ref=e6]:
+            - heading "ログイン" [level=1] [ref=e7]
+            - paragraph [ref=e8]: アカウントにサインインしてください
+        - form "ログインフォーム" [ref=e9]:
+            - form "ログインフォーム" [ref=e10]:
+                - group "ログイン情報を入力してください" [ref=e11]:
+                    - generic [ref=e12]: ログイン情報を入力してください
+                    - generic [ref=e13]:
+                        - generic [ref=e14]:
+                            - text: メールアドレス
+                            - generic "必須" [ref=e15]: '*'
+                        - generic [ref=e16]:
+                            - textbox "メールアドレス（必須）" [ref=e17]
+                            - generic [ref=e18]: 有効なメールアドレスを入力してください
+                        - alert "エラー" [ref=e19]:
+                            - img [ref=e21]
+                            - generic [ref=e23]:
+                                - generic [ref=e24]: 'エラー:'
+                                - text: メールアドレスは必須です
+                    - generic [ref=e25]:
+                        - generic [ref=e26]:
+                            - text: パスワード
+                            - generic "必須" [ref=e27]: '*'
+                        - generic [ref=e28]:
+                            - textbox "パスワード（必須）" [ref=e29]
+                            - generic [ref=e30]: アカウント作成時に設定したパスワードを入力してください
+                - generic [ref=e32]:
+                    - link "パスワードを忘れた場合" [active] [ref=e33] [cursor=pointer]:
+                        - /url: /password-reset
+                    - generic [ref=e34]: パスワードリセット画面に移動します
+                - generic [ref=e35]:
+                    - button "ログインボタン" [disabled] [ref=e36]:
+                        - generic [ref=e37]: ログイン
+                    - generic [ref=e38]: 入力した情報でログインを実行します
+                - generic [ref=e39]:
+                    - paragraph [ref=e40]:
+                        - text: アカウントをお持ちでない場合は
+                        - link "新規登録" [ref=e41] [cursor=pointer]:
+                            - /url: /signup
+                    - generic [ref=e42]: 新規アカウント作成画面に移動します
+```

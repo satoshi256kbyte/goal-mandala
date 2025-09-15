@@ -1,0 +1,43 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+    - link "メインコンテンツにスキップ" [ref=e4] [cursor=pointer]:
+        - /url: '#main-content'
+    - main "ログイン" [ref=e5]:
+        - generic [ref=e6]:
+            - heading "ログイン" [level=1] [ref=e7]
+            - paragraph [ref=e8]: アカウントにサインインしてください
+        - form "ログインフォーム" [ref=e9]:
+            - form "ログインフォーム" [ref=e10]:
+                - group "ログイン情報を入力してください" [ref=e11]:
+                    - generic [ref=e12]: ログイン情報を入力してください
+                    - generic [ref=e13]:
+                        - generic [ref=e14]:
+                            - text: メールアドレス
+                            - generic "必須" [ref=e15]: '*'
+                        - generic [ref=e16]:
+                            - textbox "メールアドレス（必須）" [active] [ref=e17]
+                            - generic [ref=e18]: 有効なメールアドレスを入力してください
+                    - generic [ref=e19]:
+                        - generic [ref=e20]:
+                            - text: パスワード
+                            - generic "必須" [ref=e21]: '*'
+                        - generic [ref=e22]:
+                            - textbox "パスワード（必須）" [ref=e23]
+                            - generic [ref=e24]: アカウント作成時に設定したパスワードを入力してください
+                - generic [ref=e26]:
+                    - link "パスワードを忘れた場合" [ref=e27] [cursor=pointer]:
+                        - /url: /password-reset
+                    - generic [ref=e28]: パスワードリセット画面に移動します
+                - generic [ref=e29]:
+                    - button "ログインボタン" [disabled] [ref=e30]:
+                        - generic [ref=e31]: ログイン
+                    - generic [ref=e32]: 入力した情報でログインを実行します
+                - generic [ref=e33]:
+                    - paragraph [ref=e34]:
+                        - text: アカウントをお持ちでない場合は
+                        - link "新規登録" [ref=e35] [cursor=pointer]:
+                            - /url: /signup
+                    - generic [ref=e36]: 新規アカウント作成画面に移動します
+```

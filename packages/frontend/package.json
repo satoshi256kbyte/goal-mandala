@@ -6,10 +6,16 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "build:analyze": "ANALYZE=true npm run build",
     "preview": "vite preview",
     "test": "vitest --run",
     "test:coverage": "vitest --run --coverage",
     "test:ui": "vitest --ui",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:debug": "playwright test --debug",
+    "test:performance": "vitest --run src/test/performance.test.tsx",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "lint:fix": "eslint . --ext ts,tsx --fix",
     "format": "prettier --write .",
@@ -18,11 +24,16 @@
   },
   "dependencies": {
     "@goal-mandala/shared": "workspace:*",
+    "@hookform/resolvers": "^3.3.2",
+    "aws-amplify": "^6.0.7",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-router-dom": "^6.20.1"
+    "react-hook-form": "^7.48.2",
+    "react-router-dom": "^6.20.1",
+    "zod": "^3.22.4"
   },
   "devDependencies": {
+    "@playwright/test": "^1.55.0",
     "@testing-library/jest-dom": "^6.1.5",
     "@testing-library/react": "^14.1.2",
     "@testing-library/user-event": "^14.5.1",
@@ -38,7 +49,9 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "jsdom": "^26.1.0",
     "postcss": "^8.4.32",
+    "rollup-plugin-visualizer": "^6.0.3",
     "tailwindcss": "^3.3.6",
+    "terser": "^5.44.0",
     "typescript": "^5.2.2",
     "vite": "^5.0.0",
     "vitest": "^1.0.0"
