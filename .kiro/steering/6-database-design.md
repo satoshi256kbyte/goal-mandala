@@ -1,16 +1,163 @@
 # データベース設計
 
-## データベース設計概要
+## 概要
 
-曼荼羅目標管理システムのデータベース設計では、以下の主要エンティティを定義します：  
+曼荼羅目標管理システムのデータベース設計において、エンティティ関連図（ER図）を設計し、システムで扱うデータの構造とリレーションシップを定義します。マンダラチャートの階層構造（目標→サブ目標→アクション→タスク）を適切にモデル化し、データ整合性を保証する設計を行います。
 
-- **User**: システム利用者
-- **Goal**: 中心目標
-- **SubGoal**: サブ目標（8個）
-- **Action**: アクション（各サブ目標に8個）
-- **Task**: タスク（各アクションに複数）
-- **TaskReminder**: タスクリマインド
-- **Reflection**: 振り返り
+## エンティティ定義
+
+### User（ユーザー）
+
+システムを利用するユーザーの基本情報を管理する。
+
+```typescript
+interface User {
+  id: string;           // UUID、主キー
+  email: string;        // メールアドレス、ユニーク制約
+  name: string;         // 表示名
+  industry?: string;    // 業種
+  company_size?: string; // 組織規模
+  job_title?: string;   // 職種
+  position?: string;    // 役職
+  created_at: Date;     // 作成日時
+  updated_at: Date;     // 更新日時
+}
+```
+
+### Goal（目標）
+
+ユーザーが設定する中心目標を管理する。
+
+```typescript
+interface Goal {
+  id: string;           // UUID、主キー
+  user_id: string;      // ユーザーID、外部キー
+  title: string;        // 目標タイトル
+  description: string;  // 目標説明
+  deadline: Date;       // 達成期限
+  background: string;   // 背景・理由
+  constraints?: string; // 制約事項
+  status: GoalStatus;   // 目標状態
+  progress: number;     // 進捗率（0-100）
+  created_at: Date;     // 作成日時
+  updated_at: Date;     // 更新日時
+}
+
+enum GoalStatus {
+  DRAFT = 'draft',           // 下書き
+  ACTIVE = 'active',         // 活動中
+  COMPLETED = 'completed',   // 完了
+  PAUSED = 'paused',         // 一時停止
+  CANCELLED = 'cancelled'    // 中止
+}
+```
+
+### SubGoal（サブ目標）
+
+目標を達成するための8つのサブ目標を管理する。
+
+```typescript
+interface SubGoal {
+  id: string;           // UUID、主キー
+  goal_id: string;      // 目標ID、外部キー
+  title: string;        // サブ目標タイトル
+  description: string;  // サブ目標説明
+  background: string;   // 背景・理由
+  constraints?: string; // 制約事項
+  position: number;     // 位置（0-7）
+  progress: number;     // 進捗率（0-100）
+  created_at: Date;     // 作成日時
+  updated_at: Date;     // 更新日時
+}
+```
+
+### Action（アクション）
+
+サブ目標を達成するための8つのアクションを管理する。
+
+```typescript
+interface Action {
+  id: string;           // UUID、主キー
+  sub_goal_id: string;  // サブ目標ID、外部キー
+  title: string;        // アクションタイトル
+  description: string;  // アクション説明
+  background: string;   // 背景・理由
+  constraints?: string; // 制約事項
+  type: ActionType;     // アクション種別
+  position: number;     // 位置（0-7）
+  progress: number;     // 進捗率（0-100）
+  created_at: Date;     // 作成日時
+  updated_at: Date;     // 更新日時
+}
+
+enum ActionType {
+  EXECUTION = 'execution', // 実行アクション
+  HABIT = 'habit'         // 習慣アクション
+}
+```
+
+### Task（タスク）
+
+アクションを実行するための具体的なタスクを管理する。
+
+```typescript
+interface Task {
+  id: string;              // UUID、主キー
+  action_id: string;       // アクションID、外部キー
+  title: string;           // タスクタイトル
+  description?: string;    // タスク説明
+  type: TaskType;          // タスク種別
+  status: TaskStatus;      // タスク状態
+  estimated_minutes: number; // 推定所要時間（分）
+  completed_at?: Date;     // 完了日時
+  created_at: Date;        // 作成日時
+  updated_at: Date;        // 更新日時
+}
+
+enum TaskType {
+  EXECUTION = 'execution', // 実行タスク
+  HABIT = 'habit'         // 習慣タスク
+}
+
+enum TaskStatus {
+  NOT_STARTED = 'not_started', // 未着手
+  IN_PROGRESS = 'in_progress', // 進行中
+  COMPLETED = 'completed',     // 完了
+  SKIPPED = 'skipped'         // スキップ
+}
+```
+
+### TaskReminder（タスクリマインド）
+
+タスクのリマインド情報を管理する。
+
+```typescript
+interface TaskReminder {
+  id: string;           // UUID、主キー
+  task_id: string;      // タスクID、外部キー
+  reminder_date: Date;  // リマインド日
+  sent: boolean;        // 送信済みフラグ
+  sent_at?: Date;       // 送信日時
+  created_at: Date;     // 作成日時
+}
+```
+
+### Reflection（振り返り）
+
+目標に対する振り返り情報を管理する。
+
+```typescript
+interface Reflection {
+  id: string;                      // UUID、主キー
+  goal_id: string;                 // 目標ID、外部キー
+  summary: string;                 // 総括
+  regretful_actions?: string;      // 惜しかったアクション
+  slow_progress_actions?: string;  // 思ったより進まなかったアクション
+  untouched_actions?: string;      // 未着手となったアクション
+  created_at: Date;                // 作成日時
+  updated_at: Date;                // 更新日時
+}
+```
 
 ## ER図
 
@@ -18,7 +165,7 @@
 erDiagram
     User {
         string id PK
-        string email
+        string email UK
         string name
         string industry
         string company_size
@@ -103,65 +250,157 @@ erDiagram
     }
   
     User ||--o{ Goal : creates
-    Goal ||--o{ SubGoal : contains
-    SubGoal ||--o{ Action : contains
+    Goal ||--|| SubGoal : contains_8
+    SubGoal ||--|| Action : contains_8
     Action ||--o{ Task : contains
     Task ||--o{ TaskReminder : has
     Goal ||--o{ Reflection : has
 ```
 
-## リレーションシップ詳細
+## リレーションシップ設計
 
-### User - Goal (1:N)
+### 1:N リレーションシップ
 
-- 1人のユーザーは複数の目標を持つことができる
-- 目標は必ず1人のユーザーに属する
+- **User → Goal**: 1人のユーザーは複数の目標を持つ
+- **Action → Task**: 1つのアクションは複数のタスクを持つ
+- **Task → TaskReminder**: 1つのタスクは複数のリマインドを持つ
+- **Goal → Reflection**: 1つの目標は複数の振り返りを持つ
 
-### Goal - SubGoal (1:8)
+### 1:8 リレーションシップ（固定）
 
-- 1つの目標は必ず8つのサブ目標を持つ
-- サブ目標は必ず1つの目標に属する
+- **Goal → SubGoal**: 1つの目標は必ず8つのサブ目標を持つ
+- **SubGoal → Action**: 1つのサブ目標は必ず8つのアクションを持つ
 
-### SubGoal - Action (1:8)
+## 制約条件定義
 
-- 1つのサブ目標は必ず8つのアクションを持つ
-- アクションは必ず1つのサブ目標に属する
+### 主キー制約
 
-### Action - Task (1:N)
+```sql
+-- 全テーブルでUUID型の主キーを使用
+ALTER TABLE users ADD CONSTRAINT pk_users PRIMARY KEY (id);
+ALTER TABLE goals ADD CONSTRAINT pk_goals PRIMARY KEY (id);
+ALTER TABLE sub_goals ADD CONSTRAINT pk_sub_goals PRIMARY KEY (id);
+ALTER TABLE actions ADD CONSTRAINT pk_actions PRIMARY KEY (id);
+ALTER TABLE tasks ADD CONSTRAINT pk_tasks PRIMARY KEY (id);
+ALTER TABLE task_reminders ADD CONSTRAINT pk_task_reminders PRIMARY KEY (id);
+ALTER TABLE reflections ADD CONSTRAINT pk_reflections PRIMARY KEY (id);
+```
 
-- 1つのアクションは複数のタスクを持つことができる
-- タスクは必ず1つのアクションに属する
+### 外部キー制約
 
-### Task - TaskReminder (1:N)
+```sql
+-- 参照整合性を保証する外部キー制約
+ALTER TABLE goals ADD CONSTRAINT fk_goals_user_id 
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
 
-- 1つのタスクは複数のリマインドを持つことができる
-- リマインドは必ず1つのタスクに属する
+ALTER TABLE sub_goals ADD CONSTRAINT fk_sub_goals_goal_id 
+  FOREIGN KEY (goal_id) REFERENCES goals(id) ON DELETE CASCADE;
 
-### Goal - Reflection (1:N)
+ALTER TABLE actions ADD CONSTRAINT fk_actions_sub_goal_id 
+  FOREIGN KEY (sub_goal_id) REFERENCES sub_goals(id) ON DELETE CASCADE;
 
-- 1つの目標は複数の振り返りを持つことができる
-- 振り返りは必ず1つの目標に属する
+ALTER TABLE tasks ADD CONSTRAINT fk_tasks_action_id 
+  FOREIGN KEY (action_id) REFERENCES actions(id) ON DELETE CASCADE;
 
-## データ整合性制約
+ALTER TABLE task_reminders ADD CONSTRAINT fk_task_reminders_task_id 
+  FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE;
 
-### 必須制約
+ALTER TABLE reflections ADD CONSTRAINT fk_reflections_goal_id 
+  FOREIGN KEY (goal_id) REFERENCES goals(id) ON DELETE CASCADE;
+```
 
-- すべてのエンティティにid（主キー）が必要
-- 外部キー制約により参照整合性を保証
-- email（User）はユニーク制約
+### ユニーク制約
 
-### ビジネスルール制約
+```sql
+-- ユーザーのメールアドレスはユニーク
+ALTER TABLE users ADD CONSTRAINT uk_users_email UNIQUE (email);
 
-- SubGoalのpositionは0-7の範囲
-- Actionのpositionは0-7の範囲
-- Goalのprogressは0-100の範囲
-- SubGoalのprogressは0-100の範囲
-- Actionのprogressは0-100の範囲
+-- サブ目標の位置は目標内でユニーク
+ALTER TABLE sub_goals ADD CONSTRAINT uk_sub_goals_position 
+  UNIQUE (goal_id, position);
 
-### カスケード削除
+-- アクションの位置はサブ目標内でユニーク
+ALTER TABLE actions ADD CONSTRAINT uk_actions_position 
+  UNIQUE (sub_goal_id, position);
+```
 
-- User削除時：関連するGoalも削除
-- Goal削除時：関連するSubGoal、Reflectionも削除
-- SubGoal削除時：関連するActionも削除
-- Action削除時：関連するTaskも削除
-- Task削除時：関連するTaskReminderも削除
+### チェック制約
+
+```sql
+-- 進捗率は0-100の範囲
+ALTER TABLE goals ADD CONSTRAINT ck_goals_progress 
+  CHECK (progress >= 0 AND progress <= 100);
+
+ALTER TABLE sub_goals ADD CONSTRAINT ck_sub_goals_progress 
+  CHECK (progress >= 0 AND progress <= 100);
+
+ALTER TABLE actions ADD CONSTRAINT ck_actions_progress 
+  CHECK (progress >= 0 AND progress <= 100);
+
+-- 位置は0-7の範囲
+ALTER TABLE sub_goals ADD CONSTRAINT ck_sub_goals_position 
+  CHECK (position >= 0 AND position <= 7);
+
+ALTER TABLE actions ADD CONSTRAINT ck_actions_position 
+  CHECK (position >= 0 AND position <= 7);
+
+-- 推定時間は正の値
+ALTER TABLE tasks ADD CONSTRAINT ck_tasks_estimated_minutes 
+  CHECK (estimated_minutes > 0);
+```
+
+## インデックス設計
+
+### パフォーマンス最適化インデックス
+
+```sql
+-- ユーザーの目標一覧取得用
+CREATE INDEX idx_goals_user_id_created_at ON goals(user_id, created_at DESC);
+
+-- 目標のサブ目標取得用
+CREATE INDEX idx_sub_goals_goal_id_position ON sub_goals(goal_id, position);
+
+-- サブ目標のアクション取得用
+CREATE INDEX idx_actions_sub_goal_id_position ON actions(sub_goal_id, position);
+
+-- アクションのタスク取得用
+CREATE INDEX idx_tasks_action_id_status ON tasks(action_id, status);
+
+-- リマインド送信用
+CREATE INDEX idx_task_reminders_reminder_date_sent ON task_reminders(reminder_date, sent);
+
+-- 振り返り履歴取得用
+CREATE INDEX idx_reflections_goal_id_created_at ON reflections(goal_id, created_at DESC);
+```
+
+## データ整合性検証
+
+### マンダラ構造検証クエリ
+
+```sql
+-- 8個のサブ目標を持たない目標を検出
+SELECT g.id, g.title, COUNT(sg.id) as subgoal_count
+FROM goals g
+LEFT JOIN sub_goals sg ON g.id = sg.goal_id
+GROUP BY g.id, g.title
+HAVING COUNT(sg.id) != 8;
+
+-- 8個のアクションを持たないサブ目標を検出
+SELECT sg.id, sg.title, COUNT(a.id) as action_count
+FROM sub_goals sg
+LEFT JOIN actions a ON sg.id = a.sub_goal_id
+GROUP BY sg.id, sg.title
+HAVING COUNT(a.id) != 8;
+```
+
+### 進捗計算整合性検証
+
+```sql
+-- アクション進捗とタスク完了率の整合性確認
+SELECT a.id, a.title, a.progress,
+       ROUND(AVG(CASE WHEN t.status = 'completed' THEN 100 ELSE 0 END)) as calculated_progress
+FROM actions a
+LEFT JOIN tasks t ON a.id = t.action_id
+GROUP BY a.id, a.title, a.progress
+HAVING ABS(a.progress - ROUND(AVG(CASE WHEN t.status = 'completed' THEN 100 ELSE 0 END))) > 5;
+```
