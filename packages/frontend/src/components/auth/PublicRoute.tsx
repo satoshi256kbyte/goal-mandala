@@ -8,7 +8,7 @@ import { useAuthContext } from '../../hooks/useAuth';
 interface PublicRouteProps {
   children: React.ReactNode;
   redirectTo?: string;
-  requiresGuest?: boolean; // ゲスト（未認証）のみアクセス可能
+  redirectIfAuthenticated?: boolean;
 }
 
 /**
@@ -16,15 +16,16 @@ interface PublicRouteProps {
  *
  * 機能:
  * - 認証状態をチェック
- * - requiresGuestがtrueの場合、認証済みユーザーをリダイレクト
+ * - redirectIfAuthenticatedがtrueの場合、認証済みユーザーをリダイレクト
  * - ローディング状態の表示
+ * - 条件付きリダイレクト機能
  *
- * 要件: 1.2, 2.2, 3.5
+ * 要件: 3.3 - 認証済みユーザーがログイン画面にアクセスした時にダッシュボードまたはホーム画面にリダイレクトされる
  */
 export const PublicRoute: React.FC<PublicRouteProps> = ({
   children,
   redirectTo = '/',
-  requiresGuest = false,
+  redirectIfAuthenticated = false,
 }) => {
   const { isAuthenticated, isLoading } = useAuthContext();
   const location = useLocation();
@@ -41,10 +42,11 @@ export const PublicRoute: React.FC<PublicRouteProps> = ({
     );
   }
 
-  // ゲストのみアクセス可能で、認証済みの場合はリダイレクト
-  if (requiresGuest && isAuthenticated) {
+  // 認証済み時のリダイレクト機能
+  // 要件 3.3: 認証済みユーザーがログイン画面にアクセスした時にダッシュボードまたはホーム画面にリダイレクトされる
+  if (redirectIfAuthenticated && isAuthenticated) {
     // location.stateからリダイレクト先を取得、なければデフォルト
-    const from = (location.state as { from?: Location })?.from?.pathname || redirectTo;
+    const from = (location.state as { from?: { pathname: string } })?.from?.pathname || redirectTo;
     return <Navigate to={from} replace />;
   }
 

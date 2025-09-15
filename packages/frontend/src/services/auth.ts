@@ -139,6 +139,30 @@ export class AuthService {
   }
 
   /**
+   * 現在のセッション情報を取得（型安全版）
+   */
+  static async getCurrentSessionTyped(): Promise<{
+    tokens?: {
+      idToken?: { toString(): string };
+      accessToken?: { toString(): string };
+      refreshToken?: { toString(): string };
+    };
+  } | null> {
+    try {
+      const session = await fetchAuthSession();
+      return session as {
+        tokens?: {
+          idToken?: { toString(): string };
+          accessToken?: { toString(): string };
+          refreshToken?: { toString(): string };
+        };
+      };
+    } catch (error) {
+      return null;
+    }
+  }
+
+  /**
    * JWTトークンを取得
    */
   static async getJwtToken(): Promise<string | null> {

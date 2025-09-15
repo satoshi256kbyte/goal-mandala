@@ -6,4 +6,10 @@ export { NewPasswordForm } from './NewPasswordForm';
 export { AuthProvider } from './AuthProvider';
 export { ProtectedRoute } from './ProtectedRoute';
 export { PublicRoute } from './PublicRoute';
+export {
+  AuthStateMonitorProvider,
+  useAuthStateMonitorContext,
+  useAuthMonitoringStats,
+} from './AuthStateMonitorProvider';
+export { AuthStateMonitorDebug, AuthStateMonitorStatusBar } from './AuthStateMonitorDebug';
 export type { LoginFormProps } from './LoginForm';
