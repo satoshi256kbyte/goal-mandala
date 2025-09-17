@@ -130,12 +130,12 @@
   - [x] 1.4.1.4 インデックス設計
   - [x] 1.4.1.5 ER図ドキュメント作成
 
-- [ ] 1.4.2 Prismaスキーマ定義（→ [6-database-design.md](./6-database-design.md)）
-  - [ ] 1.4.2.1 schema.prisma作成
-  - [ ] 1.4.2.2 モデル定義
-  - [ ] 1.4.2.3 リレーション定義
-  - [ ] 1.4.2.4 列挙型定義
-  - [ ] 1.4.2.5 インデックス・制約定義
+- [x] 1.4.2 Prismaスキーマ定義（→ [6-database-design.md](./6-database-design.md)）
+  - [x] 1.4.2.1 schema.prisma作成
+  - [x] 1.4.2.2 モデル定義
+  - [x] 1.4.2.3 リレーション定義
+  - [x] 1.4.2.4 列挙型定義
+  - [x] 1.4.2.5 インデックス・制約定義
 
 - [ ] 1.4.3 マイグレーション実装
   - [ ] 1.4.3.1 初期マイグレーション作成
@@ -446,8 +446,8 @@
 - [x] AWS SAM CLI環境 (Spec: 1.1.3-aws-sam-cli-setup - 完了)
 - [x] CDKインフラコード (Spec: 1.2.1-cdk-project-init, 1.2.2-vpc-network-setup, 1.2.3-aurora-serverless-setup, 1.2.4-secrets-manager-setup - 完了)
 - [x] CloudFront + S3構成 (Spec: 1.2.5-cloudfront-s3-setup - 完了)
-- [x] 認証システム (Spec: 1.3.1-cognito-setup - 完了)
-- [ ] データベーススキーマ
+- [x] 認証システム (Spec: 1.3.1-cognito-setup, 1.3.2-jwt-auth-middleware, 1.3.3-auth-screens, 1.3.4-auth-state-management - 完了)
+- [x] データベーススキーマ (Spec: 1.4.1-er-diagram-design, 1.4.2-prisma-schema-definition - 完了)
 
 ### フェーズ2成果物
 
@@ -765,13 +765,13 @@
   - [x] 統合テスト実装
   - [ ] ドキュメント更新
 
-### 進行中のSpec（新規追加）
+### 完了済みSpec（最新）
 
 #### 1.3.4-auth-state-management (認証状態管理実装)
 
-- **状態**: 進行中
+- **状態**: 完了
 - **対応WBSタスク**: 1.3.4
-- **進捗**: 20タスク中 9完了
+- **進捗**: 20タスク中 20完了
 - **主要タスク**:
   - [x] TokenManagerクラスの実装
   - [x] StorageSyncクラスの実装
@@ -782,17 +782,34 @@
   - [x] PublicRouteコンポーネントの実装
   - [x] 認証状態監視機能の実装
   - [x] エラーハンドリングシステムの実装
-  - [ ] AuthStateMonitorProviderの統合
-  - [ ] 複数タブ同期機能の統合テスト
-  - [ ] ユニットテストの実装
-  - [ ] 統合テストの実装
-  - [ ] パフォーマンス最適化
-  - [ ] セキュリティ強化
-  - [ ] 設定とドキュメントの整備
-  - [ ] E2Eテストの実装
-  - [ ] コード品質とリファクタリング
-  - [ ] 最終統合テストと動作確認
-  - [ ] コードフォーマットとLint実行
+  - [x] AuthStateMonitorProviderの統合
+  - [x] 複数タブ同期機能の統合テスト
+  - [x] ユニットテストの実装
+  - [x] 統合テストの実装
+  - [x] パフォーマンス最適化
+  - [x] セキュリティ強化
+  - [x] 設定とドキュメントの整備
+  - [x] E2Eテストの実装
+  - [x] コード品質とリファクタリング
+  - [x] 最終統合テストと動作確認
+  - [x] コードフォーマットとLint実行
+
+#### 1.4.2-prisma-schema-definition (Prismaスキーマ定義)
+
+- **状態**: 完了
+- **対応WBSタスク**: 1.4.2
+- **進捗**: 10タスク中 10完了
+- **主要タスク**:
+  - [x] Prismaプロジェクト初期設定
+  - [x] 基本モデル定義（User, Goal, SubGoal, Action）
+  - [x] タスク関連モデル定義（Task, TaskReminder, Reflection）
+  - [x] Enum定義とバリデーション
+  - [x] インデックス設計と最適化
+  - [x] マイグレーション生成とテスト
+  - [x] シードデータ作成
+  - [x] 型定義生成とクライアント設定
+  - [x] スキーマ検証とドキュメント
+  - [x] パフォーマンステストと最適化
 
 ### 計画中のSpec
 

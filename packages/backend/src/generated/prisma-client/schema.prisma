@@ -1,0 +1,208 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma-client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Enums
+enum UserIndustry {
+  TECHNOLOGY
+  FINANCE
+  HEALTHCARE
+  EDUCATION
+  MANUFACTURING
+  RETAIL
+  CONSULTING
+  GOVERNMENT
+  NON_PROFIT
+  OTHER
+}
+
+enum CompanySize {
+  STARTUP // 1-10人
+  SMALL // 11-50人
+  MEDIUM // 51-200人
+  LARGE // 201-1000人
+  ENTERPRISE // 1000人以上
+}
+
+enum GoalStatus {
+  ACTIVE
+  COMPLETED
+  PAUSED
+  CANCELLED
+}
+
+enum TaskType {
+  ACTION // 実行タスク
+  LEARNING // 学習タスク
+  RESEARCH // 調査タスク
+  MEETING // 会議・打ち合わせ
+  REVIEW // レビュー・確認
+}
+
+enum TaskStatus {
+  PENDING // 未着手
+  IN_PROGRESS // 進行中
+  COMPLETED // 完了
+  CANCELLED // キャンセル
+}
+
+enum ReminderStatus {
+  PENDING // 送信待ち
+  SENT // 送信済み
+  FAILED // 送信失敗
+  CANCELLED // キャンセル
+}
+
+// Models
+model User {
+  id          String        @id @default(uuid()) @db.Uuid
+  email       String        @unique @db.VarChar(255)
+  name        String        @db.VarChar(100)
+  industry    UserIndustry?
+  companySize CompanySize?
+  jobType     String?       @db.VarChar(100)
+  position    String?       @db.VarChar(100)
+  createdAt   DateTime      @default(now()) @db.Timestamptz
+  updatedAt   DateTime      @updatedAt @db.Timestamptz
+
+  // Relations
+  goals Goal[]
+
+  @@map("users")
+}
+
+model Goal {
+  id          String     @id @default(uuid()) @db.Uuid
+  userId      String     @db.Uuid
+  title       String     @db.VarChar(200)
+  description String?    @db.Text
+  deadline    DateTime?  @db.Timestamptz
+  background  String?    @db.Text
+  constraints String?    @db.Text
+  status      GoalStatus @default(ACTIVE)
+  progress    Int        @default(0) @db.SmallInt
+  createdAt   DateTime   @default(now()) @db.Timestamptz
+  updatedAt   DateTime   @updatedAt @db.Timestamptz
+
+  // Relations
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subGoals SubGoal[]
+
+  // Indexes
+  @@index([userId, status])
+  @@index([userId, createdAt])
+  @@map("goals")
+}
+
+model SubGoal {
+  id          String   @id @default(uuid()) @db.Uuid
+  goalId      String   @db.Uuid
+  title       String   @db.VarChar(200)
+  description String?  @db.Text
+  background  String?  @db.Text
+  constraints String?  @db.Text
+  position    Int      @db.SmallInt
+  progress    Int      @default(0) @db.SmallInt
+  createdAt   DateTime @default(now()) @db.Timestamptz
+  updatedAt   DateTime @updatedAt @db.Timestamptz
+
+  // Relations
+  goal    Goal     @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  actions Action[]
+
+  // Unique constraints
+  @@unique([goalId, position])
+  // Indexes
+  @@index([goalId, position])
+  @@map("sub_goals")
+}
+
+model Action {
+  id          String   @id @default(uuid()) @db.Uuid
+  subGoalId   String   @db.Uuid
+  title       String   @db.VarChar(200)
+  description String?  @db.Text
+  background  String?  @db.Text
+  constraints String?  @db.Text
+  position    Int      @db.SmallInt
+  progress    Int      @default(0) @db.SmallInt
+  createdAt   DateTime @default(now()) @db.Timestamptz
+  updatedAt   DateTime @updatedAt @db.Timestamptz
+
+  // Relations
+  subGoal SubGoal @relation(fields: [subGoalId], references: [id], onDelete: Cascade)
+  tasks   Task[]
+
+  // Unique constraints
+  @@unique([subGoalId, position])
+  // Indexes
+  @@index([subGoalId, position])
+  @@map("actions")
+}
+
+model Task {
+  id            String     @id @default(uuid()) @db.Uuid
+  actionId      String     @db.Uuid
+  title         String     @db.VarChar(200)
+  description   String?    @db.Text
+  type          TaskType   @default(ACTION)
+  status        TaskStatus @default(PENDING)
+  estimatedTime Int?       @db.SmallInt
+  completedAt   DateTime?  @db.Timestamptz
+  createdAt     DateTime   @default(now()) @db.Timestamptz
+  updatedAt     DateTime   @updatedAt @db.Timestamptz
+
+  // Relations
+  action      Action         @relation(fields: [actionId], references: [id], onDelete: Cascade)
+  reminders   TaskReminder[]
+  reflections Reflection[]
+
+  // Indexes
+  @@index([actionId, status])
+  @@index([status, createdAt])
+  @@map("tasks")
+}
+
+model TaskReminder {
+  id         String         @id @default(uuid()) @db.Uuid
+  taskId     String         @db.Uuid
+  reminderAt DateTime       @db.Timestamptz
+  message    String?        @db.Text
+  status     ReminderStatus @default(PENDING)
+  sentAt     DateTime?      @db.Timestamptz
+  createdAt  DateTime       @default(now()) @db.Timestamptz
+  updatedAt  DateTime       @updatedAt @db.Timestamptz
+
+  // Relations
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  // Indexes
+  @@index([status, reminderAt])
+  @@index([taskId, reminderAt])
+  @@map("task_reminders")
+}
+
+model Reflection {
+  id        String   @id @default(uuid()) @db.Uuid
+  taskId    String   @db.Uuid
+  content   String   @db.Text
+  rating    Int?     @db.SmallInt
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
+
+  // Relations
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  // Indexes
+  @@index([taskId, createdAt])
+  @@map("reflections")
+}
