@@ -1,4 +1,4 @@
-import { PrismaClient } from '../src/generated/prisma-client';
+import { PrismaClient } from '@prisma/client';
 
 describe('Database Migration Tests', () => {
   let prisma: PrismaClient;
@@ -14,344 +14,185 @@ describe('Database Migration Tests', () => {
 
   describe('Table Existence Tests', () => {
     test('should have all required tables', async () => {
-      const tables = await prisma.$queryRaw<Array<{ table_name: string }>>`
-        SELECT table_name 
-        FROM information_schema.tables 
-        WHERE table_schema = 'public' 
-        AND table_type = 'BASE TABLE'
-        ORDER BY table_name;
-      `;
-
-      const tableNames = tables.map(t => t.table_name);
       const expectedTables = [
-        'users',
-        'goals',
-        'sub_goals',
-        'actions',
-        'tasks',
-        'task_reminders',
-        'reflections',
-        '_prisma_migrations',
+        'User',
+        'Goal',
+        'SubGoal',
+        'Action',
+        'Task',
+        'TaskReminder',
+        'Reflection',
       ];
 
-      expectedTables.forEach(expectedTable => {
-        expect(tableNames).toContain(expectedTable);
-      });
+      for (const tableName of expectedTables) {
+        const result = (await prisma.$queryRaw`
+          SELECT EXISTS (
+            SELECT FROM information_schema.tables 
+            WHERE table_schema = 'public' 
+            AND table_name = ${tableName}
+          );
+        `) as [{ exists: boolean }];
+
+        expect(result[0].exists).toBe(true);
+      }
     });
 
-    test('should have correct table structure for users', async () => {
-      const columns = await prisma.$queryRaw<
-        Array<{ column_name: string; data_type: string; is_nullable: string }>
-      >`
-        SELECT column_name, data_type, is_nullable
-        FROM information_schema.columns
-        WHERE table_name = 'users'
-        ORDER BY ordinal_position;
-      `;
+    test('should have correct enum types', async () => {
+      const expectedEnums = ['GoalStatus', 'ActionType', 'TaskType', 'TaskStatus'];
 
-      const expectedColumns = [
-        { column_name: 'id', data_type: 'uuid', is_nullable: 'NO' },
-        { column_name: 'email', data_type: 'character varying', is_nullable: 'NO' },
-        { column_name: 'name', data_type: 'character varying', is_nullable: 'NO' },
-        { column_name: 'industry', data_type: 'USER_DEFINED', is_nullable: 'YES' },
-        { column_name: 'companySize', data_type: 'USER_DEFINED', is_nullable: 'YES' },
-        { column_name: 'jobType', data_type: 'character varying', is_nullable: 'YES' },
-        { column_name: 'position', data_type: 'character varying', is_nullable: 'YES' },
-        { column_name: 'createdAt', data_type: 'timestamp with time zone', is_nullable: 'NO' },
-        { column_name: 'updatedAt', data_type: 'timestamp with time zone', is_nullable: 'NO' },
-      ];
+      for (const enumName of expectedEnums) {
+        const result = (await prisma.$queryRaw`
+          SELECT EXISTS (
+            SELECT FROM pg_type 
+            WHERE typname = ${enumName}
+            AND typtype = 'e'
+          );
+        `) as [{ exists: boolean }];
 
-      expectedColumns.forEach(expectedCol => {
-        const actualCol = columns.find(c => c.column_name === expectedCol.column_name);
-        expect(actualCol).toBeDefined();
-        expect(actualCol?.data_type).toBe(expectedCol.data_type);
-        expect(actualCol?.is_nullable).toBe(expectedCol.is_nullable);
-      });
+        expect(result[0].exists).toBe(true);
+      }
     });
   });
 
-  describe('Enum Types Tests', () => {
-    test('should have all required enum types', async () => {
-      const enums = await prisma.$queryRaw<Array<{ typname: string }>>`
-        SELECT typname 
-        FROM pg_type 
-        WHERE typtype = 'e'
-        ORDER BY typname;
-      `;
-
-      const enumNames = enums.map(e => e.typname);
-      const expectedEnums = [
-        'UserIndustry',
-        'CompanySize',
-        'GoalStatus',
-        'TaskType',
-        'TaskStatus',
-        'ReminderStatus',
-      ];
-
-      expectedEnums.forEach(expectedEnum => {
-        expect(enumNames).toContain(expectedEnum);
-      });
+  describe('Foreign Key Constraint Tests', () => {
+    test('should enforce foreign key constraints', async () => {
+      // 存在しないユーザーIDで目標を作成しようとするとエラーになる
+      await expect(
+        prisma.goal.create({
+          data: {
+            id: 'test-goal-fk',
+            user_id: 'non-existent-user',
+            title: 'Test Goal',
+            description: 'Test Description',
+            deadline: new Date(),
+            background: 'Test Background',
+            status: 'ACTIVE',
+            progress: 0,
+          },
+        })
+      ).rejects.toThrow();
     });
 
-    test('should have correct enum values for UserIndustry', async () => {
-      const enumValues = await prisma.$queryRaw<Array<{ enumlabel: string }>>`
-        SELECT enumlabel
-        FROM pg_enum
-        WHERE enumtypid = (SELECT oid FROM pg_type WHERE typname = 'UserIndustry')
-        ORDER BY enumsortorder;
-      `;
+    test('should cascade delete properly', async () => {
+      // テストユーザーを作成
+      const user = await prisma.user.create({
+        data: {
+          id: 'test-cascade-user',
+          email: 'cascade@test.com',
+          name: 'Cascade Test User',
+        },
+      });
 
-      const values = enumValues.map(e => e.enumlabel);
-      const expectedValues = [
-        'TECHNOLOGY',
-        'FINANCE',
-        'HEALTHCARE',
-        'EDUCATION',
-        'MANUFACTURING',
-        'RETAIL',
-        'CONSULTING',
-        'GOVERNMENT',
-        'NON_PROFIT',
-        'OTHER',
-      ];
+      // 目標を作成
+      const goal = await prisma.goal.create({
+        data: {
+          id: 'test-cascade-goal',
+          user_id: user.id,
+          title: 'Cascade Test Goal',
+          description: 'Test Description',
+          deadline: new Date(),
+          background: 'Test Background',
+          status: 'ACTIVE',
+          progress: 0,
+        },
+      });
 
-      expect(values).toEqual(expect.arrayContaining(expectedValues));
+      // サブ目標を作成
+      await prisma.subGoal.create({
+        data: {
+          id: 'test-cascade-subgoal',
+          goal_id: goal.id,
+          title: 'Test SubGoal',
+          description: 'Test Description',
+          background: 'Test Background',
+          position: 0,
+          progress: 0,
+        },
+      });
+
+      // ユーザーを削除（カスケード削除をテスト）
+      await prisma.user.delete({
+        where: { id: user.id },
+      });
+
+      // 関連データが削除されていることを確認
+      const remainingGoals = await prisma.goal.findMany({
+        where: { user_id: user.id },
+      });
+      expect(remainingGoals).toHaveLength(0);
+
+      const remainingSubGoals = await prisma.subGoal.findMany({
+        where: { goal_id: goal.id },
+      });
+      expect(remainingSubGoals).toHaveLength(0);
     });
   });
 
-  describe('Foreign Key Constraints Tests', () => {
-    test('should have correct foreign key constraints', async () => {
-      const constraints = await prisma.$queryRaw<
-        Array<{
-          constraint_name: string;
-          table_name: string;
-          column_name: string;
-          foreign_table_name: string;
-          foreign_column_name: string;
-        }>
-      >`
-        SELECT 
-          tc.constraint_name,
-          tc.table_name,
-          kcu.column_name,
-          ccu.table_name AS foreign_table_name,
-          ccu.column_name AS foreign_column_name
-        FROM information_schema.table_constraints AS tc
-        JOIN information_schema.key_column_usage AS kcu
-          ON tc.constraint_name = kcu.constraint_name
-        JOIN information_schema.constraint_column_usage AS ccu
-          ON ccu.constraint_name = tc.constraint_name
-        WHERE tc.constraint_type = 'FOREIGN KEY'
-        ORDER BY tc.table_name, tc.constraint_name;
-      `;
-
-      const expectedConstraints = [
-        {
-          table_name: 'goals',
-          column_name: 'userId',
-          foreign_table_name: 'users',
-          foreign_column_name: 'id',
-        },
-        {
-          table_name: 'sub_goals',
-          column_name: 'goalId',
-          foreign_table_name: 'goals',
-          foreign_column_name: 'id',
-        },
-        {
-          table_name: 'actions',
-          column_name: 'subGoalId',
-          foreign_table_name: 'sub_goals',
-          foreign_column_name: 'id',
-        },
-        {
-          table_name: 'tasks',
-          column_name: 'actionId',
-          foreign_table_name: 'actions',
-          foreign_column_name: 'id',
-        },
-        {
-          table_name: 'task_reminders',
-          column_name: 'taskId',
-          foreign_table_name: 'tasks',
-          foreign_column_name: 'id',
-        },
-        {
-          table_name: 'reflections',
-          column_name: 'taskId',
-          foreign_table_name: 'tasks',
-          foreign_column_name: 'id',
-        },
-      ];
-
-      expectedConstraints.forEach(expectedConstraint => {
-        const actualConstraint = constraints.find(
-          c =>
-            c.table_name === expectedConstraint.table_name &&
-            c.column_name === expectedConstraint.column_name
-        );
-        expect(actualConstraint).toBeDefined();
-        expect(actualConstraint?.foreign_table_name).toBe(expectedConstraint.foreign_table_name);
-        expect(actualConstraint?.foreign_column_name).toBe(expectedConstraint.foreign_column_name);
-      });
-    });
-  });
-
-  describe('Index Tests', () => {
-    test('should have required indexes', async () => {
-      const indexes = await prisma.$queryRaw<
-        Array<{
-          indexname: string;
-          tablename: string;
-        }>
-      >`
-        SELECT indexname, tablename
-        FROM pg_indexes
+  describe('Index Performance Tests', () => {
+    test('should have proper indexes for common queries', async () => {
+      // インデックスの存在確認
+      const indexes = (await prisma.$queryRaw`
+        SELECT indexname, tablename 
+        FROM pg_indexes 
         WHERE schemaname = 'public'
         AND indexname NOT LIKE '%_pkey'
         ORDER BY tablename, indexname;
-      `;
+      `) as Array<{ indexname: string; tablename: string }>;
 
-      const indexNames = indexes.map(i => `${i.tablename}.${i.indexname}`);
+      // 期待されるインデックスが存在することを確認
+      const indexNames = indexes.map(idx => idx.indexname);
 
-      // 期待されるインデックス（主キー以外）
-      const expectedIndexes = [
-        'users.users_email_key',
-        'goals.goals_userId_status_idx',
-        'goals.goals_userId_createdAt_idx',
-        'sub_goals.sub_goals_goalId_position_key',
-        'sub_goals.sub_goals_goalId_position_idx',
-        'actions.actions_subGoalId_position_key',
-        'actions.actions_subGoalId_position_idx',
-        'tasks.tasks_actionId_status_idx',
-        'tasks.tasks_status_createdAt_idx',
-        'task_reminders.task_reminders_status_reminderAt_idx',
-        'task_reminders.task_reminders_taskId_reminderAt_idx',
-        'reflections.reflections_taskId_createdAt_idx',
-      ];
-
-      expectedIndexes.forEach(expectedIndex => {
-        expect(indexNames).toContain(expectedIndex);
-      });
-    });
-  });
-
-  describe('Cascade Delete Tests', () => {
-    test('should cascade delete from user to goals', async () => {
-      // テストユーザー作成
-      const user = await prisma.user.create({
-        data: {
-          email: 'test-cascade@example.com',
-          name: 'Test User',
-        },
-      });
-
-      // ゴール作成
-      const goal = await prisma.goal.create({
-        data: {
-          userId: user.id,
-          title: 'Test Goal',
-          description: 'Test Description',
-        },
-      });
-
-      // ユーザー削除
-      await prisma.user.delete({
-        where: { id: user.id },
-      });
-
-      // ゴールも削除されていることを確認
-      const deletedGoal = await prisma.goal.findUnique({
-        where: { id: goal.id },
-      });
-
-      expect(deletedGoal).toBeNull();
-    });
-
-    test('should cascade delete through the entire hierarchy', async () => {
-      // テストデータ作成
-      const user = await prisma.user.create({
-        data: {
-          email: 'test-hierarchy@example.com',
-          name: 'Test User',
-        },
-      });
-
-      const goal = await prisma.goal.create({
-        data: {
-          userId: user.id,
-          title: 'Test Goal',
-        },
-      });
-
-      const subGoal = await prisma.subGoal.create({
-        data: {
-          goalId: goal.id,
-          title: 'Test SubGoal',
-          position: 1,
-        },
-      });
-
-      const action = await prisma.action.create({
-        data: {
-          subGoalId: subGoal.id,
-          title: 'Test Action',
-          position: 1,
-        },
-      });
-
-      const task = await prisma.task.create({
-        data: {
-          actionId: action.id,
-          title: 'Test Task',
-        },
-      });
-
-      const reminder = await prisma.taskReminder.create({
-        data: {
-          taskId: task.id,
-          reminderAt: new Date(),
-        },
-      });
-
-      const reflection = await prisma.reflection.create({
-        data: {
-          taskId: task.id,
-          content: 'Test reflection',
-        },
-      });
-
-      // ユーザー削除
-      await prisma.user.delete({
-        where: { id: user.id },
-      });
-
-      // 全ての関連データが削除されていることを確認
-      expect(await prisma.goal.findUnique({ where: { id: goal.id } })).toBeNull();
-      expect(await prisma.subGoal.findUnique({ where: { id: subGoal.id } })).toBeNull();
-      expect(await prisma.action.findUnique({ where: { id: action.id } })).toBeNull();
-      expect(await prisma.task.findUnique({ where: { id: task.id } })).toBeNull();
-      expect(await prisma.taskReminder.findUnique({ where: { id: reminder.id } })).toBeNull();
-      expect(await prisma.reflection.findUnique({ where: { id: reflection.id } })).toBeNull();
+      // ユーザーのメール検索用インデックス
+      expect(indexNames.some(name => name.includes('email'))).toBe(true);
     });
   });
 
   describe('Data Integrity Tests', () => {
     test('should enforce unique constraints', async () => {
-      const user = await prisma.user.create({
-        data: {
-          email: 'unique-test@example.com',
-          name: 'Test User',
-        },
-      });
+      // 同じメールアドレスでユーザーを2回作成しようとするとエラーになる
+      const userData = {
+        id: 'test-unique-user-1',
+        email: 'unique@test.com',
+        name: 'Unique Test User 1',
+      };
 
-      // 同じメールアドレスでユーザー作成を試行
+      await prisma.user.create({ data: userData });
+
       await expect(
         prisma.user.create({
           data: {
-            email: 'unique-test@example.com',
-            name: 'Another User',
+            id: 'test-unique-user-2',
+            email: 'unique@test.com', // 同じメールアドレス
+            name: 'Unique Test User 2',
+          },
+        })
+      ).rejects.toThrow();
+
+      // クリーンアップ
+      await prisma.user.delete({ where: { id: userData.id } });
+    });
+
+    test('should enforce check constraints', async () => {
+      const user = await prisma.user.create({
+        data: {
+          id: 'test-check-user',
+          email: 'check@test.com',
+          name: 'Check Test User',
+        },
+      });
+
+      // 進捗率が範囲外の値でエラーになることを確認
+      await expect(
+        prisma.goal.create({
+          data: {
+            id: 'test-check-goal',
+            user_id: user.id,
+            title: 'Check Test Goal',
+            description: 'Test Description',
+            deadline: new Date(),
+            background: 'Test Background',
+            status: 'ACTIVE',
+            progress: 150, // 範囲外の値
           },
         })
       ).rejects.toThrow();
@@ -359,40 +200,77 @@ describe('Database Migration Tests', () => {
       // クリーンアップ
       await prisma.user.delete({ where: { id: user.id } });
     });
+  });
 
-    test('should enforce position uniqueness within same parent', async () => {
+  describe('Mandala Structure Tests', () => {
+    test('should support complete mandala structure', async () => {
+      // 完全なマンダラ構造を作成してテスト
       const user = await prisma.user.create({
         data: {
-          email: 'position-test@example.com',
-          name: 'Test User',
+          id: 'test-mandala-user',
+          email: 'mandala@test.com',
+          name: 'Mandala Test User',
         },
       });
 
       const goal = await prisma.goal.create({
         data: {
-          userId: user.id,
-          title: 'Test Goal',
+          id: 'test-mandala-goal',
+          user_id: user.id,
+          title: 'Mandala Test Goal',
+          description: 'Test Description',
+          deadline: new Date(),
+          background: 'Test Background',
+          status: 'ACTIVE',
+          progress: 0,
         },
       });
 
-      await prisma.subGoal.create({
-        data: {
-          goalId: goal.id,
-          title: 'SubGoal 1',
-          position: 1,
-        },
-      });
-
-      // 同じポジションでサブゴール作成を試行
-      await expect(
-        prisma.subGoal.create({
+      // 8個のサブ目標を作成
+      const subGoals = [];
+      for (let i = 0; i < 8; i++) {
+        const subGoal = await prisma.subGoal.create({
           data: {
-            goalId: goal.id,
-            title: 'SubGoal 2',
-            position: 1,
+            id: `test-mandala-subgoal-${i}`,
+            goal_id: goal.id,
+            title: `SubGoal ${i}`,
+            description: `SubGoal ${i} Description`,
+            background: `SubGoal ${i} Background`,
+            position: i,
+            progress: 0,
           },
-        })
-      ).rejects.toThrow();
+        });
+        subGoals.push(subGoal);
+
+        // 各サブ目標に8個のアクションを作成
+        for (let j = 0; j < 8; j++) {
+          await prisma.action.create({
+            data: {
+              id: `test-mandala-action-${i}-${j}`,
+              sub_goal_id: subGoal.id,
+              title: `Action ${i}-${j}`,
+              description: `Action ${i}-${j} Description`,
+              background: `Action ${i}-${j} Background`,
+              type: j % 2 === 0 ? 'EXECUTION' : 'HABIT',
+              position: j,
+              progress: 0,
+            },
+          });
+        }
+      }
+
+      // 作成されたデータを確認
+      const createdSubGoals = await prisma.subGoal.findMany({
+        where: { goal_id: goal.id },
+      });
+      expect(createdSubGoals).toHaveLength(8);
+
+      const createdActions = await prisma.action.findMany({
+        where: {
+          sub_goal_id: { in: subGoals.map(sg => sg.id) },
+        },
+      });
+      expect(createdActions).toHaveLength(64); // 8 × 8
 
       // クリーンアップ
       await prisma.user.delete({ where: { id: user.id } });

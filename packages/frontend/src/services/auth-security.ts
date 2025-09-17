@@ -321,9 +321,9 @@ export class AuthSecurityService {
 
       for (const key of Object.keys(sanitized)) {
         if (sensitiveKeys.some(sensitive => key.toLowerCase().includes(sensitive))) {
-          sanitized[key] = '***MASKED***';
-        } else if (typeof sanitized[key] === 'object') {
-          sanitized[key] = this.sanitizeLogData(sanitized[key]);
+          (sanitized as any)[key] = '***MASKED***';
+        } else if (typeof (sanitized as any)[key] === 'object') {
+          (sanitized as any)[key] = this.sanitizeLogData((sanitized as any)[key]);
         }
       }
 

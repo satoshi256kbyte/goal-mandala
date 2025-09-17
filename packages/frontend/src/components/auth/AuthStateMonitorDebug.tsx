@@ -236,7 +236,7 @@ export const AuthStateMonitorDebug: React.FC<AuthStateMonitorDebugProps> = ({
           {/* 操作ボタン */}
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
             <button
-              onClick={isMonitoring ? stopMonitoring : startMonitoring}
+              onClick={() => (isMonitoring ? stopMonitoring() : startMonitoring())}
               style={{
                 padding: '4px 8px',
                 fontSize: '10px',

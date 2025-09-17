@@ -1,10 +1,8 @@
-import { PrismaClient } from '../src/generated/prisma-client';
-import { migrationLogger } from '../src/utils/migration-logger';
-import { migrationMetrics } from '../src/utils/migration-metrics';
+import { PrismaClient } from '@prisma/client';
+import { performance } from 'perf_hooks';
 
 describe('Migration Performance Tests', () => {
   let prisma: PrismaClient;
-  const PERFORMANCE_THRESHOLD = 30000; // 30秒
 
   beforeAll(async () => {
     prisma = new PrismaClient();
@@ -15,326 +13,206 @@ describe('Migration Performance Tests', () => {
     await prisma.$disconnect();
   });
 
-  beforeEach(() => {
-    migrationMetrics.clearMetrics();
-  });
+  describe('Query Performance Tests', () => {
+    test('should perform user queries within acceptable time', async () => {
+      const startTime = performance.now();
 
-  describe('Migration Execution Time', () => {
-    test('should complete migration within acceptable time', async () => {
-      const migrationName = 'performance_test_migration';
-      const startTime = Date.now();
-
-      migrationMetrics.startMigration(migrationName);
-
-      try {
-        // マイグレーション相当の処理をシミュレート
-        await simulateMigrationOperations();
-
-        const endTime = Date.now();
-        const duration = endTime - startTime;
-
-        migrationMetrics.completeMigration(migrationName, 7, 0);
-
-        await migrationLogger.performanceMetrics('migration_execution', duration, {
-          migrationName,
-          tablesCreated: 7,
-        });
-
-        expect(duration).toBeLessThan(PERFORMANCE_THRESHOLD);
-      } catch (error) {
-        migrationMetrics.failMigration(migrationName, (error as Error).message);
-        throw error;
-      }
-    });
-
-    test('should handle large dataset migration efficiently', async () => {
-      const migrationName = 'large_dataset_migration';
-      const recordCount = 10000;
-
-      migrationMetrics.startMigration(migrationName);
-
-      const startTime = Date.now();
-
-      try {
-        // 大量データでのパフォーマンステスト
-        await performLargeDatasetTest(recordCount);
-
-        const endTime = Date.now();
-        const duration = endTime - startTime;
-
-        migrationMetrics.completeMigration(migrationName, 1, recordCount);
-
-        await migrationLogger.performanceMetrics('large_dataset_migration', duration, {
-          migrationName,
-          recordCount,
-        });
-
-        // 大量データでも許容時間内で完了することを確認
-        expect(duration).toBeLessThan(PERFORMANCE_THRESHOLD * 2); // 大量データなので2倍の時間を許容
-      } catch (error) {
-        migrationMetrics.failMigration(migrationName, (error as Error).message);
-        throw error;
-      }
-    });
-  });
-
-  describe('Database Connection Performance', () => {
-    test('should establish database connection quickly', async () => {
-      const startTime = Date.now();
-
-      // 新しい接続を作成してテスト
-      const testPrisma = new PrismaClient();
-
-      try {
-        await testPrisma.$connect();
-
-        const connectionTime = Date.now() - startTime;
-
-        migrationMetrics.recordDatabaseConnection(true, connectionTime);
-
-        await migrationLogger.performanceMetrics('database_connection', connectionTime);
-
-        // 接続時間が5秒以内であることを確認
-        expect(connectionTime).toBeLessThan(5000);
-      } finally {
-        await testPrisma.$disconnect();
-      }
-    });
-
-    test('should handle concurrent connections efficiently', async () => {
-      const connectionCount = 5;
-      const startTime = Date.now();
-
-      const connectionPromises = Array.from({ length: connectionCount }, async () => {
-        const testPrisma = new PrismaClient();
-        try {
-          await testPrisma.$connect();
-          await testPrisma.$queryRaw`SELECT 1`;
-          return testPrisma;
-        } catch (error) {
-          await testPrisma.$disconnect();
-          throw error;
-        }
+      await prisma.user.findMany({
+        take: 100,
       });
 
-      try {
-        const connections = await Promise.all(connectionPromises);
+      const endTime = performance.now();
+      const executionTime = endTime - startTime;
 
-        const totalTime = Date.now() - startTime;
-
-        await migrationLogger.performanceMetrics('concurrent_connections', totalTime, {
-          connectionCount,
-        });
-
-        // 並行接続が10秒以内で完了することを確認
-        expect(totalTime).toBeLessThan(10000);
-
-        // 全接続をクリーンアップ
-        await Promise.all(connections.map(conn => conn.$disconnect()));
-      } catch (error) {
-        migrationMetrics.recordDatabaseConnection(false);
-        throw error;
-      }
+      // 100ユーザー取得が1秒以内に完了することを確認
+      expect(executionTime).toBeLessThan(1000);
     });
-  });
 
-  describe('Schema Validation Performance', () => {
-    test('should validate schema quickly', async () => {
-      const startTime = Date.now();
+    test('should perform goal queries with relations within acceptable time', async () => {
+      const startTime = performance.now();
 
-      try {
-        // スキーマ検証のシミュレート
-        await validateSchemaStructure();
+      await prisma.goal.findMany({
+        take: 50,
+        include: {
+          sub_goals: {
+            include: {
+              actions: {
+                include: {
+                  tasks: true,
+                },
+              },
+            },
+          },
+        },
+      });
 
-        const validationTime = Date.now() - startTime;
+      const endTime = performance.now();
+      const executionTime = endTime - startTime;
 
-        migrationMetrics.recordSchemaValidation(true, validationTime);
-
-        await migrationLogger.performanceMetrics('schema_validation', validationTime);
-
-        // スキーマ検証が10秒以内で完了することを確認
-        expect(validationTime).toBeLessThan(10000);
-      } catch (error) {
-        migrationMetrics.recordSchemaValidation(false);
-        throw error;
-      }
+      // 関連データ込みで50目標取得が2秒以内に完了することを確認
+      expect(executionTime).toBeLessThan(2000);
     });
-  });
 
-  describe('Index Creation Performance', () => {
-    test('should create indexes efficiently', async () => {
-      const startTime = Date.now();
+    test('should perform complex aggregation queries within acceptable time', async () => {
+      const startTime = performance.now();
 
-      try {
-        // インデックス作成のパフォーマンステスト
-        await testIndexCreationPerformance();
-
-        const indexCreationTime = Date.now() - startTime;
-
-        await migrationLogger.performanceMetrics('index_creation', indexCreationTime);
-
-        // インデックス作成が15秒以内で完了することを確認
-        expect(indexCreationTime).toBeLessThan(15000);
-      } catch (error) {
-        await migrationLogger.error('インデックス作成パフォーマンステスト失敗', {
-          error: error instanceof Error ? error.message : String(error),
-        });
-        throw error;
-      }
-    });
-  });
-
-  describe('Memory Usage', () => {
-    test('should not exceed memory limits during migration', async () => {
-      const initialMemory = process.memoryUsage();
-
-      try {
-        // メモリ使用量テスト用の処理
-        await performMemoryIntensiveOperations();
-
-        const finalMemory = process.memoryUsage();
-        const memoryIncrease = finalMemory.heapUsed - initialMemory.heapUsed;
-
-        await migrationLogger.performanceMetrics('memory_usage', memoryIncrease, {
-          initialHeapUsed: initialMemory.heapUsed,
-          finalHeapUsed: finalMemory.heapUsed,
-          memoryIncrease,
-        });
-
-        // メモリ使用量の増加が100MB以内であることを確認
-        expect(memoryIncrease).toBeLessThan(100 * 1024 * 1024);
-      } catch (error) {
-        await migrationLogger.error('メモリ使用量テスト失敗', {
-          error: error instanceof Error ? error.message : String(error),
-        });
-        throw error;
-      }
-    });
-  });
-
-  // ヘルパー関数
-  async function simulateMigrationOperations(): Promise<void> {
-    // テーブル存在確認（マイグレーション相当の処理）
-    const tables = await prisma.$queryRaw<Array<{ table_name: string }>>`
-      SELECT table_name 
-      FROM information_schema.tables 
-      WHERE table_schema = 'public' 
-      AND table_type = 'BASE TABLE'
-    `;
-
-    // 各テーブルの構造確認
-    for (const table of tables) {
+      // 複雑な集計クエリ：ユーザー別の目標進捗統計
       await prisma.$queryRaw`
-        SELECT column_name, data_type 
-        FROM information_schema.columns 
-        WHERE table_name = ${table.table_name}
+        SELECT 
+          u.id,
+          u.name,
+          COUNT(g.id) as goal_count,
+          AVG(g.progress) as avg_progress,
+          MAX(g.progress) as max_progress,
+          MIN(g.progress) as min_progress
+        FROM "User" u
+        LEFT JOIN "Goal" g ON u.id = g.user_id
+        GROUP BY u.id, u.name
+        LIMIT 100;
       `;
-    }
-  }
 
-  async function performLargeDatasetTest(recordCount: number): Promise<void> {
-    // テスト用ユーザーを大量作成
-    const users = Array.from({ length: Math.min(recordCount, 1000) }, (_, i) => ({
-      email: `perf-test-${i}-${Date.now()}@example.com`,
-      name: `Performance Test User ${i}`,
-    }));
+      const endTime = performance.now();
+      const executionTime = endTime - startTime;
 
-    // バッチ挿入でパフォーマンステスト
-    const batchSize = 100;
-    for (let i = 0; i < users.length; i += batchSize) {
-      const batch = users.slice(i, i + batchSize);
+      // 集計クエリが1.5秒以内に完了することを確認
+      expect(executionTime).toBeLessThan(1500);
+    });
+  });
+
+  describe('Bulk Operation Performance Tests', () => {
+    test('should handle bulk inserts efficiently', async () => {
+      const testUsers = Array.from({ length: 100 }, (_, i) => ({
+        id: `perf-test-user-${i}`,
+        email: `perftest${i}@example.com`,
+        name: `Performance Test User ${i}`,
+      }));
+
+      const startTime = performance.now();
+
+      // バルクインサート
       await prisma.user.createMany({
-        data: batch,
+        data: testUsers,
         skipDuplicates: true,
       });
-    }
 
-    // クリーンアップ
-    await prisma.user.deleteMany({
-      where: {
-        email: {
-          startsWith: `perf-test-`,
+      const endTime = performance.now();
+      const executionTime = endTime - startTime;
+
+      // 100ユーザーのバルクインサートが1秒以内に完了することを確認
+      expect(executionTime).toBeLessThan(1000);
+
+      // クリーンアップ
+      await prisma.user.deleteMany({
+        where: {
+          id: { in: testUsers.map(u => u.id) },
         },
-      },
+      });
     });
-  }
 
-  async function validateSchemaStructure(): Promise<void> {
-    // 全テーブルの存在確認
-    const tables = await prisma.$queryRaw<Array<{ table_name: string }>>`
-      SELECT table_name 
-      FROM information_schema.tables 
-      WHERE table_schema = 'public' 
-      AND table_type = 'BASE TABLE'
-    `;
+    test('should handle bulk updates efficiently', async () => {
+      // テストデータ準備
+      const testUsers = Array.from({ length: 50 }, (_, i) => ({
+        id: `bulk-update-user-${i}`,
+        email: `bulkupdate${i}@example.com`,
+        name: `Bulk Update User ${i}`,
+      }));
 
-    // 外部キー制約の確認
-    await prisma.$queryRaw`
-      SELECT tc.constraint_name, tc.table_name, kcu.column_name
-      FROM information_schema.table_constraints AS tc
-      JOIN information_schema.key_column_usage AS kcu
-        ON tc.constraint_name = kcu.constraint_name
-      WHERE tc.constraint_type = 'FOREIGN KEY'
-    `;
+      await prisma.user.createMany({
+        data: testUsers,
+        skipDuplicates: true,
+      });
 
-    // インデックスの確認
-    await prisma.$queryRaw`
-      SELECT indexname, tablename
-      FROM pg_indexes
-      WHERE schemaname = 'public'
-    `;
-  }
+      const startTime = performance.now();
 
-  async function testIndexCreationPerformance(): Promise<void> {
-    // 既存インデックスの確認
-    const indexes = await prisma.$queryRaw<Array<{ indexname: string; tablename: string }>>`
-      SELECT indexname, tablename
-      FROM pg_indexes
-      WHERE schemaname = 'public'
-      AND indexname NOT LIKE '%_pkey'
-    `;
+      // バルクアップデート
+      await prisma.user.updateMany({
+        where: {
+          id: { in: testUsers.map(u => u.id) },
+        },
+        data: {
+          name: 'Updated Name',
+        },
+      });
 
-    // インデックス統計の取得
-    for (const index of indexes.slice(0, 5)) {
-      // 最初の5つのインデックスのみテスト
-      await prisma.$queryRaw`
-        SELECT schemaname, tablename, attname, n_distinct, correlation
-        FROM pg_stats
-        WHERE schemaname = 'public'
-        AND tablename = ${index.tablename}
-        LIMIT 5
-      `;
-    }
-  }
+      const endTime = performance.now();
+      const executionTime = endTime - startTime;
 
-  async function performMemoryIntensiveOperations(): Promise<void> {
-    // 大量のデータを一時的にメモリに読み込む
-    const largeQuery = await prisma.$queryRaw<Array<any>>`
-      SELECT 
-        t.table_name,
-        c.column_name,
-        c.data_type,
-        c.is_nullable,
-        c.column_default
-      FROM information_schema.tables t
-      JOIN information_schema.columns c ON t.table_name = c.table_name
-      WHERE t.table_schema = 'public'
-      AND t.table_type = 'BASE TABLE'
-    `;
+      // 50ユーザーのバルクアップデートが500ms以内に完了することを確認
+      expect(executionTime).toBeLessThan(500);
 
-    // データを処理（メモリ使用量テスト）
-    const processedData = largeQuery.map(row => ({
-      ...row,
-      processed: true,
-      timestamp: new Date().toISOString(),
-    }));
+      // クリーンアップ
+      await prisma.user.deleteMany({
+        where: {
+          id: { in: testUsers.map(u => u.id) },
+        },
+      });
+    });
+  });
 
-    // 一時的にデータを保持
-    await new Promise(resolve => setTimeout(resolve, 1000));
+  describe('Connection Pool Performance Tests', () => {
+    test('should handle concurrent queries efficiently', async () => {
+      const concurrentQueries = Array.from({ length: 10 }, () =>
+        prisma.user.findMany({ take: 10 })
+      );
 
-    // メモリ解放のためのガベージコレクション促進
-    if (global.gc) {
-      global.gc();
-    }
-  }
+      const startTime = performance.now();
+
+      await Promise.all(concurrentQueries);
+
+      const endTime = performance.now();
+      const executionTime = endTime - startTime;
+
+      // 10個の並行クエリが1秒以内に完了することを確認
+      expect(executionTime).toBeLessThan(1000);
+    });
+  });
+
+  describe('Index Effectiveness Tests', () => {
+    test('should use indexes for email lookups', async () => {
+      // インデックスが効いているかテスト用のユーザーを作成
+      const testUser = await prisma.user.create({
+        data: {
+          id: 'index-test-user',
+          email: 'indextest@example.com',
+          name: 'Index Test User',
+        },
+      });
+
+      const startTime = performance.now();
+
+      // メールアドレスでの検索（インデックスが効くはず）
+      await prisma.user.findUnique({
+        where: { email: 'indextest@example.com' },
+      });
+
+      const endTime = performance.now();
+      const executionTime = endTime - startTime;
+
+      // インデックスを使った検索が50ms以内に完了することを確認
+      expect(executionTime).toBeLessThan(50);
+
+      // クリーンアップ
+      await prisma.user.delete({ where: { id: testUser.id } });
+    });
+  });
+
+  describe('Memory Usage Tests', () => {
+    test('should handle large result sets without memory issues', async () => {
+      const initialMemory = process.memoryUsage().heapUsed;
+
+      // 大量のデータを取得（ただし実際のデータ量に依存）
+      const results = await prisma.user.findMany({
+        take: 1000,
+      });
+
+      const finalMemory = process.memoryUsage().heapUsed;
+      const memoryIncrease = finalMemory - initialMemory;
+
+      // メモリ使用量の増加が50MB以内であることを確認
+      expect(memoryIncrease).toBeLessThan(50 * 1024 * 1024);
+
+      // 結果が取得できていることを確認
+      expect(Array.isArray(results)).toBe(true);
+    });
+  });
 });

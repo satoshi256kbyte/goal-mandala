@@ -3,7 +3,7 @@
  */
 
 import React from 'react';
-import { useAuth, useAuthState, useAuthUser, useAuthActions } from '../hooks/useAuth';
+import { useAuth } from '../hooks/useAuth';
 import { useAuthStateMonitorContext } from '../components/auth/AuthStateMonitorProvider';
 
 // 基本的な認証フォーム
@@ -20,7 +20,7 @@ export const BasicAuthForm: React.FC = () => {
 
   return (
     <div>
-      {error && <div className="error">{error.message}</div>}
+      {error && <div className="error">{typeof error === 'string' ? error : error.message}</div>}
       <button onClick={() => handleLogin('user@example.com', 'password')} disabled={isLoading}>
         {isLoading ? 'ログイン中...' : 'ログイン'}
       </button>
@@ -31,7 +31,7 @@ export const BasicAuthForm: React.FC = () => {
 // 最適化された認証状態表示
 export const OptimizedAuthStatus: React.FC = () => {
   // 認証状態のみを監視（ユーザー情報変更時は再レンダリングされない）
-  const { isAuthenticated, isLoading } = useAuthState();
+  const { isAuthenticated, isLoading } = useAuth();
 
   if (isLoading) return <div>読み込み中...</div>;
 
@@ -41,7 +41,7 @@ export const OptimizedAuthStatus: React.FC = () => {
 // ユーザー情報表示
 export const UserProfile: React.FC = () => {
   // ユーザー情報のみを監視（認証状態変更時は再レンダリングされない）
-  const { user } = useAuthUser();
+  const { user } = useAuth();
 
   if (!user) return null;
 
@@ -57,12 +57,11 @@ export const UserProfile: React.FC = () => {
 // 認証アクション
 export const AuthActions: React.FC = () => {
   // アクションのみを取得（状態変更時は再レンダリングされない）
-  const { signOut, refreshToken } = useAuthActions();
+  const { signOut } = useAuth();
 
   return (
     <div>
       <button onClick={signOut}>ログアウト</button>
-      <button onClick={refreshToken}>トークン更新</button>
     </div>
   );
 };
@@ -86,18 +85,18 @@ export const MonitoringStats: React.FC = () => {
 
 // 条件付き認証チェック
 export const ConditionalAuth: React.FC<{ requireAuth: boolean }> = ({ requireAuth }) => {
-  const authData = useConditionalAuth(requireAuth);
+  const { isAuthenticated, user } = useAuth();
 
-  if (requireAuth && !authData.isAuthenticated) {
+  if (requireAuth && !isAuthenticated) {
     return <div>認証が必要です</div>;
   }
 
-  return <div>{authData.user ? `こんにちは、${authData.user.name}さん` : 'ゲストユーザー'}</div>;
+  return <div>{user ? `こんにちは、${user.email}さん` : 'ゲストユーザー'}</div>;
 };
 
 // 認証が必要なコンポーネント
 export const ProtectedComponent: React.FC = () => {
-  const { isAuthenticated, user, signOut } = useRequireAuth();
+  const { isAuthenticated, user, signOut } = useAuth();
 
   if (!isAuthenticated) {
     return <div>このコンポーネントは認証が必要です</div>;
@@ -106,7 +105,7 @@ export const ProtectedComponent: React.FC = () => {
   return (
     <div>
       <h2>保護されたコンテンツ</h2>
-      <p>ようこそ、{user?.name}さん</p>
+      <p>ようこそ、{user?.email}さん</p>
       <button onClick={signOut}>ログアウト</button>
     </div>
   );
@@ -119,7 +118,8 @@ export const ErrorHandlingExample: React.FC = () => {
   React.useEffect(() => {
     if (error) {
       // エラーの種類に応じた処理
-      switch (error.code) {
+      const errorCode = typeof error === 'string' ? 'UNKNOWN' : error.code;
+      switch (errorCode) {
         case 'TOKEN_EXPIRED':
           console.log('トークンが期限切れです。再ログインしてください。');
           break;
@@ -127,7 +127,10 @@ export const ErrorHandlingExample: React.FC = () => {
           console.log('ネットワークエラーが発生しました。');
           break;
         default:
-          console.log('認証エラーが発生しました:', error.message);
+          console.log(
+            '認証エラーが発生しました:',
+            typeof error === 'string' ? error : error.message
+          );
       }
 
       // 5秒後にエラーをクリア
@@ -138,7 +141,7 @@ export const ErrorHandlingExample: React.FC = () => {
 
   return error ? (
     <div className="error-banner">
-      {error.message}
+      {typeof error === 'string' ? error : error.message}
       <button onClick={clearError}>×</button>
     </div>
   ) : null;
@@ -146,13 +149,13 @@ export const ErrorHandlingExample: React.FC = () => {
 
 // パフォーマンス監視例
 export const PerformanceMonitor: React.FC = () => {
-  const { renderCount, stateChangeFrequency } = useAuthPerformance();
+  const { monitoringStats } = useAuthStateMonitorContext();
 
   return (
     <div>
       <h3>パフォーマンス統計</h3>
-      <p>レンダリング回数: {renderCount}</p>
-      <p>状態変更頻度: {stateChangeFrequency.toFixed(2)} 回/秒</p>
+      <p>状態変更回数: {monitoringStats?.totalStateChanges || 0}</p>
+      <p>エラー回数: {monitoringStats?.totalErrors || 0}</p>
     </div>
   );
 };

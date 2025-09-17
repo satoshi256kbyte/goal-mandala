@@ -1,164 +1,172 @@
 #!/bin/bash
 
-# マイグレーション状態確認・管理スクリプト
+# マイグレーション状態確認スクリプト
+# 現在のマイグレーション状態とデータベーススキーマ情報を表示
 
-set -euo pipefail
+set -e
 
-# 色付きログ出力
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m'
+echo "📊 Goal Mandala - マイグレーション状態確認"
+echo "=========================================="
 
-log_info() {
-    echo -e "${BLUE}[INFO]${NC} $1"
-}
+# 環境変数チェック
+if [ -z "$DATABASE_URL" ]; then
+    echo "❌ DATABASE_URL環境変数が設定されていません"
+    exit 1
+fi
 
-log_success() {
-    echo -e "${GREEN}[SUCCESS]${NC} $1"
-}
-
-log_warning() {
-    echo -e "${YELLOW}[WARNING]${NC} $1"
-}
-
-log_error() {
-    echo -e "${RED}[ERROR]${NC} $1"
-}
-
-# マイグレーション状態表示
-show_migration_status() {
-    log_info "マイグレーション状態を確認中..."
-    echo "=================================="
-    pnpm prisma migrate status
-    echo "=================================="
-}
-
-# データベーススキーマ情報表示
-show_schema_info() {
-    log_info "データベーススキーマ情報を取得中..."
-    echo "=================================="
-    
-    # テーブル一覧
-    echo "📋 テーブル一覧:"
-    pnpm prisma db execute --stdin <<< "
-        SELECT table_name 
-        FROM information_schema.tables 
-        WHERE table_schema = 'public' 
-        AND table_type = 'BASE TABLE'
-        ORDER BY table_name;
-    " | tail -n +2
-    
-    echo ""
-    
-    # Enum型一覧
-    echo "🏷️  Enum型一覧:"
-    pnpm prisma db execute --stdin <<< "
-        SELECT typname as enum_name
-        FROM pg_type 
-        WHERE typtype = 'e'
-        ORDER BY typname;
-    " | tail -n +2
-    
-    echo ""
-    
-    # インデックス一覧
-    echo "🔍 インデックス一覧:"
-    pnpm prisma db execute --stdin <<< "
-        SELECT 
-            schemaname,
-            tablename,
-            indexname,
-            indexdef
-        FROM pg_indexes 
-        WHERE schemaname = 'public'
-        ORDER BY tablename, indexname;
-    " | tail -n +2
-    
-    echo "=================================="
-}
+# データベース接続確認
+echo "🔍 データベース接続確認中..."
+if ! npx prisma db execute --stdin <<< "SELECT 1;" > /dev/null 2>&1; then
+    echo "❌ データベースに接続できません"
+    exit 1
+fi
+echo "✅ データベース接続OK"
 
 # マイグレーション履歴表示
-show_migration_history() {
-    log_info "マイグレーション履歴を確認中..."
-    echo "=================================="
-    
-    if [ -d "prisma/migrations" ]; then
-        echo "📚 マイグレーション履歴:"
-        ls -la prisma/migrations/ | grep -E '^d' | awk '{print $9}' | grep -v '^\.$' | grep -v '^\.\.$' | sort
-        
-        echo ""
-        echo "📊 マイグレーション統計:"
-        local migration_count=$(ls -1 prisma/migrations/ | grep -E '^[0-9]' | wc -l)
-        echo "総マイグレーション数: $migration_count"
-    else
-        log_warning "マイグレーションディレクトリが存在しません"
-    fi
-    
-    echo "=================================="
-}
+echo ""
+echo "📋 マイグレーション履歴:"
+echo "----------------------------------------"
+if npx prisma migrate status > /dev/null 2>&1; then
+    npx prisma migrate status
+else
+    echo "⚠️  マイグレーション情報を取得できませんでした"
+fi
 
-# データベース接続テスト
-test_database_connection() {
-    log_info "データベース接続をテスト中..."
-    
-    if pnpm prisma db execute --stdin <<< "SELECT 1 as connection_test;" > /dev/null 2>&1; then
-        log_success "データベース接続正常"
-    else
-        log_error "データベース接続失敗"
-        return 1
-    fi
-}
+# テーブル一覧表示
+echo ""
+echo "🗃️  データベーステーブル一覧:"
+echo "----------------------------------------"
+TABLES=$(npx prisma db execute --stdin <<< "
+SELECT 
+    schemaname,
+    tablename,
+    tableowner
+FROM pg_tables 
+WHERE schemaname = 'public'
+ORDER BY tablename;
+" 2>/dev/null | tail -n +3 | head -n -1)
 
-# 使用方法表示
-show_usage() {
-    echo "使用方法: $0 [オプション]"
-    echo ""
-    echo "オプション:"
-    echo "  status    マイグレーション状態を表示 (デフォルト)"
-    echo "  schema    データベーススキーマ情報を表示"
-    echo "  history   マイグレーション履歴を表示"
-    echo "  test      データベース接続をテスト"
-    echo "  all       全ての情報を表示"
-    echo "  help      この使用方法を表示"
-}
+if [ -n "$TABLES" ]; then
+    echo "$TABLES" | while IFS='|' read -r schema table owner; do
+        schema=$(echo "$schema" | xargs)
+        table=$(echo "$table" | xargs)
+        owner=$(echo "$owner" | xargs)
+        echo "  📄 $table (owner: $owner)"
+    done
+else
+    echo "  ❌ テーブルが見つかりません"
+fi
 
-# メイン処理
-main() {
-    local command="${1:-status}"
-    
-    case "$command" in
-        "status")
-            test_database_connection
-            show_migration_status
-            ;;
-        "schema")
-            test_database_connection
-            show_schema_info
-            ;;
-        "history")
-            show_migration_history
-            ;;
-        "test")
-            test_database_connection
-            ;;
-        "all")
-            test_database_connection
-            show_migration_status
-            show_schema_info
-            show_migration_history
-            ;;
-        "help"|"-h"|"--help")
-            show_usage
-            ;;
-        *)
-            log_error "不明なコマンド: $command"
-            show_usage
-            exit 1
-            ;;
-    esac
-}
+# Enum型一覧表示
+echo ""
+echo "🏷️  Enum型一覧:"
+echo "----------------------------------------"
+ENUMS=$(npx prisma db execute --stdin <<< "
+SELECT 
+    t.typname as enum_name,
+    string_agg(e.enumlabel, ', ' ORDER BY e.enumsortorder) as values
+FROM pg_type t 
+JOIN pg_enum e ON t.oid = e.enumtypid  
+WHERE t.typtype = 'e'
+GROUP BY t.typname
+ORDER BY t.typname;
+" 2>/dev/null | tail -n +3 | head -n -1)
 
-# スクリプト実行
-main "$@"
+if [ -n "$ENUMS" ]; then
+    echo "$ENUMS" | while IFS='|' read -r enum_name values; do
+        enum_name=$(echo "$enum_name" | xargs)
+        values=$(echo "$values" | xargs)
+        echo "  🏷️  $enum_name: [$values]"
+    done
+else
+    echo "  ❌ Enum型が見つかりません"
+fi
+
+# インデックス一覧表示
+echo ""
+echo "📇 インデックス一覧:"
+echo "----------------------------------------"
+INDEXES=$(npx prisma db execute --stdin <<< "
+SELECT 
+    schemaname,
+    tablename,
+    indexname,
+    indexdef
+FROM pg_indexes 
+WHERE schemaname = 'public'
+AND indexname NOT LIKE '%_pkey'
+ORDER BY tablename, indexname;
+" 2>/dev/null | tail -n +3 | head -n -1)
+
+if [ -n "$INDEXES" ]; then
+    echo "$INDEXES" | while IFS='|' read -r schema table index def; do
+        schema=$(echo "$schema" | xargs)
+        table=$(echo "$table" | xargs)
+        index=$(echo "$index" | xargs)
+        echo "  📇 $table.$index"
+    done
+else
+    echo "  ℹ️  カスタムインデックスが見つかりません"
+fi
+
+# 外部キー制約一覧表示
+echo ""
+echo "🔗 外部キー制約一覧:"
+echo "----------------------------------------"
+FOREIGN_KEYS=$(npx prisma db execute --stdin <<< "
+SELECT 
+    tc.table_name,
+    kcu.column_name,
+    ccu.table_name AS foreign_table_name,
+    ccu.column_name AS foreign_column_name
+FROM information_schema.table_constraints AS tc 
+JOIN information_schema.key_column_usage AS kcu
+    ON tc.constraint_name = kcu.constraint_name
+    AND tc.table_schema = kcu.table_schema
+JOIN information_schema.constraint_column_usage AS ccu
+    ON ccu.constraint_name = tc.constraint_name
+    AND ccu.table_schema = tc.table_schema
+WHERE tc.constraint_type = 'FOREIGN KEY'
+AND tc.table_schema = 'public'
+ORDER BY tc.table_name, kcu.column_name;
+" 2>/dev/null | tail -n +3 | head -n -1)
+
+if [ -n "$FOREIGN_KEYS" ]; then
+    echo "$FOREIGN_KEYS" | while IFS='|' read -r table column foreign_table foreign_column; do
+        table=$(echo "$table" | xargs)
+        column=$(echo "$column" | xargs)
+        foreign_table=$(echo "$foreign_table" | xargs)
+        foreign_column=$(echo "$foreign_column" | xargs)
+        echo "  🔗 $table.$column → $foreign_table.$foreign_column"
+    done
+else
+    echo "  ❌ 外部キー制約が見つかりません"
+fi
+
+# データ件数表示
+echo ""
+echo "📊 テーブル別データ件数:"
+echo "----------------------------------------"
+TABLE_NAMES=$(npx prisma db execute --stdin <<< "
+SELECT tablename 
+FROM pg_tables 
+WHERE schemaname = 'public'
+AND tablename != '_prisma_migrations'
+ORDER BY tablename;
+" 2>/dev/null | tail -n +3 | head -n -1)
+
+if [ -n "$TABLE_NAMES" ]; then
+    echo "$TABLE_NAMES" | while read -r table; do
+        table=$(echo "$table" | xargs)
+        if [ -n "$table" ]; then
+            COUNT=$(npx prisma db execute --stdin <<< "SELECT COUNT(*) FROM \"$table\";" 2>/dev/null | tail -n +3 | head -n -1 | xargs)
+            echo "  📊 $table: $COUNT件"
+        fi
+    done
+else
+    echo "  ❌ テーブルが見つかりません"
+fi
+
+echo ""
+echo "✅ マイグレーション状態確認完了"
+echo "=========================================="

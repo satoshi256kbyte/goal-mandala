@@ -569,6 +569,8 @@ export const useAuth = (): AuthContextType => {
             : 'ログアウトに失敗しました',
         timestamp: new Date(),
         retryable: true,
+        category: ErrorCategory.AUTHENTICATION,
+        severity: ErrorSeverity.HIGH,
       };
 
       setAuthState(prev => ({
@@ -602,6 +604,8 @@ export const useAuth = (): AuthContextType => {
               : 'パスワードリセットに失敗しました',
           timestamp: new Date(),
           retryable: true,
+          category: ErrorCategory.AUTHENTICATION,
+          severity: ErrorSeverity.MEDIUM,
         };
 
         setAuthState(prev => ({
@@ -637,6 +641,8 @@ export const useAuth = (): AuthContextType => {
               : 'パスワード変更に失敗しました',
           timestamp: new Date(),
           retryable: true,
+          category: ErrorCategory.AUTHENTICATION,
+          severity: ErrorSeverity.MEDIUM,
         };
 
         setAuthState(prev => ({

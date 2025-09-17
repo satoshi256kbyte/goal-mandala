@@ -10,7 +10,8 @@
  */
 
 import { createContext, useContext, useMemo, useCallback } from 'react';
-import type { User, AuthError } from '../services/auth';
+import type { AuthError } from '../services/auth';
+import type { User } from '../services/auth-state-monitor';
 
 /**
  * 認証状態のみのコンテキスト（頻繁に変更される）

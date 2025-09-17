@@ -3,6 +3,8 @@ import { SeedDataSet } from './types';
 import { SeedManager } from './manager';
 import { developmentDataSet } from './data/development';
 import { testDataSet } from './data/test';
+import { demoDataSet } from './data/demo';
+import { performanceDataSet } from './data/performance';
 
 export class EnvironmentManager {
   private dataSets: Map<string, SeedDataSet> = new Map();
@@ -12,6 +14,8 @@ export class EnvironmentManager {
     // デフォルトデータセットを登録
     this.registerDataSet('dev', developmentDataSet);
     this.registerDataSet('test', testDataSet);
+    this.registerDataSet('demo', demoDataSet);
+    this.registerDataSet('performance', performanceDataSet);
   }
 
   registerDataSet(environment: string, dataSet: SeedDataSet): void {

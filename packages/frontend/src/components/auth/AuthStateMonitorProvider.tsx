@@ -10,7 +10,7 @@
  * 要件: 5.1, 5.2, 5.3, 5.4, 5.5
  */
 
-import React, { createContext, useContext, useEffect, useCallback, useState } from 'react';
+import React, { createContext, useContext, useEffect, useCallback, useState, useMemo } from 'react';
 import {
   useAuthStateMonitor,
   type UseAuthStateMonitorReturn,

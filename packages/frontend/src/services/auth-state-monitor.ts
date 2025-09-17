@@ -15,18 +15,23 @@ import { tokenManager } from './tokenManager';
 import { storageSync } from './storage-sync';
 
 /**
+ * ユーザー情報の型定義
+ */
+export interface User {
+  id: string;
+  email: string;
+  name?: string;
+  profileComplete?: boolean;
+  [key: string]: unknown;
+}
+
+/**
  * 認証状態の型定義
  */
 export interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
-  user: {
-    id: string;
-    email: string;
-    name?: string;
-    profileComplete?: boolean;
-    [key: string]: unknown;
-  } | null;
+  user: User | null;
   error: string | null;
   tokenExpirationTime: Date | null;
   lastActivity: Date | null;
@@ -41,6 +46,8 @@ export interface AuthError {
   message: string;
   timestamp: Date;
   retryable: boolean;
+  category: 'authentication' | 'network' | 'validation' | 'system';
+  severity: 'error' | 'warning' | 'info';
 }
 
 /**
@@ -322,6 +329,8 @@ export class AuthStateMonitor {
         message: '認証状態の確認に失敗しました',
         timestamp: new Date(),
         retryable: true,
+        category: 'authentication',
+        severity: 'error',
       };
 
       this.notifyError(authError);
@@ -515,6 +524,8 @@ export class AuthStateMonitor {
         message: 'トークンの更新に失敗しました',
         timestamp: new Date(),
         retryable: false,
+        category: 'authentication',
+        severity: 'error',
       };
 
       this.notifyError(authError);
@@ -543,6 +554,8 @@ export class AuthStateMonitor {
         message: '長時間非アクティブのため自動ログアウトしました',
         timestamp: new Date(),
         retryable: false,
+        category: 'authentication',
+        severity: 'info',
       };
 
       this.notifyError(authError);

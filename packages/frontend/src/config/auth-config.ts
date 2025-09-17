@@ -49,18 +49,27 @@ const baseConfig: AuthConfig = {
 const developmentConfig: Partial<AuthConfig> = {
   monitoring: {
     checkInterval: 30000,
+    tokenRefreshBuffer: 300000,
     inactivityTimeout: 3600000,
+    maxRetryAttempts: 3,
+    retryDelay: 1000,
   },
   security: {
+    enableEncryption: false,
     enableLogging: true,
     logLevel: 'debug',
+    tokenAccessRestriction: false,
+    memoryCleanupInterval: 300000,
   },
 };
 
 const productionConfig: Partial<AuthConfig> = {
   security: {
+    enableEncryption: true,
     enableLogging: false,
     logLevel: 'error',
+    tokenAccessRestriction: true,
+    memoryCleanupInterval: 600000,
   },
 };
 

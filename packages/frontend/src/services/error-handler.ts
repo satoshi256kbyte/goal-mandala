@@ -667,8 +667,8 @@ export const createAuthErrorHandler = (options?: ErrorHandlerOptions): AuthError
 /**
  * エラー分類ユーティリティ関数
  */
-export const classifyError = (error: unknown): AuthError => {
-  return authErrorHandler.handleError(error) as AuthError;
+export const classifyError = async (error: unknown): Promise<AuthError> => {
+  return await authErrorHandler.handleError(error);
 };
 
 /**

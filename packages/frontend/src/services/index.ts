@@ -2,5 +2,5 @@
 export * from './api';
 export * from './auth';
 export * from './tokenManager';
-export * from './storage-sync';
-export * from './auth-state-monitor';
+export { storageSync } from './storage-sync';
+export { AuthStateMonitor } from './auth-state-monitor';
