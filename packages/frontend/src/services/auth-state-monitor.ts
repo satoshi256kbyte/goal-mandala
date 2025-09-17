@@ -423,7 +423,7 @@ export class AuthStateMonitor {
   private startStorageEventMonitoring(): void {
     storageSync.startSync();
 
-    const handleStorageAuthStateChange = (syncState: any) => {
+    const handleStorageAuthStateChange = (syncState: unknown) => {
       if (syncState === null) {
         // 他のタブでログアウトされた場合
         console.log('他のタブでログアウトが検出されました');

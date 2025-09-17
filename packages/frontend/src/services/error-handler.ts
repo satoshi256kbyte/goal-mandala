@@ -539,7 +539,7 @@ export class AuthErrorHandler {
     // セキュリティログを外部サービスに送信（実装は環境に依存）
     if (typeof window !== 'undefined' && 'gtag' in window) {
       // Google Analytics等にセキュリティイベントを送信
-      (window as any).gtag('event', 'security_error', {
+      (window as { gtag?: (...args: unknown[]) => void }).gtag?.('event', 'security_error', {
         event_category: 'security',
         event_label: error.code,
         value: 1,
@@ -668,7 +668,7 @@ export const createAuthErrorHandler = (options?: ErrorHandlerOptions): AuthError
  * エラー分類ユーティリティ関数
  */
 export const classifyError = (error: unknown): AuthError => {
-  return authErrorHandler.handleError(error) as any;
+  return authErrorHandler.handleError(error) as AuthError;
 };
 
 /**

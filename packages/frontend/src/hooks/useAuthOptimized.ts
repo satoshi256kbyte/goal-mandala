@@ -185,7 +185,7 @@ export const useConditionalAuth = (condition: boolean) => {
       user: authUser.user,
       error: authState.error,
     };
-  }, [condition, authState.isAuthenticated, authUser.user, authState.error]);
+  }, [condition, authState.isAuthenticated, authState.isLoading, authUser.user, authState.error]);
 };
 
 /**
@@ -250,7 +250,7 @@ export const useAuthPerformance = () => {
   // 認証状態が変更されたときに記録
   useMemo(() => {
     stateChangeFrequency.recordChange();
-  }, [authState.isAuthenticated, authState.isLoading, stateChangeFrequency]);
+  }, [stateChangeFrequency]);
 
   return {
     renderCount: renderCount(),
