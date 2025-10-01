@@ -75,14 +75,14 @@ describe('複数タブ同期機能の統合テスト', () => {
 
     Object.defineProperty(window, 'localStorage', {
       value: {
-        getItem: jest.fn((key: string) => mockLocalStorage[key] || null),
-        setItem: jest.fn((key: string, value: string) => {
+        getItem: vi.fn((key: string) => mockLocalStorage[key] || null),
+        setItem: vi.fn((key: string, value: string) => {
           mockLocalStorage[key] = value;
         }),
-        removeItem: jest.fn((key: string) => {
+        removeItem: vi.fn((key: string) => {
           delete mockLocalStorage[key];
         }),
-        clear: jest.fn(() => {
+        clear: vi.fn(() => {
           mockLocalStorage = {};
         }),
       },
@@ -90,9 +90,9 @@ describe('複数タブ同期機能の統合テスト', () => {
     });
 
     // StorageSyncのモック
-    jest.spyOn(StorageSync.prototype, 'startSync').mockImplementation();
-    jest.spyOn(StorageSync.prototype, 'stopSync').mockImplementation();
-    jest.spyOn(StorageSync.prototype, 'broadcastAuthStateChange').mockImplementation();
+    vi.spyOn(StorageSync.prototype, 'startSync').mockImplementation();
+    vi.spyOn(StorageSync.prototype, 'stopSync').mockImplementation();
+    vi.spyOn(StorageSync.prototype, 'broadcastAuthStateChange').mockImplementation();
   });
 
   afterEach(() => {
@@ -100,7 +100,7 @@ describe('複数タブ同期機能の統合テスト', () => {
       value: originalLocalStorage,
       writable: true,
     });
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('タブ間での認証状態同期', () => {
@@ -329,7 +329,7 @@ describe('複数タブ同期機能の統合テスト', () => {
 
     it('ネットワークエラー時に適切にリトライする', async () => {
       // ネットワークエラーをシミュレートするためのモック
-      const mockFetch = jest.fn().mockRejectedValueOnce(new Error('Network error'));
+      const mockFetch = vi.fn().mockRejectedValueOnce(new Error('Network error'));
       global.fetch = mockFetch;
 
       render(

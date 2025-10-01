@@ -5,6 +5,7 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
+import { vi } from 'vitest';
 import { AuthProvider } from '../../components/auth/AuthProvider';
 import { AuthStateMonitorProvider } from '../../components/auth/AuthStateMonitorProvider';
 import { AppRouter } from '../../router/AppRouter';
@@ -66,7 +67,7 @@ describe('最終統合テスト', () => {
   });
 
   test('パフォーマンス最適化が動作する', async () => {
-    const renderCount = jest.fn();
+    const renderCount = vi.fn();
 
     const TestComponent = () => {
       renderCount();

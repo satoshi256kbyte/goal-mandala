@@ -12,6 +12,7 @@ import {
   LazyDashboardPage,
   LazyMandalaPage,
   LazyProfilePage,
+  LazyGoalInputPage,
   LazyNotFoundPage,
 } from '../pages/LazyPages';
 
@@ -115,6 +116,16 @@ export const AppRouter: React.FC = () => {
                 <ProtectedRoute>
                   <LazyLoader>
                     <LazyProfilePage />
+                  </LazyLoader>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/mandala/create/goal"
+              element={
+                <ProtectedRoute>
+                  <LazyLoader>
+                    <LazyGoalInputPage />
                   </LazyLoader>
                 </ProtectedRoute>
               }

@@ -8,6 +8,9 @@ export * from './common';
 // 認証コンポーネント
 export * from './auth';
 
+// フォームコンポーネント
+export * from './forms';
+
 // マンダラコンポーネント
 export * from './mandala';
 

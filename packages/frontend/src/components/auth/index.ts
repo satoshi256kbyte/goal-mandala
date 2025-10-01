@@ -4,6 +4,7 @@ export { SignupForm } from './SignupForm';
 export { PasswordResetForm } from './PasswordResetForm';
 export { NewPasswordForm } from './NewPasswordForm';
 export { AuthProvider } from './AuthProvider';
+export { useAuth } from '../../hooks/useAuth';
 export { ProtectedRoute } from './ProtectedRoute';
 export { PublicRoute } from './PublicRoute';
 export {

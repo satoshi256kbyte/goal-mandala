@@ -16,6 +16,9 @@ export const LazyLoginPage = lazy(() => import('./LoginPage'));
 export const LazySignupPage = lazy(() => import('./SignupPage'));
 export const LazyPasswordResetPage = lazy(() => import('./PasswordResetPage'));
 
+// 目標作成関連ページ
+export const LazyGoalInputPage = lazy(() => import('./GoalInputPage'));
+
 // メインアプリケーションページ（将来実装予定）
 export const LazyDashboardPage = lazy(() =>
   Promise.resolve({
