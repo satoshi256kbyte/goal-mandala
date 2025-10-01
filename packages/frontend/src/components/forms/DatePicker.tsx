@@ -60,10 +60,20 @@ export const DatePicker: React.FC<DatePickerProps> = ({
 }) => {
   // デフォルトの日付範囲を取得
   const defaultRange = getDefaultDateRange();
+<<<<<<< HEAD
   const dateRange: DateRange = useMemo(() => ({
     minDate: minDate || defaultRange.minDate,
     maxDate: maxDate || defaultRange.maxDate,
   }), [minDate, maxDate, defaultRange.minDate, defaultRange.maxDate]);
+=======
+  const dateRange: DateRange = useMemo(
+    () => ({
+      minDate: minDate || defaultRange.minDate,
+      maxDate: maxDate || defaultRange.maxDate,
+    }),
+    [minDate, maxDate, defaultRange.minDate, defaultRange.maxDate]
+  );
+>>>>>>> 203d7ba (feat: 2.1.2-goal-input-form)
 
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [inputValue, setInputValue] = useState<string>('');

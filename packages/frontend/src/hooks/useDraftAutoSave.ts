@@ -72,11 +72,22 @@ export const useDraftAutoSave = (options: UseDraftAutoSaveOptions) => {
   } = options;
 
   // 設定
+<<<<<<< HEAD
   const config: AutoSaveConfig = useMemo(() => ({
     ...DEFAULT_CONFIG,
     interval: intervalSeconds * 1000,
     enabled,
   }), [intervalSeconds, enabled]);
+=======
+  const config: AutoSaveConfig = useMemo(
+    () => ({
+      ...DEFAULT_CONFIG,
+      interval: intervalSeconds * 1000,
+      enabled,
+    }),
+    [intervalSeconds, enabled]
+  );
+>>>>>>> 203d7ba (feat: 2.1.2-goal-input-form)
 
   // 状態の管理
   const stateRef = useRef<AutoSaveState>({

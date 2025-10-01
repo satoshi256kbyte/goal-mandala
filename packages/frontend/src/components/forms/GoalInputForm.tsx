@@ -199,6 +199,7 @@ export const GoalInputForm: React.FC<GoalInputFormProps> = ({
 
   // フォームエラー時の処理（現在は未使用）
   // const _handleFormError = useCallback(() => {
+<<<<<<< HEAD
     const hasErrors = Object.keys(errors).length > 0;
     if (hasErrors) {
       // 最初のエラー要素にフォーカス
@@ -209,6 +210,18 @@ export const GoalInputForm: React.FC<GoalInputFormProps> = ({
         }
       }, 100);
     }
+=======
+  const hasErrors = Object.keys(errors).length > 0;
+  if (hasErrors) {
+    // 最初のエラー要素にフォーカス
+    setTimeout(() => {
+      const focused = focusFirstError();
+      if (focused) {
+        announce('入力内容にエラーがあります。修正してください。', 'assertive');
+      }
+    }, 100);
+  }
+>>>>>>> 203d7ba (feat: 2.1.2-goal-input-form)
   // }, [errors, focusFirstError, announce]);
 
   // 手動下書き保存ハンドラー
@@ -304,7 +317,10 @@ export const GoalInputForm: React.FC<GoalInputFormProps> = ({
       <form
         onSubmit={handleSubmit(handleFormSubmit)}
         className={getFormClasses()}
+<<<<<<< HEAD
 
+=======
+>>>>>>> 203d7ba (feat: 2.1.2-goal-input-form)
         aria-label="目標入力フォーム"
         noValidate
       >
