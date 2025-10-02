@@ -10,7 +10,7 @@ export interface TextInputProps {
   maxLength?: number;
   showCounter?: boolean;
   showWarning?: boolean;
-  register: UseFormRegister<Record<string, any>>;
+  register: UseFormRegister<Record<string, unknown>>;
   error?: FieldError;
   type?: 'text' | 'email' | 'password';
   className?: string;

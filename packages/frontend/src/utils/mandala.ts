@@ -1,4 +1,5 @@
-import { Goal, SubGoal, Action, GridData, CellData, Position, ValidationResult } from '../types';
+import { Goal, SubGoal, Action, GridData, CellData, Position } from '../types';
+import { ValidationResult } from '../types/validation';
 
 export const generateGridData = (goal: Goal, subGoals: SubGoal[], actions: Action[]): GridData => {
   const cells: CellData[][] = Array(9)

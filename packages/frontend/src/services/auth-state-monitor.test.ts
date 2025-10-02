@@ -11,7 +11,7 @@ import {
 } from './auth-state-monitor';
 import { AuthService } from './auth';
 import { tokenManager } from './tokenManager';
-import { storageSync } from './storage-sync';
+// import { storageSync } from './storage-sync';
 
 // モック
 vi.mock('./auth');

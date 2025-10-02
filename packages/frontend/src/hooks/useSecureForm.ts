@@ -9,7 +9,7 @@ import {
 /**
  * CSRF対策が適用されたフォーム送信のためのカスタムフック
  */
-export const useSecureForm = <T extends Record<string, any>>(form: UseFormReturn<T>) => {
+export const useSecureForm = <T extends Record<string, unknown>>(form: UseFormReturn<T>) => {
   const [csrfToken, setCsrfToken] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 

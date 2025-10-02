@@ -72,13 +72,6 @@ export const useDraftAutoSave = (options: UseDraftAutoSaveOptions) => {
   } = options;
 
   // 設定
-<<<<<<< HEAD
-  const config: AutoSaveConfig = useMemo(() => ({
-    ...DEFAULT_CONFIG,
-    interval: intervalSeconds * 1000,
-    enabled,
-  }), [intervalSeconds, enabled]);
-=======
   const config: AutoSaveConfig = useMemo(
     () => ({
       ...DEFAULT_CONFIG,
@@ -87,7 +80,6 @@ export const useDraftAutoSave = (options: UseDraftAutoSaveOptions) => {
     }),
     [intervalSeconds, enabled]
   );
->>>>>>> 203d7ba (feat: 2.1.2-goal-input-form)
 
   // 状態の管理
   const stateRef = useRef<AutoSaveState>({
@@ -220,7 +212,7 @@ export const useDraftAutoSave = (options: UseDraftAutoSaveOptions) => {
 
   // ページ離脱時の保存
   useEffect(() => {
-    const handleBeforeUnload = async (_event: BeforeUnloadEvent) => {
+    const handleBeforeUnload = async () => {
       if (
         draftUtils.isWorthSaving(formData) &&
         JSON.stringify(formData) !== JSON.stringify(lastFormDataRef.current)

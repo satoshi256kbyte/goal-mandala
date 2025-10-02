@@ -30,7 +30,7 @@ export interface SubmissionError {
 /**
  * 送信結果の型定義
  */
-export interface SubmissionResult<T = any> {
+export interface SubmissionResult<T = unknown> {
   success: boolean;
   data?: T;
   error?: SubmissionError;
@@ -65,7 +65,7 @@ export interface FormSubmissionOptions {
 /**
  * フォーム送信フック
  */
-export const useFormSubmission = <TFormData = GoalFormData, TResponse = any>(
+export const useFormSubmission = <TFormData = GoalFormData, TResponse = unknown>(
   options: FormSubmissionOptions = {}
 ) => {
   const {
@@ -265,8 +265,11 @@ export const useFormSubmission = <TFormData = GoalFormData, TResponse = any>(
           }
 
           // バリデーション済みデータで送信実行
+          if (!validationResult.validatedData) {
+            throw new Error('バリデーション済みデータが存在しません');
+          }
           const result = await executeWithRetry(() =>
-            submitFunction(validationResult.validatedData!)
+            submitFunction(validationResult.validatedData)
           );
 
           // 送信成功

@@ -62,7 +62,4 @@ export enum ActionType {
   HABIT = 'habit',
 }
 
-export interface ValidationResult {
-  isValid: boolean;
-  errors: string[];
-}
+// ValidationResultは types/validation.ts で定義されています

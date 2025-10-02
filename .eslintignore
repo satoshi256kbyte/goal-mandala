@@ -40,3 +40,9 @@ yarn-error.log*
 # OS files
 .DS_Store
 Thumbs.db
+
+# Config files
+tailwind.config.js
+vite.config.ts
+*.config.js
+*.config.ts

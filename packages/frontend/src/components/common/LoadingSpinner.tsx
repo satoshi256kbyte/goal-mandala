@@ -5,11 +5,13 @@ import React from 'react';
  */
 export interface LoadingSpinnerProps {
   /** スピナーのサイズ */
-  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'large';
   /** スピナーの色 */
   color?: 'primary' | 'secondary' | 'white' | 'gray';
   /** 表示テキスト */
   text?: string;
+  /** 表示メッセージ（textのエイリアス） */
+  message?: string;
   /** テキストの位置 */
   textPosition?: 'bottom' | 'right' | 'none';
   /** カスタムクラス名 */
@@ -25,10 +27,13 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   size = 'md',
   color = 'primary',
   text,
+  message,
   textPosition = 'bottom',
   className = '',
   ariaLabel = '読み込み中',
 }) => {
+  // messageがある場合はmessageを優先、なければtextを使用
+  const displayText = message || text;
   /**
    * スピナーのサイズクラス
    */
@@ -39,6 +44,7 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
       md: 'h-6 w-6',
       lg: 'h-8 w-8',
       xl: 'h-12 w-12',
+      large: 'h-12 w-12', // 'large'は'xl'と同じサイズ
     };
     return sizeClasses[size];
   };
@@ -66,6 +72,7 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
       md: 'text-sm',
       lg: 'text-base',
       xl: 'text-lg',
+      large: 'text-lg', // 'large'は'xl'と同じサイズ
     };
     return textSizeClasses[size];
   };
@@ -74,7 +81,7 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
    * コンテナのレイアウトクラス
    */
   const getContainerClasses = () => {
-    if (textPosition === 'none' || !text) {
+    if (textPosition === 'none' || !displayText) {
       return 'inline-flex';
     }
 
@@ -108,8 +115,8 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   return (
     <div className={`${getContainerClasses()} ${className}`}>
       <SpinnerSVG />
-      {text && textPosition !== 'none' && (
-        <span className={`${getTextSizeClasses()} ${getColorClasses()}`}>{text}</span>
+      {displayText && textPosition !== 'none' && (
+        <span className={`${getTextSizeClasses()} ${getColorClasses()}`}>{displayText}</span>
       )}
     </div>
   );

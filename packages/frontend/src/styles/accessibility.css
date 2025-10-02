@@ -108,12 +108,59 @@
   --ring-color: #10b981;
 }
 
+.focus-visible\:ring-purple-500:focus-visible {
+  --ring-color: #8b5cf6;
+}
+
+.focus-visible\:ring-gray-500:focus-visible {
+  --ring-color: #6b7280;
+}
+
+/* 強化されたフォーカス表示 */
+.enhanced-focus:focus-visible {
+  outline: 3px solid #3b82f6;
+  outline-offset: 3px;
+  box-shadow:
+    0 0 0 1px #ffffff,
+    0 0 0 4px #3b82f6;
+  border-radius: 4px;
+}
+
+/* インタラクティブ要素の最小サイズ */
+.interactive-element {
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* フォーカス可能要素の視覚的改善 */
+.focusable-element {
+  position: relative;
+  transition: all 0.2s ease-in-out;
+}
+
+.focusable-element:focus-visible::before {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  right: -3px;
+  bottom: -3px;
+  border: 2px solid #3b82f6;
+  border-radius: 6px;
+  pointer-events: none;
+  z-index: 1;
+}
+
 /* 色覚対応のための追加スタイル */
 .colorblind-safe {
   /* 赤緑色覚異常対応 */
   --success-color: #0066cc; /* 青系 */
   --error-color: #ff6600; /* オレンジ系 */
   --warning-color: #9900cc; /* 紫系 */
+  --info-color: #0066cc; /* 青系 */
 }
 
 /* 成功状態（緑の代替） */
@@ -155,6 +202,63 @@
   color: #660099;
 }
 
+/* 情報状態 */
+.bg-info-safe {
+  background-color: #e6f3ff;
+}
+
+.border-info-safe {
+  border-color: #0066cc;
+}
+
+.text-info-safe {
+  color: #004499;
+}
+
+/* パターンとアイコンによる状態表示 */
+.status-success::before {
+  content: '✓ ';
+  color: #0066cc;
+  font-weight: bold;
+}
+
+.status-error::before {
+  content: '✗ ';
+  color: #ff6600;
+  font-weight: bold;
+}
+
+.status-warning::before {
+  content: '⚠ ';
+  color: #9900cc;
+  font-weight: bold;
+}
+
+.status-info::before {
+  content: 'ℹ ';
+  color: #0066cc;
+  font-weight: bold;
+}
+
+/* 色覚異常対応のボーダーパターン */
+.border-pattern-success {
+  border-style: solid;
+  border-width: 2px;
+  border-color: #0066cc;
+}
+
+.border-pattern-error {
+  border-style: dashed;
+  border-width: 2px;
+  border-color: #ff6600;
+}
+
+.border-pattern-warning {
+  border-style: dotted;
+  border-width: 3px;
+  border-color: #9900cc;
+}
+
 /* キーボードナビゲーション用のスタイル */
 .keyboard-focusable:focus {
   outline: 2px solid #3b82f6;
@@ -182,6 +286,43 @@
 
   .text-base {
     font-size: 1.1rem;
+  }
+}
+
+/* フォントサイズ拡大対応 */
+.font-size-small {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+.font-size-medium {
+  font-size: 1rem;
+  line-height: 1.5rem;
+}
+
+.font-size-large {
+  font-size: 1.125rem;
+  line-height: 1.75rem;
+}
+
+.font-size-extra-large {
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+}
+
+/* ユーザー設定に基づくフォントサイズ */
+@media (prefers-reduced-motion: no-preference) {
+  .adaptive-font-size {
+    font-size: clamp(0.875rem, 2.5vw, 1.25rem);
+    line-height: 1.6;
+  }
+}
+
+/* 高解像度ディスプレイでのフォント調整 */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .high-dpi-text {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
 
@@ -228,4 +369,90 @@
   .border-gray-300 {
     border-color: #4b5563;
   }
+
+  /* ダークモードでのフォーカス表示 */
+  .focus-visible\:ring-2:focus-visible {
+    box-shadow: 0 0 0 2px #60a5fa;
+  }
+
+  /* ダークモードでの色覚対応 */
+  .bg-success-safe {
+    background-color: #1e3a8a;
+  }
+
+  .bg-error-safe {
+    background-color: #7c2d12;
+  }
+
+  .bg-warning-safe {
+    background-color: #581c87;
+  }
+
+  .text-success-safe {
+    color: #93c5fd;
+  }
+
+  .text-error-safe {
+    color: #fed7aa;
+  }
+
+  .text-warning-safe {
+    color: #d8b4fe;
+  }
+}
+
+/* 視覚的な区別を強化するためのユーティリティ */
+.visual-emphasis {
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+
+.visual-separator {
+  border-left: 4px solid #3b82f6;
+  padding-left: 1rem;
+}
+
+/* 状態変化のアニメーション（動きを減らす設定を考慮） */
+@media (prefers-reduced-motion: no-preference) {
+  .state-transition {
+    transition: all 0.3s ease-in-out;
+  }
+
+  .focus-transition {
+    transition:
+      box-shadow 0.15s ease-in-out,
+      border-color 0.15s ease-in-out;
+  }
+}
+
+/* 高コントラスト表示の強化 */
+.high-contrast {
+  filter: contrast(150%);
+}
+
+.high-contrast-text {
+  color: #000000;
+  background-color: #ffffff;
+  border: 2px solid #000000;
+}
+
+/* 視覚的階層の強化 */
+.hierarchy-1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.hierarchy-2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+
+.hierarchy-3 {
+  font-size: 1.125rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
 }

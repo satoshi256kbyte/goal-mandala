@@ -7,6 +7,8 @@ import { LoadingButton } from './LoadingButton';
 export interface ErrorAlertProps {
   /** エラーメッセージ */
   error?: string | null;
+  /** エラーメッセージ（errorのエイリアス） */
+  message?: string | null;
   /** 再試行可能かどうか */
   isRetryable?: boolean;
   /** ネットワークエラーかどうか */
@@ -33,6 +35,7 @@ export interface ErrorAlertProps {
  */
 export const ErrorAlert: React.FC<ErrorAlertProps> = ({
   error,
+  message,
   isRetryable = false,
   isNetworkError = false,
   isRetrying = false,
@@ -42,11 +45,13 @@ export const ErrorAlert: React.FC<ErrorAlertProps> = ({
   title,
   autoCloseDelay = 0,
 }) => {
+  // messageがある場合はmessageを優先、なければerrorを使用
+  const displayError = message || error;
   const [isVisible, setIsVisible] = React.useState(true);
 
   // 自動クローズ機能
   React.useEffect(() => {
-    if (autoCloseDelay > 0 && error) {
+    if (autoCloseDelay > 0 && displayError) {
       const timer = setTimeout(() => {
         setIsVisible(false);
         onClose?.();
@@ -54,16 +59,16 @@ export const ErrorAlert: React.FC<ErrorAlertProps> = ({
 
       return () => clearTimeout(timer);
     }
-  }, [error, autoCloseDelay, onClose]);
+  }, [displayError, autoCloseDelay, onClose]);
 
   // エラーが変更されたら表示状態をリセット
   React.useEffect(() => {
-    if (error) {
+    if (displayError) {
       setIsVisible(true);
     }
-  }, [error]);
+  }, [displayError]);
 
-  if (!error || !isVisible) return null;
+  if (!displayError || !isVisible) return null;
 
   const handleClose = () => {
     setIsVisible(false);
@@ -134,7 +139,7 @@ export const ErrorAlert: React.FC<ErrorAlertProps> = ({
           <div
             className={`${title ? 'mt-2' : ''} text-sm ${isNetworkError ? 'text-orange-700' : 'text-red-700'}`}
           >
-            <p className="text-current">{error}</p>
+            <p className="text-current">{displayError}</p>
           </div>
 
           {(isRetryable || onClose) && (

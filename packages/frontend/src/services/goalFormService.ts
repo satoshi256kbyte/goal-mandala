@@ -63,7 +63,7 @@ export class ApiError extends Error {
     message: string,
     public status?: number,
     public code?: string,
-    public details?: any
+    public details?: unknown
   ) {
     super(message);
     this.name = 'ApiError';
@@ -105,7 +105,7 @@ const DEFAULT_TIMEOUT = 30000; // 30秒
 interface RequestOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
   headers?: Record<string, string>;
-  body?: any;
+  body?: unknown;
   timeout?: number;
 }
 
@@ -149,7 +149,7 @@ const makeRequest = async <T>(
   } catch (error) {
     clearTimeout(timeoutId);
 
-    if (error instanceof AbortError || error.name === 'AbortError') {
+    if ((error as Error & { name?: string }).name === 'AbortError') {
       throw new NetworkError('リクエストがタイムアウトしました');
     }
 
@@ -380,7 +380,10 @@ export const withRetry = async <T>(
     }
   }
 
-  throw lastError!;
+  if (lastError) {
+    throw lastError;
+  }
+  throw new Error('予期しないエラーが発生しました');
 };
 
 /**

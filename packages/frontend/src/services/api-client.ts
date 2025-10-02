@@ -82,7 +82,7 @@ export const createApiClient = (): AxiosInstance => {
     (error: AxiosError) => {
       // CSRF関連のエラーハンドリング
       if (error.response?.status === 403) {
-        const errorMessage = error.response.data as any;
+        const errorMessage = error.response.data as { code?: string; message?: string };
         if (errorMessage?.code === 'CSRF_TOKEN_INVALID') {
           console.error('CSRF token validation failed');
           // CSRFトークンを再生成
@@ -100,14 +100,14 @@ export const createApiClient = (): AxiosInstance => {
 /**
  * デフォルトのAPIクライアントインスタンス
  */
-export const apiClient = createApiClient();
+export const axiosApiClient = createApiClient();
 
 /**
  * 安全なフォーム送信のためのヘルパー関数
  */
-export const submitFormSafely = async <T = any>(
+export const submitFormSafely = async <T = unknown>(
   url: string,
-  data: any,
+  data: unknown,
   config?: AxiosRequestConfig
 ): Promise<AxiosResponse<T>> => {
   try {

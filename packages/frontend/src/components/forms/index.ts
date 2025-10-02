@@ -36,3 +36,27 @@ export type { SubmitButtonProps } from './SubmitButton';
 
 export { FormActions, MemoizedFormActions } from './FormActions';
 export type { FormActionsProps } from './FormActions';
+
+export { DynamicFormField } from './DynamicFormField';
+export type { DynamicFormFieldProps, FormFieldConfig, ValidationRule } from './DynamicFormField';
+export { ValidationRules, FieldPresets } from './DynamicFormField';
+
+export { BulkEditModal } from './BulkEditModal';
+export type { BulkEditModalProps, BulkEditableItem, BulkEditChanges } from './BulkEditModal';
+
+export {
+  BulkSelectionProvider,
+  useBulkSelection,
+  SelectableItem,
+  BulkSelectionControls,
+  SelectionIndicator,
+} from './BulkSelectionProvider';
+export type {
+  BulkSelectionProviderProps,
+  BulkSelectionContextValue,
+  BulkSelectionState,
+  SelectableItem as SelectableItemType,
+  SelectableItemProps,
+  BulkSelectionControlsProps,
+  SelectionIndicatorProps,
+} from './BulkSelectionProvider';

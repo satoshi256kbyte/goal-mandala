@@ -1,304 +1,338 @@
+/**
+ * エラー表示コンポーネント
+ *
+ * 機能:
+ * - インラインエラー表示
+ * - エラーサマリー表示
+ * - 復旧オプション表示
+ *
+ * 要件: 要件1, 要件2, 要件3
+ */
+
 import React from 'react';
-import { ValidationMessage } from './ValidationMessage';
-import { SubmissionError, SubmissionErrorType } from '../../hooks/useFormSubmission';
+import { FormError, FormErrorSeverity, FormErrorType } from '../../types/form-error';
 
 /**
- * エラー表示のプロパティ
+ * エラー表示コンポーネントのProps
  */
 export interface ErrorDisplayProps {
-  /** バリデーションエラー（フィールド別） */
-  validationErrors?: Record<string, string>;
-  /** 送信エラー */
-  submissionError?: SubmissionError;
-  /** 追加のクラス名 */
+  /** 表示するエラー */
+  error: FormError;
+  /** 表示タイプ */
+  displayType?: 'inline' | 'summary' | 'toast' | 'modal';
+  /** 復旧オプションを表示するか */
+  showRecoveryOptions?: boolean;
+  /** 復旧オプションのコールバック */
+  onRetry?: () => void;
+  onReload?: () => void;
+  onDismiss?: () => void;
+  /** カスタムクラス名 */
   className?: string;
-  /** エラー表示の最大数 */
-  maxErrors?: number;
-  /** エラーの自動非表示時間（ミリ秒） */
-  autoHideMs?: number;
-  /** エラー非表示のコールバック */
-  onErrorHide?: () => void;
-  /** エラーの詳細表示フラグ */
-  showDetails?: boolean;
 }
 
 /**
- * フィールド名の日本語マッピング
+ * エラーアイコンコンポーネント
  */
-const FIELD_LABELS: Record<string, string> = {
-  title: '目標タイトル',
-  description: '目標説明',
-  deadline: '達成期限',
-  background: '背景',
-  constraints: '制約事項',
+const ErrorIcon: React.FC<{ severity: FormErrorSeverity; className?: string }> = ({
+  severity,
+  className = '',
+}) => {
+  const getIconColor = () => {
+    switch (severity) {
+      case FormErrorSeverity.CRITICAL:
+        return 'text-red-600';
+      case FormErrorSeverity.HIGH:
+        return 'text-red-500';
+      case FormErrorSeverity.MEDIUM:
+        return 'text-yellow-500';
+      case FormErrorSeverity.LOW:
+        return 'text-blue-500';
+      default:
+        return 'text-gray-500';
+    }
+  };
+
+  return (
+    <svg
+      className={`w-5 h-5 ${getIconColor()} ${className}`}
+      fill="currentColor"
+      viewBox="0 0 20 20"
+      aria-hidden="true"
+    >
+      {severity === FormErrorSeverity.CRITICAL || severity === FormErrorSeverity.HIGH ? (
+        <path
+          fillRule="evenodd"
+          d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+          clipRule="evenodd"
+        />
+      ) : (
+        <path
+          fillRule="evenodd"
+          d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+          clipRule="evenodd"
+        />
+      )}
+    </svg>
+  );
 };
 
 /**
- * エラータイプ別のメッセージテンプレート
+ * 復旧オプションコンポーネント
  */
-const ERROR_MESSAGES: Record<SubmissionErrorType, string> = {
-  [SubmissionErrorType.VALIDATION_ERROR]: 'フォームの入力内容に問題があります',
-  [SubmissionErrorType.NETWORK_ERROR]: 'ネットワークエラーが発生しました',
-  [SubmissionErrorType.SERVER_ERROR]: 'サーバーエラーが発生しました',
-  [SubmissionErrorType.TIMEOUT_ERROR]: '送信がタイムアウトしました',
-  [SubmissionErrorType.UNKNOWN_ERROR]: '予期しないエラーが発生しました',
+const RecoveryOptions: React.FC<{
+  error: FormError;
+  onRetry?: () => void;
+  onReload?: () => void;
+  onDismiss?: () => void;
+}> = ({ error, onRetry, onReload, onDismiss }) => {
+  if (!error.retryable && error.type !== FormErrorType.NETWORK_ERROR) {
+    return null;
+  }
+
+  return (
+    <div className="mt-3 flex flex-wrap gap-2">
+      {error.retryable && onRetry && (
+        <button
+          type="button"
+          onClick={onRetry}
+          className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+        >
+          <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+            />
+          </svg>
+          再試行
+        </button>
+      )}
+
+      {error.type === FormErrorType.NETWORK_ERROR && onReload && (
+        <button
+          type="button"
+          onClick={onReload}
+          className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+        >
+          <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+            />
+          </svg>
+          ページを再読み込み
+        </button>
+      )}
+
+      {onDismiss && (
+        <button
+          type="button"
+          onClick={onDismiss}
+          className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+        >
+          閉じる
+        </button>
+      )}
+    </div>
+  );
 };
 
 /**
  * エラー表示コンポーネント
  */
 export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
-  validationErrors = {},
-  submissionError,
+  error,
+  displayType = 'inline',
+  showRecoveryOptions = true,
+  onRetry,
+  onReload,
+  onDismiss,
   className = '',
-  maxErrors = 5,
-  autoHideMs,
-  onErrorHide,
-  showDetails = false,
 }) => {
-  const [isVisible, setIsVisible] = React.useState(true);
-
-  // 自動非表示の処理
-  React.useEffect(() => {
-    if (autoHideMs && (Object.keys(validationErrors).length > 0 || submissionError)) {
-      const timer = setTimeout(() => {
-        setIsVisible(false);
-        onErrorHide?.();
-      }, autoHideMs);
-
-      return () => clearTimeout(timer);
-    }
-  }, [validationErrors, submissionError, autoHideMs, onErrorHide]);
-
-  // エラーが変更されたら表示状態をリセット
-  React.useEffect(() => {
-    setIsVisible(true);
-  }, [validationErrors, submissionError]);
-
-  if (!isVisible) return null;
-
-  const hasValidationErrors = Object.keys(validationErrors).length > 0;
-  const hasSubmissionError = !!submissionError;
-
-  if (!hasValidationErrors && !hasSubmissionError) {
-    return null;
-  }
-
-  /**
-   * バリデーションエラーのリストを生成
-   */
-  const renderValidationErrors = () => {
-    const errors = Object.entries(validationErrors).slice(0, maxErrors);
-
-    return errors.map(([field, message]) => {
-      const fieldLabel = FIELD_LABELS[field] || field;
-      const displayMessage = showDetails ? `${fieldLabel}: ${message}` : message;
-
-      return (
-        <ValidationMessage
-          key={field}
-          message={displayMessage}
-          type="error"
-          id={`validation-error-${field}`}
-          className="mb-2 last:mb-0"
-        />
-      );
-    });
-  };
-
-  /**
-   * 送信エラーを表示
-   */
-  const renderSubmissionError = () => {
-    if (!submissionError) return null;
-
-    const baseMessage = ERROR_MESSAGES[submissionError.type] || submissionError.message;
-
-    return (
-      <div className="space-y-2">
-        <ValidationMessage message={baseMessage} type="error" id="submission-error" />
-
-        {/* 詳細エラー情報の表示 */}
-        {showDetails && submissionError.details && (
-          <div className="ml-6 space-y-1">
-            {Object.entries(submissionError.details).map(([key, value]) => (
-              <ValidationMessage
-                key={key}
-                message={`${FIELD_LABELS[key] || key}: ${value}`}
-                type="error"
-                className="text-xs"
-              />
-            ))}
-          </div>
-        )}
-
-        {/* 技術的詳細情報（開発環境のみ） */}
-        {showDetails && submissionError.originalError && process.env.NODE_ENV === 'development' && (
-          <details className="ml-6 text-xs text-gray-600">
-            <summary className="cursor-pointer hover:text-gray-800">技術的詳細情報</summary>
-            <pre className="mt-2 p-2 bg-gray-100 rounded text-xs overflow-auto">
-              {submissionError.originalError.stack || submissionError.originalError.message}
-            </pre>
-          </details>
-        )}
-      </div>
-    );
-  };
-
-  /**
-   * エラー数の表示
-   */
-  const renderErrorCount = () => {
-    const totalErrors = Object.keys(validationErrors).length;
-    const hiddenErrors = Math.max(0, totalErrors - maxErrors);
-
-    if (hiddenErrors > 0) {
-      return (
-        <div className="text-sm text-gray-600 mt-2">他に {hiddenErrors} 件のエラーがあります</div>
-      );
-    }
-
-    return null;
-  };
-
-  /**
-   * エラー解決のヒントを表示
-   */
-  const renderErrorHints = () => {
-    if (!submissionError) return null;
-
-    const hints: Record<SubmissionErrorType, string> = {
-      [SubmissionErrorType.VALIDATION_ERROR]: '入力内容を確認して、必須項目を入力してください。',
-      [SubmissionErrorType.NETWORK_ERROR]: 'インターネット接続を確認して、再度お試しください。',
-      [SubmissionErrorType.SERVER_ERROR]: 'しばらく時間をおいて再度お試しください。',
-      [SubmissionErrorType.TIMEOUT_ERROR]: 'しばらく時間をおいて再度お試しください。',
-      [SubmissionErrorType.UNKNOWN_ERROR]: 'ページを再読み込みして再度お試しください。',
+  const getContainerClasses = () => {
+    const baseClasses = 'rounded-md p-4';
+    const severityClasses = {
+      [FormErrorSeverity.CRITICAL]: 'bg-red-50 border border-red-200',
+      [FormErrorSeverity.HIGH]: 'bg-red-50 border border-red-200',
+      [FormErrorSeverity.MEDIUM]: 'bg-yellow-50 border border-yellow-200',
+      [FormErrorSeverity.LOW]: 'bg-blue-50 border border-blue-200',
     };
 
-    const hint = hints[submissionError.type];
-    if (!hint) return null;
+    const displayClasses = {
+      inline: 'mb-4',
+      summary: 'mb-6',
+      toast: 'fixed top-4 right-4 z-50 max-w-sm shadow-lg',
+      modal: 'bg-white rounded-lg shadow-xl max-w-md mx-auto',
+    };
 
-    return <ValidationMessage message={hint} type="info" className="mt-2" />;
+    return `${baseClasses} ${severityClasses[error.severity]} ${displayClasses[displayType]} ${className}`;
+  };
+
+  const getTextClasses = () => {
+    const severityClasses = {
+      [FormErrorSeverity.CRITICAL]: 'text-red-800',
+      [FormErrorSeverity.HIGH]: 'text-red-800',
+      [FormErrorSeverity.MEDIUM]: 'text-yellow-800',
+      [FormErrorSeverity.LOW]: 'text-blue-800',
+    };
+
+    return severityClasses[error.severity];
   };
 
   return (
-    <div className={`space-y-2 ${className}`} role="alert" aria-live="assertive">
-      {/* バリデーションエラーの表示 */}
-      {hasValidationErrors && (
-        <div>
-          {renderValidationErrors()}
-          {renderErrorCount()}
+    <div className={getContainerClasses()} role="alert" aria-live="polite" aria-atomic="true">
+      <div className="flex">
+        <div className="flex-shrink-0">
+          <ErrorIcon severity={error.severity} />
         </div>
-      )}
+        <div className="ml-3 flex-1">
+          <div className={`text-sm font-medium ${getTextClasses()}`}>{error.message}</div>
 
-      {/* 送信エラーの表示 */}
-      {hasSubmissionError && renderSubmissionError()}
+          {error.code && displayType !== 'inline' && (
+            <div className={`mt-1 text-xs ${getTextClasses()} opacity-75`}>
+              エラーコード: {error.code}
+            </div>
+          )}
 
-      {/* エラー解決のヒント */}
-      {renderErrorHints()}
+          {error.field && displayType === 'summary' && (
+            <div className={`mt-1 text-xs ${getTextClasses()} opacity-75`}>
+              フィールド: {error.field}
+            </div>
+          )}
+
+          {showRecoveryOptions && (
+            <RecoveryOptions
+              error={error}
+              onRetry={onRetry}
+              onReload={onReload}
+              onDismiss={onDismiss}
+            />
+          )}
+        </div>
+
+        {displayType === 'toast' && onDismiss && (
+          <div className="ml-auto pl-3">
+            <div className="-mx-1.5 -my-1.5">
+              <button
+                type="button"
+                onClick={onDismiss}
+                className={`inline-flex rounded-md p-1.5 ${getTextClasses()} hover:bg-opacity-20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-red-50 focus:ring-red-600`}
+              >
+                <span className="sr-only">閉じる</span>
+                <svg className="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path
+                    fillRule="evenodd"
+                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
 
 /**
- * インラインエラー表示コンポーネント（フィールド直下用）
- */
-export interface InlineErrorProps {
-  /** エラーメッセージ */
-  error?: string;
-  /** フィールド名（アクセシビリティ用） */
-  fieldName?: string;
-  /** 追加のクラス名 */
-  className?: string;
-}
-
-export const InlineError: React.FC<InlineErrorProps> = ({ error, fieldName, className = '' }) => {
-  if (!error) return null;
-
-  return (
-    <div
-      className={`text-sm text-red-600 mt-1 ${className}`}
-      id={fieldName ? `${fieldName}-error` : undefined}
-      role="alert"
-      aria-live="polite"
-    >
-      <span className="flex items-center gap-1">
-        <svg
-          className="w-4 h-4 flex-shrink-0"
-          fill="currentColor"
-          viewBox="0 0 20 20"
-          aria-hidden="true"
-        >
-          <path
-            fillRule="evenodd"
-            d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z"
-            clipRule="evenodd"
-          />
-        </svg>
-        {error}
-      </span>
-    </div>
-  );
-};
-
-/**
- * エラーサマリーコンポーネント（フォーム上部用）
+ * エラーサマリーコンポーネント
  */
 export interface ErrorSummaryProps {
-  /** バリデーションエラー */
-  validationErrors?: Record<string, string>;
-  /** 送信エラー */
-  submissionError?: SubmissionError;
-  /** 追加のクラス名 */
+  /** 表示するエラー一覧 */
+  errors: FormError[];
+  /** タイトル */
+  title?: string;
+  /** 復旧オプションを表示するか */
+  showRecoveryOptions?: boolean;
+  /** 復旧オプションのコールバック */
+  onRetryAll?: () => void;
+  onClearAll?: () => void;
+  /** カスタムクラス名 */
   className?: string;
-  /** エラーフィールドへのフォーカス移動コールバック */
-  onFieldFocus?: (fieldName: string) => void;
 }
 
 export const ErrorSummary: React.FC<ErrorSummaryProps> = ({
-  validationErrors = {},
-  submissionError,
+  errors,
+  title = 'エラーが発生しました',
+  showRecoveryOptions = true,
+  onRetryAll,
+  onClearAll,
   className = '',
-  onFieldFocus,
 }) => {
-  const hasErrors = Object.keys(validationErrors).length > 0 || !!submissionError;
+  if (errors.length === 0) {
+    return null;
+  }
 
-  if (!hasErrors) return null;
-
-  const errorCount = Object.keys(validationErrors).length + (submissionError ? 1 : 0);
+  // const criticalErrors = errors.filter(
+  //   e => e.severity === FormErrorSeverity.CRITICAL || e.severity === FormErrorSeverity.HIGH
+  // ); // 将来使用予定
+  const hasRetryableErrors = errors.some(e => e.retryable);
 
   return (
-    <div
-      className={`
-        p-4 border border-red-200 bg-red-50 rounded-md
-        ${className}
-      `}
-      role="alert"
-      aria-labelledby="error-summary-title"
-    >
-      <h3 id="error-summary-title" className="text-sm font-medium text-red-800 mb-2">
-        {errorCount} 件のエラーがあります
-      </h3>
+    <div className={`rounded-md bg-red-50 border border-red-200 p-4 mb-6 ${className}`}>
+      <div className="flex">
+        <div className="flex-shrink-0">
+          <ErrorIcon severity={FormErrorSeverity.HIGH} />
+        </div>
+        <div className="ml-3 flex-1">
+          <h3 className="text-sm font-medium text-red-800">
+            {title} ({errors.length}件)
+          </h3>
+          <div className="mt-2 text-sm text-red-700">
+            <ul className="list-disc pl-5 space-y-1">
+              {errors.map((error, index) => (
+                <li key={index}>
+                  {error.field && <span className="font-medium">{error.field}: </span>}
+                  {error.message}
+                </li>
+              ))}
+            </ul>
+          </div>
 
-      <ul className="text-sm text-red-700 space-y-1">
-        {/* バリデーションエラーのリスト */}
-        {Object.entries(validationErrors).map(([field, message]) => (
-          <li key={field}>
-            <button
-              type="button"
-              className="text-left underline hover:no-underline focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 rounded"
-              onClick={() => onFieldFocus?.(field)}
-            >
-              {FIELD_LABELS[field] || field}: {message}
-            </button>
-          </li>
-        ))}
+          {showRecoveryOptions && (hasRetryableErrors || onClearAll) && (
+            <div className="mt-4 flex flex-wrap gap-2">
+              {hasRetryableErrors && onRetryAll && (
+                <button
+                  type="button"
+                  onClick={onRetryAll}
+                  className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                  <svg
+                    className="w-4 h-4 mr-1"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                    />
+                  </svg>
+                  全て再試行
+                </button>
+              )}
 
-        {/* 送信エラー */}
-        {submissionError && (
-          <li>{ERROR_MESSAGES[submissionError.type] || submissionError.message}</li>
-        )}
-      </ul>
+              {onClearAll && (
+                <button
+                  type="button"
+                  onClick={onClearAll}
+                  className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                >
+                  全てクリア
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
+
+export default ErrorDisplay;

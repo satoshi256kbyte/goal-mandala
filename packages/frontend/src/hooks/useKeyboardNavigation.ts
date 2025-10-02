@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef } from 'react';
  * キーボードナビゲーション用のフック
  */
 export const useKeyboardNavigation = () => {
-  const containerRef = useRef<HTMLElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   /**
    * フォーカス可能な要素を取得
@@ -152,7 +152,7 @@ export const useKeyboardNavigation = () => {
  * モーダルやダイアログでフォーカスを内部に閉じ込める
  */
 export const useFocusTrap = (isActive: boolean = true) => {
-  const containerRef = useRef<HTMLElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!isActive || !containerRef.current) return;

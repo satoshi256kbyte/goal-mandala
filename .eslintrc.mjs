@@ -176,6 +176,7 @@ export default {
         'jest.config.ts',
         'turbo.json',
         '.eslintrc.js',
+        '**/tailwind.config.js',
       ],
       env: {
         node: true,
@@ -183,6 +184,7 @@ export default {
       rules: {
         '@typescript-eslint/no-var-requires': 'off',
         'no-console': 'off',
+        'no-undef': 'off', // 設定ファイルではrequireを許可
       },
     },
   ],

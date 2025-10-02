@@ -23,4 +23,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   return <AuthContext.Provider value={auth}>{children}</AuthContext.Provider>;
 };
 
+// useAuthフックを再エクスポート
+export { useAuth } from '../../hooks/useAuth';
+
 export default AuthProvider;

@@ -19,7 +19,7 @@ import {
 } from './index';
 import { useResponsiveLayout } from '../../hooks/useResponsiveLayout';
 import { useKeyboardNavigation } from '../../hooks/useKeyboardNavigation';
-import { useFocusManagement, useAnnouncement } from '../../hooks/useFocusManagement';
+import { /* useFocusManagement, */ useAnnouncement } from '../../hooks/useFocusManagement';
 
 /**
  * GoalInputFormのプロパティ
@@ -68,8 +68,8 @@ export const GoalInputForm: React.FC<GoalInputFormProps> = ({
   // キーボードナビゲーション管理
   const { containerRef } = useKeyboardNavigation();
 
-  // フォーカス管理
-  const { focusFirstError } = useFocusManagement();
+  // フォーカス管理（将来使用予定）
+  // const { focusFirstError } = useFocusManagement();
 
   // アナウンス機能
   const { announce, AnnouncementRegion } = useAnnouncement();
@@ -199,29 +199,16 @@ export const GoalInputForm: React.FC<GoalInputFormProps> = ({
 
   // フォームエラー時の処理（現在は未使用）
   // const _handleFormError = useCallback(() => {
-<<<<<<< HEAD
-    const hasErrors = Object.keys(errors).length > 0;
-    if (hasErrors) {
-      // 最初のエラー要素にフォーカス
-      setTimeout(() => {
-        const focused = focusFirstError();
-        if (focused) {
-          announce('入力内容にエラーがあります。修正してください。', 'assertive');
-        }
-      }, 100);
-    }
-=======
-  const hasErrors = Object.keys(errors).length > 0;
-  if (hasErrors) {
-    // 最初のエラー要素にフォーカス
-    setTimeout(() => {
-      const focused = focusFirstError();
-      if (focused) {
-        announce('入力内容にエラーがあります。修正してください。', 'assertive');
-      }
-    }, 100);
-  }
->>>>>>> 203d7ba (feat: 2.1.2-goal-input-form)
+  //   const hasErrors = Object.keys(errors).length > 0;
+  //   if (hasErrors) {
+  //     // 最初のエラー要素にフォーカス
+  //     setTimeout(() => {
+  //       const focused = focusFirstError();
+  //       if (focused) {
+  //         announce('入力内容にエラーがあります。修正してください。', 'assertive');
+  //       }
+  //     }, 100);
+  //   }
   // }, [errors, focusFirstError, announce]);
 
   // 手動下書き保存ハンドラー
@@ -317,10 +304,6 @@ export const GoalInputForm: React.FC<GoalInputFormProps> = ({
       <form
         onSubmit={handleSubmit(handleFormSubmit)}
         className={getFormClasses()}
-<<<<<<< HEAD
-
-=======
->>>>>>> 203d7ba (feat: 2.1.2-goal-input-form)
         aria-label="目標入力フォーム"
         noValidate
       >

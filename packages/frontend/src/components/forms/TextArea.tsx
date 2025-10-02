@@ -11,7 +11,7 @@ export interface TextAreaProps {
   showCounter?: boolean;
   showWarning?: boolean;
   rows?: number;
-  register: UseFormRegister<Record<string, any>>;
+  register: UseFormRegister<Record<string, unknown>>;
   error?: FieldError;
   className?: string;
   resize?: 'none' | 'vertical' | 'horizontal' | 'both';

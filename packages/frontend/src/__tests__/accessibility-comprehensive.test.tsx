@@ -488,7 +488,7 @@ describe('Comprehensive Accessibility Tests', () => {
     });
 
     it('should support touch gestures', async () => {
-      const user = userEvent.setup();
+      // const user = userEvent.setup();
 
       render(
         <FormField label="日付選択">

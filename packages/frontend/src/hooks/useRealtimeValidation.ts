@@ -196,7 +196,7 @@ export const useRealtimeValidation = (options: RealtimeValidationOptions = {}) =
   const getErrorMessages = useCallback((): string[] => {
     return Object.values(validationState)
       .filter(result => !result.isValid && result.error)
-      .map(result => result.error!);
+      .map(result => result.error || '');
   }, [validationState]);
 
   // コンポーネントのアンマウント時にタイマーをクリーンアップ
