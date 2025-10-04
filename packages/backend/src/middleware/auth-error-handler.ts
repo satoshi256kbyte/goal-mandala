@@ -9,7 +9,7 @@
  */
 
 import { HTTPException } from 'hono/http-exception';
-import { logger, toLogContext } from '../utils/logger';
+import { logger } from '../utils/logger';
 import { config } from '../config/environment';
 import { AuthErrorType, AuthErrorResponse, AuthErrorLog, SecurityAuditLog } from './types';
 
@@ -232,7 +232,7 @@ export class AuthErrorHandler {
       },
     };
 
-    logger.info('Security audit log', toLogContext(auditLog));
+    logger.info('Security audit log', auditLog as unknown as Record<string, unknown>);
 
     // 重要なセキュリティイベントの場合は警告レベルでログ
     if (this.isCriticalSecurityEvent(errorType)) {
@@ -268,13 +268,13 @@ export class AuthErrorHandler {
     // ログレベルに応じてログ出力
     switch (errorLog.level) {
       case 'ERROR':
-        logger.error('Authentication error', toLogContext(errorLog));
+        logger.error('Authentication error', errorLog as unknown as Record<string, unknown>);
         break;
       case 'WARN':
-        logger.warn('Authentication warning', toLogContext(errorLog));
+        logger.warn('Authentication warning', errorLog as unknown as Record<string, unknown>);
         break;
       case 'INFO':
-        logger.info('Authentication info', toLogContext(errorLog));
+        logger.info('Authentication info', errorLog as unknown as Record<string, unknown>);
         break;
     }
   }
@@ -347,6 +347,6 @@ export class AuthErrorHandler {
       },
     };
 
-    logger.info('Security audit log', toLogContext(auditLog));
+    logger.info('Security audit log', auditLog as unknown as Record<string, unknown>);
   }
 }

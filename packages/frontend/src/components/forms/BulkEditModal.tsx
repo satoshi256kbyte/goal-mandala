@@ -83,7 +83,8 @@ export const BulkEditModal: React.FC<BulkEditModalProps> = ({
 
   // アクセシビリティ
   const { announce } = useLiveRegion();
-  const modalRef = useFocusTrap(isOpen);
+  const modalRef = React.useRef<HTMLDivElement>(null);
+  useFocusTrap(modalRef);
 
   const titleId = React.useId();
   const descriptionId = React.useId();

@@ -9,9 +9,7 @@ import { ErrorAlert } from '../components/common/ErrorAlert';
 import { SuccessMessage } from '../components/common/SuccessMessage';
 import { Action, ActionType, SubGoal } from '../types/mandala';
 import { useAuth } from '../components/auth/AuthProvider';
-// import { useKeyboardNavigation } from '../hooks/useKeyboardNavigation';
-// import { useLiveRegion } from '../hooks/useAccessibility';
-// import { handleKeyboardNavigation } from '../utils/accessibility';
+import { useKeyboardNavigation, useLiveRegion } from '../hooks/useAccessibility';
 
 /**
  * アクション編集ページのプロパティ
@@ -65,7 +63,7 @@ export const ActionEditPage: React.FC<ActionEditPageProps> = ({ className }) => 
 
   // キーボードナビゲーション
   const { containerRef } = useKeyboardNavigation();
-  // const { announce } = useLiveRegion();
+  const { announce: _announce } = useLiveRegion();
 
   const [pageState, setPageState] = useState<PageState>({
     isLoading: true,
@@ -683,6 +681,7 @@ export const ActionEditPage: React.FC<ActionEditPageProps> = ({ className }) => 
                 onSave={changes => {
                   handleBulkEdit(changes.updates || [], changes.deleteItems || []);
                 }}
+                itemType="action"
               />
             )}
           </BulkSelectionProvider>

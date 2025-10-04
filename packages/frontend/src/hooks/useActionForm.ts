@@ -1,4 +1,4 @@
-import { useForm, UseFormReturn } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useCallback, useEffect, useState } from 'react';
 import {
@@ -77,7 +77,7 @@ export interface UseActionFormOptions {
 /**
  * useActionFormフックの戻り値
  */
-export interface UseActionFormReturn extends UseFormReturn<ActionFormData> {
+export interface UseActionFormReturn {
   /** フォームの状態 */
   formState: ActionFormState;
   /** フィールドの状態を取得 */
@@ -86,6 +86,8 @@ export interface UseActionFormReturn extends UseFormReturn<ActionFormData> {
   watchedValues: ActionFormData;
   /** 手動でバリデーションを実行 */
   validateField: (fieldName: keyof ActionFormData) => Promise<boolean>;
+  /** バリデーションをトリガー */
+  trigger: (fieldName?: keyof ActionFormData) => Promise<boolean>;
   /** アクション種別のバリデーション */
   validateActionType: (type: ActionType) => boolean;
   /** サブ目標間制約チェック */

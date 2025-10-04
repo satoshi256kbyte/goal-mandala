@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link } from 'react-router-dom';
-import { newPasswordSchema, type NewPasswordFormData } from '../../utils/validation';
+import { newPasswordZodSchema, type NewPasswordFormData } from '../../utils/validation';
 import { ErrorMessage } from '../common/ErrorMessage';
 import { LoadingButton } from '../common/LoadingButton';
 
@@ -103,16 +103,16 @@ export const NewPasswordForm: React.FC<NewPasswordFormProps> = ({
     watch,
     formState: { errors, isValid, touchedFields },
   } = useForm<NewPasswordFormData>({
-    resolver: zodResolver(newPasswordSchema),
+    resolver: zodResolver(newPasswordZodSchema),
     mode: 'all', // 全てのイベントでバリデーション
     defaultValues: {
-      password: '',
+      newPassword: '',
       confirmPassword: '',
       confirmationCode: confirmationCode || '',
     },
   });
 
-  const password = watch('password');
+  const newPassword = watch('newPassword');
   const confirmPasswordValue = watch('confirmPassword');
 
   const handleFormSubmit = async (data: NewPasswordFormData) => {
@@ -190,23 +190,23 @@ export const NewPasswordForm: React.FC<NewPasswordFormProps> = ({
           </label>
           <div className="mt-1 relative">
             <input
-              {...register('password')}
-              id="password"
+              {...register('newPassword')}
+              id="newPassword"
               type={showPassword ? 'text' : 'password'}
               autoComplete="new-password"
               required
               aria-label="新しいパスワード"
-              aria-describedby={errors.password ? 'password-error' : 'password-help'}
-              aria-invalid={!!errors.password}
+              aria-describedby={errors.newPassword ? 'newPassword-error' : 'newPassword-help'}
+              aria-invalid={!!errors.newPassword}
               className={`
                 appearance-none relative block w-full px-3 py-2 pr-10 border
                 placeholder-gray-500 text-gray-900 rounded-md
                 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
                 focus:z-10 sm:text-sm transition-colors duration-200
                 ${
-                  errors.password
+                  errors.newPassword
                     ? 'border-red-500 focus:ring-red-500 focus:border-red-500'
-                    : touchedFields.password && !errors.password
+                    : touchedFields.newPassword && !errors.newPassword
                       ? 'border-green-500'
                       : 'border-gray-300'
                 }
@@ -259,8 +259,8 @@ export const NewPasswordForm: React.FC<NewPasswordFormProps> = ({
           <div id="password-help" className="text-xs text-gray-600 mt-1">
             8文字以上で、大文字・小文字・数字を含む必要があります
           </div>
-          <PasswordStrengthIndicator password={password} />
-          <ErrorMessage error={errors.password?.message} id="password-error" />
+          <PasswordStrengthIndicator password={newPassword} />
+          <ErrorMessage error={errors.newPassword?.message} id="newPassword-error" />
         </div>
 
         {/* パスワード確認入力フィールド */}
@@ -288,7 +288,7 @@ export const NewPasswordForm: React.FC<NewPasswordFormProps> = ({
                     ? 'border-red-500 focus:ring-red-500 focus:border-red-500'
                     : touchedFields.confirmPassword &&
                         !errors.confirmPassword &&
-                        password === confirmPasswordValue
+                        newPassword === confirmPasswordValue
                       ? 'border-green-500'
                       : 'border-gray-300'
                 }
@@ -341,7 +341,7 @@ export const NewPasswordForm: React.FC<NewPasswordFormProps> = ({
           {/* パスワード一致状況の表示 */}
           {confirmPasswordValue && (
             <div className="mt-1 text-xs">
-              {password === confirmPasswordValue ? (
+              {newPassword === confirmPasswordValue ? (
                 <span className="text-green-600">✓ パスワードが一致しています</span>
               ) : (
                 <span className="text-red-600">✗ パスワードが一致しません</span>

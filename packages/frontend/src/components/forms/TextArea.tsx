@@ -11,9 +11,10 @@ export interface TextAreaProps {
   showCounter?: boolean;
   showWarning?: boolean;
   rows?: number;
-  register: UseFormRegister<Record<string, unknown>>;
+  register?: UseFormRegister<Record<string, unknown>>;
   error?: FieldError;
   className?: string;
+  disabled?: boolean;
   resize?: 'none' | 'vertical' | 'horizontal' | 'both';
   /** 文字数変更時のコールバック */
   onLengthChange?: (length: number, value: string) => void;

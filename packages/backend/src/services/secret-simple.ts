@@ -350,12 +350,12 @@ export class SecretService {
    * 重要なエラーかどうかを判定
    */
   private isCriticalError(errorCode: string): boolean {
-    const criticalErrors = [
+    const criticalErrors: string[] = [
       ERROR_CODES.SECRET_NOT_FOUND,
       ERROR_CODES.ACCESS_DENIED,
       ERROR_CODES.INTERNAL_ERROR,
     ];
-    return criticalErrors.includes(errorCode as any);
+    return criticalErrors.includes(errorCode);
   }
 
   /**
@@ -377,7 +377,7 @@ export class SecretService {
   /**
    * データベース認証情報の検証
    */
-  private validateDatabaseCredentials(secretValue: any): void {
+  private validateDatabaseCredentials(secretValue: Record<string, unknown>): void {
     const requiredFields = [
       'username',
       'password',
@@ -406,7 +406,7 @@ export class SecretService {
   /**
    * JWT設定情報の検証
    */
-  private validateJwtConfig(secretValue: any): void {
+  private validateJwtConfig(secretValue: Record<string, unknown>): void {
     if (!secretValue.secret) {
       const error = new Error('Missing required field: secret');
       error.name = 'ValidationException';
@@ -423,7 +423,7 @@ export class SecretService {
   /**
    * 外部API認証情報の検証
    */
-  private validateExternalApiCredentials(secretValue: any): void {
+  private validateExternalApiCredentials(secretValue: Record<string, unknown>): void {
     if (secretValue.bedrock && typeof secretValue.bedrock !== 'object') {
       const error = new Error('Invalid bedrock configuration');
       error.name = 'ValidationException';
@@ -456,7 +456,12 @@ export class SecretService {
         results.set(secretId, value);
       } catch (error) {
         // 個別のエラーは無視して続行
-        logger.warn(`Failed to get secret ${secretId}:`, error as any);
+        logger.warn(
+          `Failed to get secret ${secretId}:`,
+          error instanceof Error
+            ? { message: error.message, stack: error.stack }
+            : { error: String(error) }
+        );
       }
     }
 
@@ -496,6 +501,8 @@ export class SecretService {
     size: number;
     hitRate: number;
     totalAccesses: number;
+    oldestEntry: number | null;
+    newestEntry: number | null;
   } {
     return {
       hits: 0,
@@ -503,6 +510,8 @@ export class SecretService {
       size: this.cache.size,
       hitRate: 0,
       totalAccesses: 0,
+      oldestEntry: null,
+      newestEntry: null,
     };
   }
 
@@ -547,7 +556,19 @@ export class SecretService {
   /**
    * パフォーマンス統計を取得
    */
-  getPerformanceStats(): { cache: any; config: any; runtime: any } {
+  getPerformanceStats(): {
+    cache: {
+      size: number;
+      hits: number;
+      misses: number;
+      hitRate: number;
+      totalAccesses: number;
+      oldestEntry: number | null;
+      newestEntry: number | null;
+    };
+    config: Record<string, unknown>;
+    runtime: Record<string, unknown>;
+  } {
     return {
       cache: this.getCacheMetrics(),
       config: {

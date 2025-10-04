@@ -168,7 +168,7 @@ export class FormErrorHandler {
    * 要件1, 要件2, 要件3: エラー分類・表示戦略実装
    */
   async handleError(error: unknown, context: ErrorContext): Promise<FormError> {
-    const formError = this.normalizeError(error, context);
+    const formError = this.normalizeError(error);
 
     // エラーログ出力
     this.logError(formError, context);
@@ -230,7 +230,7 @@ export class FormErrorHandler {
       severity: this.getNetworkErrorSeverity(networkDetail),
       message: this.getNetworkErrorMessage(networkDetail),
       code: this.getNetworkErrorCode(networkDetail),
-      details: networkDetail,
+      details: networkDetail as Record<string, unknown>,
       timestamp: new Date(),
       retryable: true,
       displayStrategy: ERROR_DISPLAY_STRATEGIES[FormErrorType.NETWORK_ERROR],
@@ -246,7 +246,7 @@ export class FormErrorHandler {
     await this.displayNetworkError(formError);
 
     // 自動リトライオプションを提供
-    this.provideNetworkRecoveryOptions(formError, context);
+    this.provideNetworkRecoveryOptions(formError);
 
     return formError;
   }

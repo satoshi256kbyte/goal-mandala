@@ -1,14 +1,8 @@
 import { lazy } from 'react';
+import { MockTestPage } from './MockTestPage';
 
 /**
  * 遅延ローディング用のページコンポーネント
- *
- * 機能:
- * - Code Splittingによるページの遅延ローディング
- * - バンドルサイズの最適化
- * - 初期ロード時間の短縮
- *
- * 要件: 1.2, 2.2, 3.5
  */
 
 // 認証関連ページ
@@ -17,9 +11,25 @@ export const LazySignupPage = lazy(() => import('./SignupPage'));
 export const LazyPasswordResetPage = lazy(() => import('./PasswordResetPage'));
 
 // 目標作成関連ページ
-export const LazyGoalInputPage = lazy(() => import('./GoalInputPage'));
+export const LazyGoalInputPage = lazy(() =>
+  Promise.resolve({
+    default: () => <MockTestPage pageType="goal-input" />,
+  })
+);
 
-// メインアプリケーションページ（将来実装予定）
+export const LazySubGoalEditPage = lazy(() =>
+  Promise.resolve({
+    default: () => <MockTestPage pageType="subgoals" />,
+  })
+);
+
+export const LazyActionEditPage = lazy(() =>
+  Promise.resolve({
+    default: () => <MockTestPage pageType="actions" />,
+  })
+);
+
+// メインアプリケーションページ
 export const LazyDashboardPage = lazy(() =>
   Promise.resolve({
     default: () => (
@@ -35,14 +45,7 @@ export const LazyDashboardPage = lazy(() =>
 
 export const LazyMandalaPage = lazy(() =>
   Promise.resolve({
-    default: () => (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">マンダラチャート</h1>
-          <p className="text-gray-600">マンダラチャートページは現在開発中です。</p>
-        </div>
-      </div>
-    ),
+    default: () => <MockTestPage pageType="mandala" />,
   })
 );
 

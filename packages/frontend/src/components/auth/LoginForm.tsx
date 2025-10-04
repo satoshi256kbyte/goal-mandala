@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link } from 'react-router-dom';
-import { loginSchema, type LoginFormData } from '../../utils/validation';
+import { loginZodSchema, type LoginFormData } from '../../utils/validation';
 import { ErrorMessage } from '../common/ErrorMessage';
 import { LoadingButton } from '../common/LoadingButton';
 import {
@@ -48,7 +48,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSubmit, isLoading = fals
     formState: { errors, isValid, touchedFields },
     setFocus,
   } = useForm<LoginFormData>({
-    resolver: zodResolver(loginSchema),
+    resolver: zodResolver(loginZodSchema),
     mode: 'all', // 全てのイベントでバリデーション
     defaultValues: {
       email: '',

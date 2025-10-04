@@ -43,14 +43,14 @@ export interface ExternalApiCredentials {
  * シークレット値の汎用型定義
  */
 export interface SecretValue {
-  [key: string]: any;
+  [key: string]: string | number | boolean | null | undefined;
 }
 
 /**
  * キャッシュエントリの型定義
  */
 interface CacheEntry {
-  value: any;
+  value: SecretValue;
   expiry: number;
   createdAt: number;
   accessCount: number;
@@ -116,7 +116,7 @@ export interface AlertService {
   sendAlert(
     severity: 'low' | 'medium' | 'high' | 'critical',
     message: string,
-    context?: any
+    context?: Record<string, unknown>
   ): Promise<void>;
 }
 
@@ -127,7 +127,7 @@ class DefaultAlertService implements AlertService {
   async sendAlert(
     severity: 'low' | 'medium' | 'high' | 'critical',
     message: string,
-    context?: any
+    context?: Record<string, unknown>
   ): Promise<void> {
     logger.error(`ALERT [${severity.toUpperCase()}]: ${message}`, context);
 
@@ -200,13 +200,13 @@ export class SecretService {
       logger.info('Successfully retrieved database credentials', { secretId });
 
       return {
-        username: secretValue.username,
-        password: secretValue.password,
-        engine: secretValue.engine,
-        host: secretValue.host,
-        port: parseInt(secretValue.port.toString(), 10),
-        dbname: secretValue.dbname,
-        dbClusterIdentifier: secretValue.dbClusterIdentifier,
+        username: secretValue.username as string,
+        password: secretValue.password as string,
+        engine: secretValue.engine as string,
+        host: secretValue.host as string,
+        port: parseInt((secretValue.port ?? '5432').toString(), 10),
+        dbname: secretValue.dbname as string,
+        dbClusterIdentifier: secretValue.dbClusterIdentifier as string,
       };
     } catch (error) {
       const errorCode = this.getErrorCode(error);
@@ -253,7 +253,7 @@ export class SecretService {
       }
 
       logger.info('Successfully retrieved JWT secret', { secretId });
-      return secretValue.secret;
+      return secretValue.secret as string;
     } catch (error) {
       const errorCode = this.getErrorCode(error);
       const errorMessage = `Failed to get JWT secret: ${error instanceof Error ? error.message : 'Unknown error'}`;
@@ -299,10 +299,10 @@ export class SecretService {
       logger.info('Successfully retrieved JWT config', { secretId });
 
       return {
-        secret: secretValue.secret,
-        algorithm: secretValue.algorithm || 'HS256',
-        issuer: secretValue.issuer || `goal-mandala-${this.environment}`,
-        expiresIn: secretValue.expiresIn || '24h',
+        secret: secretValue.secret as string,
+        algorithm: (secretValue.algorithm as string) || 'HS256',
+        issuer: (secretValue.issuer as string) || `goal-mandala-${this.environment}`,
+        expiresIn: (secretValue.expiresIn as string) || '24h',
       };
     } catch (error) {
       const errorCode = this.getErrorCode(error);
@@ -352,13 +352,23 @@ export class SecretService {
 
       return {
         bedrock: {
-          region: secretValue.bedrock?.region || 'ap-northeast-1',
-          modelId: secretValue.bedrock?.modelId || 'amazon.nova-micro-v1:0',
+          region:
+            ((secretValue.bedrock as unknown as Record<string, unknown>)?.region as string) ||
+            'ap-northeast-1',
+          modelId:
+            ((secretValue.bedrock as unknown as Record<string, unknown>)?.modelId as string) ||
+            'amazon.nova-micro-v1:0',
         },
         ses: {
-          region: secretValue.ses?.region || 'ap-northeast-1',
-          fromEmail: secretValue.ses?.fromEmail || 'noreply@goal-mandala.com',
-          replyToEmail: secretValue.ses?.replyToEmail || 'support@goal-mandala.com',
+          region:
+            ((secretValue.ses as unknown as Record<string, unknown>)?.region as string) ||
+            'ap-northeast-1',
+          fromEmail:
+            ((secretValue.ses as unknown as Record<string, unknown>)?.fromEmail as string) ||
+            'noreply@goal-mandala.com',
+          replyToEmail:
+            ((secretValue.ses as unknown as Record<string, unknown>)?.replyToEmail as string) ||
+            'support@goal-mandala.com',
         },
       };
     } catch (error) {
@@ -504,7 +514,7 @@ export class SecretService {
             });
 
             this.cacheMisses++;
-            return { secretId, value };
+            return { secretId, value } as { secretId: string; value: SecretValue };
           } catch (error) {
             logger.error('Failed to fetch secret in batch', {
               secretId,
@@ -823,13 +833,13 @@ export class SecretService {
    * 重要なエラーかどうかを判定
    */
   private isCriticalError(errorCode: string): boolean {
-    const criticalErrors = [
+    const criticalErrors: string[] = [
       ERROR_CODES.SECRET_NOT_FOUND,
       ERROR_CODES.ACCESS_DENIED,
       ERROR_CODES.INTERNAL_ERROR,
     ];
 
-    return criticalErrors.includes(errorCode as any);
+    return criticalErrors.includes(errorCode);
   }
 
   /**
@@ -842,7 +852,7 @@ export class SecretService {
   /**
    * データベース認証情報の検証
    */
-  private validateDatabaseCredentials(secretValue: any): void {
+  private validateDatabaseCredentials(secretValue: Record<string, unknown>): void {
     const requiredFields = [
       'username',
       'password',
@@ -874,7 +884,7 @@ export class SecretService {
       throw error;
     }
 
-    const port = parseInt(secretValue.port.toString(), 10);
+    const port = parseInt((secretValue.port ?? '5432').toString(), 10);
     if (isNaN(port) || port < 1 || port > 65535) {
       const error = new Error('Port must be a valid number between 1 and 65535');
       error.name = 'ValidationException';
@@ -885,7 +895,7 @@ export class SecretService {
   /**
    * JWT設定情報の検証
    */
-  private validateJwtConfig(secretValue: any): void {
+  private validateJwtConfig(secretValue: Record<string, unknown>): void {
     if (!secretValue.secret) {
       const error = new Error('Missing required field: secret');
       error.name = 'ValidationException';
@@ -901,7 +911,7 @@ export class SecretService {
     // アルゴリズムの検証（指定されている場合）
     if (secretValue.algorithm) {
       const validAlgorithms = ['HS256', 'HS384', 'HS512', 'RS256', 'RS384', 'RS512'];
-      if (!validAlgorithms.includes(secretValue.algorithm)) {
+      if (!validAlgorithms.includes(secretValue.algorithm as string)) {
         const error = new Error(`Invalid JWT algorithm: ${secretValue.algorithm}`);
         error.name = 'ValidationException';
         throw error;
@@ -919,7 +929,7 @@ export class SecretService {
   /**
    * 外部API認証情報の検証
    */
-  private validateExternalApiCredentials(secretValue: any): void {
+  private validateExternalApiCredentials(secretValue: Record<string, unknown>): void {
     // Bedrock設定の検証
     if (secretValue.bedrock && typeof secretValue.bedrock !== 'object') {
       const error = new Error('Invalid bedrock configuration: must be an object');
@@ -935,13 +945,23 @@ export class SecretService {
     }
 
     // SESメールアドレスの検証
-    if (secretValue.ses?.fromEmail && !this.isValidEmail(secretValue.ses.fromEmail)) {
+    if (
+      (secretValue.ses as unknown as Record<string, unknown>)?.fromEmail &&
+      !this.isValidEmail(
+        (secretValue.ses as unknown as Record<string, unknown>).fromEmail as string
+      )
+    ) {
       const error = new Error('Invalid SES fromEmail format');
       error.name = 'ValidationException';
       throw error;
     }
 
-    if (secretValue.ses?.replyToEmail && !this.isValidEmail(secretValue.ses.replyToEmail)) {
+    if (
+      (secretValue.ses as unknown as Record<string, unknown>)?.replyToEmail &&
+      !this.isValidEmail(
+        (secretValue.ses as unknown as Record<string, unknown>).replyToEmail as string
+      )
+    ) {
       const error = new Error('Invalid SES replyToEmail format');
       error.name = 'ValidationException';
       throw error;

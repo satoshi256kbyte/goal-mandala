@@ -1,4 +1,9 @@
-import { CloudWatchClient, PutMetricDataCommand, MetricDatum } from '@aws-sdk/client-cloudwatch';
+import {
+  CloudWatchClient,
+  PutMetricDataCommand,
+  MetricDatum,
+  StandardUnit,
+} from '@aws-sdk/client-cloudwatch';
 
 export interface MigrationMetrics {
   migrationName: string;
@@ -177,7 +182,7 @@ export class MigrationMetricsCollector {
   /**
    * メトリクスの単位を決定
    */
-  private getMetricUnit(metricName: string): string {
+  private getMetricUnit(metricName: string): StandardUnit {
     const timeMetrics = ['MigrationDuration', 'DatabaseConnectionTime', 'SchemaValidationTime'];
     const countMetrics = [
       'MigrationStarted',
@@ -189,14 +194,14 @@ export class MigrationMetricsCollector {
     const booleanMetrics = ['DatabaseConnection', 'SchemaValidation'];
 
     if (timeMetrics.includes(metricName)) {
-      return 'Milliseconds';
+      return StandardUnit.Milliseconds;
     } else if (countMetrics.includes(metricName)) {
-      return 'Count';
+      return StandardUnit.Count;
     } else if (booleanMetrics.includes(metricName)) {
-      return 'None';
+      return StandardUnit.None;
     }
 
-    return 'None';
+    return StandardUnit.None;
   }
 
   /**

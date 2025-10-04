@@ -1,0 +1,147 @@
+/* マンダラセルの基本スタイル */
+.mandala-cell {
+  @apply relative flex flex-col items-center justify-center p-2 border-2 rounded-lg cursor-pointer;
+  @apply hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50;
+  @apply min-h-[80px];
+  /* トランジション効果はJavaScriptで動的に設定 */
+  /* 色分けスタイルはJavaScriptで動的に適用 */
+}
+
+/* 空のセルスタイル */
+.mandala-cell.empty {
+  @apply bg-gray-50 border-dashed border-gray-400 text-gray-400;
+  @apply hover:bg-gray-100 hover:border-gray-500;
+}
+
+/* ダークモード時の空のセルスタイル */
+.mandala-cell.empty.dark-mode {
+  @apply bg-gray-800 border-gray-600 text-gray-400;
+}
+
+.mandala-cell.empty.dark-mode:hover {
+  @apply bg-gray-700 border-gray-500;
+}
+
+/* 進捗別の基本スタイル（フォールバック用） */
+.mandala-cell.progress-0 {
+  /* 色はJavaScriptで動的に設定 */
+}
+
+.mandala-cell.progress-low {
+  /* 色はJavaScriptで動的に設定 */
+}
+
+.mandala-cell.progress-medium {
+  /* 色はJavaScriptで動的に設定 */
+}
+
+.mandala-cell.progress-high {
+  /* 色はJavaScriptで動的に設定 */
+}
+
+.mandala-cell.progress-complete {
+  @apply shadow-lg;
+  /* 色はJavaScriptで動的に設定 */
+}
+
+/* セル内のコンテンツスタイル */
+.cell-title {
+  @apply text-sm font-medium text-center line-clamp-2 mb-1;
+  @apply overflow-hidden text-ellipsis;
+}
+
+.cell-progress {
+  @apply text-xs font-bold;
+}
+
+.cell-status {
+  @apply text-xs px-1 py-0.5 rounded bg-white bg-opacity-70 mt-1;
+}
+
+/* プレースホルダースタイル */
+.cell-placeholder {
+  @apply text-2xl font-light opacity-60;
+}
+
+/* ホバー効果 */
+.mandala-cell:not(.empty):hover {
+  @apply transform scale-105 shadow-lg;
+  /* ホバー時の色の変化も含める */
+  filter: brightness(1.1);
+}
+
+/* フォーカス効果 */
+.mandala-cell:focus {
+  @apply ring-2 ring-blue-500 ring-opacity-50;
+}
+
+/* ドラッグ中のスタイル */
+.mandala-cell[draggable='true']:active {
+  @apply opacity-50 transform rotate-2;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+  .mandala-cell {
+    @apply min-h-[60px] p-1;
+  }
+
+  .cell-title {
+    @apply text-xs;
+  }
+
+  .cell-progress {
+    @apply text-xs;
+  }
+}
+
+/* ダークモード対応 */
+@media (prefers-color-scheme: dark) {
+  .mandala-cell.empty {
+    @apply bg-gray-800 border-gray-600 text-gray-400;
+  }
+
+  .mandala-cell.empty:hover {
+    @apply bg-gray-700 border-gray-500;
+  }
+
+  .cell-status {
+    @apply bg-gray-800 bg-opacity-70;
+  }
+}
+
+/* 明示的なダークモードクラス対応 */
+.mandala-cell.empty.dark-mode {
+  @apply bg-gray-800 border-gray-600 text-gray-400;
+}
+
+.mandala-cell.empty.dark-mode:hover {
+  @apply bg-gray-700 border-gray-500;
+}
+
+.dark-mode .cell-status {
+  @apply bg-gray-800 bg-opacity-70;
+}
+
+/* ハイコントラストモード対応 */
+@media (prefers-contrast: high) {
+  .mandala-cell {
+    @apply border-2;
+  }
+
+  .mandala-cell:focus {
+    @apply ring-4 ring-blue-600;
+  }
+}
+
+/* アニメーション無効設定対応 */
+@media (prefers-reduced-motion: reduce) {
+  .mandala-cell {
+    transition: none !important;
+  }
+
+  .mandala-cell:hover {
+    @apply transform-none;
+    filter: none;
+  }
+}

@@ -59,7 +59,7 @@ export const LazyLoad: React.FC<LazyLoadProps> = ({
   if (!isVisible) {
     return (
       <div
-        ref={elementRef}
+        ref={elementRef as React.RefObject<HTMLDivElement>}
         className={`${className} flex items-center justify-center bg-gray-50`}
         style={placeholderStyle}
         role="status"
@@ -71,7 +71,11 @@ export const LazyLoad: React.FC<LazyLoadProps> = ({
   }
 
   return (
-    <div ref={elementRef} className={className} style={placeholderStyle}>
+    <div
+      ref={elementRef as React.RefObject<HTMLDivElement>}
+      className={className}
+      style={placeholderStyle}
+    >
       {children}
     </div>
   );
@@ -99,17 +103,20 @@ export const LazySuspense: React.FC<LazySuspenseProps> = ({
 }) => {
   const defaultFallback = (
     <div className="flex items-center justify-center p-8">
-      <LoadingSpinner size="medium" message="コンポーネントを読み込んでいます..." />
+      <LoadingSpinner size="md" message="コンポーネントを読み込んでいます..." />
     </div>
   );
 
   const content = <Suspense fallback={fallback || defaultFallback}>{children}</Suspense>;
 
   if (ErrorBoundary) {
-    return (
-      <ErrorBoundary error={new Error()} resetError={() => {}}>
-        {content}
-      </ErrorBoundary>
+    return React.createElement(
+      ErrorBoundary,
+      {
+        error: new Error(),
+        resetError: () => {},
+      },
+      <Suspense fallback={fallback || defaultFallback}>{children}</Suspense>
     );
   }
 
@@ -127,7 +134,7 @@ export const createLazyComponent = <T extends ComponentType<any>>(
 
   return React.forwardRef<any, React.ComponentProps<T>>((props, ref) => (
     <LazySuspense fallback={fallback}>
-      <LazyComponent {...props} ref={ref} />
+      <LazyComponent {...(props as any)} ref={ref} />
     </LazySuspense>
   ));
 };
@@ -182,7 +189,11 @@ export const LazyImage: React.FC<LazyImageProps> = ({
   }, [onError]);
 
   return (
-    <div ref={elementRef} className={`relative overflow-hidden ${className}`} style={style}>
+    <div
+      ref={elementRef as React.RefObject<HTMLDivElement>}
+      className={`relative overflow-hidden ${className}`}
+      style={style}
+    >
       {/* プレースホルダー */}
       {!imageLoaded && !imageError && (
         <div className="absolute inset-0 bg-gray-200 animate-pulse flex items-center justify-center">
@@ -278,7 +289,11 @@ export const LazyContent: React.FC<LazyContentProps> = ({
   );
 
   return (
-    <div ref={elementRef} className={className} style={{ minHeight }}>
+    <div
+      ref={elementRef as React.RefObject<HTMLDivElement>}
+      className={className}
+      style={{ minHeight }}
+    >
       {isVisible ? children : skeleton || defaultSkeleton}
     </div>
   );

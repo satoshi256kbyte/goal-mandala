@@ -32,12 +32,18 @@ export interface FormFieldProps {
   validationState?: ValidationState;
   /** バリデーション中の表示フラグ */
   showValidating?: boolean;
-  /** エラー表示のカスタマイズ */
-  errorDisplay?: 'inline' | 'tooltip' | 'none';
   /** フォーカス時のコールバック */
   onFocus?: () => void;
   /** ブラー時のコールバック */
   onBlur?: () => void;
+  /** ラベルID */
+  labelId?: string;
+  /** ヘルプテキストID */
+  helpTextId?: string;
+  /** エラーID */
+  errorId?: string;
+  /** エラー表示のカスタマイズ */
+  errorDisplay?: 'inline' | 'tooltip' | 'none';
 }
 
 /**

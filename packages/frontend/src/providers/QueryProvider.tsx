@@ -15,7 +15,7 @@ const createQueryClient = () => {
       queries: {
         // デフォルトのクエリ設定
         staleTime: 5 * 60 * 1000, // 5分間はフレッシュとみなす
-        cacheTime: 10 * 60 * 1000, // 10分間キャッシュを保持
+        gcTime: 10 * 60 * 1000, // 10分間キャッシュを保持
         refetchOnWindowFocus: false, // ウィンドウフォーカス時の自動リフェッチを無効
         refetchOnMount: true, // マウント時にリフェッチ
         refetchOnReconnect: true, // 再接続時にリフェッチ
@@ -145,19 +145,7 @@ export const QueryProvider: React.FC<QueryProviderProps> = ({ children, client }
     <QueryClientProvider client={queryClient}>
       {children}
       {/* 開発環境でのみReact Query Devtoolsを表示 */}
-      {process.env.NODE_ENV === 'development' && (
-        <ReactQueryDevtools
-          initialIsOpen={false}
-          position="bottom-right"
-          toggleButtonProps={{
-            style: {
-              marginLeft: '5px',
-              transform: 'scale(0.7)',
-              transformOrigin: 'bottom right',
-            },
-          }}
-        />
-      )}
+      {process.env.NODE_ENV === 'development' && <ReactQueryDevtools initialIsOpen={false} />}
     </QueryClientProvider>
   );
 };
@@ -175,16 +163,11 @@ export const createTestQueryClient = () => {
     defaultOptions: {
       queries: {
         retry: false,
-        cacheTime: 0,
+        gcTime: 0,
       },
       mutations: {
         retry: false,
       },
-    },
-    logger: {
-      log: () => {},
-      warn: () => {},
-      error: () => {},
     },
   });
 };
@@ -204,7 +187,7 @@ export const createPerformanceQueryClient = () => {
     defaultOptions: {
       queries: {
         staleTime: 5 * 60 * 1000,
-        cacheTime: 10 * 60 * 1000,
+        gcTime: 10 * 60 * 1000,
         refetchOnWindowFocus: false,
       },
     },

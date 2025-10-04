@@ -3,9 +3,15 @@ import { generateScreenReaderText, SR_ONLY_CLASS } from '../../utils/screen-read
 
 export interface CharacterCounterProps {
   /** 現在の文字数 */
-  currentLength: number;
+  currentLength?: number;
+  /** 現在の文字数（別名） */
+  current?: number;
   /** 最大文字数 */
-  maxLength: number;
+  maxLength?: number;
+  /** 最大文字数（別名） */
+  max?: number;
+  /** 警告を表示するか */
+  showWarning?: boolean;
   /** カウンターの表示位置 */
   position?: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left';
   /** 追加のCSSクラス */
@@ -14,6 +20,10 @@ export interface CharacterCounterProps {
   warningThreshold?: number;
   /** エラーしきい値（パーセンテージ）デフォルト: 100% */
   errorThreshold?: number;
+  /** ID属性 */
+  id?: string;
+  /** aria-live属性 */
+  'aria-live'?: 'polite' | 'assertive' | 'off';
 }
 
 /**
@@ -26,14 +36,21 @@ export interface CharacterCounterProps {
  */
 export const CharacterCounter: React.FC<CharacterCounterProps> = ({
   currentLength,
+  current,
   maxLength,
+  max,
+  showWarning: _showWarning,
   position = 'bottom-right',
   className = '',
   warningThreshold = 80,
   errorThreshold = 100,
 }) => {
+  // 値の正規化
+  const actualCurrentLength = currentLength ?? current ?? 0;
+  const actualMaxLength = maxLength ?? max ?? 0;
+
   // パーセンテージ計算
-  const percentage = maxLength > 0 ? (currentLength / maxLength) * 100 : 0;
+  const percentage = actualMaxLength > 0 ? (actualCurrentLength / actualMaxLength) * 100 : 0;
 
   // 色の決定
   const getCounterColor = (): string => {
@@ -70,11 +87,14 @@ export const CharacterCounter: React.FC<CharacterCounterProps> = ({
           ? '制限に近づいています'
           : '入力可能';
 
-    return `文字数: ${currentLength}文字 / ${maxLength}文字 (${status})`;
+    return `文字数: ${actualCurrentLength}文字 / ${actualMaxLength}文字 (${status})`;
   };
 
   // スクリーンリーダー用のテキスト
-  const screenReaderText = generateScreenReaderText.characterCount(currentLength, maxLength);
+  const screenReaderText = generateScreenReaderText.characterCount(
+    actualCurrentLength,
+    actualMaxLength
+  );
 
   return (
     <div
@@ -89,7 +109,7 @@ export const CharacterCounter: React.FC<CharacterCounterProps> = ({
       aria-live="polite"
     >
       <span aria-hidden="true">
-        {currentLength}/{maxLength}
+        {actualCurrentLength}/{actualMaxLength}
       </span>
       <span className={SR_ONLY_CLASS}>{screenReaderText}</span>
     </div>

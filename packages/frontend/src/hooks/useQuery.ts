@@ -39,9 +39,12 @@ export const useSubGoals = (
 ) => {
   return useQuery({
     queryKey: QUERY_KEYS.subGoals(goalId),
-    queryFn: () => subGoalAPI.getSubGoals(goalId),
+    queryFn: async () => {
+      const response = await subGoalAPI.getSubGoals(goalId);
+      return response.subGoals;
+    },
     staleTime: 5 * 60 * 1000, // 5分間はフレッシュとみなす
-    cacheTime: 10 * 60 * 1000, // 10分間キャッシュを保持
+    gcTime: 10 * 60 * 1000, // 10分間キャッシュを保持
     refetchOnWindowFocus: false,
     refetchOnMount: false,
     ...options,
@@ -53,13 +56,17 @@ export const useSubGoals = (
  */
 export const useSubGoal = (
   id: string,
-  options?: Omit<UseQueryOptions<SubGoal, Error>, 'queryKey' | 'queryFn'>
+  goalId: string,
+  options?: Omit<UseQueryOptions<SubGoal | undefined, Error>, 'queryKey' | 'queryFn'>
 ) => {
   return useQuery({
     queryKey: QUERY_KEYS.subGoal(id),
-    queryFn: () => subGoalAPI.getSubGoal(id),
+    queryFn: async () => {
+      const response = await subGoalAPI.getSubGoals(goalId);
+      return response.subGoals.find(subGoal => subGoal.id === id);
+    },
     staleTime: 5 * 60 * 1000,
-    cacheTime: 10 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
     refetchOnWindowFocus: false,
     ...options,
   });
@@ -74,9 +81,12 @@ export const useActions = (
 ) => {
   return useQuery({
     queryKey: QUERY_KEYS.actions(goalId),
-    queryFn: () => actionAPI.getActions(goalId),
+    queryFn: async () => {
+      const response = await actionAPI.getActions(goalId);
+      return response.actions;
+    },
     staleTime: 5 * 60 * 1000,
-    cacheTime: 10 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
     ...options,
@@ -94,7 +104,7 @@ export const useActionsBySubGoal = (
     queryKey: QUERY_KEYS.actionsBySubGoal(subGoalId),
     queryFn: () => actionAPI.getActionsBySubGoal(subGoalId),
     staleTime: 5 * 60 * 1000,
-    cacheTime: 10 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
     refetchOnWindowFocus: false,
     ...options,
   });
@@ -109,7 +119,10 @@ export const useUpdateSubGoal = (
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, data }) => subGoalAPI.updateSubGoal(id, data),
+    mutationFn: async ({ id, data }) => {
+      const response = await subGoalAPI.updateSubGoal(id, data as any);
+      return response.subGoal;
+    },
     onMutate: async ({ id, data }) => {
       // 楽観的更新の実装
       await queryClient.cancelQueries({ queryKey: QUERY_KEYS.subGoal(id) });
@@ -125,7 +138,7 @@ export const useUpdateSubGoal = (
 
       return { previousSubGoal };
     },
-    onError: (err, { id }, context) => {
+    onError: (err, { id }, context: any) => {
       // エラー時にロールバック
       if (context?.previousSubGoal) {
         queryClient.setQueryData(QUERY_KEYS.subGoal(id), context.previousSubGoal);
@@ -151,7 +164,10 @@ export const useUpdateAction = (
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, data }) => actionAPI.updateAction(id, data),
+    mutationFn: async ({ id, data }) => {
+      const response = await actionAPI.updateAction(id, data as any);
+      return response.action;
+    },
     onMutate: async ({ id, data }) => {
       // 楽観的更新の実装
       await queryClient.cancelQueries({ queryKey: QUERY_KEYS.action(id) });
@@ -167,7 +183,7 @@ export const useUpdateAction = (
 
       return { previousAction };
     },
-    onError: (err, { id }, context) => {
+    onError: (err, { id }, context: any) => {
       // エラー時にロールバック
       if (context?.previousAction) {
         queryClient.setQueryData(QUERY_KEYS.action(id), context.previousAction);
@@ -198,7 +214,10 @@ export const useBulkUpdateSubGoals = (
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ updates, deletes }) => subGoalAPI.bulkUpdateSubGoals(updates, deletes),
+    mutationFn: async ({ updates, deletes }) => {
+      const response = await subGoalAPI.bulkUpdateSubGoals(goalId, updates, deletes);
+      return response.updated;
+    },
     onMutate: async ({ updates, deletes }) => {
       // 楽観的更新の実装
       await queryClient.cancelQueries({ queryKey: QUERY_KEYS.subGoals(goalId) });
@@ -223,7 +242,7 @@ export const useBulkUpdateSubGoals = (
 
       return { previousSubGoals };
     },
-    onError: (err, variables, context) => {
+    onError: (err, variables, context: any) => {
       // エラー時にロールバック
       if (context?.previousSubGoals) {
         queryClient.setQueryData(QUERY_KEYS.subGoals(goalId), context.previousSubGoals);
@@ -251,7 +270,10 @@ export const useBulkUpdateActions = (
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ updates, deletes }) => actionAPI.bulkUpdateActions(updates, deletes),
+    mutationFn: async ({ updates, deletes }) => {
+      const response = await actionAPI.bulkUpdateActions(goalId, updates, deletes);
+      return response.updated;
+    },
     onMutate: async ({ updates, deletes }) => {
       // 楽観的更新の実装
       await queryClient.cancelQueries({ queryKey: QUERY_KEYS.actions(goalId) });
@@ -276,7 +298,7 @@ export const useBulkUpdateActions = (
 
       return { previousActions };
     },
-    onError: (err, variables, context) => {
+    onError: (err, variables, context: any) => {
       // エラー時にロールバック
       if (context?.previousActions) {
         queryClient.setQueryData(QUERY_KEYS.actions(goalId), context.previousActions);
@@ -424,7 +446,7 @@ export const useQueryPerformance = () => {
       activeQueries: queries.filter(q => q.getObserversCount() > 0).length,
       staleQueries: queries.filter(q => q.isStale()).length,
       errorQueries: queries.filter(q => q.state.status === 'error').length,
-      loadingQueries: queries.filter(q => q.state.status === 'loading').length,
+      loadingQueries: queries.filter(q => q.state.status === 'pending').length,
       cacheHitRate: 0, // 実装時に計算
     };
 

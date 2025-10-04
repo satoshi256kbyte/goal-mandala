@@ -220,7 +220,7 @@ export const useOptimizedDraftSave = (
       if (!stored) return null;
 
       const draftData: DraftData = JSON.parse(stored);
-      return await decompressData(draftData.data);
+      return await decompressData(String(draftData.data));
     } catch (error) {
       console.error('Failed to load from localStorage:', error);
       return null;
@@ -234,7 +234,7 @@ export const useOptimizedDraftSave = (
     async (data: unknown): Promise<void> => {
       try {
         const compressed = await compressData(data);
-        await draftService.saveDraft(draftId, draftType, compressed);
+        await draftService.saveDraft(compressed as any);
       } catch (error) {
         console.error('Failed to save to server:', error);
         throw error;
@@ -364,9 +364,9 @@ export const useOptimizedDraftSave = (
 
       if (!data) {
         // ローカルストレージにない場合はサーバーから取得
-        const serverDraft = await draftService.getDraft(draftId, draftType);
+        const serverDraft = await draftService.loadDraft();
         if (serverDraft) {
-          data = await decompressData(serverDraft);
+          data = serverDraft;
         }
       }
 
@@ -403,7 +403,7 @@ export const useOptimizedDraftSave = (
       }
 
       // サーバーから削除
-      await draftService.deleteDraft(draftId, draftType);
+      await draftService.clearDraft();
 
       // 状態をリセット
       currentDataRef.current = null;

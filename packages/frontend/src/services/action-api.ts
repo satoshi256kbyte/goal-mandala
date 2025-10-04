@@ -145,14 +145,15 @@ export class ActionApiClient {
    * APIエラーのハンドリング
    */
   private handleApiError(error: unknown): Error {
+    const err = error as any;
     // ネットワークエラーの場合
-    if (error.code && error.retryable !== undefined) {
-      return new Error(`ネットワークエラー: ${error.message}`);
+    if (err.code && err.retryable !== undefined) {
+      return new Error(`ネットワークエラー: ${err.message}`);
     }
 
     // HTTPエラーレスポンスの場合
-    if (error.response?.data) {
-      const errorData = error.response.data as ApiErrorResponse | ValidationErrorResponse;
+    if (err.response?.data) {
+      const errorData = err.response.data as ApiErrorResponse | ValidationErrorResponse;
 
       if (errorData.error?.code === 'VALIDATION_ERROR') {
         const validationError = errorData as ValidationErrorResponse;
@@ -166,7 +167,7 @@ export class ActionApiClient {
     }
 
     // その他のエラー
-    return new Error(error.message || '不明なエラーが発生しました');
+    return new Error((err as any).message || '不明なエラーが発生しました');
   }
 }
 
@@ -244,4 +245,8 @@ export const actionApiService = {
   deleteDraft: (goalId: string) => actionApiClient.deleteDraft(goalId),
 };
 
+/**
+ * 後方互換性のためのエクスポート
+ */
+export const actionAPI = actionApiService;
 export default actionApiService;

@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import ReactDatePicker from 'react-datepicker';
 import { UseFormRegister, UseFormSetValue, FieldError } from 'react-hook-form';
 import { GoalFormData } from '../../types/goal-form';
+import { format } from 'date-fns';
 
 import {
   getDefaultDateRange,
@@ -21,17 +22,19 @@ import 'react-datepicker/dist/react-datepicker.css';
 
 export interface DatePickerProps {
   /** フィールド名 */
-  name: keyof GoalFormData;
+  name?: keyof GoalFormData;
   /** 最小日付 */
   minDate?: Date;
   /** 最大日付 */
   maxDate?: Date;
   /** React Hook Formのregister関数 */
-  register: UseFormRegister<GoalFormData>;
+  register?: UseFormRegister<GoalFormData>;
   /** エラー情報 */
   error?: FieldError;
   /** React Hook FormのsetValue関数 */
-  setValue: UseFormSetValue<GoalFormData>;
+  setValue?: UseFormSetValue<GoalFormData>;
+  /** 無効状態 */
+  disabled?: boolean;
   /** プレースホルダー */
   placeholder?: string;
   /** 追加のCSSクラス */
@@ -70,12 +73,12 @@ export const DatePicker: React.FC<DatePickerProps> = ({
 
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [inputValue, setInputValue] = useState<string>('');
-  // const [_displayValue, _setDisplayValue] = useState<string>('');
+  const [_displayValue, setDisplayValue] = useState<string>('');
 
   // displayValueを使用する関数を追加
-  // const updateDisplayValue = (value: string) => {
-  //   _setDisplayValue(value);
-  // };
+  const updateDisplayValue = (value: string) => {
+    setDisplayValue(value);
+  };
 
   // displayValueを実際に使用
   React.useEffect(() => {
@@ -204,7 +207,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
       <ReactDatePicker
         selected={selectedDate}
         onChange={handleDateChange}
-        onChangeRaw={handleInputChange}
+        onChangeRaw={handleInputChange as any}
         onKeyDown={handleKeyDown}
         allowSameDay={true}
         strictParsing={false}

@@ -88,3 +88,37 @@ export enum TaskStatus {
   COMPLETED = 'completed',
   SKIPPED = 'skipped',
 }
+
+// 進捗計算関連の型定義
+export interface TaskProgress {
+  id: string;
+  progress: number;
+  status: TaskStatus;
+}
+
+export interface ActionProgress {
+  id: string;
+  progress: number;
+  type: ActionType;
+  taskCount: number;
+  completedTaskCount: number;
+}
+
+export interface SubGoalProgress {
+  id: string;
+  progress: number;
+  actionProgresses: ActionProgress[];
+}
+
+export interface GoalProgress {
+  id: string;
+  progress: number;
+  subGoalProgresses: SubGoalProgress[];
+}
+
+export interface ProgressHierarchy {
+  task: TaskProgress;
+  action: ActionProgress;
+  subGoal: SubGoalProgress;
+  goal: GoalProgress;
+}

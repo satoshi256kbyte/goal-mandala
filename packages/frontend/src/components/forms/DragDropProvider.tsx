@@ -166,6 +166,31 @@ export const DragDropProvider: React.FC<DragDropProviderProps> = ({
     }
   }, [dragState.dragItem, onDragEnd]);
 
+  // ドロップ可能性チェック
+  const canDrop = useCallback(
+    (dragItem: DraggableItem, dropTarget: DraggableItem): boolean => {
+      // 自分自身にはドロップできない
+      if (dragItem.id === dropTarget.id) {
+        return false;
+      }
+
+      // タイプ制約チェック
+      if (mergedConstraints.allowedDropTypes && mergedConstraints.allowedDropTypes.length > 0) {
+        if (!mergedConstraints.allowedDropTypes.includes(dropTarget.type)) {
+          return false;
+        }
+      }
+
+      // カスタムバリデーション
+      if (mergedConstraints.customConstraint) {
+        return mergedConstraints.customConstraint(dragItem, dropTarget);
+      }
+
+      return true;
+    },
+    [mergedConstraints]
+  );
+
   // ドラッグオーバー
   const dragOver = useCallback(
     (item: DraggableItem, event: React.DragEvent) => {
@@ -217,48 +242,6 @@ export const DragDropProvider: React.FC<DragDropProviderProps> = ({
       endDrag();
     },
     [items, onReorder, onDrop, onInvalidDrop, endDrag, canDrop]
-  );
-
-  // ドロップ可能性チェック
-  const canDrop = useCallback(
-    (dragItem: DraggableItem, dropTarget: DraggableItem): boolean => {
-      // 自分自身にはドロップできない
-      if (dragItem.id === dropTarget.id) {
-        return false;
-      }
-
-      // タイプ制約チェック
-      if (
-        mergedConstraints.allowedDropTypes &&
-        !mergedConstraints.allowedDropTypes.includes(dropTarget.type)
-      ) {
-        return false;
-      }
-
-      // グループ間移動制約チェック
-      if (!mergedConstraints.allowCrossGroup) {
-        // アクションの場合は同じサブ目標内でのみ移動可能
-        if (dragItem.type === 'action' && dropTarget.type === 'action') {
-          return dragItem.parentId === dropTarget.parentId;
-        }
-
-        // サブ目標の場合は同じ目標内でのみ移動可能
-        if (dragItem.type === 'subgoal' && dropTarget.type === 'subgoal') {
-          return true; // サブ目標は同じ目標内なので移動可能
-        }
-
-        // 異なるタイプ間の移動は不可
-        return false;
-      }
-
-      // カスタム制約チェック
-      if (mergedConstraints.customConstraint) {
-        return mergedConstraints.customConstraint(dragItem, dropTarget);
-      }
-
-      return true;
-    },
-    [mergedConstraints]
   );
 
   // ドラッグスタイル取得

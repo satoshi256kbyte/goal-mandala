@@ -120,7 +120,7 @@ export interface UseErrorRecoveryOptions {
  */
 export const useErrorRecovery = (options: UseErrorRecoveryOptions = {}): UseErrorRecoveryReturn => {
   const {
-    maxRecoveryAttempts: _maxRecoveryAttempts = 3, // eslint-disable-line @typescript-eslint/no-unused-vars
+    maxRecoveryAttempts: _maxRecoveryAttempts = 3,
     recoveryInterval = 2000,
     enableAutoRecovery = true,
     enableOfflineDetection = true,

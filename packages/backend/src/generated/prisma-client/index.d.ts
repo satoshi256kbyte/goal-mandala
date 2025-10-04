@@ -46,6 +46,11 @@ export type TaskReminder = $Result.DefaultSelection<Prisma.$TaskReminderPayload>
  *
  */
 export type Reflection = $Result.DefaultSelection<Prisma.$ReflectionPayload>;
+/**
+ * Model ProgressHistory
+ *
+ */
+export type ProgressHistory = $Result.DefaultSelection<Prisma.$ProgressHistoryPayload>;
 
 /**
  * Enums
@@ -351,6 +356,16 @@ export class PrismaClient<
    * ```
    */
   get reflection(): Prisma.ReflectionDelegate<ExtArgs>;
+
+  /**
+   * `prisma.progressHistory`: Exposes CRUD operations for the **ProgressHistory** model.
+   * Example usage:
+   * ```ts
+   * // Fetch zero or more ProgressHistories
+   * const progressHistories = await prisma.progressHistory.findMany()
+   * ```
+   */
+  get progressHistory(): Prisma.ProgressHistoryDelegate<ExtArgs>;
 }
 
 export namespace Prisma {
@@ -584,7 +599,7 @@ export namespace Prisma {
         ? False
         : T extends Uint8Array
           ? False
-          : T extends bigint
+          : T extends BigInt
             ? False
             : T extends object
               ? True
@@ -609,12 +624,12 @@ export namespace Prisma {
 
   type EitherLoose<O extends object, K extends Key> = ComputeRaw<__Either<O, K>>;
 
-  type _Either<O extends object, K extends Key, strict extends boolean> = {
+  type _Either<O extends object, K extends Key, strict extends Boolean> = {
     1: EitherStrict<O, K>;
     0: EitherLoose<O, K>;
   }[strict];
 
-  type Either<O extends object, K extends Key, strict extends boolean = 1> = O extends unknown
+  type Either<O extends object, K extends Key, strict extends Boolean = 1> = O extends unknown
     ? _Either<O, K, strict>
     : never;
 
@@ -648,7 +663,7 @@ export namespace Prisma {
   type AtBasic<O extends object, K extends Key> = K extends keyof O ? O[K] : never;
   type AtStrict<O extends object, K extends Key> = O[K & keyof O];
   type AtLoose<O extends object, K extends Key> = O extends unknown ? AtStrict<O, K> : never;
-  export type At<O extends object, K extends Key, strict extends boolean = 1> = {
+  export type At<O extends object, K extends Key, strict extends Boolean = 1> = {
     1: AtStrict<O, K>;
     0: AtLoose<O, K>;
   }[strict];
@@ -703,7 +718,7 @@ export namespace Prisma {
   */
   export type False = 0;
 
-  export type Not<B extends boolean> = {
+  export type Not<B extends Boolean> = {
     0: 1;
     1: 0;
   }[B];
@@ -716,7 +731,7 @@ export namespace Prisma {
 
   export type Has<U extends Union, U1 extends Union> = Not<Extends<Exclude<U1, U>, U1>>;
 
-  export type Or<B1 extends boolean, B2 extends boolean> = {
+  export type Or<B1 extends Boolean, B2 extends Boolean> = {
     0: {
       0: 0;
       1: 1;
@@ -793,6 +808,7 @@ export namespace Prisma {
     Task: 'Task';
     TaskReminder: 'TaskReminder';
     Reflection: 'Reflection';
+    ProgressHistory: 'ProgressHistory';
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName];
@@ -814,7 +830,15 @@ export namespace Prisma {
     ClientOptions = {},
   > = {
     meta: {
-      modelProps: 'user' | 'goal' | 'subGoal' | 'action' | 'task' | 'taskReminder' | 'reflection';
+      modelProps:
+        | 'user'
+        | 'goal'
+        | 'subGoal'
+        | 'action'
+        | 'task'
+        | 'taskReminder'
+        | 'reflection'
+        | 'progressHistory';
       txIsolationLevel: Prisma.TransactionIsolationLevel;
     };
     model: {
@@ -1305,6 +1329,76 @@ export namespace Prisma {
           count: {
             args: Prisma.ReflectionCountArgs<ExtArgs>;
             result: $Utils.Optional<ReflectionCountAggregateOutputType> | number;
+          };
+        };
+      };
+      ProgressHistory: {
+        payload: Prisma.$ProgressHistoryPayload<ExtArgs>;
+        fields: Prisma.ProgressHistoryFieldRefs;
+        operations: {
+          findUnique: {
+            args: Prisma.ProgressHistoryFindUniqueArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$ProgressHistoryPayload> | null;
+          };
+          findUniqueOrThrow: {
+            args: Prisma.ProgressHistoryFindUniqueOrThrowArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$ProgressHistoryPayload>;
+          };
+          findFirst: {
+            args: Prisma.ProgressHistoryFindFirstArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$ProgressHistoryPayload> | null;
+          };
+          findFirstOrThrow: {
+            args: Prisma.ProgressHistoryFindFirstOrThrowArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$ProgressHistoryPayload>;
+          };
+          findMany: {
+            args: Prisma.ProgressHistoryFindManyArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$ProgressHistoryPayload>[];
+          };
+          create: {
+            args: Prisma.ProgressHistoryCreateArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$ProgressHistoryPayload>;
+          };
+          createMany: {
+            args: Prisma.ProgressHistoryCreateManyArgs<ExtArgs>;
+            result: BatchPayload;
+          };
+          createManyAndReturn: {
+            args: Prisma.ProgressHistoryCreateManyAndReturnArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$ProgressHistoryPayload>[];
+          };
+          delete: {
+            args: Prisma.ProgressHistoryDeleteArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$ProgressHistoryPayload>;
+          };
+          update: {
+            args: Prisma.ProgressHistoryUpdateArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$ProgressHistoryPayload>;
+          };
+          deleteMany: {
+            args: Prisma.ProgressHistoryDeleteManyArgs<ExtArgs>;
+            result: BatchPayload;
+          };
+          updateMany: {
+            args: Prisma.ProgressHistoryUpdateManyArgs<ExtArgs>;
+            result: BatchPayload;
+          };
+          upsert: {
+            args: Prisma.ProgressHistoryUpsertArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$ProgressHistoryPayload>;
+          };
+          aggregate: {
+            args: Prisma.ProgressHistoryAggregateArgs<ExtArgs>;
+            result: $Utils.Optional<AggregateProgressHistory>;
+          };
+          groupBy: {
+            args: Prisma.ProgressHistoryGroupByArgs<ExtArgs>;
+            result: $Utils.Optional<ProgressHistoryGroupByOutputType>[];
+          };
+          count: {
+            args: Prisma.ProgressHistoryCountArgs<ExtArgs>;
+            result: $Utils.Optional<ProgressHistoryCountAggregateOutputType> | number;
           };
         };
       };
@@ -9642,6 +9736,1044 @@ export namespace Prisma {
   };
 
   /**
+   * Model ProgressHistory
+   */
+
+  export type AggregateProgressHistory = {
+    _count: ProgressHistoryCountAggregateOutputType | null;
+    _avg: ProgressHistoryAvgAggregateOutputType | null;
+    _sum: ProgressHistorySumAggregateOutputType | null;
+    _min: ProgressHistoryMinAggregateOutputType | null;
+    _max: ProgressHistoryMaxAggregateOutputType | null;
+  };
+
+  export type ProgressHistoryAvgAggregateOutputType = {
+    progress: number | null;
+  };
+
+  export type ProgressHistorySumAggregateOutputType = {
+    progress: number | null;
+  };
+
+  export type ProgressHistoryMinAggregateOutputType = {
+    id: string | null;
+    entityType: string | null;
+    entityId: string | null;
+    progress: number | null;
+    timestamp: Date | null;
+    createdAt: Date | null;
+  };
+
+  export type ProgressHistoryMaxAggregateOutputType = {
+    id: string | null;
+    entityType: string | null;
+    entityId: string | null;
+    progress: number | null;
+    timestamp: Date | null;
+    createdAt: Date | null;
+  };
+
+  export type ProgressHistoryCountAggregateOutputType = {
+    id: number;
+    entityType: number;
+    entityId: number;
+    progress: number;
+    timestamp: number;
+    createdAt: number;
+    _all: number;
+  };
+
+  export type ProgressHistoryAvgAggregateInputType = {
+    progress?: true;
+  };
+
+  export type ProgressHistorySumAggregateInputType = {
+    progress?: true;
+  };
+
+  export type ProgressHistoryMinAggregateInputType = {
+    id?: true;
+    entityType?: true;
+    entityId?: true;
+    progress?: true;
+    timestamp?: true;
+    createdAt?: true;
+  };
+
+  export type ProgressHistoryMaxAggregateInputType = {
+    id?: true;
+    entityType?: true;
+    entityId?: true;
+    progress?: true;
+    timestamp?: true;
+    createdAt?: true;
+  };
+
+  export type ProgressHistoryCountAggregateInputType = {
+    id?: true;
+    entityType?: true;
+    entityId?: true;
+    progress?: true;
+    timestamp?: true;
+    createdAt?: true;
+    _all?: true;
+  };
+
+  export type ProgressHistoryAggregateArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    /**
+     * Filter which ProgressHistory to aggregate.
+     */
+    where?: ProgressHistoryWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of ProgressHistories to fetch.
+     */
+    orderBy?: ProgressHistoryOrderByWithRelationInput | ProgressHistoryOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the start position
+     */
+    cursor?: ProgressHistoryWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` ProgressHistories from the position of the cursor.
+     */
+    take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` ProgressHistories.
+     */
+    skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Count returned ProgressHistories
+     **/
+    _count?: true | ProgressHistoryCountAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to average
+     **/
+    _avg?: ProgressHistoryAvgAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to sum
+     **/
+    _sum?: ProgressHistorySumAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to find the minimum value
+     **/
+    _min?: ProgressHistoryMinAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to find the maximum value
+     **/
+    _max?: ProgressHistoryMaxAggregateInputType;
+  };
+
+  export type GetProgressHistoryAggregateType<T extends ProgressHistoryAggregateArgs> = {
+    [P in keyof T & keyof AggregateProgressHistory]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateProgressHistory[P]>
+      : GetScalarType<T[P], AggregateProgressHistory[P]>;
+  };
+
+  export type ProgressHistoryGroupByArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    where?: ProgressHistoryWhereInput;
+    orderBy?:
+      | ProgressHistoryOrderByWithAggregationInput
+      | ProgressHistoryOrderByWithAggregationInput[];
+    by: ProgressHistoryScalarFieldEnum[] | ProgressHistoryScalarFieldEnum;
+    having?: ProgressHistoryScalarWhereWithAggregatesInput;
+    take?: number;
+    skip?: number;
+    _count?: ProgressHistoryCountAggregateInputType | true;
+    _avg?: ProgressHistoryAvgAggregateInputType;
+    _sum?: ProgressHistorySumAggregateInputType;
+    _min?: ProgressHistoryMinAggregateInputType;
+    _max?: ProgressHistoryMaxAggregateInputType;
+  };
+
+  export type ProgressHistoryGroupByOutputType = {
+    id: string;
+    entityType: string;
+    entityId: string;
+    progress: number;
+    timestamp: Date;
+    createdAt: Date;
+    _count: ProgressHistoryCountAggregateOutputType | null;
+    _avg: ProgressHistoryAvgAggregateOutputType | null;
+    _sum: ProgressHistorySumAggregateOutputType | null;
+    _min: ProgressHistoryMinAggregateOutputType | null;
+    _max: ProgressHistoryMaxAggregateOutputType | null;
+  };
+
+  type GetProgressHistoryGroupByPayload<T extends ProgressHistoryGroupByArgs> =
+    Prisma.PrismaPromise<
+      Array<
+        PickEnumerable<ProgressHistoryGroupByOutputType, T['by']> & {
+          [P in keyof T & keyof ProgressHistoryGroupByOutputType]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], ProgressHistoryGroupByOutputType[P]>
+            : GetScalarType<T[P], ProgressHistoryGroupByOutputType[P]>;
+        }
+      >
+    >;
+
+  export type ProgressHistorySelect<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = $Extensions.GetSelect<
+    {
+      id?: boolean;
+      entityType?: boolean;
+      entityId?: boolean;
+      progress?: boolean;
+      timestamp?: boolean;
+      createdAt?: boolean;
+    },
+    ExtArgs['result']['progressHistory']
+  >;
+
+  export type ProgressHistorySelectCreateManyAndReturn<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = $Extensions.GetSelect<
+    {
+      id?: boolean;
+      entityType?: boolean;
+      entityId?: boolean;
+      progress?: boolean;
+      timestamp?: boolean;
+      createdAt?: boolean;
+    },
+    ExtArgs['result']['progressHistory']
+  >;
+
+  export type ProgressHistorySelectScalar = {
+    id?: boolean;
+    entityType?: boolean;
+    entityId?: boolean;
+    progress?: boolean;
+    timestamp?: boolean;
+    createdAt?: boolean;
+  };
+
+  export type $ProgressHistoryPayload<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    name: 'ProgressHistory';
+    objects: {};
+    scalars: $Extensions.GetPayloadResult<
+      {
+        id: string;
+        entityType: string;
+        entityId: string;
+        progress: number;
+        timestamp: Date;
+        createdAt: Date;
+      },
+      ExtArgs['result']['progressHistory']
+    >;
+    composites: {};
+  };
+
+  type ProgressHistoryGetPayload<
+    S extends boolean | null | undefined | ProgressHistoryDefaultArgs,
+  > = $Result.GetResult<Prisma.$ProgressHistoryPayload, S>;
+
+  type ProgressHistoryCountArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = Omit<ProgressHistoryFindManyArgs, 'select' | 'include' | 'distinct'> & {
+    select?: ProgressHistoryCountAggregateInputType | true;
+  };
+
+  export interface ProgressHistoryDelegate<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > {
+    [K: symbol]: {
+      types: Prisma.TypeMap<ExtArgs>['model']['ProgressHistory'];
+      meta: { name: 'ProgressHistory' };
+    };
+    /**
+     * Find zero or one ProgressHistory that matches the filter.
+     * @param {ProgressHistoryFindUniqueArgs} args - Arguments to find a ProgressHistory
+     * @example
+     * // Get one ProgressHistory
+     * const progressHistory = await prisma.progressHistory.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ProgressHistoryFindUniqueArgs>(
+      args: SelectSubset<T, ProgressHistoryFindUniqueArgs<ExtArgs>>
+    ): Prisma__ProgressHistoryClient<
+      $Result.GetResult<Prisma.$ProgressHistoryPayload<ExtArgs>, T, 'findUnique'> | null,
+      null,
+      ExtArgs
+    >;
+
+    /**
+     * Find one ProgressHistory that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {ProgressHistoryFindUniqueOrThrowArgs} args - Arguments to find a ProgressHistory
+     * @example
+     * // Get one ProgressHistory
+     * const progressHistory = await prisma.progressHistory.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ProgressHistoryFindUniqueOrThrowArgs>(
+      args: SelectSubset<T, ProgressHistoryFindUniqueOrThrowArgs<ExtArgs>>
+    ): Prisma__ProgressHistoryClient<
+      $Result.GetResult<Prisma.$ProgressHistoryPayload<ExtArgs>, T, 'findUniqueOrThrow'>,
+      never,
+      ExtArgs
+    >;
+
+    /**
+     * Find the first ProgressHistory that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ProgressHistoryFindFirstArgs} args - Arguments to find a ProgressHistory
+     * @example
+     * // Get one ProgressHistory
+     * const progressHistory = await prisma.progressHistory.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ProgressHistoryFindFirstArgs>(
+      args?: SelectSubset<T, ProgressHistoryFindFirstArgs<ExtArgs>>
+    ): Prisma__ProgressHistoryClient<
+      $Result.GetResult<Prisma.$ProgressHistoryPayload<ExtArgs>, T, 'findFirst'> | null,
+      null,
+      ExtArgs
+    >;
+
+    /**
+     * Find the first ProgressHistory that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ProgressHistoryFindFirstOrThrowArgs} args - Arguments to find a ProgressHistory
+     * @example
+     * // Get one ProgressHistory
+     * const progressHistory = await prisma.progressHistory.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ProgressHistoryFindFirstOrThrowArgs>(
+      args?: SelectSubset<T, ProgressHistoryFindFirstOrThrowArgs<ExtArgs>>
+    ): Prisma__ProgressHistoryClient<
+      $Result.GetResult<Prisma.$ProgressHistoryPayload<ExtArgs>, T, 'findFirstOrThrow'>,
+      never,
+      ExtArgs
+    >;
+
+    /**
+     * Find zero or more ProgressHistories that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ProgressHistoryFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all ProgressHistories
+     * const progressHistories = await prisma.progressHistory.findMany()
+     *
+     * // Get first 10 ProgressHistories
+     * const progressHistories = await prisma.progressHistory.findMany({ take: 10 })
+     *
+     * // Only select the `id`
+     * const progressHistoryWithIdOnly = await prisma.progressHistory.findMany({ select: { id: true } })
+     *
+     */
+    findMany<T extends ProgressHistoryFindManyArgs>(
+      args?: SelectSubset<T, ProgressHistoryFindManyArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<
+      $Result.GetResult<Prisma.$ProgressHistoryPayload<ExtArgs>, T, 'findMany'>
+    >;
+
+    /**
+     * Create a ProgressHistory.
+     * @param {ProgressHistoryCreateArgs} args - Arguments to create a ProgressHistory.
+     * @example
+     * // Create one ProgressHistory
+     * const ProgressHistory = await prisma.progressHistory.create({
+     *   data: {
+     *     // ... data to create a ProgressHistory
+     *   }
+     * })
+     *
+     */
+    create<T extends ProgressHistoryCreateArgs>(
+      args: SelectSubset<T, ProgressHistoryCreateArgs<ExtArgs>>
+    ): Prisma__ProgressHistoryClient<
+      $Result.GetResult<Prisma.$ProgressHistoryPayload<ExtArgs>, T, 'create'>,
+      never,
+      ExtArgs
+    >;
+
+    /**
+     * Create many ProgressHistories.
+     * @param {ProgressHistoryCreateManyArgs} args - Arguments to create many ProgressHistories.
+     * @example
+     * // Create many ProgressHistories
+     * const progressHistory = await prisma.progressHistory.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     */
+    createMany<T extends ProgressHistoryCreateManyArgs>(
+      args?: SelectSubset<T, ProgressHistoryCreateManyArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<BatchPayload>;
+
+    /**
+     * Create many ProgressHistories and returns the data saved in the database.
+     * @param {ProgressHistoryCreateManyAndReturnArgs} args - Arguments to create many ProgressHistories.
+     * @example
+     * // Create many ProgressHistories
+     * const progressHistory = await prisma.progressHistory.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     * // Create many ProgressHistories and only return the `id`
+     * const progressHistoryWithIdOnly = await prisma.progressHistory.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     *
+     */
+    createManyAndReturn<T extends ProgressHistoryCreateManyAndReturnArgs>(
+      args?: SelectSubset<T, ProgressHistoryCreateManyAndReturnArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<
+      $Result.GetResult<Prisma.$ProgressHistoryPayload<ExtArgs>, T, 'createManyAndReturn'>
+    >;
+
+    /**
+     * Delete a ProgressHistory.
+     * @param {ProgressHistoryDeleteArgs} args - Arguments to delete one ProgressHistory.
+     * @example
+     * // Delete one ProgressHistory
+     * const ProgressHistory = await prisma.progressHistory.delete({
+     *   where: {
+     *     // ... filter to delete one ProgressHistory
+     *   }
+     * })
+     *
+     */
+    delete<T extends ProgressHistoryDeleteArgs>(
+      args: SelectSubset<T, ProgressHistoryDeleteArgs<ExtArgs>>
+    ): Prisma__ProgressHistoryClient<
+      $Result.GetResult<Prisma.$ProgressHistoryPayload<ExtArgs>, T, 'delete'>,
+      never,
+      ExtArgs
+    >;
+
+    /**
+     * Update one ProgressHistory.
+     * @param {ProgressHistoryUpdateArgs} args - Arguments to update one ProgressHistory.
+     * @example
+     * // Update one ProgressHistory
+     * const progressHistory = await prisma.progressHistory.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     *
+     */
+    update<T extends ProgressHistoryUpdateArgs>(
+      args: SelectSubset<T, ProgressHistoryUpdateArgs<ExtArgs>>
+    ): Prisma__ProgressHistoryClient<
+      $Result.GetResult<Prisma.$ProgressHistoryPayload<ExtArgs>, T, 'update'>,
+      never,
+      ExtArgs
+    >;
+
+    /**
+     * Delete zero or more ProgressHistories.
+     * @param {ProgressHistoryDeleteManyArgs} args - Arguments to filter ProgressHistories to delete.
+     * @example
+     * // Delete a few ProgressHistories
+     * const { count } = await prisma.progressHistory.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     *
+     */
+    deleteMany<T extends ProgressHistoryDeleteManyArgs>(
+      args?: SelectSubset<T, ProgressHistoryDeleteManyArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<BatchPayload>;
+
+    /**
+     * Update zero or more ProgressHistories.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ProgressHistoryUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many ProgressHistories
+     * const progressHistory = await prisma.progressHistory.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     *
+     */
+    updateMany<T extends ProgressHistoryUpdateManyArgs>(
+      args: SelectSubset<T, ProgressHistoryUpdateManyArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<BatchPayload>;
+
+    /**
+     * Create or update one ProgressHistory.
+     * @param {ProgressHistoryUpsertArgs} args - Arguments to update or create a ProgressHistory.
+     * @example
+     * // Update or create a ProgressHistory
+     * const progressHistory = await prisma.progressHistory.upsert({
+     *   create: {
+     *     // ... data to create a ProgressHistory
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the ProgressHistory we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ProgressHistoryUpsertArgs>(
+      args: SelectSubset<T, ProgressHistoryUpsertArgs<ExtArgs>>
+    ): Prisma__ProgressHistoryClient<
+      $Result.GetResult<Prisma.$ProgressHistoryPayload<ExtArgs>, T, 'upsert'>,
+      never,
+      ExtArgs
+    >;
+
+    /**
+     * Count the number of ProgressHistories.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ProgressHistoryCountArgs} args - Arguments to filter ProgressHistories to count.
+     * @example
+     * // Count the number of ProgressHistories
+     * const count = await prisma.progressHistory.count({
+     *   where: {
+     *     // ... the filter for the ProgressHistories we want to count
+     *   }
+     * })
+     **/
+    count<T extends ProgressHistoryCountArgs>(
+      args?: Subset<T, ProgressHistoryCountArgs>
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ProgressHistoryCountAggregateOutputType>
+        : number
+    >;
+
+    /**
+     * Allows you to perform aggregations operations on a ProgressHistory.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ProgressHistoryAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+     **/
+    aggregate<T extends ProgressHistoryAggregateArgs>(
+      args: Subset<T, ProgressHistoryAggregateArgs>
+    ): Prisma.PrismaPromise<GetProgressHistoryAggregateType<T>>;
+
+    /**
+     * Group by ProgressHistory.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ProgressHistoryGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     *
+     **/
+    groupBy<
+      T extends ProgressHistoryGroupByArgs,
+      HasSelectOrTake extends Or<Extends<'skip', Keys<T>>, Extends<'take', Keys<T>>>,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ProgressHistoryGroupByArgs['orderBy'] }
+        : { orderBy?: ProgressHistoryGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+        ? `Error: "by" must not be empty.`
+        : HavingValid extends False
+          ? {
+              [P in HavingFields]: P extends ByFields
+                ? never
+                : P extends string
+                  ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+                  : [Error, 'Field ', P, ` in "having" needs to be provided in "by"`];
+            }[HavingFields]
+          : 'take' extends Keys<T>
+            ? 'orderBy' extends Keys<T>
+              ? ByValid extends True
+                ? {}
+                : {
+                    [P in OrderFields]: P extends ByFields
+                      ? never
+                      : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
+                  }[OrderFields]
+              : 'Error: If you provide "take", you also need to provide "orderBy"'
+            : 'skip' extends Keys<T>
+              ? 'orderBy' extends Keys<T>
+                ? ByValid extends True
+                  ? {}
+                  : {
+                      [P in OrderFields]: P extends ByFields
+                        ? never
+                        : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
+                    }[OrderFields]
+                : 'Error: If you provide "skip", you also need to provide "orderBy"'
+              : ByValid extends True
+                ? {}
+                : {
+                    [P in OrderFields]: P extends ByFields
+                      ? never
+                      : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
+                  }[OrderFields],
+    >(
+      args: SubsetIntersection<T, ProgressHistoryGroupByArgs, OrderByArg> & InputErrors
+    ): {} extends InputErrors
+      ? GetProgressHistoryGroupByPayload<T>
+      : Prisma.PrismaPromise<InputErrors>;
+    /**
+     * Fields of the ProgressHistory model
+     */
+    readonly fields: ProgressHistoryFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for ProgressHistory.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ProgressHistoryClient<
+    T,
+    Null = never,
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: 'PrismaPromise';
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(
+      onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null,
+      onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null
+    ): $Utils.JsPromise<TResult1 | TResult2>;
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(
+      onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null
+    ): $Utils.JsPromise<T | TResult>;
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>;
+  }
+
+  /**
+   * Fields of the ProgressHistory model
+   */
+  interface ProgressHistoryFieldRefs {
+    readonly id: FieldRef<'ProgressHistory', 'String'>;
+    readonly entityType: FieldRef<'ProgressHistory', 'String'>;
+    readonly entityId: FieldRef<'ProgressHistory', 'String'>;
+    readonly progress: FieldRef<'ProgressHistory', 'Int'>;
+    readonly timestamp: FieldRef<'ProgressHistory', 'DateTime'>;
+    readonly createdAt: FieldRef<'ProgressHistory', 'DateTime'>;
+  }
+
+  // Custom InputTypes
+  /**
+   * ProgressHistory findUnique
+   */
+  export type ProgressHistoryFindUniqueArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    /**
+     * Select specific fields to fetch from the ProgressHistory
+     */
+    select?: ProgressHistorySelect<ExtArgs> | null;
+    /**
+     * Filter, which ProgressHistory to fetch.
+     */
+    where: ProgressHistoryWhereUniqueInput;
+  };
+
+  /**
+   * ProgressHistory findUniqueOrThrow
+   */
+  export type ProgressHistoryFindUniqueOrThrowArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    /**
+     * Select specific fields to fetch from the ProgressHistory
+     */
+    select?: ProgressHistorySelect<ExtArgs> | null;
+    /**
+     * Filter, which ProgressHistory to fetch.
+     */
+    where: ProgressHistoryWhereUniqueInput;
+  };
+
+  /**
+   * ProgressHistory findFirst
+   */
+  export type ProgressHistoryFindFirstArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    /**
+     * Select specific fields to fetch from the ProgressHistory
+     */
+    select?: ProgressHistorySelect<ExtArgs> | null;
+    /**
+     * Filter, which ProgressHistory to fetch.
+     */
+    where?: ProgressHistoryWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of ProgressHistories to fetch.
+     */
+    orderBy?: ProgressHistoryOrderByWithRelationInput | ProgressHistoryOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for searching for ProgressHistories.
+     */
+    cursor?: ProgressHistoryWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` ProgressHistories from the position of the cursor.
+     */
+    take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` ProgressHistories.
+     */
+    skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of ProgressHistories.
+     */
+    distinct?: ProgressHistoryScalarFieldEnum | ProgressHistoryScalarFieldEnum[];
+  };
+
+  /**
+   * ProgressHistory findFirstOrThrow
+   */
+  export type ProgressHistoryFindFirstOrThrowArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    /**
+     * Select specific fields to fetch from the ProgressHistory
+     */
+    select?: ProgressHistorySelect<ExtArgs> | null;
+    /**
+     * Filter, which ProgressHistory to fetch.
+     */
+    where?: ProgressHistoryWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of ProgressHistories to fetch.
+     */
+    orderBy?: ProgressHistoryOrderByWithRelationInput | ProgressHistoryOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for searching for ProgressHistories.
+     */
+    cursor?: ProgressHistoryWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` ProgressHistories from the position of the cursor.
+     */
+    take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` ProgressHistories.
+     */
+    skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of ProgressHistories.
+     */
+    distinct?: ProgressHistoryScalarFieldEnum | ProgressHistoryScalarFieldEnum[];
+  };
+
+  /**
+   * ProgressHistory findMany
+   */
+  export type ProgressHistoryFindManyArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    /**
+     * Select specific fields to fetch from the ProgressHistory
+     */
+    select?: ProgressHistorySelect<ExtArgs> | null;
+    /**
+     * Filter, which ProgressHistories to fetch.
+     */
+    where?: ProgressHistoryWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of ProgressHistories to fetch.
+     */
+    orderBy?: ProgressHistoryOrderByWithRelationInput | ProgressHistoryOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for listing ProgressHistories.
+     */
+    cursor?: ProgressHistoryWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` ProgressHistories from the position of the cursor.
+     */
+    take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` ProgressHistories.
+     */
+    skip?: number;
+    distinct?: ProgressHistoryScalarFieldEnum | ProgressHistoryScalarFieldEnum[];
+  };
+
+  /**
+   * ProgressHistory create
+   */
+  export type ProgressHistoryCreateArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    /**
+     * Select specific fields to fetch from the ProgressHistory
+     */
+    select?: ProgressHistorySelect<ExtArgs> | null;
+    /**
+     * The data needed to create a ProgressHistory.
+     */
+    data: XOR<ProgressHistoryCreateInput, ProgressHistoryUncheckedCreateInput>;
+  };
+
+  /**
+   * ProgressHistory createMany
+   */
+  export type ProgressHistoryCreateManyArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    /**
+     * The data used to create many ProgressHistories.
+     */
+    data: ProgressHistoryCreateManyInput | ProgressHistoryCreateManyInput[];
+    skipDuplicates?: boolean;
+  };
+
+  /**
+   * ProgressHistory createManyAndReturn
+   */
+  export type ProgressHistoryCreateManyAndReturnArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    /**
+     * Select specific fields to fetch from the ProgressHistory
+     */
+    select?: ProgressHistorySelectCreateManyAndReturn<ExtArgs> | null;
+    /**
+     * The data used to create many ProgressHistories.
+     */
+    data: ProgressHistoryCreateManyInput | ProgressHistoryCreateManyInput[];
+    skipDuplicates?: boolean;
+  };
+
+  /**
+   * ProgressHistory update
+   */
+  export type ProgressHistoryUpdateArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    /**
+     * Select specific fields to fetch from the ProgressHistory
+     */
+    select?: ProgressHistorySelect<ExtArgs> | null;
+    /**
+     * The data needed to update a ProgressHistory.
+     */
+    data: XOR<ProgressHistoryUpdateInput, ProgressHistoryUncheckedUpdateInput>;
+    /**
+     * Choose, which ProgressHistory to update.
+     */
+    where: ProgressHistoryWhereUniqueInput;
+  };
+
+  /**
+   * ProgressHistory updateMany
+   */
+  export type ProgressHistoryUpdateManyArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    /**
+     * The data used to update ProgressHistories.
+     */
+    data: XOR<ProgressHistoryUpdateManyMutationInput, ProgressHistoryUncheckedUpdateManyInput>;
+    /**
+     * Filter which ProgressHistories to update
+     */
+    where?: ProgressHistoryWhereInput;
+  };
+
+  /**
+   * ProgressHistory upsert
+   */
+  export type ProgressHistoryUpsertArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    /**
+     * Select specific fields to fetch from the ProgressHistory
+     */
+    select?: ProgressHistorySelect<ExtArgs> | null;
+    /**
+     * The filter to search for the ProgressHistory to update in case it exists.
+     */
+    where: ProgressHistoryWhereUniqueInput;
+    /**
+     * In case the ProgressHistory found by the `where` argument doesn't exist, create a new ProgressHistory with this data.
+     */
+    create: XOR<ProgressHistoryCreateInput, ProgressHistoryUncheckedCreateInput>;
+    /**
+     * In case the ProgressHistory was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ProgressHistoryUpdateInput, ProgressHistoryUncheckedUpdateInput>;
+  };
+
+  /**
+   * ProgressHistory delete
+   */
+  export type ProgressHistoryDeleteArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    /**
+     * Select specific fields to fetch from the ProgressHistory
+     */
+    select?: ProgressHistorySelect<ExtArgs> | null;
+    /**
+     * Filter which ProgressHistory to delete.
+     */
+    where: ProgressHistoryWhereUniqueInput;
+  };
+
+  /**
+   * ProgressHistory deleteMany
+   */
+  export type ProgressHistoryDeleteManyArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    /**
+     * Filter which ProgressHistories to delete
+     */
+    where?: ProgressHistoryWhereInput;
+  };
+
+  /**
+   * ProgressHistory without action
+   */
+  export type ProgressHistoryDefaultArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    /**
+     * Select specific fields to fetch from the ProgressHistory
+     */
+    select?: ProgressHistorySelect<ExtArgs> | null;
+  };
+
+  /**
    * Enums
    */
 
@@ -9757,6 +10889,18 @@ export namespace Prisma {
 
   export type ReflectionScalarFieldEnum =
     (typeof ReflectionScalarFieldEnum)[keyof typeof ReflectionScalarFieldEnum];
+
+  export const ProgressHistoryScalarFieldEnum: {
+    id: 'id';
+    entityType: 'entityType';
+    entityId: 'entityId';
+    progress: 'progress';
+    timestamp: 'timestamp';
+    createdAt: 'createdAt';
+  };
+
+  export type ProgressHistoryScalarFieldEnum =
+    (typeof ProgressHistoryScalarFieldEnum)[keyof typeof ProgressHistoryScalarFieldEnum];
 
   export const SortOrder: {
     asc: 'asc';
@@ -10501,6 +11645,72 @@ export namespace Prisma {
     updatedAt?: DateTimeWithAggregatesFilter<'Reflection'> | Date | string;
   };
 
+  export type ProgressHistoryWhereInput = {
+    AND?: ProgressHistoryWhereInput | ProgressHistoryWhereInput[];
+    OR?: ProgressHistoryWhereInput[];
+    NOT?: ProgressHistoryWhereInput | ProgressHistoryWhereInput[];
+    id?: UuidFilter<'ProgressHistory'> | string;
+    entityType?: StringFilter<'ProgressHistory'> | string;
+    entityId?: UuidFilter<'ProgressHistory'> | string;
+    progress?: IntFilter<'ProgressHistory'> | number;
+    timestamp?: DateTimeFilter<'ProgressHistory'> | Date | string;
+    createdAt?: DateTimeFilter<'ProgressHistory'> | Date | string;
+  };
+
+  export type ProgressHistoryOrderByWithRelationInput = {
+    id?: SortOrder;
+    entityType?: SortOrder;
+    entityId?: SortOrder;
+    progress?: SortOrder;
+    timestamp?: SortOrder;
+    createdAt?: SortOrder;
+  };
+
+  export type ProgressHistoryWhereUniqueInput = Prisma.AtLeast<
+    {
+      id?: string;
+      AND?: ProgressHistoryWhereInput | ProgressHistoryWhereInput[];
+      OR?: ProgressHistoryWhereInput[];
+      NOT?: ProgressHistoryWhereInput | ProgressHistoryWhereInput[];
+      entityType?: StringFilter<'ProgressHistory'> | string;
+      entityId?: UuidFilter<'ProgressHistory'> | string;
+      progress?: IntFilter<'ProgressHistory'> | number;
+      timestamp?: DateTimeFilter<'ProgressHistory'> | Date | string;
+      createdAt?: DateTimeFilter<'ProgressHistory'> | Date | string;
+    },
+    'id'
+  >;
+
+  export type ProgressHistoryOrderByWithAggregationInput = {
+    id?: SortOrder;
+    entityType?: SortOrder;
+    entityId?: SortOrder;
+    progress?: SortOrder;
+    timestamp?: SortOrder;
+    createdAt?: SortOrder;
+    _count?: ProgressHistoryCountOrderByAggregateInput;
+    _avg?: ProgressHistoryAvgOrderByAggregateInput;
+    _max?: ProgressHistoryMaxOrderByAggregateInput;
+    _min?: ProgressHistoryMinOrderByAggregateInput;
+    _sum?: ProgressHistorySumOrderByAggregateInput;
+  };
+
+  export type ProgressHistoryScalarWhereWithAggregatesInput = {
+    AND?:
+      | ProgressHistoryScalarWhereWithAggregatesInput
+      | ProgressHistoryScalarWhereWithAggregatesInput[];
+    OR?: ProgressHistoryScalarWhereWithAggregatesInput[];
+    NOT?:
+      | ProgressHistoryScalarWhereWithAggregatesInput
+      | ProgressHistoryScalarWhereWithAggregatesInput[];
+    id?: UuidWithAggregatesFilter<'ProgressHistory'> | string;
+    entityType?: StringWithAggregatesFilter<'ProgressHistory'> | string;
+    entityId?: UuidWithAggregatesFilter<'ProgressHistory'> | string;
+    progress?: IntWithAggregatesFilter<'ProgressHistory'> | number;
+    timestamp?: DateTimeWithAggregatesFilter<'ProgressHistory'> | Date | string;
+    createdAt?: DateTimeWithAggregatesFilter<'ProgressHistory'> | Date | string;
+  };
+
   export type UserCreateInput = {
     id?: string;
     email: string;
@@ -11112,6 +12322,69 @@ export namespace Prisma {
     rating?: NullableIntFieldUpdateOperationsInput | number | null;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+  };
+
+  export type ProgressHistoryCreateInput = {
+    id?: string;
+    entityType: string;
+    entityId: string;
+    progress: number;
+    timestamp?: Date | string;
+    createdAt?: Date | string;
+  };
+
+  export type ProgressHistoryUncheckedCreateInput = {
+    id?: string;
+    entityType: string;
+    entityId: string;
+    progress: number;
+    timestamp?: Date | string;
+    createdAt?: Date | string;
+  };
+
+  export type ProgressHistoryUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    entityType?: StringFieldUpdateOperationsInput | string;
+    entityId?: StringFieldUpdateOperationsInput | string;
+    progress?: IntFieldUpdateOperationsInput | number;
+    timestamp?: DateTimeFieldUpdateOperationsInput | Date | string;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+  };
+
+  export type ProgressHistoryUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    entityType?: StringFieldUpdateOperationsInput | string;
+    entityId?: StringFieldUpdateOperationsInput | string;
+    progress?: IntFieldUpdateOperationsInput | number;
+    timestamp?: DateTimeFieldUpdateOperationsInput | Date | string;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+  };
+
+  export type ProgressHistoryCreateManyInput = {
+    id?: string;
+    entityType: string;
+    entityId: string;
+    progress: number;
+    timestamp?: Date | string;
+    createdAt?: Date | string;
+  };
+
+  export type ProgressHistoryUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    entityType?: StringFieldUpdateOperationsInput | string;
+    entityId?: StringFieldUpdateOperationsInput | string;
+    progress?: IntFieldUpdateOperationsInput | number;
+    timestamp?: DateTimeFieldUpdateOperationsInput | Date | string;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+  };
+
+  export type ProgressHistoryUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    entityType?: StringFieldUpdateOperationsInput | string;
+    entityId?: StringFieldUpdateOperationsInput | string;
+    progress?: IntFieldUpdateOperationsInput | number;
+    timestamp?: DateTimeFieldUpdateOperationsInput | Date | string;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
 
   export type UuidFilter<$PrismaModel = never> = {
@@ -11816,6 +13089,41 @@ export namespace Prisma {
 
   export type ReflectionSumOrderByAggregateInput = {
     rating?: SortOrder;
+  };
+
+  export type ProgressHistoryCountOrderByAggregateInput = {
+    id?: SortOrder;
+    entityType?: SortOrder;
+    entityId?: SortOrder;
+    progress?: SortOrder;
+    timestamp?: SortOrder;
+    createdAt?: SortOrder;
+  };
+
+  export type ProgressHistoryAvgOrderByAggregateInput = {
+    progress?: SortOrder;
+  };
+
+  export type ProgressHistoryMaxOrderByAggregateInput = {
+    id?: SortOrder;
+    entityType?: SortOrder;
+    entityId?: SortOrder;
+    progress?: SortOrder;
+    timestamp?: SortOrder;
+    createdAt?: SortOrder;
+  };
+
+  export type ProgressHistoryMinOrderByAggregateInput = {
+    id?: SortOrder;
+    entityType?: SortOrder;
+    entityId?: SortOrder;
+    progress?: SortOrder;
+    timestamp?: SortOrder;
+    createdAt?: SortOrder;
+  };
+
+  export type ProgressHistorySumOrderByAggregateInput = {
+    progress?: SortOrder;
   };
 
   export type GoalCreateNestedManyWithoutUserInput = {
@@ -13886,6 +15194,12 @@ export namespace Prisma {
    */
   export type ReflectionArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
     ReflectionDefaultArgs<ExtArgs>;
+  /**
+   * @deprecated Use ProgressHistoryDefaultArgs instead
+   */
+  export type ProgressHistoryArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = ProgressHistoryDefaultArgs<ExtArgs>;
 
   /**
    * Batch Payload for updateMany & deleteMany & createMany

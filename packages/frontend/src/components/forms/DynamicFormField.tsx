@@ -113,7 +113,7 @@ const DynamicFormFieldComponent: React.FC<DynamicFormFieldProps> = ({
   // 文字数カウンター機能
   const { currentLength, updateLength, isWarning } = useCharacterCounter({
     maxLength: field.maxLength,
-    initialValue: value || '',
+    initialValue: String(value || ''),
     onChange: onLengthChange,
     onLimitReached,
     warningThreshold: field.warningThreshold || 80,
@@ -133,20 +133,34 @@ const DynamicFormFieldComponent: React.FC<DynamicFormFieldProps> = ({
             break;
 
           case 'minLength':
-            if (typeof inputValue === 'string' && inputValue.length < rule.value) {
+            if (
+              typeof inputValue === 'string' &&
+              typeof rule.value === 'number' &&
+              inputValue.length < rule.value
+            ) {
               return rule.message;
             }
             break;
 
           case 'maxLength':
-            if (typeof inputValue === 'string' && inputValue.length > rule.value) {
+            if (
+              typeof inputValue === 'string' &&
+              typeof rule.value === 'number' &&
+              inputValue.length > rule.value
+            ) {
               return rule.message;
             }
             break;
 
           case 'pattern':
-            if (typeof inputValue === 'string' && !new RegExp(rule.value).test(inputValue)) {
-              return rule.message;
+            if (
+              typeof inputValue === 'string' &&
+              (typeof rule.value === 'string' || rule.value instanceof RegExp)
+            ) {
+              const regex = rule.value instanceof RegExp ? rule.value : new RegExp(rule.value);
+              if (!regex.test(inputValue)) {
+                return rule.message;
+              }
             }
             break;
 
@@ -196,7 +210,7 @@ const DynamicFormFieldComponent: React.FC<DynamicFormFieldProps> = ({
         announce(`文字数制限に達しました。最大${field.maxLength}文字です。`, 'assertive');
       } else {
         onChange(newValue);
-        updateLength(newValue);
+        updateLength(String(newValue));
 
         // 文字数の変化をスクリーンリーダーに通知（警告レベルの場合のみ）
         if (field.maxLength && typeof newValue === 'string' && isWarning) {
@@ -464,7 +478,7 @@ const DynamicFormFieldComponent: React.FC<DynamicFormFieldProps> = ({
             <CharacterCounter
               currentLength={currentLength}
               maxLength={field.maxLength}
-              position="inline"
+              position="bottom-right"
               warningThreshold={field.warningThreshold || 80}
               id={counterId}
               aria-live="polite"

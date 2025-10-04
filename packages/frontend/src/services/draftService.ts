@@ -194,4 +194,21 @@ export const draftUtils = {
       return 'たった今';
     }
   },
+
+  /**
+   * 下書きデータを取得
+   */
+  async getDraft(): Promise<PartialGoalFormData | null> {
+    return this.loadDraft();
+  },
+
+  /**
+   * 下書きデータを削除
+   */
+  async deleteDraft(): Promise<void> {
+    return this.clearDraft();
+  },
 };
+
+// Backward compatibility
+export const draftService = DraftService;

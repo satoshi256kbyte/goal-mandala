@@ -9,9 +9,7 @@ import { ErrorAlert } from '../components/common/ErrorAlert';
 import { SuccessMessage } from '../components/common/SuccessMessage';
 import { SubGoal } from '../types/mandala';
 import { useAuth } from '../components/auth/AuthProvider';
-// import { useKeyboardNavigation } from '../hooks/useKeyboardNavigation';
-// import { useLiveRegion } from '../hooks/useAccessibility';
-// import { handleKeyboardNavigation } from '../utils/accessibility';
+import { useKeyboardNavigation, useLiveRegion } from '../hooks/useAccessibility';
 
 /**
  * サブ目標編集ページのプロパティ
@@ -62,7 +60,7 @@ export const SubGoalEditPage: React.FC<SubGoalEditPageProps> = ({ className }) =
 
   // キーボードナビゲーション
   const { containerRef } = useKeyboardNavigation();
-  // const { announce } = useLiveRegion();
+  const { announce } = useLiveRegion();
 
   const [pageState, setPageState] = useState<PageState>({
     isLoading: true,
@@ -624,6 +622,7 @@ export const SubGoalEditPage: React.FC<SubGoalEditPageProps> = ({ className }) =
                 onSave={changes => {
                   handleBulkEdit(changes.updates || [], changes.deleteItems || []);
                 }}
+                itemType="subgoal"
               />
             )}
           </BulkSelectionProvider>

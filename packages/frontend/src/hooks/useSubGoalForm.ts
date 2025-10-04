@@ -1,4 +1,4 @@
-import { useForm, UseFormReturn } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useCallback, useEffect, useState } from 'react';
 import {
@@ -74,7 +74,7 @@ export interface UseSubGoalFormOptions {
 /**
  * useSubGoalFormフックの戻り値
  */
-export interface UseSubGoalFormReturn extends UseFormReturn<SubGoalFormData> {
+export interface UseSubGoalFormReturn {
   /** フォームの状態 */
   formState: SubGoalFormState;
   /** フィールドの状態を取得 */
@@ -83,6 +83,8 @@ export interface UseSubGoalFormReturn extends UseFormReturn<SubGoalFormData> {
   watchedValues: SubGoalFormData;
   /** 手動でバリデーションを実行 */
   validateField: (fieldName: keyof SubGoalFormData) => Promise<boolean>;
+  /** バリデーションをトリガー */
+  trigger: (fieldName?: keyof SubGoalFormData) => Promise<boolean>;
   /** 手動で下書き保存を実行 */
   saveDraft: () => Promise<void>;
   /** フォームをリセット */

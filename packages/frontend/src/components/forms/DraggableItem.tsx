@@ -146,7 +146,8 @@ export const DraggableCard: React.FC<DraggableCardProps> = ({
   };
 
   return (
-    <div
+    <button
+      type="button"
       draggable={!disabled}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
@@ -162,11 +163,10 @@ export const DraggableCard: React.FC<DraggableCardProps> = ({
       onMouseLeave={handleMouseLeave}
       className={getCardClassName()}
       style={dragStyles}
-      role="option"
       tabIndex={disabled ? -1 : 0}
       aria-label={`${item.type === 'subgoal' ? 'サブ目標' : 'アクション'}: ${item.id}`}
-      aria-selected={selected}
-      aria-disabled={disabled}
+      aria-pressed={selected}
+      disabled={disabled}
     >
       {/* ドラッグハンドル */}
       {showDragHandle && (
@@ -211,7 +211,7 @@ export const DraggableCard: React.FC<DraggableCardProps> = ({
           移動中...
         </div>
       )}
-    </div>
+    </button>
   );
 };
 
@@ -274,7 +274,8 @@ export const DraggableListItem: React.FC<DraggableListItemProps> = ({
   }, [item, disabled, onClick]);
 
   return (
-    <div
+    <button
+      type="button"
       draggable={!disabled}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
@@ -293,11 +294,10 @@ export const DraggableListItem: React.FC<DraggableListItemProps> = ({
         ${className}
       `}
       style={dragStyles}
-      role="option"
       tabIndex={disabled ? -1 : 0}
       aria-label={`${item.type === 'subgoal' ? 'サブ目標' : 'アクション'}: ${item.id}`}
-      aria-selected={selected}
-      aria-disabled={disabled}
+      aria-pressed={selected}
+      disabled={disabled}
     >
       {/* ドラッグハンドル */}
       <DragHandle isDragging={isDragging} disabled={disabled} className="flex-shrink-0" />
@@ -351,7 +351,7 @@ export const DraggableListItem: React.FC<DraggableListItemProps> = ({
           </svg>
         </div>
       )}
-    </div>
+    </button>
   );
 };
 

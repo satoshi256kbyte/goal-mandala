@@ -7,15 +7,19 @@ import { DraftService, draftUtils } from '../../services/draftService';
  */
 export interface DraftSaveButtonProps {
   /** フォームデータ */
-  formData: PartialGoalFormData;
+  formData?: PartialGoalFormData;
   /** 保存中フラグ */
   isSaving?: boolean;
+  /** ローディング状態 */
+  isLoading?: boolean;
   /** 無効状態 */
   disabled?: boolean;
   /** ボタンのサイズ */
   size?: 'sm' | 'md' | 'lg';
   /** ボタンのバリアント */
   variant?: 'primary' | 'secondary' | 'outline';
+  /** クリック時のコールバック */
+  onClick?: () => void | Promise<void>;
   /** 保存成功時のコールバック */
   onSaveSuccess?: (data: PartialGoalFormData) => void;
   /** 保存エラー時のコールバック */

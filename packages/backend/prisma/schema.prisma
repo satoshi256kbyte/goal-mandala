@@ -206,3 +206,17 @@ model Reflection {
   @@index([taskId, createdAt])
   @@map("reflections")
 }
+
+model ProgressHistory {
+  id         String   @id @default(uuid()) @db.Uuid
+  entityType String   @db.VarChar(20) // 'goal', 'subgoal', 'action', 'task'
+  entityId   String   @db.Uuid
+  progress   Int      @db.SmallInt // 0-100の進捗率
+  timestamp  DateTime @default(now()) @db.Timestamptz
+  createdAt  DateTime @default(now()) @db.Timestamptz
+
+  // Indexes
+  @@index([entityType, entityId, timestamp])
+  @@index([timestamp])
+  @@map("progress_history")
+}

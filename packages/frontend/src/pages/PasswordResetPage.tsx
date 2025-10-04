@@ -74,7 +74,7 @@ export const PasswordResetPage: React.FC = () => {
       const email = emailFromUrl || userEmail;
       const code = confirmationCode || data.confirmationCode;
 
-      await AuthService.confirmResetPassword(email, code, data.password);
+      await AuthService.confirmResetPassword(email, code, data.newPassword);
 
       // パスワード変更成功
       setSuccess(true);

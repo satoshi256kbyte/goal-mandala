@@ -485,7 +485,7 @@ export const VirtualGrid = <T extends VirtualScrollItem>({
                       handleItemClick(item, rowIndex, itemIndex);
                     }
                   }}
-                  role="option"
+                  role="gridcell"
                   aria-selected="false"
                   tabIndex={0}
                 >

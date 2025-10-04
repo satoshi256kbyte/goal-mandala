@@ -7,6 +7,8 @@ import { useColorAccessibility } from '../../hooks/useAccessibility';
 export interface ErrorMessageProps {
   /** エラーメッセージ */
   error?: string;
+  /** エラーメッセージ（別名） */
+  message?: string;
   /** 追加のCSSクラス */
   className?: string;
   /** エラーメッセージのID（アクセシビリティ用） */
@@ -26,14 +28,16 @@ export interface ErrorMessageProps {
  */
 export const ErrorMessage: React.FC<ErrorMessageProps> = ({
   error,
+  message,
   className = '',
   id,
   type = 'error',
   showIcon = true,
 }) => {
+  const errorMessage = error || message;
   const { getAccessibleColors } = useColorAccessibility();
 
-  if (!error) return null;
+  if (!errorMessage) return null;
 
   const colors = getAccessibleColors();
   const colorScheme = colors[type];
@@ -118,7 +122,7 @@ export const ErrorMessage: React.FC<ErrorMessageProps> = ({
       {showIcon && <span className={`${colorScheme.icon} mt-0.5`}>{getIcon()}</span>}
       <span className="flex-1">
         <span className="sr-only">{getAriaLabel()}: </span>
-        {error}
+        {errorMessage}
       </span>
     </div>
   );

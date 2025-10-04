@@ -71,6 +71,9 @@ describe('Environment Configuration', () => {
         JWT_SECRET: 'a-very-long-secret-key-for-testing-purposes',
         AWS_REGION: 'ap-northeast-1',
         FRONTEND_URL: 'http://localhost:5173',
+        COGNITO_USER_POOL_ID: 'ap-northeast-1_test123',
+        COGNITO_CLIENT_ID: 'test123456789',
+        ENABLE_MOCK_AUTH: 'false',
       };
 
       expect(() => validateConfig(config)).not.toThrow();

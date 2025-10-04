@@ -306,6 +306,32 @@ export const useAuth = (): AuthContextType => {
     try {
       setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
 
+      // モック認証が有効な場合
+      const isMockAuthEnabled =
+        import.meta.env.VITE_MOCK_AUTH_ENABLED === 'true' ||
+        localStorage.getItem('mock_auth_enabled') === 'true';
+
+      if (isMockAuthEnabled) {
+        const mockUser = localStorage.getItem('mock_user');
+        const mockToken = localStorage.getItem('mock_token');
+
+        if (mockUser && mockToken) {
+          const user = JSON.parse(mockUser);
+          const newState: AuthState = {
+            isAuthenticated: true,
+            isLoading: false,
+            user,
+            error: null,
+            tokenExpirationTime: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24時間後
+            lastActivity: new Date(),
+            sessionId: `mock-session-${Date.now()}`,
+          };
+          setAuthState(newState);
+          notifyAuthStateChange(newState);
+          return;
+        }
+      }
+
       // 保存されたトークンをチェック
       const savedToken = tokenManager.getToken();
 

@@ -31,7 +31,7 @@ export const createApiClient = (): AxiosInstance => {
 
   // リクエストインターセプター：CSRF対策の適用
   client.interceptors.request.use(
-    (config: AxiosRequestConfig) => {
+    (config: any) => {
       const method = config.method?.toUpperCase() || 'GET';
 
       // 状態変更を伴うリクエストにCSRFトークンを追加
@@ -100,6 +100,7 @@ export const createApiClient = (): AxiosInstance => {
 /**
  * デフォルトのAPIクライアントインスタンス
  */
+export const apiClient = createApiClient();
 export const axiosApiClient = createApiClient();
 
 /**

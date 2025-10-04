@@ -143,6 +143,8 @@ export const useAuthStateMonitor = (
           message: '認証状態監視の開始に失敗しました',
           timestamp: new Date(),
           retryable: true,
+          category: 'system',
+          severity: 'error',
         };
 
         setLastError(authError);
@@ -169,6 +171,8 @@ export const useAuthStateMonitor = (
         message: '認証状態監視の停止に失敗しました',
         timestamp: new Date(),
         retryable: false,
+        category: 'system',
+        severity: 'error',
       };
 
       setLastError(authError);
@@ -192,6 +196,8 @@ export const useAuthStateMonitor = (
         message: '認証状態チェックに失敗しました',
         timestamp: new Date(),
         retryable: true,
+        category: 'authentication',
+        severity: 'error',
       };
 
       setLastError(authError);

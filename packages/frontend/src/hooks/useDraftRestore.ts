@@ -174,7 +174,7 @@ export const useDraftRestore = (options: UseDraftRestoreOptions = {}) => {
     };
 
     initializeDraft();
-  }, [autoRestore]); // eslint-disable-line react-hooks/exhaustive-deps -- loadDraftとrestoreDraftは依存関係に含めない（無限ループを防ぐため）
+  }, [autoRestore]);
 
   return {
     /** 現在の状態 */

@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link } from 'react-router-dom';
-import { passwordResetSchema, type PasswordResetFormData } from '../../utils/validation';
+import { passwordResetZodSchema, type PasswordResetFormData } from '../../utils/validation';
 import { ErrorMessage } from '../common/ErrorMessage';
 import { LoadingButton } from '../common/LoadingButton';
 import {
@@ -52,7 +52,7 @@ export const PasswordResetForm: React.FC<PasswordResetFormProps> = ({
     handleSubmit,
     formState: { errors, isValid, touchedFields },
   } = useForm<PasswordResetFormData>({
-    resolver: zodResolver(passwordResetSchema),
+    resolver: zodResolver(passwordResetZodSchema),
     mode: 'all', // 全てのイベントでバリデーション
     defaultValues: {
       email: '',

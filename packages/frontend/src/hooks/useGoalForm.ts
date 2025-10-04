@@ -1,4 +1,4 @@
-import { useForm, UseFormReturn } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useCallback, useEffect, useState } from 'react';
 import {
@@ -64,7 +64,7 @@ export interface UseGoalFormOptions {
 /**
  * useGoalFormフックの戻り値
  */
-export interface UseGoalFormReturn extends UseFormReturn<GoalFormData> {
+export interface UseGoalFormReturn {
   /** フォームの状態 */
   formState: FormState;
   /** フィールドの状態を取得 */

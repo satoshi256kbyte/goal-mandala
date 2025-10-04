@@ -264,8 +264,8 @@ export function useVirtualKeyboard() {
     };
 
     // Visual Viewport APIが利用可能な場合
-    if ('visualViewport' in window) {
-      const visualViewport = window.visualViewport as VisualViewport;
+    if (typeof window !== 'undefined' && 'visualViewport' in window && window.visualViewport) {
+      const visualViewport = window.visualViewport;
 
       const handleViewportChange = () => {
         const heightDiff = window.innerHeight - visualViewport.height;

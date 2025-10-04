@@ -377,8 +377,8 @@ export const GoalInputForm: React.FC<GoalInputFormProps> = ({
         >
           <DatePicker
             {...register('deadline')}
-            minDate={dateUtils.getMinDate()}
-            maxDate={dateUtils.getMaxDate()}
+            minDate={new Date(dateUtils.getMinDate())}
+            maxDate={new Date(dateUtils.getMaxDate())}
             disabled={disabled}
             setValue={setValue}
           />

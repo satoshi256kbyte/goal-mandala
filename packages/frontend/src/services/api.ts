@@ -130,7 +130,7 @@ export class ApiClient {
           throw this.createApiError(NetworkErrorType.OFFLINE, 'オフラインです');
         }
 
-        const response = await this.executeRequest<T>(method, fullUrl, data, requestConfig);
+        const response = await this.executeRequest<T>(method, fullUrl, requestConfig, data);
         return response;
       } catch (error) {
         lastError = this.normalizeError(error);
@@ -156,8 +156,8 @@ export class ApiClient {
   private async executeRequest<T = unknown>(
     method: string,
     url: string,
-    data?: unknown,
-    config: Required<ApiRequestConfig>
+    config: Required<ApiRequestConfig>,
+    data?: unknown
   ): Promise<ApiResponse<T>> {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), config.timeout);

@@ -127,8 +127,8 @@ export class AuthSecurityService {
       );
 
       const encryptedData: EncryptedTokenData = {
-        data: this.arrayBufferToBase64(encrypted),
-        iv: this.arrayBufferToBase64(iv),
+        data: this.arrayBufferToBase64(encrypted as ArrayBuffer),
+        iv: this.arrayBufferToBase64(iv.buffer),
         timestamp: Date.now(),
       };
 

@@ -18,13 +18,21 @@ test.describe('サブ目標編集フロー', () => {
 
   test.beforeEach(async ({ page }) => {
     subGoalActionHelpers = new SubGoalActionHelpers(page);
-    authHelpers = new AuthHelpers(page);
 
-    // 認証済みユーザーとしてログイン
-    await authHelpers.goToLogin();
-    await authHelpers.fillLoginForm(testUsers.validUser.email, testUsers.validUser.password);
-    await authHelpers.clickLoginButton();
-    await authHelpers.expectRedirectTo('/');
+    // モック認証を設定
+    await page.addInitScript(() => {
+      localStorage.setItem('mock_auth_enabled', 'true');
+      localStorage.setItem(
+        'mock_user',
+        JSON.stringify({
+          id: 'test-user-id',
+          email: 'test@example.com',
+          name: 'Test User',
+          profileComplete: true,
+        })
+      );
+      localStorage.setItem('mock_token', 'mock-jwt-token');
+    });
   });
 
   test.describe('サブ目標一覧表示', () => {

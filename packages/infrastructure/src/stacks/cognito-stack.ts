@@ -210,66 +210,100 @@ export class CognitoStack extends cdk.Stack {
     return userPool;
   }
 
-  private createEmailConfiguration(emailSettings: any, environment: string): cognito.UserPoolEmail {
+  private createEmailConfiguration(
+    emailSettings: Record<string, unknown>,
+    environment: string
+  ): cognito.UserPoolEmail {
     // SESを使用する場合とCognito標準メールを使用する場合を分ける
     if (emailSettings.useSes && environment !== 'local') {
       // SES設定（本番・ステージング環境）
       return cognito.UserPoolEmail.withSES({
-        fromEmail: emailSettings.fromEmail,
-        fromName: emailSettings.fromName,
-        replyTo: emailSettings.replyToEmail,
-        configurationSetName: emailSettings.sesConfigurationSet || undefined,
+        fromEmail: emailSettings.fromEmail as string,
+        fromName: emailSettings.fromName as string,
+        replyTo: emailSettings.replyToEmail as string,
+        configurationSetName: emailSettings.sesConfigurationSet as string | undefined,
       });
     } else {
       // Cognito標準メール設定（開発・ローカル環境）
-      return cognito.UserPoolEmail.withCognito(emailSettings.fromEmail);
+      return cognito.UserPoolEmail.withCognito(emailSettings.fromEmail as string);
     }
   }
 
   private applyCustomEmailTemplates(
     cfnUserPool: cognito.CfnUserPool,
-    emailSettings: any,
-    securityConfig: any
+    emailSettings: Record<string, unknown>,
+    securityConfig: Record<string, unknown>
   ): void {
+    // 型安全なアクセスのためのヘルパー関数
+    const getNestedValue = (obj: Record<string, unknown>, path: string[]): string => {
+      let current: any = obj;
+      for (const key of path) {
+        if (current && typeof current === 'object' && key in current) {
+          current = current[key];
+        } else {
+          return '';
+        }
+      }
+      return typeof current === 'string' ? current : '';
+    };
+
     // カスタムテンプレートが設定されている場合は使用、そうでなければセキュリティ設定のデフォルトを使用
-    const templates = emailSettings.customTemplates;
+    const templates = emailSettings.customTemplates as Record<string, any> | undefined;
 
     if (templates?.verification) {
       // メール確認テンプレート
       if (templates.verification.emailSubject) {
         cfnUserPool.emailVerificationSubject = templates.verification.emailSubject;
       } else {
-        cfnUserPool.emailVerificationSubject = securityConfig.verification.emailSubject;
+        cfnUserPool.emailVerificationSubject = getNestedValue(securityConfig, [
+          'verification',
+          'emailSubject',
+        ]);
       }
 
       if (templates.verification.emailMessage) {
         cfnUserPool.emailVerificationMessage = templates.verification.emailMessage;
       } else {
-        cfnUserPool.emailVerificationMessage = securityConfig.verification.emailMessage;
+        cfnUserPool.emailVerificationMessage = getNestedValue(securityConfig, [
+          'verification',
+          'emailMessage',
+        ]);
       }
 
       // リンクベースの確認メッセージ（オプション）
       if (templates.verification.emailMessageByLink) {
         cfnUserPool.verificationMessageTemplate = {
           emailMessage:
-            templates.verification.emailMessage || securityConfig.verification.emailMessage,
+            templates.verification.emailMessage ||
+            getNestedValue(securityConfig, ['verification', 'emailMessage']),
           emailMessageByLink: templates.verification.emailMessageByLink,
           emailSubject:
-            templates.verification.emailSubject || securityConfig.verification.emailSubject,
+            templates.verification.emailSubject ||
+            getNestedValue(securityConfig, ['verification', 'emailSubject']),
           emailSubjectByLink:
-            templates.verification.emailSubject || securityConfig.verification.emailSubject,
-          smsMessage: securityConfig.verification.smsMessage,
+            templates.verification.emailSubject ||
+            getNestedValue(securityConfig, ['verification', 'emailSubject']),
+          smsMessage: getNestedValue(securityConfig, ['verification', 'smsMessage']),
           defaultEmailOption: 'CONFIRM_WITH_CODE', // デフォルトはコード確認
         };
       }
     } else {
       // デフォルトの検証メッセージ設定
-      cfnUserPool.emailVerificationSubject = securityConfig.verification.emailSubject;
-      cfnUserPool.emailVerificationMessage = securityConfig.verification.emailMessage;
+      cfnUserPool.emailVerificationSubject = getNestedValue(securityConfig, [
+        'verification',
+        'emailSubject',
+      ]);
+      cfnUserPool.emailVerificationMessage = getNestedValue(securityConfig, [
+        'verification',
+        'emailMessage',
+      ]);
     }
 
     // SMS確認メッセージ（常にセキュリティ設定から）
-    cfnUserPool.smsVerificationMessage = securityConfig.verification.smsMessage;
+    cfnUserPool.smsVerificationMessage = getNestedValue(securityConfig, [
+      'verification',
+      'smsMessage',
+    ]);
 
     // 招待メッセージテンプレート
     if (templates?.invitation) {
@@ -279,7 +313,7 @@ export class CognitoStack extends cdk.Stack {
           inviteMessageTemplate: {
             emailMessage: templates.invitation.emailMessage,
             emailSubject: templates.invitation.emailSubject,
-            smsMessage: securityConfig.userInvitation.smsMessage,
+            smsMessage: getNestedValue(securityConfig, ['userInvitation', 'smsMessage']),
           },
         };
       }
@@ -288,9 +322,9 @@ export class CognitoStack extends cdk.Stack {
       cfnUserPool.adminCreateUserConfig = {
         ...cfnUserPool.adminCreateUserConfig,
         inviteMessageTemplate: {
-          emailMessage: securityConfig.userInvitation.emailMessage,
-          emailSubject: securityConfig.userInvitation.emailSubject,
-          smsMessage: securityConfig.userInvitation.smsMessage,
+          emailMessage: getNestedValue(securityConfig, ['userInvitation', 'emailMessage']),
+          emailSubject: getNestedValue(securityConfig, ['userInvitation', 'emailSubject']),
+          smsMessage: getNestedValue(securityConfig, ['userInvitation', 'smsMessage']),
         },
       };
     }
@@ -471,29 +505,59 @@ export class CognitoStack extends cdk.Stack {
   private addCognitoPermissions(
     lambdaRole: iam.Role,
     config: EnvironmentConfig,
-    iamConfig?: any
+    iamConfig?: Record<string, unknown>
   ): void {
-    const cognitoPermissions = iamConfig?.cognitoPermissions;
+    // 型安全なアクセスのためのヘルパー関数
+    const getNestedBoolean = (
+      obj: Record<string, unknown> | undefined,
+      path: string[]
+    ): boolean => {
+      if (!obj) return false;
+      let current: any = obj;
+      for (const key of path) {
+        if (current && typeof current === 'object' && key in current) {
+          current = current[key];
+        } else {
+          return false;
+        }
+      }
+      return typeof current === 'boolean' ? current : false;
+    };
+
+    const getNestedArray = (obj: Record<string, unknown> | undefined, path: string[]): string[] => {
+      if (!obj) return [];
+      let current: any = obj;
+      for (const key of path) {
+        if (current && typeof current === 'object' && key in current) {
+          current = current[key];
+        } else {
+          return [];
+        }
+      }
+      return Array.isArray(current) ? current : [];
+    };
+
+    const cognitoPermissions = iamConfig?.cognitoPermissions as Record<string, unknown> | undefined;
     const allActions: string[] = [];
 
     // ユーザー操作権限
-    if (cognitoPermissions?.userOperations?.enabled) {
-      allActions.push(...(cognitoPermissions.userOperations.actions || []));
+    if (getNestedBoolean(cognitoPermissions, ['userOperations', 'enabled'])) {
+      allActions.push(...getNestedArray(cognitoPermissions, ['userOperations', 'actions']));
     }
 
     // グループ操作権限
-    if (cognitoPermissions?.groupOperations?.enabled) {
-      allActions.push(...(cognitoPermissions.groupOperations.actions || []));
+    if (getNestedBoolean(cognitoPermissions, ['groupOperations', 'enabled'])) {
+      allActions.push(...getNestedArray(cognitoPermissions, ['groupOperations', 'actions']));
     }
 
     // 認証操作権限
-    if (cognitoPermissions?.authOperations?.enabled) {
-      allActions.push(...(cognitoPermissions.authOperations.actions || []));
+    if (getNestedBoolean(cognitoPermissions, ['authOperations', 'enabled'])) {
+      allActions.push(...getNestedArray(cognitoPermissions, ['authOperations', 'actions']));
     }
 
     // 管理者操作権限（本番環境では無効）
-    if (cognitoPermissions?.adminOperations?.enabled) {
-      allActions.push(...(cognitoPermissions.adminOperations.actions || []));
+    if (getNestedBoolean(cognitoPermissions, ['adminOperations', 'enabled'])) {
+      allActions.push(...getNestedArray(cognitoPermissions, ['adminOperations', 'actions']));
     }
 
     // 重複を除去してポリシーを作成
@@ -504,7 +568,10 @@ export class CognitoStack extends cdk.Stack {
         effect: iam.Effect.ALLOW,
         actions: uniqueActions,
         resources: [this.userPool.userPoolArn],
-        conditions: iamConfig?.resourceRestrictions?.enableResourceBasedAccess
+        conditions: getNestedBoolean(iamConfig, [
+          'resourceRestrictions',
+          'enableResourceBasedAccess',
+        ])
           ? {
               StringEquals: {
                 'cognito-idp:UserPoolId': this.userPool.userPoolId,
@@ -520,13 +587,43 @@ export class CognitoStack extends cdk.Stack {
   private addAdditionalPolicies(
     lambdaRole: iam.Role,
     config: EnvironmentConfig,
-    iamConfig?: any
+    iamConfig?: Record<string, unknown>
   ): void {
-    const additionalPolicies = iamConfig?.additionalPolicies;
+    // 型安全なアクセスのためのヘルパー関数
+    const getNestedBoolean = (
+      obj: Record<string, unknown> | undefined,
+      path: string[]
+    ): boolean => {
+      if (!obj) return false;
+      let current: any = obj;
+      for (const key of path) {
+        if (current && typeof current === 'object' && key in current) {
+          current = current[key];
+        } else {
+          return false;
+        }
+      }
+      return typeof current === 'boolean' ? current : false;
+    };
+
+    const getNestedArray = (obj: Record<string, unknown> | undefined, path: string[]): string[] => {
+      if (!obj) return [];
+      let current: any = obj;
+      for (const key of path) {
+        if (current && typeof current === 'object' && key in current) {
+          current = current[key];
+        } else {
+          return [];
+        }
+      }
+      return Array.isArray(current) ? current : [];
+    };
+
+    const additionalPolicies = iamConfig?.additionalPolicies as Record<string, unknown> | undefined;
 
     // SESアクセス権限
-    if (additionalPolicies?.sesAccess?.enabled && this.sesConstruct) {
-      const sesActions = additionalPolicies.sesAccess.actions || [];
+    if (getNestedBoolean(additionalPolicies, ['sesAccess', 'enabled']) && this.sesConstruct) {
+      const sesActions = getNestedArray(additionalPolicies, ['sesAccess', 'actions']);
       if (sesActions.length > 0) {
         const sesPolicy = new iam.PolicyStatement({
           effect: iam.Effect.ALLOW,
@@ -542,9 +639,9 @@ export class CognitoStack extends cdk.Stack {
         });
         lambdaRole.addToPolicy(sesPolicy);
       }
-    } else if (additionalPolicies?.sesAccess?.enabled) {
+    } else if (getNestedBoolean(additionalPolicies, ['sesAccess', 'enabled'])) {
       // SESコンストラクトが存在しない場合でも、SESアクセスが有効な場合は基本的なポリシーを追加
-      const sesActions = additionalPolicies.sesAccess.actions || [];
+      const sesActions = getNestedArray(additionalPolicies, ['sesAccess', 'actions']);
       if (sesActions.length > 0) {
         const sesPolicy = new iam.PolicyStatement({
           effect: iam.Effect.ALLOW,
@@ -556,15 +653,22 @@ export class CognitoStack extends cdk.Stack {
     }
 
     // Secrets Managerアクセス権限
-    if (additionalPolicies?.secretsManagerAccess?.enabled) {
-      const secretsActions = additionalPolicies.secretsManagerAccess.actions || [];
+    if (getNestedBoolean(additionalPolicies, ['secretsManagerAccess', 'enabled'])) {
+      const secretsActions = getNestedArray(additionalPolicies, [
+        'secretsManagerAccess',
+        'actions',
+      ]);
       if (secretsActions.length > 0) {
-        const allowedSecretArns = iamConfig?.resourceRestrictions?.allowedSecretArns || ['*'];
+        const allowedSecretArns = getNestedArray(iamConfig, [
+          'resourceRestrictions',
+          'allowedSecretArns',
+        ]);
+        const finalSecretArns = allowedSecretArns.length > 0 ? allowedSecretArns : ['*'];
 
         const secretsPolicy = new iam.PolicyStatement({
           effect: iam.Effect.ALLOW,
           actions: secretsActions,
-          resources: allowedSecretArns.map((arn: string) =>
+          resources: finalSecretArns.map((arn: string) =>
             arn === '*' ? `arn:aws:secretsmanager:${this.region}:${this.account}:secret:*` : arn
           ),
         });
@@ -573,8 +677,8 @@ export class CognitoStack extends cdk.Stack {
     }
 
     // CloudWatch Logsアクセス権限
-    if (additionalPolicies?.logsAccess?.enabled) {
-      const logsActions = additionalPolicies.logsAccess.actions || [];
+    if (getNestedBoolean(additionalPolicies, ['logsAccess', 'enabled'])) {
+      const logsActions = getNestedArray(additionalPolicies, ['logsAccess', 'actions']);
       if (logsActions.length > 0) {
         const logsPolicy = new iam.PolicyStatement({
           effect: iam.Effect.ALLOW,
@@ -591,16 +695,50 @@ export class CognitoStack extends cdk.Stack {
   private applyResourceRestrictions(
     lambdaRole: iam.Role,
     config: EnvironmentConfig,
-    iamConfig?: any
+    iamConfig?: Record<string, unknown>
   ): void {
-    const resourceRestrictions = iamConfig?.resourceRestrictions;
+    // 型安全なアクセスのためのヘルパー関数
+    const getNestedBoolean = (
+      obj: Record<string, unknown> | undefined,
+      path: string[]
+    ): boolean => {
+      if (!obj) return false;
+      let current: any = obj;
+      for (const key of path) {
+        if (current && typeof current === 'object' && key in current) {
+          current = current[key];
+        } else {
+          return false;
+        }
+      }
+      return typeof current === 'boolean' ? current : false;
+    };
 
-    if (resourceRestrictions?.enableResourceBasedAccess) {
+    const getNestedArray = (obj: Record<string, unknown> | undefined, path: string[]): string[] => {
+      if (!obj) return [];
+      let current: any = obj;
+      for (const key of path) {
+        if (current && typeof current === 'object' && key in current) {
+          current = current[key];
+        } else {
+          return [];
+        }
+      }
+      return Array.isArray(current) ? current : [];
+    };
+
+    const resourceRestrictions = iamConfig?.resourceRestrictions as
+      | Record<string, unknown>
+      | undefined;
+
+    if (getNestedBoolean(resourceRestrictions, ['enableResourceBasedAccess'])) {
       // リソースベースのアクセス制御が有効な場合、追加の制限を適用
 
       // User Pool ARNの制限
-      const allowedUserPoolArns = resourceRestrictions.allowedUserPoolArns || ['*'];
-      if (!allowedUserPoolArns.includes('*')) {
+      const allowedUserPoolArns = getNestedArray(resourceRestrictions, ['allowedUserPoolArns']);
+      const finalUserPoolArns = allowedUserPoolArns.length > 0 ? allowedUserPoolArns : ['*'];
+
+      if (!finalUserPoolArns.includes('*')) {
         // 特定のUser Poolのみアクセス可能にする場合の追加制限
         const restrictionPolicy = new iam.PolicyStatement({
           effect: iam.Effect.DENY,

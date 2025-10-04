@@ -5,6 +5,7 @@ import {
   ValidationContext,
   BusinessValidationRule,
 } from '../types/validation';
+import { z } from 'zod';
 
 // 認証フォーム用の型定義
 export interface LoginFormData {
@@ -26,7 +27,161 @@ export interface PasswordResetFormData {
 export interface NewPasswordFormData {
   newPassword: string;
   confirmPassword: string;
+  confirmationCode?: string;
 }
+
+// Zodスキーマ（React Hook Form用）
+export const loginZodSchema = z.object({
+  email: z.string().email('有効なメールアドレスを入力してください'),
+  password: z.string().min(8, 'パスワードは8文字以上で入力してください'),
+});
+
+export const signupZodSchema = z
+  .object({
+    name: z.string().min(1, '名前を入力してください').max(50, '名前は50文字以内で入力してください'),
+    email: z.string().email('有効なメールアドレスを入力してください'),
+    password: z
+      .string()
+      .min(8, 'パスワードは8文字以上で入力してください')
+      .regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+        'パスワードは大文字、小文字、数字を含む必要があります'
+      ),
+    confirmPassword: z.string(),
+  })
+  .refine(data => data.password === data.confirmPassword, {
+    message: 'パスワードが一致しません',
+    path: ['confirmPassword'],
+  });
+
+export const passwordResetZodSchema = z.object({
+  email: z.string().email('有効なメールアドレスを入力してください'),
+});
+
+export const newPasswordZodSchema = z
+  .object({
+    newPassword: z
+      .string()
+      .min(8, 'パスワードは8文字以上で入力してください')
+      .regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+        'パスワードは大文字、小文字、数字を含む必要があります'
+      ),
+    confirmPassword: z.string(),
+    confirmationCode: z.string().optional(),
+  })
+  .refine(data => data.newPassword === data.confirmPassword, {
+    message: 'パスワードが一致しません',
+    path: ['confirmPassword'],
+  });
+
+/**
+ * バリデーションルールのプリセット
+ */
+export const ValidationRulePresets = {
+  // 基本ルール
+  required: (message = 'この項目は必須です'): ValidationRule => ({
+    type: 'required',
+    message,
+  }),
+
+  minLength: (length: number, message?: string): ValidationRule => ({
+    type: 'minLength',
+    value: length,
+    message: message || `${length}文字以上で入力してください`,
+  }),
+
+  maxLength: (length: number, message?: string): ValidationRule => ({
+    type: 'maxLength',
+    value: length,
+    message: message || `${length}文字以内で入力してください`,
+  }),
+
+  pattern: (pattern: RegExp, message: string): ValidationRule => ({
+    type: 'pattern',
+    value: pattern,
+    message,
+  }),
+
+  custom: (validator: (value: any, context?: any) => boolean, message: string): ValidationRule => ({
+    type: 'custom',
+    validator,
+    message,
+  }),
+};
+
+// 認証フォーム用のバリデーションスキーマ
+export const loginSchema = {
+  email: [
+    ValidationRulePresets.required('メールアドレスは必須です'),
+    ValidationRulePresets.pattern(
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+      '有効なメールアドレスを入力してください'
+    ),
+  ],
+  password: [
+    ValidationRulePresets.required('パスワードは必須です'),
+    ValidationRulePresets.minLength(8, 'パスワードは8文字以上で入力してください'),
+  ],
+};
+
+export const signupSchema = {
+  name: [
+    ValidationRulePresets.required('名前は必須です'),
+    ValidationRulePresets.minLength(1, '名前を入力してください'),
+    ValidationRulePresets.maxLength(50, '名前は50文字以内で入力してください'),
+  ],
+  email: [
+    ValidationRulePresets.required('メールアドレスは必須です'),
+    ValidationRulePresets.pattern(
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+      '有効なメールアドレスを入力してください'
+    ),
+  ],
+  password: [
+    ValidationRulePresets.required('パスワードは必須です'),
+    ValidationRulePresets.minLength(8, 'パスワードは8文字以上で入力してください'),
+    ValidationRulePresets.pattern(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+      'パスワードは大文字、小文字、数字を含む必要があります'
+    ),
+  ],
+  confirmPassword: [
+    ValidationRulePresets.required('パスワード確認は必須です'),
+    ValidationRulePresets.custom(
+      (value, context) => value === context?.formData?.password,
+      'パスワードが一致しません'
+    ),
+  ],
+};
+
+export const passwordResetSchema = {
+  email: [
+    ValidationRulePresets.required('メールアドレスは必須です'),
+    ValidationRulePresets.pattern(
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+      '有効なメールアドレスを入力してください'
+    ),
+  ],
+};
+
+export const newPasswordSchema = {
+  newPassword: [
+    ValidationRulePresets.required('新しいパスワードは必須です'),
+    ValidationRulePresets.minLength(8, 'パスワードは8文字以上で入力してください'),
+    ValidationRulePresets.pattern(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+      'パスワードは大文字、小文字、数字を含む必要があります'
+    ),
+  ],
+  confirmPassword: [
+    ValidationRulePresets.required('パスワード確認は必須です'),
+    ValidationRulePresets.custom(
+      (value, context) => value === context?.formData?.newPassword,
+      'パスワードが一致しません'
+    ),
+  ],
+};
 
 /**
  * 単一フィールドのバリデーションを実行
@@ -275,94 +430,6 @@ export const validateValidType = (
   }
 
   return validTypes.includes(type) ? null : rule.message;
-};
-
-/**
- * バリデーションルールのプリセット
- */
-export const ValidationRulePresets = {
-  // 基本ルール
-  required: (message = 'この項目は必須です'): ValidationRule => ({
-    type: 'required',
-    message,
-  }),
-
-  minLength: (length: number, message?: string): ValidationRule => ({
-    type: 'minLength',
-    value: length,
-    message: message || `${length}文字以上で入力してください`,
-  }),
-
-  maxLength: (length: number, message?: string): ValidationRule => ({
-    type: 'maxLength',
-    value: length,
-    message: message || `${length}文字以内で入力してください`,
-  }),
-
-  pattern: (pattern: RegExp, message: string): ValidationRule => ({
-    type: 'pattern',
-    value: pattern,
-    message,
-  }),
-
-  custom: (validator: (value: any, context?: any) => boolean, message: string): ValidationRule => ({
-    type: 'custom',
-    validator,
-    message,
-  }),
-
-  // サブ目標・アクション用ルール
-  subGoalTitle: (): ValidationRule[] => [
-    ValidationRulePresets.required('サブ目標のタイトルは必須です'),
-    ValidationRulePresets.minLength(1, 'サブ目標のタイトルを入力してください'),
-    ValidationRulePresets.maxLength(100, 'サブ目標のタイトルは100文字以内で入力してください'),
-  ],
-
-  subGoalDescription: (): ValidationRule[] => [
-    ValidationRulePresets.required('サブ目標の説明は必須です'),
-    ValidationRulePresets.minLength(10, 'サブ目標の説明は10文字以上で入力してください'),
-    ValidationRulePresets.maxLength(500, 'サブ目標の説明は500文字以内で入力してください'),
-  ],
-
-  subGoalBackground: (): ValidationRule[] => [
-    ValidationRulePresets.required('サブ目標の背景は必須です'),
-    ValidationRulePresets.minLength(10, 'サブ目標の背景は10文字以上で入力してください'),
-    ValidationRulePresets.maxLength(500, 'サブ目標の背景は500文字以内で入力してください'),
-  ],
-
-  subGoalConstraints: (): ValidationRule[] => [
-    ValidationRulePresets.maxLength(300, 'サブ目標の制約事項は300文字以内で入力してください'),
-  ],
-
-  actionTitle: (): ValidationRule[] => [
-    ValidationRulePresets.required('アクションのタイトルは必須です'),
-    ValidationRulePresets.minLength(1, 'アクションのタイトルを入力してください'),
-    ValidationRulePresets.maxLength(100, 'アクションのタイトルは100文字以内で入力してください'),
-  ],
-
-  actionDescription: (): ValidationRule[] => [
-    ValidationRulePresets.required('アクションの説明は必須です'),
-    ValidationRulePresets.minLength(10, 'アクションの説明は10文字以上で入力してください'),
-    ValidationRulePresets.maxLength(500, 'アクションの説明は500文字以内で入力してください'),
-  ],
-
-  actionBackground: (): ValidationRule[] => [
-    ValidationRulePresets.required('アクションの背景は必須です'),
-    ValidationRulePresets.minLength(10, 'アクションの背景は10文字以上で入力してください'),
-    ValidationRulePresets.maxLength(500, 'アクションの背景は500文字以内で入力してください'),
-  ],
-
-  actionConstraints: (): ValidationRule[] => [
-    ValidationRulePresets.maxLength(300, 'アクションの制約事項は300文字以内で入力してください'),
-  ],
-
-  actionType: (): ValidationRule[] => [
-    ValidationRulePresets.required('アクション種別を選択してください'),
-    ValidationRulePresets.custom(
-      value => ['execution', 'habit'].includes(value),
-      '有効なアクション種別を選択してください'
-    ),
-  ],
 };
 
 /**

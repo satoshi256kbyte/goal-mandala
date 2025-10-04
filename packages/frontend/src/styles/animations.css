@@ -1,0 +1,339 @@
+/**
+ * アニメーション効果のCSS定義
+ * 要件4.1, 4.2に対応
+ */
+
+/* 達成アニメーション用のキーフレーム */
+@keyframes achievement-pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px 10px rgba(34, 197, 94, 0.4);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+  }
+}
+
+/* グロー効果のキーフレーム */
+@keyframes achievement-glow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+    filter: brightness(1);
+  }
+  50% {
+    box-shadow: 0 0 30px 15px rgba(34, 197, 94, 0.6);
+    filter: brightness(1.2);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+    filter: brightness(1);
+  }
+}
+
+/* バウンス効果のキーフレーム */
+@keyframes achievement-bounce {
+  0% {
+    transform: scale(1) translateY(0);
+  }
+  30% {
+    transform: scale(1.1) translateY(-10px);
+  }
+  60% {
+    transform: scale(0.95) translateY(5px);
+  }
+  100% {
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* パルス効果のキーフレーム */
+@keyframes achievement-pulse-opacity {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* 進捗バーの滑らかな変化 */
+.progress-bar-fill {
+  transition: width 300ms ease-out;
+}
+
+/* セル色変化のフェードイン効果 */
+.mandala-cell {
+  transition:
+    background-color 300ms ease-in-out,
+    border-color 300ms ease-in-out,
+    color 300ms ease-in-out,
+    box-shadow 300ms ease-in-out;
+}
+
+/* アニメーション無効時のクラス */
+.no-animation,
+.no-animation * {
+  animation: none !important;
+  transition: none !important;
+}
+
+/* 動きを減らす設定に対応 */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* 達成アニメーションのユーティリティクラス */
+.achievement-animation {
+  animation: achievement-pulse 600ms ease-out;
+}
+
+.achievement-glow {
+  animation: achievement-glow 600ms ease-out;
+}
+
+.achievement-bounce {
+  animation: achievement-bounce 600ms ease-out;
+}
+
+.achievement-pulse {
+  animation: achievement-pulse-opacity 600ms ease-out;
+}
+
+/* 複数要素の同時達成時のスタガードアニメーション */
+.staggered-achievement-1 {
+  animation-delay: 0ms;
+}
+
+.staggered-achievement-2 {
+  animation-delay: 100ms;
+}
+
+.staggered-achievement-3 {
+  animation-delay: 200ms;
+}
+
+.staggered-achievement-4 {
+  animation-delay: 300ms;
+}
+
+.staggered-achievement-5 {
+  animation-delay: 400ms;
+}
+
+.staggered-achievement-6 {
+  animation-delay: 500ms;
+}
+
+.staggered-achievement-7 {
+  animation-delay: 600ms;
+}
+
+.staggered-achievement-8 {
+  animation-delay: 700ms;
+}
+
+/* パフォーマンス最適化のためのGPU加速 */
+.gpu-accelerated {
+  will-change: transform, opacity, box-shadow;
+  transform: translateZ(0);
+}
+
+/* アニメーション中の要素のz-index調整 */
+.animating {
+  z-index: 1000;
+  position: relative;
+}
+
+/* 高コントラストモード対応 */
+@media (prefers-contrast: high) {
+  @keyframes achievement-pulse {
+    0% {
+      transform: scale(1);
+      box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.8);
+    }
+    50% {
+      transform: scale(1.05);
+      box-shadow: 0 0 20px 10px rgba(0, 0, 0, 0.6);
+    }
+    100% {
+      transform: scale(1);
+      box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+    }
+  }
+}
+
+/* カラーブラインドネス対応 */
+.color-blind-friendly .achievement-animation {
+  /* 色に依存しないアニメーション効果を強調 */
+  animation: achievement-bounce 600ms ease-out;
+}
+
+/* ダークモード対応 */
+@media (prefers-color-scheme: dark) {
+  @keyframes achievement-pulse {
+    0% {
+      transform: scale(1);
+      box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.7);
+    }
+    50% {
+      transform: scale(1.05);
+      box-shadow: 0 0 20px 10px rgba(74, 222, 128, 0.4);
+    }
+    100% {
+      transform: scale(1);
+      box-shadow: 0 0 0 0 rgba(74, 222, 128, 0);
+    }
+  }
+
+  @keyframes achievement-glow {
+    0% {
+      box-shadow: 0 0 0 0 rgba(74, 222, 128, 0);
+      filter: brightness(1);
+    }
+    50% {
+      box-shadow: 0 0 30px 15px rgba(74, 222, 128, 0.6);
+      filter: brightness(1.3);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(74, 222, 128, 0);
+      filter: brightness(1);
+    }
+  }
+}
+
+/* アニメーション品質の動的調整 */
+.animation-quality-low {
+  animation-duration: 200ms !important;
+  animation-timing-function: linear !important;
+}
+
+.animation-quality-medium {
+  animation-duration: 400ms !important;
+  animation-timing-function: ease-out !important;
+}
+
+.animation-quality-high {
+  animation-duration: 600ms !important;
+  animation-timing-function: ease-out !important;
+}
+
+/* パフォーマンス最適化クラス */
+.performance-optimized {
+  will-change: transform, opacity;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+.performance-low {
+  will-change: auto;
+  transform: none;
+  backface-visibility: visible;
+}
+
+/* ユーザー操作時のアニメーション中断 */
+.animation-interrupted {
+  animation: none !important;
+  transition: none !important;
+}
+
+/* バッテリー節約モード */
+@media (prefers-reduced-data: reduce) {
+  .progress-bar-fill,
+  .mandala-cell {
+    transition-duration: 100ms !important;
+  }
+
+  .achievement-animation,
+  .achievement-glow,
+  .achievement-bounce,
+  .achievement-pulse {
+    animation-duration: 300ms !important;
+  }
+}
+
+/* 強制カラーモード対応 */
+@media (forced-colors: active) {
+  .progress-bar-fill {
+    background-color: Highlight !important;
+  }
+
+  .mandala-cell {
+    border-color: ButtonText !important;
+    background-color: ButtonFace !important;
+    color: ButtonText !important;
+  }
+
+  /* アニメーション効果を簡素化 */
+  @keyframes achievement-pulse {
+    0% {
+      transform: scale(1);
+      outline: 2px solid Highlight;
+    }
+    50% {
+      transform: scale(1.05);
+      outline: 4px solid Highlight;
+    }
+    100% {
+      transform: scale(1);
+      outline: 2px solid Highlight;
+    }
+  }
+}
+
+/* フォーカス時のアニメーション */
+.mandala-cell:focus {
+  transition: box-shadow 200ms ease-out;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+}
+
+/* ホバー時のアニメーション */
+.mandala-cell:hover {
+  transition: transform 200ms ease-out;
+  transform: translateY(-2px);
+}
+
+/* アニメーション無効時はホバー効果も無効 */
+.no-animation .mandala-cell:hover {
+  transform: none;
+}
+
+/* 進捗バーのアニメーション強化 */
+.progress-bar-enhanced {
+  position: relative;
+  overflow: visible;
+}
+
+.progress-bar-enhanced::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transform: translateX(-100%);
+  transition: transform 300ms ease-out;
+}
+
+.progress-bar-enhanced.animating::after {
+  transform: translateX(100%);
+}

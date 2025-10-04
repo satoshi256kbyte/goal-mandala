@@ -776,8 +776,8 @@ export class FrontendStack extends cdk.Stack {
     userPool?: cognito.IUserPool,
     userPoolClient?: cognito.IUserPoolClient,
     userPoolDomain?: cognito.IUserPoolDomain
-  ): Record<string, any> {
-    const frontendConfig: Record<string, any> = {
+  ): Record<string, unknown> {
+    const frontendConfig: Record<string, unknown> = {
       region: config.region,
       environment: config.environment,
       apiUrl: `https://api.${config.stackPrefix}.example.com`, // APIスタックから取得する場合は後で更新
@@ -786,26 +786,28 @@ export class FrontendStack extends cdk.Stack {
 
     // Cognito設定を追加
     if (userPool && userPoolClient) {
-      frontendConfig.cognito = {
+      const cognitoConfig: any = {
         userPoolId: userPool.userPoolId,
         userPoolClientId: userPoolClient.userPoolClientId,
         region: config.region,
       };
 
       if (userPoolDomain) {
-        frontendConfig.cognito.domain = userPoolDomain.domainName;
-        frontendConfig.cognito.baseUrl = `https://${userPoolDomain.domainName}.auth.${config.region}.amazoncognito.com`;
+        cognitoConfig.domain = userPoolDomain.domainName;
+        cognitoConfig.baseUrl = `https://${userPoolDomain.domainName}.auth.${config.region}.amazoncognito.com`;
       }
 
       // OAuth設定
       const oAuthConfig = config.cognito.userPoolClient.oAuth;
       if (oAuthConfig) {
-        frontendConfig.cognito.oauth = {
+        cognitoConfig.oauth = {
           scopes: oAuthConfig.scopes,
           callbackUrls: oAuthConfig.callbackUrls,
           logoutUrls: oAuthConfig.logoutUrls,
         };
       }
+
+      frontendConfig.cognito = cognitoConfig;
     }
 
     return frontendConfig;

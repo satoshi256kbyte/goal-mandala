@@ -1,0 +1,99 @@
+/* マンダラグリッドの基本スタイル */
+.mandala-grid {
+  @apply grid grid-cols-9 gap-1 p-4 bg-white rounded-lg shadow-sm;
+  @apply max-w-full overflow-auto;
+  @apply transition-colors duration-300 ease-in-out;
+  aspect-ratio: 1 / 1;
+  min-height: 600px;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 1024px) {
+  .mandala-grid {
+    @apply gap-0.5 p-2;
+    min-height: 500px;
+  }
+}
+
+@media (max-width: 768px) {
+  .mandala-grid {
+    @apply gap-0.5 p-1;
+    min-height: 400px;
+  }
+}
+
+@media (max-width: 640px) {
+  .mandala-grid {
+    @apply gap-px p-1;
+    min-height: 320px;
+  }
+}
+
+/* 超小画面対応 */
+@media (max-width: 480px) {
+  .mandala-grid {
+    @apply gap-px p-0.5;
+    min-height: 280px;
+  }
+}
+
+/* ダークモード対応 */
+@media (prefers-color-scheme: dark) {
+  .mandala-grid {
+    @apply bg-gray-900 shadow-gray-800;
+  }
+}
+
+.mandala-grid.dark-mode {
+  @apply bg-gray-900 shadow-gray-800;
+}
+
+/* ハイコントラストモード対応 */
+@media (prefers-contrast: high) {
+  .mandala-grid {
+    @apply border-2 border-gray-800;
+  }
+}
+
+.mandala-grid.high-contrast {
+  @apply border-2 border-gray-800;
+}
+
+/* グリッドセルのドロップゾーン */
+.mandala-grid .grid-cell-wrapper {
+  @apply relative;
+}
+
+.mandala-grid .grid-cell-wrapper.drag-over {
+  @apply ring-2 ring-blue-500 ring-opacity-50;
+}
+
+/* アクセシビリティ対応 */
+.mandala-grid:focus-within {
+  @apply ring-2 ring-blue-500 ring-opacity-50;
+}
+
+/* 色分けスキーム統合 */
+.mandala-grid.color-blind-friendly {
+  /* カラーブラインドネス対応時の追加スタイル */
+}
+
+.mandala-grid.high-contrast {
+  @apply border-4 border-gray-900;
+}
+
+.mandala-grid.high-contrast.dark-mode {
+  @apply border-gray-100;
+}
+
+/* 印刷対応 */
+@media print {
+  .mandala-grid {
+    @apply shadow-none border border-gray-300;
+    break-inside: avoid;
+  }
+
+  .mandala-grid.dark-mode {
+    @apply bg-white border-gray-300;
+  }
+}

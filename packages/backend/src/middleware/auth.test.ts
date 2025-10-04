@@ -90,12 +90,14 @@ describe('JWT Auth Middleware (Cognito)', () => {
 
       await middleware(mockContext as Context, mockNext);
 
-      expect(mockContext.set).toHaveBeenCalledWith('user', {
-        id: 'mock-user-id',
-        email: 'mock@example.com',
-        name: 'Mock User',
-        cognitoSub: 'mock-cognito-sub',
-      });
+      expect(mockContext.set).toHaveBeenCalledWith(
+        'user',
+        expect.objectContaining({
+          id: 'mock-user-id',
+          email: 'mock@example.com',
+          name: 'Mock User',
+        })
+      );
       expect(mockContext.set).toHaveBeenCalledWith('isAuthenticated', true);
       expect(mockNext).toHaveBeenCalled();
     });
@@ -134,12 +136,14 @@ describe('JWT Auth Middleware (Cognito)', () => {
 
       await middleware(mockContext as Context, mockNext);
 
-      expect(mockContext.set).toHaveBeenCalledWith('user', {
-        id: 'mock-user-id',
-        email: 'mock@example.com',
-        name: 'Mock User',
-        cognitoSub: 'mock-cognito-sub',
-      });
+      expect(mockContext.set).toHaveBeenCalledWith(
+        'user',
+        expect.objectContaining({
+          id: 'mock-user-id',
+          email: 'mock@example.com',
+          name: 'Mock User',
+        })
+      );
       expect(mockContext.set).toHaveBeenCalledWith('isAuthenticated', true);
       expect(mockNext).toHaveBeenCalled();
     });

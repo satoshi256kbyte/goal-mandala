@@ -107,6 +107,8 @@ export const useKeyboardNavigation = (
   onArrowLeft?: () => void,
   onArrowRight?: () => void
 ) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+
   const handleKeyDown = useCallback(
     (event: KeyboardEvent) => {
       switch (event.key) {
@@ -162,7 +164,7 @@ export const useKeyboardNavigation = (
     };
   }, [handleKeyDown]);
 
-  return { handleKeyDown };
+  return { handleKeyDown, containerRef };
 };
 
 /**
@@ -278,6 +280,20 @@ export const useColorAccessibility = () => {
     isHighContrastMode,
     getAccessibleColors,
   };
+};
+
+/**
+ * フォーカストラップのためのカスタムフック
+ */
+export const useFocusTrap = (containerRef: React.RefObject<HTMLElement>) => {
+  const { setupFocusTrap } = useFocusManagement();
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const cleanup = setupFocusTrap(containerRef.current);
+    return cleanup;
+  }, [setupFocusTrap, containerRef]);
 };
 
 /**

@@ -1,3 +1,4 @@
+/// <reference types="vitest" />
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { visualizer } from 'rollup-plugin-visualizer';
@@ -18,6 +19,27 @@ export default defineConfig({
   resolve: {
     alias: {
       '@goal-mandala/shared': '../shared/src',
+    },
+  },
+  // テスト設定
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: ['./src/test/setup.ts'],
+    testTimeout: 10000,
+    hookTimeout: 10000,
+    // E2Eテストファイルを除外
+    exclude: [
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/e2e/**',
+      '**/.{idea,git,cache,output,temp}/**',
+      '**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build}.config.*',
+    ],
+    css: {
+      modules: {
+        classNameStrategy: 'non-scoped',
+      },
     },
   },
   build: {

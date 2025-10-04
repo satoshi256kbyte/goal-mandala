@@ -37,6 +37,9 @@ app.get('/health', c => {
   });
 });
 
+// ハンドラーのインポート
+import progressHistoryHandler from './handlers/progress-history';
+
 // API v1 ルート
 const apiV1 = new Hono();
 
@@ -47,6 +50,9 @@ apiV1.get('/', c => {
     timestamp: new Date().toISOString(),
   });
 });
+
+// 進捗履歴API
+apiV1.route('/progress-history', progressHistoryHandler);
 
 // APIルートをマウント
 app.route('/api/v1', apiV1);

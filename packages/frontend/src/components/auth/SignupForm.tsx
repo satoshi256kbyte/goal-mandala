@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link } from 'react-router-dom';
-import { signupSchema, type SignupFormData } from '../../utils/validation';
+import { signupZodSchema, type SignupFormData } from '../../utils/validation';
 import { ErrorMessage } from '../common/ErrorMessage';
 import { LoadingButton } from '../common/LoadingButton';
 import {
@@ -100,7 +100,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({ onSubmit, isLoading = fa
     formState: { errors, isValid, touchedFields },
     setFocus,
   } = useForm<SignupFormData>({
-    resolver: zodResolver(signupSchema),
+    resolver: zodResolver(signupZodSchema),
     mode: 'all', // 全てのイベントでバリデーション
     defaultValues: {
       name: '',

@@ -476,8 +476,8 @@ export const getErrorDetails = (error: Error): Record<string, string> => {
   }
 
   if (error instanceof ApiError && error.details) {
-    return error.details;
+    return error.details as Record<string, string>;
   }
 
-  return {};
+  return {} as Record<string, string>;
 };

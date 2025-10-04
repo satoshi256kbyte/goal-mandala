@@ -1,5 +1,23 @@
 import '@testing-library/jest-dom';
-import { expect, beforeEach, afterEach, vi } from 'vitest';
 
-// Vitestのグローバル関数をグローバルスコープに追加
-Object.assign(globalThis, { expect, beforeEach, afterEach, vi, jest: vi });
+// グローバルなテストセットアップ
+global.ResizeObserver = class ResizeObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+};
+
+// matchMediaのモック
+Object.defineProperty(window, 'matchMedia', {
+  writable: true,
+  value: (query: string) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: () => {},
+    removeListener: () => {},
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    dispatchEvent: () => {},
+  }),
+});

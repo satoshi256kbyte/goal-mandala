@@ -10,10 +10,11 @@ export interface TextInputProps {
   maxLength?: number;
   showCounter?: boolean;
   showWarning?: boolean;
-  register: UseFormRegister<Record<string, unknown>>;
+  register?: UseFormRegister<Record<string, unknown>>;
   error?: FieldError;
   type?: 'text' | 'email' | 'password';
   className?: string;
+  disabled?: boolean;
   /** 文字数変更時のコールバック */
   onLengthChange?: (length: number, value: string) => void;
   /** 制限到達時のコールバック */

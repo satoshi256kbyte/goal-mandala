@@ -203,6 +203,15 @@ exports.Prisma.ReflectionScalarFieldEnum = {
   updatedAt: 'updatedAt',
 };
 
+exports.Prisma.ProgressHistoryScalarFieldEnum = {
+  id: 'id',
+  entityType: 'entityType',
+  entityId: 'entityId',
+  progress: 'progress',
+  timestamp: 'timestamp',
+  createdAt: 'createdAt',
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc',
@@ -275,6 +284,7 @@ exports.Prisma.ModelName = {
   Task: 'Task',
   TaskReminder: 'TaskReminder',
   Reflection: 'Reflection',
+  ProgressHistory: 'ProgressHistory',
 };
 
 /**

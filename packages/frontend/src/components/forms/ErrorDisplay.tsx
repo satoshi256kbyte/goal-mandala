@@ -17,7 +17,11 @@ import { FormError, FormErrorSeverity, FormErrorType } from '../../types/form-er
  */
 export interface ErrorDisplayProps {
   /** 表示するエラー */
-  error: FormError;
+  error?: FormError;
+  /** エラーのレコード形式 */
+  errors?: Record<string, string>;
+  /** タイトル */
+  title?: string;
   /** 表示タイプ */
   displayType?: 'inline' | 'summary' | 'toast' | 'modal';
   /** 復旧オプションを表示するか */
@@ -243,7 +247,15 @@ export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
  */
 export interface ErrorSummaryProps {
   /** 表示するエラー一覧 */
-  errors: FormError[];
+  errors?: FormError[];
+  /** バリデーションエラー */
+  validationErrors?: Record<string, string | string[]>;
+  /** 送信エラー */
+  submissionError?: {
+    type: any;
+    message: string;
+    timestamp: Date;
+  };
   /** タイトル */
   title?: string;
   /** 復旧オプションを表示するか */
@@ -251,19 +263,28 @@ export interface ErrorSummaryProps {
   /** 復旧オプションのコールバック */
   onRetryAll?: () => void;
   onClearAll?: () => void;
+  /** フィールドフォーカス時のコールバック */
+  onFieldFocus?: (fieldName: string) => void;
   /** カスタムクラス名 */
   className?: string;
 }
 
 export const ErrorSummary: React.FC<ErrorSummaryProps> = ({
-  errors,
+  errors = [],
+  validationErrors = {},
+  submissionError,
   title = 'エラーが発生しました',
   showRecoveryOptions = true,
   onRetryAll,
   onClearAll,
+  onFieldFocus: _onFieldFocus,
   className = '',
 }) => {
-  if (errors.length === 0) {
+  const hasFormErrors = errors.length > 0;
+  const hasValidationErrors = Object.keys(validationErrors).length > 0;
+  const hasSubmissionError = !!submissionError;
+
+  if (!hasFormErrors && !hasValidationErrors && !hasSubmissionError) {
     return null;
   }
 
@@ -331,6 +352,46 @@ export const ErrorSummary: React.FC<ErrorSummaryProps> = ({
           )}
         </div>
       </div>
+    </div>
+  );
+};
+
+/**
+ * インラインエラー表示コンポーネントのProps
+ */
+export interface InlineErrorProps {
+  /** エラーメッセージ */
+  message?: string;
+  /** エラーメッセージ（別名） */
+  error?: string;
+  /** エラーの重要度 */
+  severity?: FormErrorSeverity;
+  /** 追加のCSSクラス */
+  className?: string;
+  /** フィールド名 */
+  fieldName?: string;
+}
+
+/**
+ * インラインエラー表示コンポーネント
+ */
+export const InlineError: React.FC<InlineErrorProps> = ({
+  message,
+  error,
+  severity = 'error',
+  className = '',
+}) => {
+  const errorMessage = message || error || '';
+
+  const severityClasses = {
+    error: 'text-red-600 bg-red-50 border-red-200',
+    warning: 'text-yellow-600 bg-yellow-50 border-yellow-200',
+    info: 'text-blue-600 bg-blue-50 border-blue-200',
+  };
+
+  return (
+    <div className={`text-sm p-2 border rounded ${severityClasses[severity]} ${className}`}>
+      {errorMessage}
     </div>
   );
 };
