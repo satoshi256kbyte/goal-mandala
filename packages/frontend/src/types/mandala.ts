@@ -28,6 +28,8 @@ export interface Goal {
   deadline: Date;
   progress: number;
   status: GoalStatus;
+  background?: string;
+  constraints?: string;
 }
 
 export interface SubGoal {
@@ -37,6 +39,8 @@ export interface SubGoal {
   description: string;
   position: number;
   progress: number;
+  background?: string;
+  constraints?: string;
 }
 
 export interface Action {
@@ -47,6 +51,8 @@ export interface Action {
   type: ActionType;
   position: number;
   progress: number;
+  background?: string;
+  constraints?: string;
 }
 
 export enum GoalStatus {

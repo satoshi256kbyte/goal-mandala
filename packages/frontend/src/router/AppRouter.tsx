@@ -15,6 +15,7 @@ import {
   LazyGoalInputPage,
   LazySubGoalEditPage,
   LazyActionEditPage,
+  LazyProcessingPage,
   LazyNotFoundPage,
 } from '../pages/LazyPages';
 
@@ -128,6 +129,16 @@ export const AppRouter: React.FC = () => {
                 <ProtectedRoute>
                   <LazyLoader>
                     <LazyGoalInputPage />
+                  </LazyLoader>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/mandala/create/processing"
+              element={
+                <ProtectedRoute>
+                  <LazyLoader>
+                    <LazyProcessingPage />
                   </LazyLoader>
                 </ProtectedRoute>
               }

@@ -1,0 +1,577 @@
+/* ConflictDialog スタイル */
+
+/* オーバーレイとダイアログのアニメーション */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: translateX(-4px);
+  }
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: translateX(4px);
+  }
+}
+
+/* オーバーレイ */
+.conflict-dialog-overlay {
+  animation: fadeIn 0.2s ease-out;
+  backdrop-filter: blur(2px);
+}
+
+/* ダイアログ本体 */
+.conflict-dialog {
+  animation: slideUp 0.3s ease-out;
+  box-shadow:
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* ヘッダー */
+.conflict-dialog-header {
+  background: linear-gradient(to bottom, #fef3c7, #fef9c3);
+  border-bottom: 2px solid #fbbf24;
+  position: relative;
+  overflow: hidden;
+}
+
+.conflict-dialog-header::before {
+  content: '⚠️';
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  font-size: 6rem;
+  opacity: 0.1;
+  transform: rotate(15deg);
+}
+
+.conflict-dialog-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #92400e;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  position: relative;
+  z-index: 1;
+}
+
+.conflict-dialog-title::before {
+  content: '⚠️';
+  font-size: 1.5rem;
+  animation: shake 2s ease-in-out infinite;
+}
+
+.conflict-dialog-description {
+  margin-top: 0.75rem;
+  font-size: 0.875rem;
+  color: #78350f;
+  line-height: 1.5;
+  position: relative;
+  z-index: 1;
+}
+
+/* コンテンツエリア */
+.conflict-dialog-content {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.conflict-dialog-empty {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #9ca3af;
+  font-size: 0.875rem;
+}
+
+.conflict-dialog-empty::before {
+  content: '✓';
+  display: block;
+  font-size: 3rem;
+  color: #10b981;
+  margin-bottom: 1rem;
+}
+
+/* 差分リスト */
+.conflict-diff-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* 差分アイテム */
+.conflict-diff-item {
+  border: 2px solid #fbbf24;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  background: linear-gradient(to bottom, #fffbeb, #ffffff);
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.conflict-diff-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: linear-gradient(to bottom, #f59e0b, #fbbf24);
+}
+
+.conflict-diff-item:hover {
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  transform: translateY(-2px);
+}
+
+.conflict-diff-item-unchanged {
+  border-color: #e5e7eb;
+  background: linear-gradient(to bottom, #f9fafb, #ffffff);
+}
+
+.conflict-diff-item-unchanged::before {
+  background: #9ca3af;
+}
+
+/* フィールド名 */
+.conflict-field-name {
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 0.75rem;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-left: 0.75rem;
+}
+
+.conflict-field-name::before {
+  content: '📝';
+  font-size: 1rem;
+}
+
+/* 差分グリッド */
+.conflict-diff-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  padding-left: 0.75rem;
+}
+
+/* 差分カラム */
+.conflict-diff-column {
+  display: flex;
+  flex-direction: column;
+}
+
+.conflict-diff-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.conflict-diff-label-current {
+  color: #dc2626;
+}
+
+.conflict-diff-label-current::before {
+  content: '👤';
+  font-size: 1rem;
+}
+
+.conflict-diff-label-latest {
+  color: #16a34a;
+}
+
+.conflict-diff-label-latest::before {
+  content: '🌐';
+  font-size: 1rem;
+}
+
+/* 差分値 */
+.conflict-diff-value {
+  padding: 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  word-break: break-word;
+  white-space: pre-wrap;
+  min-height: 3rem;
+  transition: all 0.2s ease;
+}
+
+.conflict-diff-value-current {
+  background-color: #fef2f2;
+  border: 2px solid #fecaca;
+  color: #991b1b;
+  position: relative;
+}
+
+.conflict-diff-value-current::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background-color: #ef4444;
+}
+
+.conflict-diff-value-latest {
+  background-color: #f0fdf4;
+  border: 2px solid #bbf7d0;
+  color: #166534;
+  position: relative;
+}
+
+.conflict-diff-value-latest::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background-color: #22c55e;
+}
+
+.conflict-diff-value:hover {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transform: scale(1.01);
+}
+
+.conflict-diff-value-empty {
+  color: #9ca3af;
+  font-style: italic;
+  background-color: #f9fafb;
+  border-color: #e5e7eb;
+}
+
+/* ハイライト効果 */
+.conflict-highlight {
+  animation: highlightPulse 2s ease-in-out infinite;
+}
+
+@keyframes highlightPulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(251, 191, 36, 0);
+  }
+}
+
+/* フッター */
+.conflict-dialog-footer {
+  background: linear-gradient(to top, #f9fafb, #ffffff);
+  border-top: 1px solid #e5e7eb;
+  padding: 1.5rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+/* ボタン */
+.conflict-button {
+  padding: 0.75rem 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-radius: 0.5rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 2px solid transparent;
+}
+
+.conflict-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+}
+
+.conflict-button-primary {
+  background: linear-gradient(to bottom, #3b82f6, #2563eb);
+  color: #ffffff;
+  border-color: #2563eb;
+}
+
+.conflict-button-primary::before {
+  content: '↻';
+  font-size: 1.125rem;
+}
+
+.conflict-button-primary:hover {
+  background: linear-gradient(to bottom, #2563eb, #1d4ed8);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px -2px rgba(37, 99, 235, 0.3);
+}
+
+.conflict-button-primary:active {
+  transform: translateY(0);
+}
+
+.conflict-button-secondary {
+  background-color: #ffffff;
+  color: #374151;
+  border-color: #d1d5db;
+}
+
+.conflict-button-secondary::before {
+  content: '✕';
+  font-size: 1rem;
+}
+
+.conflict-button-secondary:hover {
+  background-color: #f9fafb;
+  border-color: #9ca3af;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.conflict-button-secondary:active {
+  transform: translateY(0);
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+  .conflict-dialog {
+    max-width: 100%;
+    margin: 0;
+    border-radius: 0;
+    max-height: 100vh;
+  }
+
+  .conflict-diff-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .conflict-diff-label-current::after {
+    content: ' (あなたの変更)';
+    font-size: 0.75rem;
+    font-weight: 400;
+    text-transform: none;
+  }
+
+  .conflict-diff-label-latest::after {
+    content: ' (最新のデータ)';
+    font-size: 0.75rem;
+    font-weight: 400;
+    text-transform: none;
+  }
+
+  .conflict-button {
+    flex: 1;
+    padding: 1rem;
+  }
+
+  .conflict-dialog-footer {
+    flex-direction: column-reverse;
+  }
+}
+
+/* タブレット対応 */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .conflict-dialog {
+    max-width: 90%;
+  }
+}
+
+/* ダークモード対応 */
+@media (prefers-color-scheme: dark) {
+  .conflict-dialog {
+    background-color: #111827;
+    color: #f9fafb;
+  }
+
+  .conflict-dialog-header {
+    background: linear-gradient(to bottom, #78350f, #92400e);
+    border-bottom-color: #f59e0b;
+  }
+
+  .conflict-dialog-title {
+    color: #fef3c7;
+  }
+
+  .conflict-dialog-description {
+    color: #fde68a;
+  }
+
+  .conflict-diff-item {
+    background: linear-gradient(to bottom, #1f2937, #111827);
+    border-color: #f59e0b;
+  }
+
+  .conflict-diff-item-unchanged {
+    border-color: #374151;
+    background: linear-gradient(to bottom, #1f2937, #111827);
+  }
+
+  .conflict-field-name {
+    color: #f9fafb;
+  }
+
+  .conflict-diff-value-current {
+    background-color: #7f1d1d;
+    border-color: #991b1b;
+    color: #fecaca;
+  }
+
+  .conflict-diff-value-latest {
+    background-color: #14532d;
+    border-color: #166534;
+    color: #bbf7d0;
+  }
+
+  .conflict-diff-value-empty {
+    background-color: #1f2937;
+    border-color: #374151;
+    color: #6b7280;
+  }
+
+  .conflict-dialog-footer {
+    background: linear-gradient(to top, #1f2937, #111827);
+    border-top-color: #374151;
+  }
+
+  .conflict-button-secondary {
+    background-color: #374151;
+    color: #f9fafb;
+    border-color: #4b5563;
+  }
+
+  .conflict-button-secondary:hover {
+    background-color: #4b5563;
+    border-color: #6b7280;
+  }
+}
+
+/* ハイコントラストモード対応 */
+@media (prefers-contrast: high) {
+  .conflict-dialog {
+    border: 3px solid currentColor;
+  }
+
+  .conflict-diff-item {
+    border-width: 3px;
+  }
+
+  .conflict-diff-item::before {
+    width: 6px;
+  }
+
+  .conflict-diff-value {
+    border-width: 3px;
+  }
+
+  .conflict-diff-value::before {
+    width: 4px;
+  }
+
+  .conflict-button {
+    border-width: 3px;
+  }
+
+  .conflict-field-name {
+    font-weight: 700;
+  }
+}
+
+/* アクセシビリティ: フォーカス表示の強化 */
+.conflict-button:focus-visible {
+  outline: 3px solid #2563eb;
+  outline-offset: 2px;
+}
+
+/* スクロールバーのスタイル */
+.conflict-dialog-content::-webkit-scrollbar {
+  width: 10px;
+}
+
+.conflict-dialog-content::-webkit-scrollbar-track {
+  background: #f3f4f6;
+  border-radius: 5px;
+}
+
+.conflict-dialog-content::-webkit-scrollbar-thumb {
+  background: #fbbf24;
+  border-radius: 5px;
+}
+
+.conflict-dialog-content::-webkit-scrollbar-thumb:hover {
+  background: #f59e0b;
+}
+
+@media (prefers-color-scheme: dark) {
+  .conflict-dialog-content::-webkit-scrollbar-track {
+    background: #1f2937;
+  }
+
+  .conflict-dialog-content::-webkit-scrollbar-thumb {
+    background: #f59e0b;
+  }
+
+  .conflict-dialog-content::-webkit-scrollbar-thumb:hover {
+    background: #fbbf24;
+  }
+}
+
+/* プリント対応 */
+@media print {
+  .conflict-dialog-overlay {
+    position: static;
+    background: none;
+  }
+
+  .conflict-dialog {
+    box-shadow: none;
+    max-width: 100%;
+    max-height: none;
+  }
+
+  .conflict-button {
+    display: none;
+  }
+
+  .conflict-diff-item {
+    page-break-inside: avoid;
+  }
+}

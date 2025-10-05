@@ -75,7 +75,8 @@ model User {
   updatedAt   DateTime      @updatedAt @db.Timestamptz
 
   // Relations
-  goals Goal[]
+  goals          Goal[]
+  changeHistory  ChangeHistory[]
 
   @@map("users")
 }
@@ -219,4 +220,22 @@ model ProgressHistory {
   @@index([entityType, entityId, timestamp])
   @@index([timestamp])
   @@map("progress_history")
+}
+
+model ChangeHistory {
+  id         String   @id @default(uuid()) @db.Uuid
+  entityType String   @db.VarChar(20) // 'goal', 'subgoal', 'action'
+  entityId   String   @db.Uuid
+  userId     String   @db.Uuid
+  changedAt  DateTime @default(now()) @db.Timestamptz
+  changes    Json // 変更内容の配列: [{ field: string, oldValue: string, newValue: string }]
+  createdAt  DateTime @default(now()) @db.Timestamptz
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Indexes
+  @@index([entityType, entityId, changedAt])
+  @@index([userId, changedAt])
+  @@map("change_history")
 }

@@ -51,6 +51,11 @@ export type Reflection = $Result.DefaultSelection<Prisma.$ReflectionPayload>;
  *
  */
 export type ProgressHistory = $Result.DefaultSelection<Prisma.$ProgressHistoryPayload>;
+/**
+ * Model ChangeHistory
+ *
+ */
+export type ChangeHistory = $Result.DefaultSelection<Prisma.$ChangeHistoryPayload>;
 
 /**
  * Enums
@@ -366,6 +371,16 @@ export class PrismaClient<
    * ```
    */
   get progressHistory(): Prisma.ProgressHistoryDelegate<ExtArgs>;
+
+  /**
+   * `prisma.changeHistory`: Exposes CRUD operations for the **ChangeHistory** model.
+   * Example usage:
+   * ```ts
+   * // Fetch zero or more ChangeHistories
+   * const changeHistories = await prisma.changeHistory.findMany()
+   * ```
+   */
+  get changeHistory(): Prisma.ChangeHistoryDelegate<ExtArgs>;
 }
 
 export namespace Prisma {
@@ -809,6 +824,7 @@ export namespace Prisma {
     TaskReminder: 'TaskReminder';
     Reflection: 'Reflection';
     ProgressHistory: 'ProgressHistory';
+    ChangeHistory: 'ChangeHistory';
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName];
@@ -838,7 +854,8 @@ export namespace Prisma {
         | 'task'
         | 'taskReminder'
         | 'reflection'
-        | 'progressHistory';
+        | 'progressHistory'
+        | 'changeHistory';
       txIsolationLevel: Prisma.TransactionIsolationLevel;
     };
     model: {
@@ -1402,6 +1419,76 @@ export namespace Prisma {
           };
         };
       };
+      ChangeHistory: {
+        payload: Prisma.$ChangeHistoryPayload<ExtArgs>;
+        fields: Prisma.ChangeHistoryFieldRefs;
+        operations: {
+          findUnique: {
+            args: Prisma.ChangeHistoryFindUniqueArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$ChangeHistoryPayload> | null;
+          };
+          findUniqueOrThrow: {
+            args: Prisma.ChangeHistoryFindUniqueOrThrowArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$ChangeHistoryPayload>;
+          };
+          findFirst: {
+            args: Prisma.ChangeHistoryFindFirstArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$ChangeHistoryPayload> | null;
+          };
+          findFirstOrThrow: {
+            args: Prisma.ChangeHistoryFindFirstOrThrowArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$ChangeHistoryPayload>;
+          };
+          findMany: {
+            args: Prisma.ChangeHistoryFindManyArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$ChangeHistoryPayload>[];
+          };
+          create: {
+            args: Prisma.ChangeHistoryCreateArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$ChangeHistoryPayload>;
+          };
+          createMany: {
+            args: Prisma.ChangeHistoryCreateManyArgs<ExtArgs>;
+            result: BatchPayload;
+          };
+          createManyAndReturn: {
+            args: Prisma.ChangeHistoryCreateManyAndReturnArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$ChangeHistoryPayload>[];
+          };
+          delete: {
+            args: Prisma.ChangeHistoryDeleteArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$ChangeHistoryPayload>;
+          };
+          update: {
+            args: Prisma.ChangeHistoryUpdateArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$ChangeHistoryPayload>;
+          };
+          deleteMany: {
+            args: Prisma.ChangeHistoryDeleteManyArgs<ExtArgs>;
+            result: BatchPayload;
+          };
+          updateMany: {
+            args: Prisma.ChangeHistoryUpdateManyArgs<ExtArgs>;
+            result: BatchPayload;
+          };
+          upsert: {
+            args: Prisma.ChangeHistoryUpsertArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$ChangeHistoryPayload>;
+          };
+          aggregate: {
+            args: Prisma.ChangeHistoryAggregateArgs<ExtArgs>;
+            result: $Utils.Optional<AggregateChangeHistory>;
+          };
+          groupBy: {
+            args: Prisma.ChangeHistoryGroupByArgs<ExtArgs>;
+            result: $Utils.Optional<ChangeHistoryGroupByOutputType>[];
+          };
+          count: {
+            args: Prisma.ChangeHistoryCountArgs<ExtArgs>;
+            result: $Utils.Optional<ChangeHistoryCountAggregateOutputType> | number;
+          };
+        };
+      };
     };
   } & {
     other: {
@@ -1570,12 +1657,14 @@ export namespace Prisma {
 
   export type UserCountOutputType = {
     goals: number;
+    changeHistory: number;
   };
 
   export type UserCountOutputTypeSelect<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
   > = {
     goals?: boolean | UserCountOutputTypeCountGoalsArgs;
+    changeHistory?: boolean | UserCountOutputTypeCountChangeHistoryArgs;
   };
 
   // Custom InputTypes
@@ -1598,6 +1687,15 @@ export namespace Prisma {
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
   > = {
     where?: GoalWhereInput;
+  };
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountChangeHistoryArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    where?: ChangeHistoryWhereInput;
   };
 
   /**
@@ -1955,6 +2053,7 @@ export namespace Prisma {
         createdAt?: boolean;
         updatedAt?: boolean;
         goals?: boolean | User$goalsArgs<ExtArgs>;
+        changeHistory?: boolean | User$changeHistoryArgs<ExtArgs>;
         _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>;
       },
       ExtArgs['result']['user']
@@ -1991,6 +2090,7 @@ export namespace Prisma {
 
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     goals?: boolean | User$goalsArgs<ExtArgs>;
+    changeHistory?: boolean | User$changeHistoryArgs<ExtArgs>;
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>;
   };
   export type UserIncludeCreateManyAndReturn<
@@ -2001,6 +2101,7 @@ export namespace Prisma {
     name: 'User';
     objects: {
       goals: Prisma.$GoalPayload<ExtArgs>[];
+      changeHistory: Prisma.$ChangeHistoryPayload<ExtArgs>[];
     };
     scalars: $Extensions.GetPayloadResult<
       {
@@ -2448,6 +2549,11 @@ export namespace Prisma {
     goals<T extends User$goalsArgs<ExtArgs> = {}>(
       args?: Subset<T, User$goalsArgs<ExtArgs>>
     ): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GoalPayload<ExtArgs>, T, 'findMany'> | Null>;
+    changeHistory<T extends User$changeHistoryArgs<ExtArgs> = {}>(
+      args?: Subset<T, User$changeHistoryArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<
+      $Result.GetResult<Prisma.$ChangeHistoryPayload<ExtArgs>, T, 'findMany'> | Null
+    >;
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2835,6 +2941,28 @@ export namespace Prisma {
     take?: number;
     skip?: number;
     distinct?: GoalScalarFieldEnum | GoalScalarFieldEnum[];
+  };
+
+  /**
+   * User.changeHistory
+   */
+  export type User$changeHistoryArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    /**
+     * Select specific fields to fetch from the ChangeHistory
+     */
+    select?: ChangeHistorySelect<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChangeHistoryInclude<ExtArgs> | null;
+    where?: ChangeHistoryWhereInput;
+    orderBy?: ChangeHistoryOrderByWithRelationInput | ChangeHistoryOrderByWithRelationInput[];
+    cursor?: ChangeHistoryWhereUniqueInput;
+    take?: number;
+    skip?: number;
+    distinct?: ChangeHistoryScalarFieldEnum | ChangeHistoryScalarFieldEnum[];
   };
 
   /**
@@ -10774,6 +10902,1079 @@ export namespace Prisma {
   };
 
   /**
+   * Model ChangeHistory
+   */
+
+  export type AggregateChangeHistory = {
+    _count: ChangeHistoryCountAggregateOutputType | null;
+    _min: ChangeHistoryMinAggregateOutputType | null;
+    _max: ChangeHistoryMaxAggregateOutputType | null;
+  };
+
+  export type ChangeHistoryMinAggregateOutputType = {
+    id: string | null;
+    entityType: string | null;
+    entityId: string | null;
+    userId: string | null;
+    changedAt: Date | null;
+    createdAt: Date | null;
+  };
+
+  export type ChangeHistoryMaxAggregateOutputType = {
+    id: string | null;
+    entityType: string | null;
+    entityId: string | null;
+    userId: string | null;
+    changedAt: Date | null;
+    createdAt: Date | null;
+  };
+
+  export type ChangeHistoryCountAggregateOutputType = {
+    id: number;
+    entityType: number;
+    entityId: number;
+    userId: number;
+    changedAt: number;
+    changes: number;
+    createdAt: number;
+    _all: number;
+  };
+
+  export type ChangeHistoryMinAggregateInputType = {
+    id?: true;
+    entityType?: true;
+    entityId?: true;
+    userId?: true;
+    changedAt?: true;
+    createdAt?: true;
+  };
+
+  export type ChangeHistoryMaxAggregateInputType = {
+    id?: true;
+    entityType?: true;
+    entityId?: true;
+    userId?: true;
+    changedAt?: true;
+    createdAt?: true;
+  };
+
+  export type ChangeHistoryCountAggregateInputType = {
+    id?: true;
+    entityType?: true;
+    entityId?: true;
+    userId?: true;
+    changedAt?: true;
+    changes?: true;
+    createdAt?: true;
+    _all?: true;
+  };
+
+  export type ChangeHistoryAggregateArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    /**
+     * Filter which ChangeHistory to aggregate.
+     */
+    where?: ChangeHistoryWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of ChangeHistories to fetch.
+     */
+    orderBy?: ChangeHistoryOrderByWithRelationInput | ChangeHistoryOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the start position
+     */
+    cursor?: ChangeHistoryWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` ChangeHistories from the position of the cursor.
+     */
+    take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` ChangeHistories.
+     */
+    skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Count returned ChangeHistories
+     **/
+    _count?: true | ChangeHistoryCountAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to find the minimum value
+     **/
+    _min?: ChangeHistoryMinAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to find the maximum value
+     **/
+    _max?: ChangeHistoryMaxAggregateInputType;
+  };
+
+  export type GetChangeHistoryAggregateType<T extends ChangeHistoryAggregateArgs> = {
+    [P in keyof T & keyof AggregateChangeHistory]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateChangeHistory[P]>
+      : GetScalarType<T[P], AggregateChangeHistory[P]>;
+  };
+
+  export type ChangeHistoryGroupByArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    where?: ChangeHistoryWhereInput;
+    orderBy?: ChangeHistoryOrderByWithAggregationInput | ChangeHistoryOrderByWithAggregationInput[];
+    by: ChangeHistoryScalarFieldEnum[] | ChangeHistoryScalarFieldEnum;
+    having?: ChangeHistoryScalarWhereWithAggregatesInput;
+    take?: number;
+    skip?: number;
+    _count?: ChangeHistoryCountAggregateInputType | true;
+    _min?: ChangeHistoryMinAggregateInputType;
+    _max?: ChangeHistoryMaxAggregateInputType;
+  };
+
+  export type ChangeHistoryGroupByOutputType = {
+    id: string;
+    entityType: string;
+    entityId: string;
+    userId: string;
+    changedAt: Date;
+    changes: JsonValue;
+    createdAt: Date;
+    _count: ChangeHistoryCountAggregateOutputType | null;
+    _min: ChangeHistoryMinAggregateOutputType | null;
+    _max: ChangeHistoryMaxAggregateOutputType | null;
+  };
+
+  type GetChangeHistoryGroupByPayload<T extends ChangeHistoryGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<ChangeHistoryGroupByOutputType, T['by']> & {
+        [P in keyof T & keyof ChangeHistoryGroupByOutputType]: P extends '_count'
+          ? T[P] extends boolean
+            ? number
+            : GetScalarType<T[P], ChangeHistoryGroupByOutputType[P]>
+          : GetScalarType<T[P], ChangeHistoryGroupByOutputType[P]>;
+      }
+    >
+  >;
+
+  export type ChangeHistorySelect<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = $Extensions.GetSelect<
+    {
+      id?: boolean;
+      entityType?: boolean;
+      entityId?: boolean;
+      userId?: boolean;
+      changedAt?: boolean;
+      changes?: boolean;
+      createdAt?: boolean;
+      user?: boolean | UserDefaultArgs<ExtArgs>;
+    },
+    ExtArgs['result']['changeHistory']
+  >;
+
+  export type ChangeHistorySelectCreateManyAndReturn<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = $Extensions.GetSelect<
+    {
+      id?: boolean;
+      entityType?: boolean;
+      entityId?: boolean;
+      userId?: boolean;
+      changedAt?: boolean;
+      changes?: boolean;
+      createdAt?: boolean;
+      user?: boolean | UserDefaultArgs<ExtArgs>;
+    },
+    ExtArgs['result']['changeHistory']
+  >;
+
+  export type ChangeHistorySelectScalar = {
+    id?: boolean;
+    entityType?: boolean;
+    entityId?: boolean;
+    userId?: boolean;
+    changedAt?: boolean;
+    changes?: boolean;
+    createdAt?: boolean;
+  };
+
+  export type ChangeHistoryInclude<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    user?: boolean | UserDefaultArgs<ExtArgs>;
+  };
+  export type ChangeHistoryIncludeCreateManyAndReturn<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    user?: boolean | UserDefaultArgs<ExtArgs>;
+  };
+
+  export type $ChangeHistoryPayload<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    name: 'ChangeHistory';
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs>;
+    };
+    scalars: $Extensions.GetPayloadResult<
+      {
+        id: string;
+        entityType: string;
+        entityId: string;
+        userId: string;
+        changedAt: Date;
+        changes: Prisma.JsonValue;
+        createdAt: Date;
+      },
+      ExtArgs['result']['changeHistory']
+    >;
+    composites: {};
+  };
+
+  type ChangeHistoryGetPayload<S extends boolean | null | undefined | ChangeHistoryDefaultArgs> =
+    $Result.GetResult<Prisma.$ChangeHistoryPayload, S>;
+
+  type ChangeHistoryCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<ChangeHistoryFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: ChangeHistoryCountAggregateInputType | true;
+    };
+
+  export interface ChangeHistoryDelegate<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > {
+    [K: symbol]: {
+      types: Prisma.TypeMap<ExtArgs>['model']['ChangeHistory'];
+      meta: { name: 'ChangeHistory' };
+    };
+    /**
+     * Find zero or one ChangeHistory that matches the filter.
+     * @param {ChangeHistoryFindUniqueArgs} args - Arguments to find a ChangeHistory
+     * @example
+     * // Get one ChangeHistory
+     * const changeHistory = await prisma.changeHistory.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ChangeHistoryFindUniqueArgs>(
+      args: SelectSubset<T, ChangeHistoryFindUniqueArgs<ExtArgs>>
+    ): Prisma__ChangeHistoryClient<
+      $Result.GetResult<Prisma.$ChangeHistoryPayload<ExtArgs>, T, 'findUnique'> | null,
+      null,
+      ExtArgs
+    >;
+
+    /**
+     * Find one ChangeHistory that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {ChangeHistoryFindUniqueOrThrowArgs} args - Arguments to find a ChangeHistory
+     * @example
+     * // Get one ChangeHistory
+     * const changeHistory = await prisma.changeHistory.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ChangeHistoryFindUniqueOrThrowArgs>(
+      args: SelectSubset<T, ChangeHistoryFindUniqueOrThrowArgs<ExtArgs>>
+    ): Prisma__ChangeHistoryClient<
+      $Result.GetResult<Prisma.$ChangeHistoryPayload<ExtArgs>, T, 'findUniqueOrThrow'>,
+      never,
+      ExtArgs
+    >;
+
+    /**
+     * Find the first ChangeHistory that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChangeHistoryFindFirstArgs} args - Arguments to find a ChangeHistory
+     * @example
+     * // Get one ChangeHistory
+     * const changeHistory = await prisma.changeHistory.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ChangeHistoryFindFirstArgs>(
+      args?: SelectSubset<T, ChangeHistoryFindFirstArgs<ExtArgs>>
+    ): Prisma__ChangeHistoryClient<
+      $Result.GetResult<Prisma.$ChangeHistoryPayload<ExtArgs>, T, 'findFirst'> | null,
+      null,
+      ExtArgs
+    >;
+
+    /**
+     * Find the first ChangeHistory that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChangeHistoryFindFirstOrThrowArgs} args - Arguments to find a ChangeHistory
+     * @example
+     * // Get one ChangeHistory
+     * const changeHistory = await prisma.changeHistory.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ChangeHistoryFindFirstOrThrowArgs>(
+      args?: SelectSubset<T, ChangeHistoryFindFirstOrThrowArgs<ExtArgs>>
+    ): Prisma__ChangeHistoryClient<
+      $Result.GetResult<Prisma.$ChangeHistoryPayload<ExtArgs>, T, 'findFirstOrThrow'>,
+      never,
+      ExtArgs
+    >;
+
+    /**
+     * Find zero or more ChangeHistories that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChangeHistoryFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all ChangeHistories
+     * const changeHistories = await prisma.changeHistory.findMany()
+     *
+     * // Get first 10 ChangeHistories
+     * const changeHistories = await prisma.changeHistory.findMany({ take: 10 })
+     *
+     * // Only select the `id`
+     * const changeHistoryWithIdOnly = await prisma.changeHistory.findMany({ select: { id: true } })
+     *
+     */
+    findMany<T extends ChangeHistoryFindManyArgs>(
+      args?: SelectSubset<T, ChangeHistoryFindManyArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<
+      $Result.GetResult<Prisma.$ChangeHistoryPayload<ExtArgs>, T, 'findMany'>
+    >;
+
+    /**
+     * Create a ChangeHistory.
+     * @param {ChangeHistoryCreateArgs} args - Arguments to create a ChangeHistory.
+     * @example
+     * // Create one ChangeHistory
+     * const ChangeHistory = await prisma.changeHistory.create({
+     *   data: {
+     *     // ... data to create a ChangeHistory
+     *   }
+     * })
+     *
+     */
+    create<T extends ChangeHistoryCreateArgs>(
+      args: SelectSubset<T, ChangeHistoryCreateArgs<ExtArgs>>
+    ): Prisma__ChangeHistoryClient<
+      $Result.GetResult<Prisma.$ChangeHistoryPayload<ExtArgs>, T, 'create'>,
+      never,
+      ExtArgs
+    >;
+
+    /**
+     * Create many ChangeHistories.
+     * @param {ChangeHistoryCreateManyArgs} args - Arguments to create many ChangeHistories.
+     * @example
+     * // Create many ChangeHistories
+     * const changeHistory = await prisma.changeHistory.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     */
+    createMany<T extends ChangeHistoryCreateManyArgs>(
+      args?: SelectSubset<T, ChangeHistoryCreateManyArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<BatchPayload>;
+
+    /**
+     * Create many ChangeHistories and returns the data saved in the database.
+     * @param {ChangeHistoryCreateManyAndReturnArgs} args - Arguments to create many ChangeHistories.
+     * @example
+     * // Create many ChangeHistories
+     * const changeHistory = await prisma.changeHistory.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     * // Create many ChangeHistories and only return the `id`
+     * const changeHistoryWithIdOnly = await prisma.changeHistory.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     *
+     */
+    createManyAndReturn<T extends ChangeHistoryCreateManyAndReturnArgs>(
+      args?: SelectSubset<T, ChangeHistoryCreateManyAndReturnArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<
+      $Result.GetResult<Prisma.$ChangeHistoryPayload<ExtArgs>, T, 'createManyAndReturn'>
+    >;
+
+    /**
+     * Delete a ChangeHistory.
+     * @param {ChangeHistoryDeleteArgs} args - Arguments to delete one ChangeHistory.
+     * @example
+     * // Delete one ChangeHistory
+     * const ChangeHistory = await prisma.changeHistory.delete({
+     *   where: {
+     *     // ... filter to delete one ChangeHistory
+     *   }
+     * })
+     *
+     */
+    delete<T extends ChangeHistoryDeleteArgs>(
+      args: SelectSubset<T, ChangeHistoryDeleteArgs<ExtArgs>>
+    ): Prisma__ChangeHistoryClient<
+      $Result.GetResult<Prisma.$ChangeHistoryPayload<ExtArgs>, T, 'delete'>,
+      never,
+      ExtArgs
+    >;
+
+    /**
+     * Update one ChangeHistory.
+     * @param {ChangeHistoryUpdateArgs} args - Arguments to update one ChangeHistory.
+     * @example
+     * // Update one ChangeHistory
+     * const changeHistory = await prisma.changeHistory.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     *
+     */
+    update<T extends ChangeHistoryUpdateArgs>(
+      args: SelectSubset<T, ChangeHistoryUpdateArgs<ExtArgs>>
+    ): Prisma__ChangeHistoryClient<
+      $Result.GetResult<Prisma.$ChangeHistoryPayload<ExtArgs>, T, 'update'>,
+      never,
+      ExtArgs
+    >;
+
+    /**
+     * Delete zero or more ChangeHistories.
+     * @param {ChangeHistoryDeleteManyArgs} args - Arguments to filter ChangeHistories to delete.
+     * @example
+     * // Delete a few ChangeHistories
+     * const { count } = await prisma.changeHistory.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     *
+     */
+    deleteMany<T extends ChangeHistoryDeleteManyArgs>(
+      args?: SelectSubset<T, ChangeHistoryDeleteManyArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<BatchPayload>;
+
+    /**
+     * Update zero or more ChangeHistories.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChangeHistoryUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many ChangeHistories
+     * const changeHistory = await prisma.changeHistory.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     *
+     */
+    updateMany<T extends ChangeHistoryUpdateManyArgs>(
+      args: SelectSubset<T, ChangeHistoryUpdateManyArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<BatchPayload>;
+
+    /**
+     * Create or update one ChangeHistory.
+     * @param {ChangeHistoryUpsertArgs} args - Arguments to update or create a ChangeHistory.
+     * @example
+     * // Update or create a ChangeHistory
+     * const changeHistory = await prisma.changeHistory.upsert({
+     *   create: {
+     *     // ... data to create a ChangeHistory
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the ChangeHistory we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ChangeHistoryUpsertArgs>(
+      args: SelectSubset<T, ChangeHistoryUpsertArgs<ExtArgs>>
+    ): Prisma__ChangeHistoryClient<
+      $Result.GetResult<Prisma.$ChangeHistoryPayload<ExtArgs>, T, 'upsert'>,
+      never,
+      ExtArgs
+    >;
+
+    /**
+     * Count the number of ChangeHistories.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChangeHistoryCountArgs} args - Arguments to filter ChangeHistories to count.
+     * @example
+     * // Count the number of ChangeHistories
+     * const count = await prisma.changeHistory.count({
+     *   where: {
+     *     // ... the filter for the ChangeHistories we want to count
+     *   }
+     * })
+     **/
+    count<T extends ChangeHistoryCountArgs>(
+      args?: Subset<T, ChangeHistoryCountArgs>
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ChangeHistoryCountAggregateOutputType>
+        : number
+    >;
+
+    /**
+     * Allows you to perform aggregations operations on a ChangeHistory.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChangeHistoryAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+     **/
+    aggregate<T extends ChangeHistoryAggregateArgs>(
+      args: Subset<T, ChangeHistoryAggregateArgs>
+    ): Prisma.PrismaPromise<GetChangeHistoryAggregateType<T>>;
+
+    /**
+     * Group by ChangeHistory.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChangeHistoryGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     *
+     **/
+    groupBy<
+      T extends ChangeHistoryGroupByArgs,
+      HasSelectOrTake extends Or<Extends<'skip', Keys<T>>, Extends<'take', Keys<T>>>,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ChangeHistoryGroupByArgs['orderBy'] }
+        : { orderBy?: ChangeHistoryGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+        ? `Error: "by" must not be empty.`
+        : HavingValid extends False
+          ? {
+              [P in HavingFields]: P extends ByFields
+                ? never
+                : P extends string
+                  ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+                  : [Error, 'Field ', P, ` in "having" needs to be provided in "by"`];
+            }[HavingFields]
+          : 'take' extends Keys<T>
+            ? 'orderBy' extends Keys<T>
+              ? ByValid extends True
+                ? {}
+                : {
+                    [P in OrderFields]: P extends ByFields
+                      ? never
+                      : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
+                  }[OrderFields]
+              : 'Error: If you provide "take", you also need to provide "orderBy"'
+            : 'skip' extends Keys<T>
+              ? 'orderBy' extends Keys<T>
+                ? ByValid extends True
+                  ? {}
+                  : {
+                      [P in OrderFields]: P extends ByFields
+                        ? never
+                        : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
+                    }[OrderFields]
+                : 'Error: If you provide "skip", you also need to provide "orderBy"'
+              : ByValid extends True
+                ? {}
+                : {
+                    [P in OrderFields]: P extends ByFields
+                      ? never
+                      : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
+                  }[OrderFields],
+    >(
+      args: SubsetIntersection<T, ChangeHistoryGroupByArgs, OrderByArg> & InputErrors
+    ): {} extends InputErrors
+      ? GetChangeHistoryGroupByPayload<T>
+      : Prisma.PrismaPromise<InputErrors>;
+    /**
+     * Fields of the ChangeHistory model
+     */
+    readonly fields: ChangeHistoryFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for ChangeHistory.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ChangeHistoryClient<
+    T,
+    Null = never,
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: 'PrismaPromise';
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(
+      args?: Subset<T, UserDefaultArgs<ExtArgs>>
+    ): Prisma__UserClient<
+      $Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, 'findUniqueOrThrow'> | Null,
+      Null,
+      ExtArgs
+    >;
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(
+      onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null,
+      onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null
+    ): $Utils.JsPromise<TResult1 | TResult2>;
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(
+      onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null
+    ): $Utils.JsPromise<T | TResult>;
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>;
+  }
+
+  /**
+   * Fields of the ChangeHistory model
+   */
+  interface ChangeHistoryFieldRefs {
+    readonly id: FieldRef<'ChangeHistory', 'String'>;
+    readonly entityType: FieldRef<'ChangeHistory', 'String'>;
+    readonly entityId: FieldRef<'ChangeHistory', 'String'>;
+    readonly userId: FieldRef<'ChangeHistory', 'String'>;
+    readonly changedAt: FieldRef<'ChangeHistory', 'DateTime'>;
+    readonly changes: FieldRef<'ChangeHistory', 'Json'>;
+    readonly createdAt: FieldRef<'ChangeHistory', 'DateTime'>;
+  }
+
+  // Custom InputTypes
+  /**
+   * ChangeHistory findUnique
+   */
+  export type ChangeHistoryFindUniqueArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    /**
+     * Select specific fields to fetch from the ChangeHistory
+     */
+    select?: ChangeHistorySelect<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChangeHistoryInclude<ExtArgs> | null;
+    /**
+     * Filter, which ChangeHistory to fetch.
+     */
+    where: ChangeHistoryWhereUniqueInput;
+  };
+
+  /**
+   * ChangeHistory findUniqueOrThrow
+   */
+  export type ChangeHistoryFindUniqueOrThrowArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    /**
+     * Select specific fields to fetch from the ChangeHistory
+     */
+    select?: ChangeHistorySelect<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChangeHistoryInclude<ExtArgs> | null;
+    /**
+     * Filter, which ChangeHistory to fetch.
+     */
+    where: ChangeHistoryWhereUniqueInput;
+  };
+
+  /**
+   * ChangeHistory findFirst
+   */
+  export type ChangeHistoryFindFirstArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    /**
+     * Select specific fields to fetch from the ChangeHistory
+     */
+    select?: ChangeHistorySelect<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChangeHistoryInclude<ExtArgs> | null;
+    /**
+     * Filter, which ChangeHistory to fetch.
+     */
+    where?: ChangeHistoryWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of ChangeHistories to fetch.
+     */
+    orderBy?: ChangeHistoryOrderByWithRelationInput | ChangeHistoryOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for searching for ChangeHistories.
+     */
+    cursor?: ChangeHistoryWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` ChangeHistories from the position of the cursor.
+     */
+    take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` ChangeHistories.
+     */
+    skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of ChangeHistories.
+     */
+    distinct?: ChangeHistoryScalarFieldEnum | ChangeHistoryScalarFieldEnum[];
+  };
+
+  /**
+   * ChangeHistory findFirstOrThrow
+   */
+  export type ChangeHistoryFindFirstOrThrowArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    /**
+     * Select specific fields to fetch from the ChangeHistory
+     */
+    select?: ChangeHistorySelect<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChangeHistoryInclude<ExtArgs> | null;
+    /**
+     * Filter, which ChangeHistory to fetch.
+     */
+    where?: ChangeHistoryWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of ChangeHistories to fetch.
+     */
+    orderBy?: ChangeHistoryOrderByWithRelationInput | ChangeHistoryOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for searching for ChangeHistories.
+     */
+    cursor?: ChangeHistoryWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` ChangeHistories from the position of the cursor.
+     */
+    take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` ChangeHistories.
+     */
+    skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of ChangeHistories.
+     */
+    distinct?: ChangeHistoryScalarFieldEnum | ChangeHistoryScalarFieldEnum[];
+  };
+
+  /**
+   * ChangeHistory findMany
+   */
+  export type ChangeHistoryFindManyArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    /**
+     * Select specific fields to fetch from the ChangeHistory
+     */
+    select?: ChangeHistorySelect<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChangeHistoryInclude<ExtArgs> | null;
+    /**
+     * Filter, which ChangeHistories to fetch.
+     */
+    where?: ChangeHistoryWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of ChangeHistories to fetch.
+     */
+    orderBy?: ChangeHistoryOrderByWithRelationInput | ChangeHistoryOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for listing ChangeHistories.
+     */
+    cursor?: ChangeHistoryWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` ChangeHistories from the position of the cursor.
+     */
+    take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` ChangeHistories.
+     */
+    skip?: number;
+    distinct?: ChangeHistoryScalarFieldEnum | ChangeHistoryScalarFieldEnum[];
+  };
+
+  /**
+   * ChangeHistory create
+   */
+  export type ChangeHistoryCreateArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    /**
+     * Select specific fields to fetch from the ChangeHistory
+     */
+    select?: ChangeHistorySelect<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChangeHistoryInclude<ExtArgs> | null;
+    /**
+     * The data needed to create a ChangeHistory.
+     */
+    data: XOR<ChangeHistoryCreateInput, ChangeHistoryUncheckedCreateInput>;
+  };
+
+  /**
+   * ChangeHistory createMany
+   */
+  export type ChangeHistoryCreateManyArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    /**
+     * The data used to create many ChangeHistories.
+     */
+    data: ChangeHistoryCreateManyInput | ChangeHistoryCreateManyInput[];
+    skipDuplicates?: boolean;
+  };
+
+  /**
+   * ChangeHistory createManyAndReturn
+   */
+  export type ChangeHistoryCreateManyAndReturnArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    /**
+     * Select specific fields to fetch from the ChangeHistory
+     */
+    select?: ChangeHistorySelectCreateManyAndReturn<ExtArgs> | null;
+    /**
+     * The data used to create many ChangeHistories.
+     */
+    data: ChangeHistoryCreateManyInput | ChangeHistoryCreateManyInput[];
+    skipDuplicates?: boolean;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChangeHistoryIncludeCreateManyAndReturn<ExtArgs> | null;
+  };
+
+  /**
+   * ChangeHistory update
+   */
+  export type ChangeHistoryUpdateArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    /**
+     * Select specific fields to fetch from the ChangeHistory
+     */
+    select?: ChangeHistorySelect<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChangeHistoryInclude<ExtArgs> | null;
+    /**
+     * The data needed to update a ChangeHistory.
+     */
+    data: XOR<ChangeHistoryUpdateInput, ChangeHistoryUncheckedUpdateInput>;
+    /**
+     * Choose, which ChangeHistory to update.
+     */
+    where: ChangeHistoryWhereUniqueInput;
+  };
+
+  /**
+   * ChangeHistory updateMany
+   */
+  export type ChangeHistoryUpdateManyArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    /**
+     * The data used to update ChangeHistories.
+     */
+    data: XOR<ChangeHistoryUpdateManyMutationInput, ChangeHistoryUncheckedUpdateManyInput>;
+    /**
+     * Filter which ChangeHistories to update
+     */
+    where?: ChangeHistoryWhereInput;
+  };
+
+  /**
+   * ChangeHistory upsert
+   */
+  export type ChangeHistoryUpsertArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    /**
+     * Select specific fields to fetch from the ChangeHistory
+     */
+    select?: ChangeHistorySelect<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChangeHistoryInclude<ExtArgs> | null;
+    /**
+     * The filter to search for the ChangeHistory to update in case it exists.
+     */
+    where: ChangeHistoryWhereUniqueInput;
+    /**
+     * In case the ChangeHistory found by the `where` argument doesn't exist, create a new ChangeHistory with this data.
+     */
+    create: XOR<ChangeHistoryCreateInput, ChangeHistoryUncheckedCreateInput>;
+    /**
+     * In case the ChangeHistory was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ChangeHistoryUpdateInput, ChangeHistoryUncheckedUpdateInput>;
+  };
+
+  /**
+   * ChangeHistory delete
+   */
+  export type ChangeHistoryDeleteArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    /**
+     * Select specific fields to fetch from the ChangeHistory
+     */
+    select?: ChangeHistorySelect<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChangeHistoryInclude<ExtArgs> | null;
+    /**
+     * Filter which ChangeHistory to delete.
+     */
+    where: ChangeHistoryWhereUniqueInput;
+  };
+
+  /**
+   * ChangeHistory deleteMany
+   */
+  export type ChangeHistoryDeleteManyArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    /**
+     * Filter which ChangeHistories to delete
+     */
+    where?: ChangeHistoryWhereInput;
+  };
+
+  /**
+   * ChangeHistory without action
+   */
+  export type ChangeHistoryDefaultArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    /**
+     * Select specific fields to fetch from the ChangeHistory
+     */
+    select?: ChangeHistorySelect<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChangeHistoryInclude<ExtArgs> | null;
+  };
+
+  /**
    * Enums
    */
 
@@ -10902,12 +12103,31 @@ export namespace Prisma {
   export type ProgressHistoryScalarFieldEnum =
     (typeof ProgressHistoryScalarFieldEnum)[keyof typeof ProgressHistoryScalarFieldEnum];
 
+  export const ChangeHistoryScalarFieldEnum: {
+    id: 'id';
+    entityType: 'entityType';
+    entityId: 'entityId';
+    userId: 'userId';
+    changedAt: 'changedAt';
+    changes: 'changes';
+    createdAt: 'createdAt';
+  };
+
+  export type ChangeHistoryScalarFieldEnum =
+    (typeof ChangeHistoryScalarFieldEnum)[keyof typeof ChangeHistoryScalarFieldEnum];
+
   export const SortOrder: {
     asc: 'asc';
     desc: 'desc';
   };
 
   export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder];
+
+  export const JsonNullValueInput: {
+    JsonNull: typeof JsonNull;
+  };
+
+  export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput];
 
   export const QueryMode: {
     default: 'default';
@@ -10922,6 +12142,14 @@ export namespace Prisma {
   };
 
   export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder];
+
+  export const JsonNullValueFilter: {
+    DbNull: typeof DbNull;
+    JsonNull: typeof JsonNull;
+    AnyNull: typeof AnyNull;
+  };
+
+  export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter];
 
   /**
    * Field references
@@ -11054,6 +12282,11 @@ export namespace Prisma {
   >;
 
   /**
+   * Reference to a field of type 'Json'
+   */
+  export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>;
+
+  /**
    * Reference to a field of type 'Float'
    */
   export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>;
@@ -11081,6 +12314,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<'User'> | Date | string;
     updatedAt?: DateTimeFilter<'User'> | Date | string;
     goals?: GoalListRelationFilter;
+    changeHistory?: ChangeHistoryListRelationFilter;
   };
 
   export type UserOrderByWithRelationInput = {
@@ -11094,6 +12328,7 @@ export namespace Prisma {
     createdAt?: SortOrder;
     updatedAt?: SortOrder;
     goals?: GoalOrderByRelationAggregateInput;
+    changeHistory?: ChangeHistoryOrderByRelationAggregateInput;
   };
 
   export type UserWhereUniqueInput = Prisma.AtLeast<
@@ -11111,6 +12346,7 @@ export namespace Prisma {
       createdAt?: DateTimeFilter<'User'> | Date | string;
       updatedAt?: DateTimeFilter<'User'> | Date | string;
       goals?: GoalListRelationFilter;
+      changeHistory?: ChangeHistoryListRelationFilter;
     },
     'id' | 'email'
   >;
@@ -11711,6 +12947,78 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<'ProgressHistory'> | Date | string;
   };
 
+  export type ChangeHistoryWhereInput = {
+    AND?: ChangeHistoryWhereInput | ChangeHistoryWhereInput[];
+    OR?: ChangeHistoryWhereInput[];
+    NOT?: ChangeHistoryWhereInput | ChangeHistoryWhereInput[];
+    id?: UuidFilter<'ChangeHistory'> | string;
+    entityType?: StringFilter<'ChangeHistory'> | string;
+    entityId?: UuidFilter<'ChangeHistory'> | string;
+    userId?: UuidFilter<'ChangeHistory'> | string;
+    changedAt?: DateTimeFilter<'ChangeHistory'> | Date | string;
+    changes?: JsonFilter<'ChangeHistory'>;
+    createdAt?: DateTimeFilter<'ChangeHistory'> | Date | string;
+    user?: XOR<UserRelationFilter, UserWhereInput>;
+  };
+
+  export type ChangeHistoryOrderByWithRelationInput = {
+    id?: SortOrder;
+    entityType?: SortOrder;
+    entityId?: SortOrder;
+    userId?: SortOrder;
+    changedAt?: SortOrder;
+    changes?: SortOrder;
+    createdAt?: SortOrder;
+    user?: UserOrderByWithRelationInput;
+  };
+
+  export type ChangeHistoryWhereUniqueInput = Prisma.AtLeast<
+    {
+      id?: string;
+      AND?: ChangeHistoryWhereInput | ChangeHistoryWhereInput[];
+      OR?: ChangeHistoryWhereInput[];
+      NOT?: ChangeHistoryWhereInput | ChangeHistoryWhereInput[];
+      entityType?: StringFilter<'ChangeHistory'> | string;
+      entityId?: UuidFilter<'ChangeHistory'> | string;
+      userId?: UuidFilter<'ChangeHistory'> | string;
+      changedAt?: DateTimeFilter<'ChangeHistory'> | Date | string;
+      changes?: JsonFilter<'ChangeHistory'>;
+      createdAt?: DateTimeFilter<'ChangeHistory'> | Date | string;
+      user?: XOR<UserRelationFilter, UserWhereInput>;
+    },
+    'id'
+  >;
+
+  export type ChangeHistoryOrderByWithAggregationInput = {
+    id?: SortOrder;
+    entityType?: SortOrder;
+    entityId?: SortOrder;
+    userId?: SortOrder;
+    changedAt?: SortOrder;
+    changes?: SortOrder;
+    createdAt?: SortOrder;
+    _count?: ChangeHistoryCountOrderByAggregateInput;
+    _max?: ChangeHistoryMaxOrderByAggregateInput;
+    _min?: ChangeHistoryMinOrderByAggregateInput;
+  };
+
+  export type ChangeHistoryScalarWhereWithAggregatesInput = {
+    AND?:
+      | ChangeHistoryScalarWhereWithAggregatesInput
+      | ChangeHistoryScalarWhereWithAggregatesInput[];
+    OR?: ChangeHistoryScalarWhereWithAggregatesInput[];
+    NOT?:
+      | ChangeHistoryScalarWhereWithAggregatesInput
+      | ChangeHistoryScalarWhereWithAggregatesInput[];
+    id?: UuidWithAggregatesFilter<'ChangeHistory'> | string;
+    entityType?: StringWithAggregatesFilter<'ChangeHistory'> | string;
+    entityId?: UuidWithAggregatesFilter<'ChangeHistory'> | string;
+    userId?: UuidWithAggregatesFilter<'ChangeHistory'> | string;
+    changedAt?: DateTimeWithAggregatesFilter<'ChangeHistory'> | Date | string;
+    changes?: JsonWithAggregatesFilter<'ChangeHistory'>;
+    createdAt?: DateTimeWithAggregatesFilter<'ChangeHistory'> | Date | string;
+  };
+
   export type UserCreateInput = {
     id?: string;
     email: string;
@@ -11722,6 +13030,7 @@ export namespace Prisma {
     createdAt?: Date | string;
     updatedAt?: Date | string;
     goals?: GoalCreateNestedManyWithoutUserInput;
+    changeHistory?: ChangeHistoryCreateNestedManyWithoutUserInput;
   };
 
   export type UserUncheckedCreateInput = {
@@ -11735,6 +13044,7 @@ export namespace Prisma {
     createdAt?: Date | string;
     updatedAt?: Date | string;
     goals?: GoalUncheckedCreateNestedManyWithoutUserInput;
+    changeHistory?: ChangeHistoryUncheckedCreateNestedManyWithoutUserInput;
   };
 
   export type UserUpdateInput = {
@@ -11748,6 +13058,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     goals?: GoalUpdateManyWithoutUserNestedInput;
+    changeHistory?: ChangeHistoryUpdateManyWithoutUserNestedInput;
   };
 
   export type UserUncheckedUpdateInput = {
@@ -11761,6 +13072,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     goals?: GoalUncheckedUpdateManyWithoutUserNestedInput;
+    changeHistory?: ChangeHistoryUncheckedUpdateManyWithoutUserNestedInput;
   };
 
   export type UserCreateManyInput = {
@@ -12387,6 +13699,75 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
 
+  export type ChangeHistoryCreateInput = {
+    id?: string;
+    entityType: string;
+    entityId: string;
+    changedAt?: Date | string;
+    changes: JsonNullValueInput | InputJsonValue;
+    createdAt?: Date | string;
+    user: UserCreateNestedOneWithoutChangeHistoryInput;
+  };
+
+  export type ChangeHistoryUncheckedCreateInput = {
+    id?: string;
+    entityType: string;
+    entityId: string;
+    userId: string;
+    changedAt?: Date | string;
+    changes: JsonNullValueInput | InputJsonValue;
+    createdAt?: Date | string;
+  };
+
+  export type ChangeHistoryUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    entityType?: StringFieldUpdateOperationsInput | string;
+    entityId?: StringFieldUpdateOperationsInput | string;
+    changedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    changes?: JsonNullValueInput | InputJsonValue;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    user?: UserUpdateOneRequiredWithoutChangeHistoryNestedInput;
+  };
+
+  export type ChangeHistoryUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    entityType?: StringFieldUpdateOperationsInput | string;
+    entityId?: StringFieldUpdateOperationsInput | string;
+    userId?: StringFieldUpdateOperationsInput | string;
+    changedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    changes?: JsonNullValueInput | InputJsonValue;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+  };
+
+  export type ChangeHistoryCreateManyInput = {
+    id?: string;
+    entityType: string;
+    entityId: string;
+    userId: string;
+    changedAt?: Date | string;
+    changes: JsonNullValueInput | InputJsonValue;
+    createdAt?: Date | string;
+  };
+
+  export type ChangeHistoryUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    entityType?: StringFieldUpdateOperationsInput | string;
+    entityId?: StringFieldUpdateOperationsInput | string;
+    changedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    changes?: JsonNullValueInput | InputJsonValue;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+  };
+
+  export type ChangeHistoryUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    entityType?: StringFieldUpdateOperationsInput | string;
+    entityId?: StringFieldUpdateOperationsInput | string;
+    userId?: StringFieldUpdateOperationsInput | string;
+    changedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    changes?: JsonNullValueInput | InputJsonValue;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+  };
+
   export type UuidFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>;
     in?: string[] | ListStringFieldRefInput<$PrismaModel>;
@@ -12460,12 +13841,22 @@ export namespace Prisma {
     none?: GoalWhereInput;
   };
 
+  export type ChangeHistoryListRelationFilter = {
+    every?: ChangeHistoryWhereInput;
+    some?: ChangeHistoryWhereInput;
+    none?: ChangeHistoryWhereInput;
+  };
+
   export type SortOrderInput = {
     sort: SortOrder;
     nulls?: NullsOrder;
   };
 
   export type GoalOrderByRelationAggregateInput = {
+    _count?: SortOrder;
+  };
+
+  export type ChangeHistoryOrderByRelationAggregateInput = {
     _count?: SortOrder;
   };
 
@@ -13125,6 +14516,87 @@ export namespace Prisma {
   export type ProgressHistorySumOrderByAggregateInput = {
     progress?: SortOrder;
   };
+  export type JsonFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<
+          Required<JsonFilterBase<$PrismaModel>>,
+          Exclude<keyof Required<JsonFilterBase<$PrismaModel>>, 'path'>
+        >,
+        Required<JsonFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonFilterBase<$PrismaModel>>, 'path'>>;
+
+  export type JsonFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter;
+    path?: string[];
+    string_contains?: string | StringFieldRefInput<$PrismaModel>;
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>;
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>;
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null;
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null;
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null;
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>;
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>;
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>;
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>;
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter;
+  };
+
+  export type ChangeHistoryCountOrderByAggregateInput = {
+    id?: SortOrder;
+    entityType?: SortOrder;
+    entityId?: SortOrder;
+    userId?: SortOrder;
+    changedAt?: SortOrder;
+    changes?: SortOrder;
+    createdAt?: SortOrder;
+  };
+
+  export type ChangeHistoryMaxOrderByAggregateInput = {
+    id?: SortOrder;
+    entityType?: SortOrder;
+    entityId?: SortOrder;
+    userId?: SortOrder;
+    changedAt?: SortOrder;
+    createdAt?: SortOrder;
+  };
+
+  export type ChangeHistoryMinOrderByAggregateInput = {
+    id?: SortOrder;
+    entityType?: SortOrder;
+    entityId?: SortOrder;
+    userId?: SortOrder;
+    changedAt?: SortOrder;
+    createdAt?: SortOrder;
+  };
+  export type JsonWithAggregatesFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<
+          Required<JsonWithAggregatesFilterBase<$PrismaModel>>,
+          Exclude<keyof Required<JsonWithAggregatesFilterBase<$PrismaModel>>, 'path'>
+        >,
+        Required<JsonWithAggregatesFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonWithAggregatesFilterBase<$PrismaModel>>, 'path'>>;
+
+  export type JsonWithAggregatesFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter;
+    path?: string[];
+    string_contains?: string | StringFieldRefInput<$PrismaModel>;
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>;
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>;
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null;
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null;
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null;
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>;
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>;
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>;
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>;
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter;
+    _count?: NestedIntFilter<$PrismaModel>;
+    _min?: NestedJsonFilter<$PrismaModel>;
+    _max?: NestedJsonFilter<$PrismaModel>;
+  };
 
   export type GoalCreateNestedManyWithoutUserInput = {
     create?:
@@ -13136,6 +14608,18 @@ export namespace Prisma {
     connect?: GoalWhereUniqueInput | GoalWhereUniqueInput[];
   };
 
+  export type ChangeHistoryCreateNestedManyWithoutUserInput = {
+    create?:
+      | XOR<ChangeHistoryCreateWithoutUserInput, ChangeHistoryUncheckedCreateWithoutUserInput>
+      | ChangeHistoryCreateWithoutUserInput[]
+      | ChangeHistoryUncheckedCreateWithoutUserInput[];
+    connectOrCreate?:
+      | ChangeHistoryCreateOrConnectWithoutUserInput
+      | ChangeHistoryCreateOrConnectWithoutUserInput[];
+    createMany?: ChangeHistoryCreateManyUserInputEnvelope;
+    connect?: ChangeHistoryWhereUniqueInput | ChangeHistoryWhereUniqueInput[];
+  };
+
   export type GoalUncheckedCreateNestedManyWithoutUserInput = {
     create?:
       | XOR<GoalCreateWithoutUserInput, GoalUncheckedCreateWithoutUserInput>
@@ -13144,6 +14628,18 @@ export namespace Prisma {
     connectOrCreate?: GoalCreateOrConnectWithoutUserInput | GoalCreateOrConnectWithoutUserInput[];
     createMany?: GoalCreateManyUserInputEnvelope;
     connect?: GoalWhereUniqueInput | GoalWhereUniqueInput[];
+  };
+
+  export type ChangeHistoryUncheckedCreateNestedManyWithoutUserInput = {
+    create?:
+      | XOR<ChangeHistoryCreateWithoutUserInput, ChangeHistoryUncheckedCreateWithoutUserInput>
+      | ChangeHistoryCreateWithoutUserInput[]
+      | ChangeHistoryUncheckedCreateWithoutUserInput[];
+    connectOrCreate?:
+      | ChangeHistoryCreateOrConnectWithoutUserInput
+      | ChangeHistoryCreateOrConnectWithoutUserInput[];
+    createMany?: ChangeHistoryCreateManyUserInputEnvelope;
+    connect?: ChangeHistoryWhereUniqueInput | ChangeHistoryWhereUniqueInput[];
   };
 
   export type StringFieldUpdateOperationsInput = {
@@ -13189,6 +14685,31 @@ export namespace Prisma {
     deleteMany?: GoalScalarWhereInput | GoalScalarWhereInput[];
   };
 
+  export type ChangeHistoryUpdateManyWithoutUserNestedInput = {
+    create?:
+      | XOR<ChangeHistoryCreateWithoutUserInput, ChangeHistoryUncheckedCreateWithoutUserInput>
+      | ChangeHistoryCreateWithoutUserInput[]
+      | ChangeHistoryUncheckedCreateWithoutUserInput[];
+    connectOrCreate?:
+      | ChangeHistoryCreateOrConnectWithoutUserInput
+      | ChangeHistoryCreateOrConnectWithoutUserInput[];
+    upsert?:
+      | ChangeHistoryUpsertWithWhereUniqueWithoutUserInput
+      | ChangeHistoryUpsertWithWhereUniqueWithoutUserInput[];
+    createMany?: ChangeHistoryCreateManyUserInputEnvelope;
+    set?: ChangeHistoryWhereUniqueInput | ChangeHistoryWhereUniqueInput[];
+    disconnect?: ChangeHistoryWhereUniqueInput | ChangeHistoryWhereUniqueInput[];
+    delete?: ChangeHistoryWhereUniqueInput | ChangeHistoryWhereUniqueInput[];
+    connect?: ChangeHistoryWhereUniqueInput | ChangeHistoryWhereUniqueInput[];
+    update?:
+      | ChangeHistoryUpdateWithWhereUniqueWithoutUserInput
+      | ChangeHistoryUpdateWithWhereUniqueWithoutUserInput[];
+    updateMany?:
+      | ChangeHistoryUpdateManyWithWhereWithoutUserInput
+      | ChangeHistoryUpdateManyWithWhereWithoutUserInput[];
+    deleteMany?: ChangeHistoryScalarWhereInput | ChangeHistoryScalarWhereInput[];
+  };
+
   export type GoalUncheckedUpdateManyWithoutUserNestedInput = {
     create?:
       | XOR<GoalCreateWithoutUserInput, GoalUncheckedCreateWithoutUserInput>
@@ -13210,6 +14731,31 @@ export namespace Prisma {
       | GoalUpdateManyWithWhereWithoutUserInput
       | GoalUpdateManyWithWhereWithoutUserInput[];
     deleteMany?: GoalScalarWhereInput | GoalScalarWhereInput[];
+  };
+
+  export type ChangeHistoryUncheckedUpdateManyWithoutUserNestedInput = {
+    create?:
+      | XOR<ChangeHistoryCreateWithoutUserInput, ChangeHistoryUncheckedCreateWithoutUserInput>
+      | ChangeHistoryCreateWithoutUserInput[]
+      | ChangeHistoryUncheckedCreateWithoutUserInput[];
+    connectOrCreate?:
+      | ChangeHistoryCreateOrConnectWithoutUserInput
+      | ChangeHistoryCreateOrConnectWithoutUserInput[];
+    upsert?:
+      | ChangeHistoryUpsertWithWhereUniqueWithoutUserInput
+      | ChangeHistoryUpsertWithWhereUniqueWithoutUserInput[];
+    createMany?: ChangeHistoryCreateManyUserInputEnvelope;
+    set?: ChangeHistoryWhereUniqueInput | ChangeHistoryWhereUniqueInput[];
+    disconnect?: ChangeHistoryWhereUniqueInput | ChangeHistoryWhereUniqueInput[];
+    delete?: ChangeHistoryWhereUniqueInput | ChangeHistoryWhereUniqueInput[];
+    connect?: ChangeHistoryWhereUniqueInput | ChangeHistoryWhereUniqueInput[];
+    update?:
+      | ChangeHistoryUpdateWithWhereUniqueWithoutUserInput
+      | ChangeHistoryUpdateWithWhereUniqueWithoutUserInput[];
+    updateMany?:
+      | ChangeHistoryUpdateManyWithWhereWithoutUserInput
+      | ChangeHistoryUpdateManyWithWhereWithoutUserInput[];
+    deleteMany?: ChangeHistoryScalarWhereInput | ChangeHistoryScalarWhereInput[];
   };
 
   export type UserCreateNestedOneWithoutGoalsInput = {
@@ -13720,6 +15266,23 @@ export namespace Prisma {
     >;
   };
 
+  export type UserCreateNestedOneWithoutChangeHistoryInput = {
+    create?: XOR<UserCreateWithoutChangeHistoryInput, UserUncheckedCreateWithoutChangeHistoryInput>;
+    connectOrCreate?: UserCreateOrConnectWithoutChangeHistoryInput;
+    connect?: UserWhereUniqueInput;
+  };
+
+  export type UserUpdateOneRequiredWithoutChangeHistoryNestedInput = {
+    create?: XOR<UserCreateWithoutChangeHistoryInput, UserUncheckedCreateWithoutChangeHistoryInput>;
+    connectOrCreate?: UserCreateOrConnectWithoutChangeHistoryInput;
+    upsert?: UserUpsertWithoutChangeHistoryInput;
+    connect?: UserWhereUniqueInput;
+    update?: XOR<
+      XOR<UserUpdateToOneWithWhereWithoutChangeHistoryInput, UserUpdateWithoutChangeHistoryInput>,
+      UserUncheckedUpdateWithoutChangeHistoryInput
+    >;
+  };
+
   export type NestedUuidFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>;
     in?: string[] | ListStringFieldRefInput<$PrismaModel>;
@@ -14040,6 +15603,31 @@ export namespace Prisma {
     _min?: NestedEnumReminderStatusFilter<$PrismaModel>;
     _max?: NestedEnumReminderStatusFilter<$PrismaModel>;
   };
+  export type NestedJsonFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<
+          Required<NestedJsonFilterBase<$PrismaModel>>,
+          Exclude<keyof Required<NestedJsonFilterBase<$PrismaModel>>, 'path'>
+        >,
+        Required<NestedJsonFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<NestedJsonFilterBase<$PrismaModel>>, 'path'>>;
+
+  export type NestedJsonFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter;
+    path?: string[];
+    string_contains?: string | StringFieldRefInput<$PrismaModel>;
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>;
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>;
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null;
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null;
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null;
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>;
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>;
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>;
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>;
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter;
+  };
 
   export type GoalCreateWithoutUserInput = {
     id?: string;
@@ -14079,6 +15667,34 @@ export namespace Prisma {
     skipDuplicates?: boolean;
   };
 
+  export type ChangeHistoryCreateWithoutUserInput = {
+    id?: string;
+    entityType: string;
+    entityId: string;
+    changedAt?: Date | string;
+    changes: JsonNullValueInput | InputJsonValue;
+    createdAt?: Date | string;
+  };
+
+  export type ChangeHistoryUncheckedCreateWithoutUserInput = {
+    id?: string;
+    entityType: string;
+    entityId: string;
+    changedAt?: Date | string;
+    changes: JsonNullValueInput | InputJsonValue;
+    createdAt?: Date | string;
+  };
+
+  export type ChangeHistoryCreateOrConnectWithoutUserInput = {
+    where: ChangeHistoryWhereUniqueInput;
+    create: XOR<ChangeHistoryCreateWithoutUserInput, ChangeHistoryUncheckedCreateWithoutUserInput>;
+  };
+
+  export type ChangeHistoryCreateManyUserInputEnvelope = {
+    data: ChangeHistoryCreateManyUserInput | ChangeHistoryCreateManyUserInput[];
+    skipDuplicates?: boolean;
+  };
+
   export type GoalUpsertWithWhereUniqueWithoutUserInput = {
     where: GoalWhereUniqueInput;
     update: XOR<GoalUpdateWithoutUserInput, GoalUncheckedUpdateWithoutUserInput>;
@@ -14112,6 +15728,38 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<'Goal'> | Date | string;
   };
 
+  export type ChangeHistoryUpsertWithWhereUniqueWithoutUserInput = {
+    where: ChangeHistoryWhereUniqueInput;
+    update: XOR<ChangeHistoryUpdateWithoutUserInput, ChangeHistoryUncheckedUpdateWithoutUserInput>;
+    create: XOR<ChangeHistoryCreateWithoutUserInput, ChangeHistoryUncheckedCreateWithoutUserInput>;
+  };
+
+  export type ChangeHistoryUpdateWithWhereUniqueWithoutUserInput = {
+    where: ChangeHistoryWhereUniqueInput;
+    data: XOR<ChangeHistoryUpdateWithoutUserInput, ChangeHistoryUncheckedUpdateWithoutUserInput>;
+  };
+
+  export type ChangeHistoryUpdateManyWithWhereWithoutUserInput = {
+    where: ChangeHistoryScalarWhereInput;
+    data: XOR<
+      ChangeHistoryUpdateManyMutationInput,
+      ChangeHistoryUncheckedUpdateManyWithoutUserInput
+    >;
+  };
+
+  export type ChangeHistoryScalarWhereInput = {
+    AND?: ChangeHistoryScalarWhereInput | ChangeHistoryScalarWhereInput[];
+    OR?: ChangeHistoryScalarWhereInput[];
+    NOT?: ChangeHistoryScalarWhereInput | ChangeHistoryScalarWhereInput[];
+    id?: UuidFilter<'ChangeHistory'> | string;
+    entityType?: StringFilter<'ChangeHistory'> | string;
+    entityId?: UuidFilter<'ChangeHistory'> | string;
+    userId?: UuidFilter<'ChangeHistory'> | string;
+    changedAt?: DateTimeFilter<'ChangeHistory'> | Date | string;
+    changes?: JsonFilter<'ChangeHistory'>;
+    createdAt?: DateTimeFilter<'ChangeHistory'> | Date | string;
+  };
+
   export type UserCreateWithoutGoalsInput = {
     id?: string;
     email: string;
@@ -14122,6 +15770,7 @@ export namespace Prisma {
     position?: string | null;
     createdAt?: Date | string;
     updatedAt?: Date | string;
+    changeHistory?: ChangeHistoryCreateNestedManyWithoutUserInput;
   };
 
   export type UserUncheckedCreateWithoutGoalsInput = {
@@ -14134,6 +15783,7 @@ export namespace Prisma {
     position?: string | null;
     createdAt?: Date | string;
     updatedAt?: Date | string;
+    changeHistory?: ChangeHistoryUncheckedCreateNestedManyWithoutUserInput;
   };
 
   export type UserCreateOrConnectWithoutGoalsInput = {
@@ -14198,6 +15848,7 @@ export namespace Prisma {
     position?: NullableStringFieldUpdateOperationsInput | string | null;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    changeHistory?: ChangeHistoryUpdateManyWithoutUserNestedInput;
   };
 
   export type UserUncheckedUpdateWithoutGoalsInput = {
@@ -14210,6 +15861,7 @@ export namespace Prisma {
     position?: NullableStringFieldUpdateOperationsInput | string | null;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    changeHistory?: ChangeHistoryUncheckedUpdateManyWithoutUserNestedInput;
   };
 
   export type SubGoalUpsertWithWhereUniqueWithoutGoalInput = {
@@ -14848,6 +16500,74 @@ export namespace Prisma {
     reminders?: TaskReminderUncheckedUpdateManyWithoutTaskNestedInput;
   };
 
+  export type UserCreateWithoutChangeHistoryInput = {
+    id?: string;
+    email: string;
+    name: string;
+    industry?: $Enums.UserIndustry | null;
+    companySize?: $Enums.CompanySize | null;
+    jobType?: string | null;
+    position?: string | null;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    goals?: GoalCreateNestedManyWithoutUserInput;
+  };
+
+  export type UserUncheckedCreateWithoutChangeHistoryInput = {
+    id?: string;
+    email: string;
+    name: string;
+    industry?: $Enums.UserIndustry | null;
+    companySize?: $Enums.CompanySize | null;
+    jobType?: string | null;
+    position?: string | null;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    goals?: GoalUncheckedCreateNestedManyWithoutUserInput;
+  };
+
+  export type UserCreateOrConnectWithoutChangeHistoryInput = {
+    where: UserWhereUniqueInput;
+    create: XOR<UserCreateWithoutChangeHistoryInput, UserUncheckedCreateWithoutChangeHistoryInput>;
+  };
+
+  export type UserUpsertWithoutChangeHistoryInput = {
+    update: XOR<UserUpdateWithoutChangeHistoryInput, UserUncheckedUpdateWithoutChangeHistoryInput>;
+    create: XOR<UserCreateWithoutChangeHistoryInput, UserUncheckedCreateWithoutChangeHistoryInput>;
+    where?: UserWhereInput;
+  };
+
+  export type UserUpdateToOneWithWhereWithoutChangeHistoryInput = {
+    where?: UserWhereInput;
+    data: XOR<UserUpdateWithoutChangeHistoryInput, UserUncheckedUpdateWithoutChangeHistoryInput>;
+  };
+
+  export type UserUpdateWithoutChangeHistoryInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    email?: StringFieldUpdateOperationsInput | string;
+    name?: StringFieldUpdateOperationsInput | string;
+    industry?: NullableEnumUserIndustryFieldUpdateOperationsInput | $Enums.UserIndustry | null;
+    companySize?: NullableEnumCompanySizeFieldUpdateOperationsInput | $Enums.CompanySize | null;
+    jobType?: NullableStringFieldUpdateOperationsInput | string | null;
+    position?: NullableStringFieldUpdateOperationsInput | string | null;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    goals?: GoalUpdateManyWithoutUserNestedInput;
+  };
+
+  export type UserUncheckedUpdateWithoutChangeHistoryInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    email?: StringFieldUpdateOperationsInput | string;
+    name?: StringFieldUpdateOperationsInput | string;
+    industry?: NullableEnumUserIndustryFieldUpdateOperationsInput | $Enums.UserIndustry | null;
+    companySize?: NullableEnumCompanySizeFieldUpdateOperationsInput | $Enums.CompanySize | null;
+    jobType?: NullableStringFieldUpdateOperationsInput | string | null;
+    position?: NullableStringFieldUpdateOperationsInput | string | null;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    goals?: GoalUncheckedUpdateManyWithoutUserNestedInput;
+  };
+
   export type GoalCreateManyUserInput = {
     id?: string;
     title: string;
@@ -14859,6 +16579,15 @@ export namespace Prisma {
     progress?: number;
     createdAt?: Date | string;
     updatedAt?: Date | string;
+  };
+
+  export type ChangeHistoryCreateManyUserInput = {
+    id?: string;
+    entityType: string;
+    entityId: string;
+    changedAt?: Date | string;
+    changes: JsonNullValueInput | InputJsonValue;
+    createdAt?: Date | string;
   };
 
   export type GoalUpdateWithoutUserInput = {
@@ -14900,6 +16629,33 @@ export namespace Prisma {
     progress?: IntFieldUpdateOperationsInput | number;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+  };
+
+  export type ChangeHistoryUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    entityType?: StringFieldUpdateOperationsInput | string;
+    entityId?: StringFieldUpdateOperationsInput | string;
+    changedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    changes?: JsonNullValueInput | InputJsonValue;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+  };
+
+  export type ChangeHistoryUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    entityType?: StringFieldUpdateOperationsInput | string;
+    entityId?: StringFieldUpdateOperationsInput | string;
+    changedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    changes?: JsonNullValueInput | InputJsonValue;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+  };
+
+  export type ChangeHistoryUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    entityType?: StringFieldUpdateOperationsInput | string;
+    entityId?: StringFieldUpdateOperationsInput | string;
+    changedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    changes?: JsonNullValueInput | InputJsonValue;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
 
   export type SubGoalCreateManyGoalInput = {
@@ -15200,6 +16956,12 @@ export namespace Prisma {
   export type ProgressHistoryArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
   > = ProgressHistoryDefaultArgs<ExtArgs>;
+  /**
+   * @deprecated Use ChangeHistoryDefaultArgs instead
+   */
+  export type ChangeHistoryArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = ChangeHistoryDefaultArgs<ExtArgs>;
 
   /**
    * Batch Payload for updateMany & deleteMany & createMany

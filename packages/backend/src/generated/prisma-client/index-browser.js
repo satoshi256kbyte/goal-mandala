@@ -212,9 +212,23 @@ exports.Prisma.ProgressHistoryScalarFieldEnum = {
   createdAt: 'createdAt',
 };
 
+exports.Prisma.ChangeHistoryScalarFieldEnum = {
+  id: 'id',
+  entityType: 'entityType',
+  entityId: 'entityId',
+  userId: 'userId',
+  changedAt: 'changedAt',
+  changes: 'changes',
+  createdAt: 'createdAt',
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc',
+};
+
+exports.Prisma.JsonNullValueInput = {
+  JsonNull: Prisma.JsonNull,
 };
 
 exports.Prisma.QueryMode = {
@@ -225,6 +239,12 @@ exports.Prisma.QueryMode = {
 exports.Prisma.NullsOrder = {
   first: 'first',
   last: 'last',
+};
+
+exports.Prisma.JsonNullValueFilter = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull,
+  AnyNull: Prisma.AnyNull,
 };
 exports.UserIndustry = exports.$Enums.UserIndustry = {
   TECHNOLOGY: 'TECHNOLOGY',
@@ -285,6 +305,7 @@ exports.Prisma.ModelName = {
   TaskReminder: 'TaskReminder',
   Reflection: 'Reflection',
   ProgressHistory: 'ProgressHistory',
+  ChangeHistory: 'ChangeHistory',
 };
 
 /**

@@ -39,6 +39,9 @@ app.get('/health', c => {
 
 // ハンドラーのインポート
 import progressHistoryHandler from './handlers/progress-history';
+import goalsHandler from './handlers/goals';
+import subGoalsHandler from './handlers/subgoals';
+import actionsHandler from './handlers/actions';
 
 // API v1 ルート
 const apiV1 = new Hono();
@@ -53,6 +56,11 @@ apiV1.get('/', c => {
 
 // 進捗履歴API
 apiV1.route('/progress-history', progressHistoryHandler);
+
+// 目標・サブ目標・アクション更新API
+apiV1.route('/goals', goalsHandler);
+apiV1.route('/subgoals', subGoalsHandler);
+apiV1.route('/actions', actionsHandler);
 
 // APIルートをマウント
 app.route('/api/v1', apiV1);

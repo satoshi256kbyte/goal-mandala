@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 
 export const MockTestPage: React.FC<{ pageType: string }> = ({ pageType }) => {
   const [selectedItems] = useState<number[]>([]);
+  const [formValid, setFormValid] = useState(false);
 
   const handleItemClick = (index: number) => {
     const element = document.querySelector(`[data-testid*="item-${index}"]`);
@@ -14,6 +15,26 @@ export const MockTestPage: React.FC<{ pageType: string }> = ({ pageType }) => {
     if (event.key === 'Enter' || event.key === ' ') {
       handleItemClick(index);
     }
+  };
+
+  const handleFormChange = () => {
+    setTimeout(() => {
+      const title =
+        (document.querySelector('[data-testid="goal-title-input"]') as HTMLInputElement)?.value ||
+        '';
+      const description =
+        (document.querySelector('[data-testid="goal-description-input"]') as HTMLTextAreaElement)
+          ?.value || '';
+      const deadline =
+        (document.querySelector('[data-testid="goal-deadline-input"]') as HTMLInputElement)
+          ?.value || '';
+      const background =
+        (document.querySelector('[data-testid="goal-background-input"]') as HTMLTextAreaElement)
+          ?.value || '';
+
+      const isValid = title.trim() && description.trim() && deadline.trim() && background.trim();
+      setFormValid(isValid);
+    }, 100);
   };
 
   const showMessage = (text: string, type: 'success' | 'error' | 'info' = 'success') => {
@@ -34,126 +55,148 @@ export const MockTestPage: React.FC<{ pageType: string }> = ({ pageType }) => {
     return (
       <div className="min-h-screen p-8 bg-gray-50">
         <h1 className="text-2xl font-bold mb-4">目標入力</h1>
-        <form className="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow">
-          <div className="mb-4">
-            <label htmlFor="goal-title" className="block text-sm font-medium mb-2">
-              目標タイトル *
-            </label>
-            <input
-              id="goal-title"
-              data-testid="goal-title-input"
-              className="w-full p-2 border rounded"
-              required
-              aria-required="true"
-              onChange={e => {
-                const counter = document.querySelector(
-                  '[data-testid="goal-title-character-counter"]'
-                );
-                if (counter) counter.textContent = `${e.target.value.length}/100`;
-              }}
-            />
-            <div data-testid="goal-title-character-counter" className="text-sm text-gray-500 mt-1">
-              0/100
+        <div
+          data-testid="goal-form-container"
+          className="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow"
+        >
+          <form>
+            <div className="mb-4">
+              <label htmlFor="goal-title" className="block text-sm font-medium mb-2">
+                目標タイトル *
+              </label>
+              <input
+                id="goal-title"
+                data-testid="goal-title-input"
+                className="w-full p-2 border rounded"
+                required
+                aria-required="true"
+                onChange={e => {
+                  const counter = document.querySelector(
+                    '[data-testid="goal-title-character-counter"]'
+                  );
+                  if (counter) counter.textContent = `${e.target.value.length}/100`;
+                  handleFormChange();
+                }}
+              />
+              <div
+                data-testid="goal-title-character-counter"
+                className="text-sm text-gray-500 mt-1"
+              >
+                0/100
+              </div>
+              <div data-testid="goal-title-error" className="text-red-600 text-sm mt-1 hidden">
+                必須項目です
+              </div>
             </div>
-            <div data-testid="goal-title-error" className="text-red-600 text-sm mt-1 hidden">
-              必須項目です
+
+            <div className="mb-4">
+              <label htmlFor="goal-description" className="block text-sm font-medium mb-2">
+                目標説明 *
+              </label>
+              <textarea
+                id="goal-description"
+                data-testid="goal-description-input"
+                className="w-full p-2 border rounded h-24"
+                required
+                aria-required="true"
+                onChange={handleFormChange}
+              />
+              <div
+                data-testid="goal-description-error"
+                className="text-red-600 text-sm mt-1 hidden"
+              >
+                必須項目です
+              </div>
             </div>
-          </div>
 
-          <div className="mb-4">
-            <label htmlFor="goal-description" className="block text-sm font-medium mb-2">
-              目標説明 *
-            </label>
-            <textarea
-              id="goal-description"
-              data-testid="goal-description-input"
-              className="w-full p-2 border rounded h-24"
-              required
-              aria-required="true"
-            />
-            <div data-testid="goal-description-error" className="text-red-600 text-sm mt-1 hidden">
-              必須項目です
+            <div className="mb-4">
+              <label htmlFor="goal-deadline" className="block text-sm font-medium mb-2">
+                達成期限 *
+              </label>
+              <input
+                id="goal-deadline"
+                data-testid="goal-deadline-input"
+                type="date"
+                className="w-full p-2 border rounded"
+                required
+                aria-required="true"
+                onChange={handleFormChange}
+              />
+              <div data-testid="goal-deadline-error" className="text-red-600 text-sm mt-1 hidden">
+                必須項目です
+              </div>
             </div>
-          </div>
 
-          <div className="mb-4">
-            <label htmlFor="goal-deadline" className="block text-sm font-medium mb-2">
-              達成期限 *
-            </label>
-            <input
-              id="goal-deadline"
-              data-testid="goal-deadline-input"
-              type="date"
-              className="w-full p-2 border rounded"
-              required
-              aria-required="true"
-            />
-            <div data-testid="goal-deadline-error" className="text-red-600 text-sm mt-1 hidden">
-              必須項目です
+            <div className="mb-4">
+              <label htmlFor="goal-background" className="block text-sm font-medium mb-2">
+                背景 *
+              </label>
+              <textarea
+                id="goal-background"
+                data-testid="goal-background-input"
+                className="w-full p-2 border rounded h-24"
+                required
+                aria-required="true"
+                onChange={handleFormChange}
+              />
+              <div data-testid="goal-background-error" className="text-red-600 text-sm mt-1 hidden">
+                必須項目です
+              </div>
             </div>
-          </div>
 
-          <div className="mb-4">
-            <label htmlFor="goal-background" className="block text-sm font-medium mb-2">
-              背景 *
-            </label>
-            <textarea
-              id="goal-background"
-              data-testid="goal-background-input"
-              className="w-full p-2 border rounded h-24"
-              required
-              aria-required="true"
-            />
-            <div data-testid="goal-background-error" className="text-red-600 text-sm mt-1 hidden">
-              必須項目です
+            <div className="mb-6">
+              <label htmlFor="goal-constraints" className="block text-sm font-medium mb-2">
+                制約事項
+              </label>
+              <textarea
+                id="goal-constraints"
+                data-testid="goal-constraints-input"
+                className="w-full p-2 border rounded h-24"
+              />
             </div>
-          </div>
 
-          <div className="mb-6">
-            <label htmlFor="goal-constraints" className="block text-sm font-medium mb-2">
-              制約事項
-            </label>
-            <textarea
-              id="goal-constraints"
-              data-testid="goal-constraints-input"
-              className="w-full p-2 border rounded h-24"
-            />
-          </div>
-
-          <div className="flex gap-4">
-            <button
-              type="submit"
-              data-testid="submit-button"
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-              onClick={e => {
-                e.preventDefault();
-                showMessage('目標を保存しました');
-              }}
-            >
-              次へ進む
-            </button>
-            <button
-              type="button"
-              data-testid="save-draft-button"
-              className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
-              onClick={() => showMessage('下書きを保存しました')}
-            >
-              下書き保存
-            </button>
-            <button
-              type="button"
-              data-testid="reset-button"
-              className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-              onClick={() => {
-                const form = document.querySelector('form') as HTMLFormElement;
-                form?.reset();
-                showMessage('フォームをリセットしました');
-              }}
-            >
-              リセット
-            </button>
-          </div>
-        </form>
+            <div className="flex gap-4">
+              <button
+                type="submit"
+                data-testid="submit-button"
+                disabled={!formValid}
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={e => {
+                  e.preventDefault();
+                  const button = e.target as HTMLButtonElement;
+                  button.textContent = '処理中';
+                  button.disabled = true;
+                  showMessage('目標を保存しました');
+                  setTimeout(() => {
+                    window.location.href = '/mandala/create/processing';
+                  }, 1000);
+                }}
+              >
+                次へ進む
+              </button>
+              <button
+                type="button"
+                data-testid="save-draft-button"
+                className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
+                onClick={() => showMessage('下書きを保存しました')}
+              >
+                下書き保存
+              </button>
+              <button
+                type="button"
+                data-testid="reset-button"
+                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                onClick={() => {
+                  const form = document.querySelector('form') as HTMLFormElement;
+                  form?.reset();
+                  showMessage('フォームをリセットしました');
+                }}
+              >
+                リセット
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     );
   }

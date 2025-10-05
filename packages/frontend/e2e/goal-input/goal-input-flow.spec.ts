@@ -1,24 +1,27 @@
 import { test, expect } from '@playwright/test';
 import { GoalInputHelpers } from '../helpers/goal-input-helpers';
-import { AuthHelpers } from '../helpers/auth-helpers';
 import { validGoalData, successMessages } from '../fixtures/goal-input-data';
-import { testUsers } from '../fixtures/test-data';
 
 test.describe('目標入力フロー', () => {
   let goalInputHelpers: GoalInputHelpers;
-  let authHelpers: AuthHelpers;
 
   test.beforeEach(async ({ page }) => {
     goalInputHelpers = new GoalInputHelpers(page);
-    authHelpers = new AuthHelpers(page);
 
-    // 認証済みユーザーとしてログイン
-    await authHelpers.goToLogin();
-    await authHelpers.fillLoginForm(testUsers.validUser.email, testUsers.validUser.password);
-    await authHelpers.clickLoginButton();
-
-    // ログイン成功を確認
-    await authHelpers.expectRedirectTo('/');
+    // モック認証を設定
+    await page.addInitScript(() => {
+      localStorage.setItem('mock_auth_enabled', 'true');
+      localStorage.setItem(
+        'mock_user',
+        JSON.stringify({
+          id: 'test-user-id',
+          email: 'test@example.com',
+          name: 'Test User',
+          profileComplete: true,
+        })
+      );
+      localStorage.setItem('mock_token', 'mock-jwt-token');
+    });
   });
 
   test('完全な目標入力フローが正常に動作する', async ({ page }) => {

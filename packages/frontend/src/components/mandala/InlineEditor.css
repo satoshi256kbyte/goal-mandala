@@ -1,0 +1,203 @@
+.inline-editor {
+  position: relative;
+  width: 100%;
+}
+
+.inline-editor-input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 2px solid #3b82f6;
+  border-radius: 0.375rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  background-color: #ffffff;
+  transition: all 0.2s ease-in-out;
+  outline: none;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.inline-editor-input:focus {
+  border-color: #2563eb;
+  box-shadow:
+    0 0 0 3px rgba(59, 130, 246, 0.15),
+    0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
+}
+
+.inline-editor-input--error {
+  border-color: #ef4444;
+  background-color: #fef2f2;
+  animation: shake 0.3s ease-in-out;
+}
+
+.inline-editor-input--error:focus {
+  border-color: #dc2626;
+  box-shadow:
+    0 0 0 3px rgba(239, 68, 68, 0.15),
+    0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  background-color: #ffffff;
+}
+
+.inline-editor-input--saving {
+  opacity: 0.6;
+  cursor: wait;
+  pointer-events: none;
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-4px);
+  }
+  75% {
+    transform: translateX(4px);
+  }
+}
+
+.inline-editor-textarea {
+  resize: vertical;
+  min-height: 4rem;
+  font-family: inherit;
+}
+
+.inline-editor-error {
+  margin-top: 0.375rem;
+  padding: 0.5rem;
+  font-size: 0.875rem;
+  color: #dc2626;
+  background-color: #fef2f2;
+  border-left: 3px solid #ef4444;
+  border-radius: 0.25rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  animation: slideDown 0.2s ease-out;
+}
+
+.inline-editor-error::before {
+  content: '⚠';
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.inline-editor-error--save {
+  color: #dc2626;
+  font-weight: 500;
+  background-color: #fee2e2;
+  border-left-color: #dc2626;
+}
+
+.inline-editor-saving {
+  margin-top: 0.375rem;
+  padding: 0.5rem;
+  font-size: 0.875rem;
+  color: #4b5563;
+  background-color: #f3f4f6;
+  border-left: 3px solid #9ca3af;
+  border-radius: 0.25rem;
+  font-style: italic;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  animation: slideDown 0.2s ease-out;
+}
+
+.inline-editor-saving::before {
+  content: '';
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid #9ca3af;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* アクセシビリティ: フォーカス表示の強化 */
+.inline-editor-input:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+/* ダークモード対応 */
+@media (prefers-color-scheme: dark) {
+  .inline-editor-input {
+    background-color: #1f2937;
+    color: #f9fafb;
+    border-color: #4b5563;
+  }
+
+  .inline-editor-input:focus {
+    border-color: #60a5fa;
+    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
+  }
+
+  .inline-editor-input--error {
+    border-color: #f87171;
+  }
+
+  .inline-editor-input--error:focus {
+    border-color: #ef4444;
+    box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.1);
+  }
+
+  .inline-editor-error {
+    color: #f87171;
+  }
+
+  .inline-editor-error--save {
+    color: #ef4444;
+  }
+
+  .inline-editor-saving {
+    color: #9ca3af;
+  }
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+  .inline-editor-input {
+    font-size: 1rem;
+    padding: 0.75rem;
+  }
+
+  .inline-editor-textarea {
+    min-height: 6rem;
+  }
+}
+
+/* ハイコントラストモード対応 */
+@media (prefers-contrast: high) {
+  .inline-editor-input {
+    border-width: 3px;
+  }
+
+  .inline-editor-input:focus {
+    border-width: 3px;
+    box-shadow: none;
+  }
+
+  .inline-editor-error {
+    font-weight: 600;
+  }
+}

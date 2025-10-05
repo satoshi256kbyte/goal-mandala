@@ -1,0 +1,625 @@
+/* HistoryPanel スタイル */
+
+/* パネルのアニメーション */
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutRight {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+/* パネル本体 */
+.history-panel {
+  animation: slideInRight 0.3s ease-out;
+  box-shadow:
+    -4px 0 6px -1px rgba(0, 0, 0, 0.1),
+    -2px 0 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.history-panel.closing {
+  animation: slideOutRight 0.2s ease-in;
+}
+
+/* ヘッダー */
+.history-panel-header {
+  background: linear-gradient(to bottom, #ffffff, #f9fafb);
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.history-panel-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+  letter-spacing: -0.025em;
+}
+
+.history-panel-close-button {
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+  transition: all 0.2s ease;
+  color: #6b7280;
+}
+
+.history-panel-close-button:hover {
+  background-color: #f3f4f6;
+  color: #111827;
+  transform: scale(1.1);
+}
+
+.history-panel-close-button:active {
+  transform: scale(0.95);
+}
+
+/* 履歴一覧 */
+.history-panel-list {
+  padding: 1rem;
+}
+
+.history-panel-empty {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #9ca3af;
+  font-size: 0.875rem;
+}
+
+.history-panel-empty::before {
+  content: '📋';
+  display: block;
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+/* 履歴エントリ */
+.history-entry {
+  padding: 0.875rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  background-color: #ffffff;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.history-entry::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(to bottom, #3b82f6, #60a5fa);
+  transform: scaleY(0);
+  transition: transform 0.2s ease;
+}
+
+.history-entry:hover {
+  background-color: #f9fafb;
+  border-color: #3b82f6;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transform: translateX(-2px);
+}
+
+.history-entry:hover::before {
+  transform: scaleY(1);
+}
+
+.history-entry:active {
+  transform: translateX(-1px) scale(0.98);
+}
+
+.history-entry-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.5rem;
+}
+
+.history-entry-user {
+  font-weight: 500;
+  color: #111827;
+  font-size: 0.875rem;
+}
+
+.history-entry-date {
+  font-size: 0.75rem;
+  color: #6b7280;
+  white-space: nowrap;
+}
+
+.history-entry-changes {
+  font-size: 0.875rem;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.history-entry-changes::before {
+  content: '✏️';
+  font-size: 1rem;
+}
+
+/* ページネーション */
+.history-panel-pagination {
+  padding: 1rem;
+  border-top: 1px solid #e5e7eb;
+  background-color: #f9fafb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.history-pagination-button {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  background-color: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.history-pagination-button:hover:not(:disabled) {
+  background-color: #f9fafb;
+  border-color: #9ca3af;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.history-pagination-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.history-pagination-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.history-pagination-info {
+  font-size: 0.875rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+/* 詳細モーダル */
+.history-detail-modal-overlay {
+  animation: fadeIn 0.2s ease-out;
+}
+
+.history-detail-modal {
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.history-detail-header {
+  background: linear-gradient(to bottom, #ffffff, #f9fafb);
+}
+
+.history-detail-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.history-detail-meta {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  color: #6b7280;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.history-detail-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.history-detail-meta-item::before {
+  content: '•';
+  color: #9ca3af;
+}
+
+/* 変更内容 */
+.history-changes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.history-change-item {
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  background-color: #ffffff;
+  transition: box-shadow 0.2s ease;
+}
+
+.history-change-item:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.history-change-field {
+  font-weight: 500;
+  color: #111827;
+  margin-bottom: 0.75rem;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.history-change-field::before {
+  content: '📝';
+  font-size: 1rem;
+}
+
+.history-change-diff {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* 差分表示 */
+.history-diff-old {
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  border-left: 3px solid #ef4444;
+  border-radius: 0.375rem;
+  padding: 0.75rem;
+}
+
+.history-diff-old-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #dc2626;
+  margin-bottom: 0.375rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.history-diff-old-label::before {
+  content: '−';
+  font-size: 1rem;
+}
+
+.history-diff-old-value {
+  font-size: 0.875rem;
+  color: #991b1b;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+.history-diff-new {
+  background-color: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-left: 3px solid #22c55e;
+  border-radius: 0.375rem;
+  padding: 0.75rem;
+}
+
+.history-diff-new-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #16a34a;
+  margin-bottom: 0.375rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.history-diff-new-label::before {
+  content: '+';
+  font-size: 1rem;
+}
+
+.history-diff-new-value {
+  font-size: 0.875rem;
+  color: #166534;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+/* ロールバックボタン */
+.history-rollback-button {
+  padding: 0.625rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #ffffff;
+  background-color: #ef4444;
+  border: none;
+  border-radius: 0.375rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.history-rollback-button::before {
+  content: '↶';
+  font-size: 1.125rem;
+}
+
+.history-rollback-button:hover {
+  background-color: #dc2626;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.history-rollback-button:active {
+  transform: translateY(0);
+}
+
+/* 確認ダイアログ */
+.history-confirm-dialog {
+  animation: slideUp 0.2s ease-out;
+}
+
+.history-confirm-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 1rem;
+}
+
+.history-confirm-message {
+  color: #6b7280;
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+
+.history-confirm-loading {
+  text-align: center;
+  padding: 2rem 0;
+}
+
+.history-confirm-spinner {
+  display: inline-block;
+  width: 2rem;
+  height: 2rem;
+  border: 3px solid #e5e7eb;
+  border-top-color: #3b82f6;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.history-confirm-loading-text {
+  margin-top: 0.75rem;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+  .history-panel {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .history-detail-modal {
+    max-width: 100%;
+    margin: 0;
+    border-radius: 0;
+    max-height: 100vh;
+  }
+
+  .history-entry {
+    padding: 1rem;
+  }
+
+  .history-change-item {
+    padding: 0.875rem;
+  }
+}
+
+/* ダークモード対応 */
+@media (prefers-color-scheme: dark) {
+  .history-panel {
+    background-color: #111827;
+    border-left-color: #374151;
+  }
+
+  .history-panel-header {
+    background: linear-gradient(to bottom, #1f2937, #111827);
+    border-bottom-color: #374151;
+  }
+
+  .history-panel-title {
+    color: #f9fafb;
+  }
+
+  .history-panel-close-button {
+    color: #9ca3af;
+  }
+
+  .history-panel-close-button:hover {
+    background-color: #374151;
+    color: #f9fafb;
+  }
+
+  .history-panel-empty {
+    color: #6b7280;
+  }
+
+  .history-entry {
+    background-color: #1f2937;
+    border-color: #374151;
+  }
+
+  .history-entry:hover {
+    background-color: #374151;
+    border-color: #60a5fa;
+  }
+
+  .history-entry-user {
+    color: #f9fafb;
+  }
+
+  .history-entry-date,
+  .history-entry-changes {
+    color: #9ca3af;
+  }
+
+  .history-panel-pagination {
+    background-color: #1f2937;
+    border-top-color: #374151;
+  }
+
+  .history-pagination-button {
+    background-color: #374151;
+    border-color: #4b5563;
+    color: #f9fafb;
+  }
+
+  .history-pagination-button:hover:not(:disabled) {
+    background-color: #4b5563;
+    border-color: #6b7280;
+  }
+
+  .history-pagination-info {
+    color: #9ca3af;
+  }
+
+  .history-detail-header {
+    background: linear-gradient(to bottom, #1f2937, #111827);
+  }
+
+  .history-detail-title {
+    color: #f9fafb;
+  }
+
+  .history-detail-meta {
+    color: #9ca3af;
+  }
+
+  .history-change-item {
+    background-color: #1f2937;
+    border-color: #374151;
+  }
+
+  .history-change-field {
+    color: #f9fafb;
+  }
+
+  .history-diff-old {
+    background-color: #7f1d1d;
+    border-color: #991b1b;
+  }
+
+  .history-diff-old-value {
+    color: #fecaca;
+  }
+
+  .history-diff-new {
+    background-color: #14532d;
+    border-color: #166534;
+  }
+
+  .history-diff-new-value {
+    color: #bbf7d0;
+  }
+}
+
+/* ハイコントラストモード対応 */
+@media (prefers-contrast: high) {
+  .history-entry {
+    border-width: 2px;
+  }
+
+  .history-entry::before {
+    width: 4px;
+  }
+
+  .history-diff-old,
+  .history-diff-new {
+    border-left-width: 4px;
+  }
+
+  .history-rollback-button {
+    border: 2px solid currentColor;
+  }
+}
+
+/* スクロールバーのスタイル */
+.history-panel-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.history-panel-list::-webkit-scrollbar-track {
+  background: #f3f4f6;
+}
+
+.history-panel-list::-webkit-scrollbar-thumb {
+  background: #9ca3af;
+  border-radius: 4px;
+}
+
+.history-panel-list::-webkit-scrollbar-thumb:hover {
+  background: #6b7280;
+}
+
+@media (prefers-color-scheme: dark) {
+  .history-panel-list::-webkit-scrollbar-track {
+    background: #1f2937;
+  }
+
+  .history-panel-list::-webkit-scrollbar-thumb {
+    background: #4b5563;
+  }
+
+  .history-panel-list::-webkit-scrollbar-thumb:hover {
+    background: #6b7280;
+  }
+}

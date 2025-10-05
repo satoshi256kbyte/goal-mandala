@@ -1,0 +1,426 @@
+/* EditModal スタイル */
+
+/* モーダルオーバーレイのアニメーション */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* モーダルコンテンツのアニメーション */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+}
+
+/* モーダルオーバーレイ */
+.edit-modal-overlay {
+  animation: fadeIn 0.2s ease-out;
+}
+
+.edit-modal-overlay.closing {
+  animation: fadeOut 0.2s ease-in;
+}
+
+/* モーダルコンテンツ */
+.edit-modal-content {
+  animation: slideUp 0.3s ease-out;
+}
+
+.edit-modal-content.closing {
+  animation: slideDown 0.2s ease-in;
+}
+
+/* フォームフィールドのスタイル強化 */
+.edit-modal-form-field {
+  position: relative;
+}
+
+.edit-modal-form-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.375rem;
+  transition: color 0.2s ease;
+}
+
+.edit-modal-form-label:has(+ input:focus),
+.edit-modal-form-label:has(+ textarea:focus) {
+  color: #2563eb;
+}
+
+.edit-modal-form-input,
+.edit-modal-form-textarea {
+  width: 100%;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  transition: all 0.2s ease;
+  background-color: #ffffff;
+}
+
+.edit-modal-form-input:hover,
+.edit-modal-form-textarea:hover {
+  border-color: #9ca3af;
+}
+
+.edit-modal-form-input:focus,
+.edit-modal-form-textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  background-color: #ffffff;
+}
+
+.edit-modal-form-input.error,
+.edit-modal-form-textarea.error {
+  border-color: #ef4444;
+  background-color: #fef2f2;
+}
+
+.edit-modal-form-input.error:focus,
+.edit-modal-form-textarea.error:focus {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+/* エラーメッセージ */
+.edit-modal-error-message {
+  margin-top: 0.375rem;
+  padding: 0.5rem;
+  font-size: 0.875rem;
+  color: #dc2626;
+  background-color: #fef2f2;
+  border-left: 3px solid #ef4444;
+  border-radius: 0.25rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  animation: slideDown 0.2s ease-out;
+}
+
+.edit-modal-error-message::before {
+  content: '⚠';
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+/* 保存エラーバナー */
+.edit-modal-save-error {
+  margin-bottom: 1rem;
+  padding: 0.75rem 1rem;
+  background-color: #fee2e2;
+  border: 1px solid #fecaca;
+  border-left: 4px solid #ef4444;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  animation: slideDown 0.3s ease-out;
+}
+
+.edit-modal-save-error::before {
+  content: '✕';
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  background-color: #ef4444;
+  color: #ffffff;
+  border-radius: 50%;
+  font-weight: bold;
+  font-size: 0.875rem;
+  flex-shrink: 0;
+}
+
+/* ラジオボタンのスタイル */
+.edit-modal-radio-group {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.edit-modal-radio-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.375rem;
+  transition: background-color 0.2s ease;
+}
+
+.edit-modal-radio-label:hover {
+  background-color: #f3f4f6;
+}
+
+.edit-modal-radio-label input[type='radio'] {
+  width: 1.125rem;
+  height: 1.125rem;
+  margin-right: 0.5rem;
+  cursor: pointer;
+  accent-color: #3b82f6;
+}
+
+/* ボタンスタイル */
+.edit-modal-button {
+  padding: 0.625rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 0.375rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.edit-modal-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+}
+
+.edit-modal-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.edit-modal-button-primary {
+  background-color: #3b82f6;
+  color: #ffffff;
+  border: none;
+}
+
+.edit-modal-button-primary:hover:not(:disabled) {
+  background-color: #2563eb;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.edit-modal-button-primary:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.edit-modal-button-secondary {
+  background-color: #ffffff;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.edit-modal-button-secondary:hover:not(:disabled) {
+  background-color: #f9fafb;
+  border-color: #9ca3af;
+}
+
+/* 確認ダイアログ */
+.edit-modal-confirm-dialog {
+  animation: slideUp 0.2s ease-out;
+}
+
+.edit-modal-confirm-button-danger {
+  background-color: #ef4444;
+  color: #ffffff;
+  border: none;
+}
+
+.edit-modal-confirm-button-danger:hover:not(:disabled) {
+  background-color: #dc2626;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+  .edit-modal-content {
+    max-width: 100%;
+    margin: 0;
+    border-radius: 0;
+    max-height: 100vh;
+  }
+
+  .edit-modal-form-input,
+  .edit-modal-form-textarea {
+    font-size: 1rem;
+    padding: 0.75rem;
+  }
+
+  .edit-modal-button {
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+  }
+
+  .edit-modal-radio-group {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+}
+
+/* タブレット対応 */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .edit-modal-content {
+    max-width: 90%;
+  }
+}
+
+/* ダークモード対応 */
+@media (prefers-color-scheme: dark) {
+  .edit-modal-form-label {
+    color: #d1d5db;
+  }
+
+  .edit-modal-form-label:has(+ input:focus),
+  .edit-modal-form-label:has(+ textarea:focus) {
+    color: #60a5fa;
+  }
+
+  .edit-modal-form-input,
+  .edit-modal-form-textarea {
+    background-color: #1f2937;
+    border-color: #4b5563;
+    color: #f9fafb;
+  }
+
+  .edit-modal-form-input:hover,
+  .edit-modal-form-textarea:hover {
+    border-color: #6b7280;
+  }
+
+  .edit-modal-form-input:focus,
+  .edit-modal-form-textarea:focus {
+    border-color: #60a5fa;
+    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
+    background-color: #111827;
+  }
+
+  .edit-modal-form-input.error,
+  .edit-modal-form-textarea.error {
+    background-color: #7f1d1d;
+    border-color: #f87171;
+  }
+
+  .edit-modal-error-message {
+    background-color: #7f1d1d;
+    border-left-color: #f87171;
+    color: #fecaca;
+  }
+
+  .edit-modal-save-error {
+    background-color: #7f1d1d;
+    border-color: #991b1b;
+  }
+
+  .edit-modal-radio-label:hover {
+    background-color: #374151;
+  }
+
+  .edit-modal-button-secondary {
+    background-color: #374151;
+    color: #f9fafb;
+    border-color: #4b5563;
+  }
+
+  .edit-modal-button-secondary:hover:not(:disabled) {
+    background-color: #4b5563;
+    border-color: #6b7280;
+  }
+}
+
+/* ハイコントラストモード対応 */
+@media (prefers-contrast: high) {
+  .edit-modal-form-input,
+  .edit-modal-form-textarea {
+    border-width: 2px;
+  }
+
+  .edit-modal-form-input:focus,
+  .edit-modal-form-textarea:focus {
+    border-width: 3px;
+    box-shadow: none;
+  }
+
+  .edit-modal-error-message {
+    border-left-width: 4px;
+    font-weight: 600;
+  }
+
+  .edit-modal-button {
+    border-width: 2px;
+  }
+}
+
+/* アクセシビリティ: フォーカス表示の強化 */
+.edit-modal-form-input:focus-visible,
+.edit-modal-form-textarea:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+.edit-modal-button:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+/* スクロールバーのスタイル */
+.edit-modal-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.edit-modal-content::-webkit-scrollbar-track {
+  background: #f3f4f6;
+  border-radius: 4px;
+}
+
+.edit-modal-content::-webkit-scrollbar-thumb {
+  background: #9ca3af;
+  border-radius: 4px;
+}
+
+.edit-modal-content::-webkit-scrollbar-thumb:hover {
+  background: #6b7280;
+}
+
+@media (prefers-color-scheme: dark) {
+  .edit-modal-content::-webkit-scrollbar-track {
+    background: #1f2937;
+  }
+
+  .edit-modal-content::-webkit-scrollbar-thumb {
+    background: #4b5563;
+  }
+
+  .edit-modal-content::-webkit-scrollbar-thumb:hover {
+    background: #6b7280;
+  }
+}

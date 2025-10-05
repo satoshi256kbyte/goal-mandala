@@ -1,3 +1,11 @@
 export { default as MandalaChart } from './MandalaChart';
 export { default as MandalaGrid } from './MandalaGrid';
 export { default as MandalaCell } from './MandalaCell';
+export { InlineEditor } from './InlineEditor';
+export type { InlineEditorProps } from './InlineEditor';
+export { EditModal } from './EditModal';
+export type { EditModalProps } from './EditModal';
+export { ConflictDialog } from './ConflictDialog';
+export type { ConflictDialogProps } from './ConflictDialog';
+export { HistoryPanel } from './HistoryPanel';
+export type { HistoryPanelProps, HistoryEntry, HistoryChange } from './HistoryPanel';

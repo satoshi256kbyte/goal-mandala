@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import '@testing-library/jest-dom';
 import MandalaCell from '../MandalaCell';
@@ -114,6 +114,270 @@ describe('MandalaCell', () => {
       expect(screen.getByRole('gridcell')).toHaveClass(expectedClass);
 
       rerender(<div />); // Clean up for next iteration
+    });
+  });
+
+  describe('InlineEditor統合', () => {
+    it('編集可能な場合、セルクリックでインライン編集モードに入る', () => {
+      const onStartInlineEdit = vi.fn();
+      render(
+        <MandalaCell {...defaultProps} editable={true} onStartInlineEdit={onStartInlineEdit} />
+      );
+
+      const cell = screen.getByRole('gridcell');
+      fireEvent.click(cell);
+
+      expect(onStartInlineEdit).toHaveBeenCalledWith(mockCellData);
+    });
+
+    it('編集不可の場合、セルクリックでインライン編集モードに入らない', () => {
+      const onStartInlineEdit = vi.fn();
+      render(
+        <MandalaCell {...defaultProps} editable={false} onStartInlineEdit={onStartInlineEdit} />
+      );
+
+      const cell = screen.getByRole('gridcell');
+      fireEvent.click(cell);
+
+      expect(onStartInlineEdit).not.toHaveBeenCalled();
+    });
+
+    it('インライン編集中はInlineEditorコンポーネントが表示される', () => {
+      const onSaveInlineEdit = vi.fn().mockResolvedValue(undefined);
+      render(
+        <MandalaCell
+          {...defaultProps}
+          editable={true}
+          isInlineEditing={true}
+          onSaveInlineEdit={onSaveInlineEdit}
+        />
+      );
+
+      // InlineEditorが表示されていることを確認
+      expect(screen.getByRole('textbox')).toBeInTheDocument();
+    });
+
+    it('インライン編集の保存が成功すると編集モードが終了する', async () => {
+      const onSaveInlineEdit = vi.fn().mockResolvedValue(undefined);
+      const onEndInlineEdit = vi.fn();
+
+      render(
+        <MandalaCell
+          {...defaultProps}
+          editable={true}
+          isInlineEditing={true}
+          onSaveInlineEdit={onSaveInlineEdit}
+          onEndInlineEdit={onEndInlineEdit}
+        />
+      );
+
+      const input = screen.getByRole('textbox');
+      fireEvent.change(input, { target: { value: '新しいタイトル' } });
+      fireEvent.keyDown(input, { key: 'Enter' });
+
+      await waitFor(() => {
+        expect(onSaveInlineEdit).toHaveBeenCalledWith('新しいタイトル');
+      });
+    });
+
+    it('インライン編集のキャンセルで編集モードが終了する', () => {
+      const onCancelInlineEdit = vi.fn();
+      const onSaveInlineEdit = vi.fn().mockResolvedValue(undefined);
+
+      render(
+        <MandalaCell
+          {...defaultProps}
+          editable={true}
+          isInlineEditing={true}
+          onSaveInlineEdit={onSaveInlineEdit}
+          onCancelInlineEdit={onCancelInlineEdit}
+        />
+      );
+
+      const input = screen.getByRole('textbox');
+      fireEvent.keyDown(input, { key: 'Escape' });
+
+      expect(onCancelInlineEdit).toHaveBeenCalled();
+    });
+  });
+
+  describe('編集ボタン表示', () => {
+    it('編集可能な場合、ホバー時に編集ボタンが表示される', () => {
+      render(<MandalaCell {...defaultProps} editable={true} showEditButton={true} />);
+
+      const cell = screen.getByRole('gridcell');
+
+      // ホバーをシミュレート
+      fireEvent.mouseEnter(cell);
+
+      const editButton = screen.getByRole('button', { name: /編集/i });
+      expect(editButton).toBeInTheDocument();
+    });
+
+    it('編集不可の場合、編集ボタンが表示されない', () => {
+      render(<MandalaCell {...defaultProps} editable={false} />);
+
+      const editButton = screen.queryByRole('button', { name: /編集/i });
+      expect(editButton).not.toBeInTheDocument();
+    });
+
+    it('編集ボタンクリックでモーダル編集が開始される', () => {
+      const onEdit = vi.fn();
+      render(
+        <MandalaCell {...defaultProps} editable={true} showEditButton={true} onEdit={onEdit} />
+      );
+
+      const cell = screen.getByRole('gridcell');
+
+      // ホバーをシミュレート
+      fireEvent.mouseEnter(cell);
+
+      const editButton = screen.getByRole('button', { name: /編集/i });
+      fireEvent.click(editButton);
+
+      expect(onEdit).toHaveBeenCalledWith(mockCellData);
+    });
+
+    it('空のセルには編集ボタンが表示されない', () => {
+      const emptyCellData: CellData = {
+        id: '',
+        type: 'empty',
+        title: '',
+        progress: 0,
+        position: { row: 0, col: 0 },
+      };
+
+      render(
+        <MandalaCell
+          {...defaultProps}
+          cellData={emptyCellData}
+          editable={true}
+          showEditButton={true}
+        />
+      );
+
+      const editButton = screen.queryByRole('button', { name: /編集/i });
+      expect(editButton).not.toBeInTheDocument();
+    });
+  });
+
+  describe('ダブルクリック編集開始', () => {
+    it('編集可能な場合、ダブルクリックでインライン編集が開始される', () => {
+      const onStartInlineEdit = vi.fn();
+      render(
+        <MandalaCell {...defaultProps} editable={true} onStartInlineEdit={onStartInlineEdit} />
+      );
+
+      const cell = screen.getByRole('gridcell');
+      fireEvent.doubleClick(cell);
+
+      expect(onStartInlineEdit).toHaveBeenCalledWith(mockCellData);
+    });
+
+    it('編集不可の場合、ダブルクリックでインライン編集が開始されない', () => {
+      const onStartInlineEdit = vi.fn();
+      render(
+        <MandalaCell {...defaultProps} editable={false} onStartInlineEdit={onStartInlineEdit} />
+      );
+
+      const cell = screen.getByRole('gridcell');
+      fireEvent.doubleClick(cell);
+
+      expect(onStartInlineEdit).not.toHaveBeenCalled();
+    });
+
+    it('空のセルはダブルクリックでインライン編集が開始されない', () => {
+      const emptyCellData: CellData = {
+        id: '',
+        type: 'empty',
+        title: '',
+        progress: 0,
+        position: { row: 0, col: 0 },
+      };
+
+      const onStartInlineEdit = vi.fn();
+      render(
+        <MandalaCell
+          {...defaultProps}
+          cellData={emptyCellData}
+          editable={true}
+          onStartInlineEdit={onStartInlineEdit}
+        />
+      );
+
+      const cell = screen.getByRole('gridcell');
+      fireEvent.doubleClick(cell);
+
+      expect(onStartInlineEdit).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('権限制御', () => {
+    it('編集権限がある場合、編集機能が有効になる', () => {
+      render(
+        <MandalaCell {...defaultProps} editable={true} canEdit={true} showEditButton={true} />
+      );
+
+      const cell = screen.getByRole('gridcell');
+
+      // ホバーをシミュレート
+      fireEvent.mouseEnter(cell);
+
+      const editButton = screen.getByRole('button', { name: /編集/i });
+      expect(editButton).toBeEnabled();
+    });
+
+    it('編集権限がない場合、編集機能が無効になる', () => {
+      render(<MandalaCell {...defaultProps} editable={false} canEdit={false} />);
+
+      const editButton = screen.queryByRole('button', { name: /編集/i });
+      expect(editButton).not.toBeInTheDocument();
+    });
+
+    it('読み取り専用モードでは編集ボタンが表示されない', () => {
+      render(<MandalaCell {...defaultProps} editable={false} readOnly={true} />);
+
+      const editButton = screen.queryByRole('button', { name: /編集/i });
+      expect(editButton).not.toBeInTheDocument();
+    });
+
+    it('読み取り専用モードではダブルクリックで編集が開始されない', () => {
+      const onStartInlineEdit = vi.fn();
+      render(
+        <MandalaCell
+          {...defaultProps}
+          editable={false}
+          readOnly={true}
+          onStartInlineEdit={onStartInlineEdit}
+        />
+      );
+
+      const cell = screen.getByRole('gridcell');
+      fireEvent.doubleClick(cell);
+
+      expect(onStartInlineEdit).not.toHaveBeenCalled();
+    });
+
+    it('編集中に権限が変更された場合、編集モードが終了する', () => {
+      const onSaveInlineEdit = vi.fn().mockResolvedValue(undefined);
+      const { rerender } = render(
+        <MandalaCell
+          {...defaultProps}
+          editable={true}
+          isInlineEditing={true}
+          canEdit={true}
+          onSaveInlineEdit={onSaveInlineEdit}
+        />
+      );
+
+      expect(screen.getByRole('textbox')).toBeInTheDocument();
+
+      // 権限を変更
+      rerender(
+        <MandalaCell {...defaultProps} editable={false} isInlineEditing={false} canEdit={false} />
+      );
+
+      expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
     });
   });
 });
