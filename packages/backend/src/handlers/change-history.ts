@@ -1,4 +1,4 @@
-import { Hono } from 'hono';
+import { Hono, Context } from 'hono';
 import { PrismaClient } from '../generated/prisma-client';
 import { authMiddleware } from '../middleware/auth';
 import { logger } from '../utils/logger';
@@ -11,7 +11,7 @@ const prisma = new PrismaClient();
  * 変更履歴を取得する共通関数
  */
 async function getChangeHistory(
-  c: any,
+  c: Context,
   entityType: 'goal' | 'subgoal' | 'action',
   entityId: string
 ) {
@@ -179,8 +179,12 @@ app.post('/goals/:goalId/rollback', authMiddleware, async c => {
     }
 
     // 変更内容から古い値を抽出してロールバック
-    const changes = history.changes as any[];
-    const rollbackData: any = {};
+    const changes = history.changes as Array<{
+      field: string;
+      oldValue: unknown;
+      newValue: unknown;
+    }>;
+    const rollbackData: Record<string, unknown> = {};
 
     for (const change of changes) {
       rollbackData[change.field] = change.oldValue;
@@ -254,8 +258,12 @@ app.post('/subgoals/:subGoalId/rollback', authMiddleware, async c => {
       return createResponse(c, 404, 'サブ目標が見つかりません');
     }
 
-    const changes = history.changes as any[];
-    const rollbackData: any = {};
+    const changes = history.changes as Array<{
+      field: string;
+      oldValue: unknown;
+      newValue: unknown;
+    }>;
+    const rollbackData: Record<string, unknown> = {};
 
     for (const change of changes) {
       rollbackData[change.field] = change.oldValue;
@@ -328,8 +336,12 @@ app.post('/actions/:actionId/rollback', authMiddleware, async c => {
       return createResponse(c, 404, 'アクションが見つかりません');
     }
 
-    const changes = history.changes as any[];
-    const rollbackData: any = {};
+    const changes = history.changes as Array<{
+      field: string;
+      oldValue: unknown;
+      newValue: unknown;
+    }>;
+    const rollbackData: Record<string, unknown> = {};
 
     for (const change of changes) {
       rollbackData[change.field] = change.oldValue;

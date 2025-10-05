@@ -6,8 +6,8 @@ import { logger } from '../utils/logger';
  */
 export interface Change {
   field: string;
-  oldValue: any;
-  newValue: any;
+  oldValue: unknown;
+  newValue: unknown;
 }
 
 /**
@@ -18,8 +18,8 @@ export interface Change {
  * @returns 変更内容の配列
  */
 export function calculateChanges(
-  oldData: Record<string, any>,
-  newData: Record<string, any>,
+  oldData: Record<string, unknown>,
+  newData: Record<string, unknown>,
   ignoreFields: string[] = [
     'id',
     'userId',
@@ -60,7 +60,7 @@ export function calculateChanges(
 /**
  * 2つの値が等しいかチェック
  */
-function isEqual(a: any, b: any): boolean {
+function isEqual(a: unknown, b: unknown): boolean {
   // 両方nullまたはundefinedの場合
   if (a == null && b == null) {
     return true;
@@ -88,7 +88,7 @@ function isEqual(a: any, b: any): boolean {
 /**
  * 値をシリアライズ（JSON保存用）
  */
-function serializeValue(value: any): any {
+function serializeValue(value: unknown): unknown {
   if (value instanceof Date) {
     return value.toISOString();
   }
@@ -126,7 +126,7 @@ export async function recordChangeHistory(
         entityType,
         entityId,
         userId,
-        changes: changes as any, // Prisma JsonValue型にキャスト
+        changes: changes as unknown, // Prisma JsonValue型にキャスト
       },
     });
 
@@ -157,8 +157,8 @@ export async function recordGoalChange(
   prisma: PrismaClient,
   goalId: string,
   userId: string,
-  oldData: any,
-  newData: any
+  oldData: Record<string, unknown>,
+  newData: Record<string, unknown>
 ) {
   const changes = calculateChanges(oldData, newData);
   return recordChangeHistory(prisma, 'goal', goalId, userId, changes);
@@ -171,8 +171,8 @@ export async function recordSubGoalChange(
   prisma: PrismaClient,
   subGoalId: string,
   userId: string,
-  oldData: any,
-  newData: any
+  oldData: Record<string, unknown>,
+  newData: Record<string, unknown>
 ) {
   const changes = calculateChanges(oldData, newData);
   return recordChangeHistory(prisma, 'subgoal', subGoalId, userId, changes);
@@ -185,8 +185,8 @@ export async function recordActionChange(
   prisma: PrismaClient,
   actionId: string,
   userId: string,
-  oldData: any,
-  newData: any
+  oldData: Record<string, unknown>,
+  newData: Record<string, unknown>
 ) {
   const changes = calculateChanges(oldData, newData);
   return recordChangeHistory(prisma, 'action', actionId, userId, changes);

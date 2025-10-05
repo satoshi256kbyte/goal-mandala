@@ -236,7 +236,7 @@ export class CognitoStack extends cdk.Stack {
   ): void {
     // 型安全なアクセスのためのヘルパー関数
     const getNestedValue = (obj: Record<string, unknown>, path: string[]): string => {
-      let current: any = obj;
+      let current: Record<string, unknown> | unknown = obj;
       for (const key of path) {
         if (current && typeof current === 'object' && key in current) {
           current = current[key];
@@ -248,7 +248,9 @@ export class CognitoStack extends cdk.Stack {
     };
 
     // カスタムテンプレートが設定されている場合は使用、そうでなければセキュリティ設定のデフォルトを使用
-    const templates = emailSettings.customTemplates as Record<string, any> | undefined;
+    const templates = emailSettings.customTemplates as
+      | Record<string, Record<string, unknown>>
+      | undefined;
 
     if (templates?.verification) {
       // メール確認テンプレート
@@ -513,10 +515,10 @@ export class CognitoStack extends cdk.Stack {
       path: string[]
     ): boolean => {
       if (!obj) return false;
-      let current: any = obj;
+      let current: Record<string, unknown> | unknown = obj;
       for (const key of path) {
         if (current && typeof current === 'object' && key in current) {
-          current = current[key];
+          current = current[key as keyof typeof current];
         } else {
           return false;
         }
@@ -526,10 +528,10 @@ export class CognitoStack extends cdk.Stack {
 
     const getNestedArray = (obj: Record<string, unknown> | undefined, path: string[]): string[] => {
       if (!obj) return [];
-      let current: any = obj;
+      let current: Record<string, unknown> | unknown = obj;
       for (const key of path) {
         if (current && typeof current === 'object' && key in current) {
-          current = current[key];
+          current = current[key as keyof typeof current];
         } else {
           return [];
         }
@@ -595,10 +597,10 @@ export class CognitoStack extends cdk.Stack {
       path: string[]
     ): boolean => {
       if (!obj) return false;
-      let current: any = obj;
+      let current: Record<string, unknown> | unknown = obj;
       for (const key of path) {
         if (current && typeof current === 'object' && key in current) {
-          current = current[key];
+          current = current[key as keyof typeof current];
         } else {
           return false;
         }
@@ -608,10 +610,10 @@ export class CognitoStack extends cdk.Stack {
 
     const getNestedArray = (obj: Record<string, unknown> | undefined, path: string[]): string[] => {
       if (!obj) return [];
-      let current: any = obj;
+      let current: Record<string, unknown> | unknown = obj;
       for (const key of path) {
         if (current && typeof current === 'object' && key in current) {
-          current = current[key];
+          current = current[key as keyof typeof current];
         } else {
           return [];
         }
@@ -703,10 +705,10 @@ export class CognitoStack extends cdk.Stack {
       path: string[]
     ): boolean => {
       if (!obj) return false;
-      let current: any = obj;
+      let current: Record<string, unknown> | unknown = obj;
       for (const key of path) {
         if (current && typeof current === 'object' && key in current) {
-          current = current[key];
+          current = current[key as keyof typeof current];
         } else {
           return false;
         }
@@ -716,10 +718,10 @@ export class CognitoStack extends cdk.Stack {
 
     const getNestedArray = (obj: Record<string, unknown> | undefined, path: string[]): string[] => {
       if (!obj) return [];
-      let current: any = obj;
+      let current: Record<string, unknown> | unknown = obj;
       for (const key of path) {
         if (current && typeof current === 'object' && key in current) {
-          current = current[key];
+          current = current[key as keyof typeof current];
         } else {
           return [];
         }

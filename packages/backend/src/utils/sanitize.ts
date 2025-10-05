@@ -2,7 +2,7 @@
  * 入力値をサニタイズする
  * XSS攻撃を防ぐため、HTMLタグを全て削除する
  */
-export function sanitizeInput(input: any): string {
+export function sanitizeInput(input: unknown): string {
   // null, undefinedの場合は空文字列を返す
   if (input === null || input === undefined) {
     return '';
@@ -40,7 +40,7 @@ export function sanitizeInput(input: any): string {
  * HTMLを許可しつつ、危険なタグ・属性を削除する
  * 基本的なフォーマット（p, strong, em, ul, li, a）のみ許可
  */
-export function sanitizeHtml(html: any): string {
+export function sanitizeHtml(html: unknown): string {
   // null, undefinedの場合は空文字列を返す
   if (html === null || html === undefined) {
     return '';
@@ -104,7 +104,7 @@ export function sanitizeHtml(html: any): string {
 /**
  * HTMLエンティティをエスケープする
  */
-export function escapeHtml(text: any): string {
+export function escapeHtml(text: unknown): string {
   if (text === null || text === undefined) {
     return '';
   }

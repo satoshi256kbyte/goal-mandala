@@ -786,7 +786,7 @@ export class FrontendStack extends cdk.Stack {
 
     // Cognito設定を追加
     if (userPool && userPoolClient) {
-      const cognitoConfig: any = {
+      const cognitoConfig: Record<string, string> = {
         userPoolId: userPool.userPoolId,
         userPoolClientId: userPoolClient.userPoolClientId,
         region: config.region,
