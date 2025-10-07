@@ -22,10 +22,13 @@ import type {
 export class BedrockService {
   private promptManager: PromptTemplateManager;
   private responseParser: ResponseParser;
+  private client: ReturnType<typeof getBedrockClient>;
 
   constructor() {
     this.promptManager = new PromptTemplateManager();
     this.responseParser = new ResponseParser();
+    // クライアントをインスタンス変数として保持（再利用のため）
+    this.client = getBedrockClient();
   }
 
   /**
@@ -59,7 +62,8 @@ export class BedrockService {
    * Bedrockモデルを呼び出し
    */
   private async invokeModel(prompt: string): Promise<string> {
-    const client = getBedrockClient();
+    // インスタンス変数のクライアントを再利用
+    const client = this.client;
 
     const command = new InvokeModelCommand({
       modelId: MODEL_CONFIG.modelId,

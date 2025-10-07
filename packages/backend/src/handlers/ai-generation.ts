@@ -16,6 +16,19 @@ import type {
   TaskOutput,
 } from '../types/ai-generation.types.js';
 
+// BedrockServiceのシングルトンインスタンス（Lambda実行環境で再利用）
+let bedrockServiceInstance: BedrockService | null = null;
+
+/**
+ * BedrockServiceインスタンスを取得（シングルトンパターン）
+ */
+function getBedrockServiceInstance(): BedrockService {
+  if (!bedrockServiceInstance) {
+    bedrockServiceInstance = new BedrockService();
+  }
+  return bedrockServiceInstance;
+}
+
 /**
  * Lambda Handler関数
  */
@@ -37,8 +50,8 @@ export async function handler(event: APIGatewayProxyEvent): Promise<APIGatewayPr
       throw new AuthenticationError('ユーザーIDが一致しません');
     }
 
-    // BedrockServiceのインスタンス作成
-    const bedrockService = new BedrockService();
+    // BedrockServiceのシングルトンインスタンスを取得（再利用）
+    const bedrockService = getBedrockServiceInstance();
 
     // 生成タイプに応じた処理
     let data: SubGoalOutput[] | ActionOutput[] | TaskOutput[] | undefined = undefined;

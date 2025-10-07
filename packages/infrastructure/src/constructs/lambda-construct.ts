@@ -5,6 +5,9 @@ import * as iam from 'aws-cdk-lib/aws-iam';
 import * as logs from 'aws-cdk-lib/aws-logs';
 import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
 import * as cognito from 'aws-cdk-lib/aws-cognito';
+import * as cloudwatch from 'aws-cdk-lib/aws-cloudwatch';
+import * as cloudwatchActions from 'aws-cdk-lib/aws-cloudwatch-actions';
+import * as sns from 'aws-cdk-lib/aws-sns';
 import { Construct } from 'constructs';
 import { EnvironmentConfig } from '../config/environment';
 
@@ -32,6 +35,7 @@ export interface LambdaFunctionConfig {
 export class LambdaConstruct extends Construct {
   public readonly functions: Map<string, lambda.Function> = new Map();
   public readonly executionRole: iam.Role;
+  public readonly alarmTopic?: sns.Topic;
   private readonly props: LambdaConstructProps;
 
   constructor(scope: Construct, id: string, props: LambdaConstructProps) {
@@ -87,6 +91,28 @@ export class LambdaConstruct extends Construct {
             ],
           }),
         },
+      });
+    }
+
+    // アラーム通知用のSNSトピックを作成（本番環境のみ）
+    if (config.environment === 'prod' || config.environment === 'stg') {
+      this.alarmTopic = new sns.Topic(this, 'LambdaAlarmTopic', {
+        topicName: `${config.stackPrefix}-lambda-alarms`,
+        displayName: 'Lambda Function Alarms',
+      });
+
+      // タグ設定
+      if (config.tags) {
+        Object.entries(config.tags).forEach(([key, value]) => {
+          cdk.Tags.of(this.alarmTopic).add(key, value);
+        });
+      }
+
+      // 出力
+      new cdk.CfnOutput(this, 'AlarmTopicArn', {
+        value: this.alarmTopic.topicArn,
+        description: 'SNS Topic ARN for Lambda alarms',
+        exportName: `${config.stackPrefix}-lambda-alarm-topic-arn`,
       });
     }
 
@@ -205,11 +231,21 @@ export class LambdaConstruct extends Construct {
       handler?: string;
     }
   ): lambda.Function {
+    // Bedrock固有の環境変数を追加
+    const bedrockEnvironment = {
+      ...functionConfig.environment,
+      BEDROCK_MODEL_ID: 'amazon.nova-micro-v1:0',
+      BEDROCK_REGION: this.props.config.region,
+      BEDROCK_MAX_RETRIES: '3',
+      BEDROCK_TIMEOUT_MS: '300000', // 5分
+    };
+
     const bedrockConfig: LambdaFunctionConfig = {
       ...functionConfig,
       handler: functionConfig.handler || 'index.handler',
       timeout: functionConfig.timeout || cdk.Duration.minutes(15), // AI処理は時間がかかる
       memorySize: functionConfig.memorySize || 1024, // AI処理はメモリを多く使用
+      environment: bedrockEnvironment,
     };
 
     const bedrockFunction = this.createFunction(bedrockConfig);
@@ -219,11 +255,114 @@ export class LambdaConstruct extends Construct {
       new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
         actions: ['bedrock:InvokeModel', 'bedrock:InvokeModelWithResponseStream'],
-        resources: ['*'], // 必要に応じて特定のモデルARNに制限
+        resources: [
+          `arn:aws:bedrock:${this.props.config.region}::foundation-model/amazon.nova-micro-v1:0`,
+        ],
       })
     );
 
+    // CloudWatch Metricsへの書き込み権限を追加
+    bedrockFunction.addToRolePolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: ['cloudwatch:PutMetricData'],
+        resources: ['*'],
+      })
+    );
+
+    // CloudWatchアラームを作成
+    this.createBedrockAlarms(bedrockFunction, functionConfig.functionName);
+
     return bedrockFunction;
+  }
+
+  /**
+   * Bedrock Lambda関数用のCloudWatchアラームを作成する
+   */
+  private createBedrockAlarms(lambdaFunction: lambda.Function, functionName: string): void {
+    // エラー率アラーム
+    const errorAlarm = new cloudwatch.Alarm(this, `${functionName}ErrorAlarm`, {
+      alarmName: `${functionName}-error-rate`,
+      alarmDescription: `${functionName} のエラー率が閾値を超えました`,
+      metric: lambdaFunction.metricErrors({
+        statistic: 'Sum',
+        period: cdk.Duration.minutes(5),
+      }),
+      threshold: 5, // 5分間で5回以上のエラー
+      evaluationPeriods: 2,
+      comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
+      treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
+    });
+
+    // レスポンス時間アラーム
+    const durationAlarm = new cloudwatch.Alarm(this, `${functionName}DurationAlarm`, {
+      alarmName: `${functionName}-duration`,
+      alarmDescription: `${functionName} の処理時間が閾値を超えました`,
+      metric: lambdaFunction.metricDuration({
+        statistic: 'Average',
+        period: cdk.Duration.minutes(5),
+      }),
+      threshold: 60000, // 60秒
+      evaluationPeriods: 2,
+      comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
+      treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
+    });
+
+    // スロットリングアラーム
+    const throttleAlarm = new cloudwatch.Alarm(this, `${functionName}ThrottleAlarm`, {
+      alarmName: `${functionName}-throttle`,
+      alarmDescription: `${functionName} がスロットリングされました`,
+      metric: lambdaFunction.metricThrottles({
+        statistic: 'Sum',
+        period: cdk.Duration.minutes(5),
+      }),
+      threshold: 1, // 1回でもスロットリングされたらアラート
+      evaluationPeriods: 1,
+      comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
+      treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
+    });
+
+    // 同時実行数アラーム（カスタムメトリクスを使用）
+    const concurrentExecutionsAlarm = new cloudwatch.Alarm(
+      this,
+      `${functionName}ConcurrentExecutionsAlarm`,
+      {
+        alarmName: `${functionName}-concurrent-executions`,
+        alarmDescription: `${functionName} の同時実行数が閾値を超えました`,
+        metric: new cloudwatch.Metric({
+          namespace: 'AWS/Lambda',
+          metricName: 'ConcurrentExecutions',
+          dimensionsMap: {
+            FunctionName: lambdaFunction.functionName,
+          },
+          statistic: 'Maximum',
+          period: cdk.Duration.minutes(1),
+        }),
+        threshold: 8, // 同時実行数の80%（予約済み同時実行数10の場合）
+        evaluationPeriods: 2,
+        comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
+        treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
+      }
+    );
+
+    // SNSトピックが存在する場合、アラームアクションを追加
+    if (this.alarmTopic) {
+      const snsAction = new cloudwatchActions.SnsAction(this.alarmTopic);
+      errorAlarm.addAlarmAction(snsAction);
+      durationAlarm.addAlarmAction(snsAction);
+      throttleAlarm.addAlarmAction(snsAction);
+      concurrentExecutionsAlarm.addAlarmAction(snsAction);
+    }
+
+    // タグ設定
+    if (this.props.config.tags) {
+      Object.entries(this.props.config.tags).forEach(([key, value]) => {
+        cdk.Tags.of(errorAlarm).add(key, value);
+        cdk.Tags.of(durationAlarm).add(key, value);
+        cdk.Tags.of(throttleAlarm).add(key, value);
+        cdk.Tags.of(concurrentExecutionsAlarm).add(key, value);
+      });
+    }
   }
 
   /**
