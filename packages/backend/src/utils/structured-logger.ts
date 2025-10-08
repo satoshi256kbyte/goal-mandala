@@ -136,7 +136,7 @@ export class StructuredLogger {
     // カスタムプロパティも含める
     for (const key of Object.keys(error)) {
       if (key !== 'message' && key !== 'name' && key !== 'stack') {
-        serialized[key] = (error as Record<string, unknown>)[key];
+        serialized[key] = (error as unknown as Record<string, unknown>)[key];
       }
     }
 

@@ -224,10 +224,8 @@ function handleError(error: unknown, c: Context, requestId: string, duration: nu
     })
   );
 
-  return c.json(
-    errorResponse,
-    getStatusCode(errorResponse.error?.code || 'INTERNAL_ERROR') as number
-  );
+  const statusCode = getStatusCode(errorResponse.error?.code || 'INTERNAL_ERROR');
+  return c.json(errorResponse, statusCode as 200);
 }
 
 /**

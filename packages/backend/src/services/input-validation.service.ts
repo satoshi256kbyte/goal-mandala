@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { SubGoalGenerationRequest } from '../types/subgoal-generation.types';
+import { SubGoalGenerationRequest, ValidationErrorDetail } from '../types/subgoal-generation.types';
 import { SubGoalGenerationRequestSchema } from '../schemas/subgoal-generation.schema';
 import { ValidationError } from '../errors/subgoal-generation.errors';
 
@@ -87,7 +87,7 @@ export class InputValidationService implements IInputValidationService {
     } catch (error) {
       if (error instanceof z.ZodError) {
         // Zodエラーを整形してValidationErrorに変換
-        const details: ValidationErrorType[] = error.errors.map(err => ({
+        const details: ValidationErrorDetail[] = error.errors.map(err => ({
           field: err.path.join('.'),
           message: err.message,
         }));
