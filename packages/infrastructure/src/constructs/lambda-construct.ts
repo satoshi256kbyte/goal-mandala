@@ -102,9 +102,9 @@ export class LambdaConstruct extends Construct {
       });
 
       // タグ設定
-      if (config.tags) {
+      if (config.tags && this.alarmTopic) {
         Object.entries(config.tags).forEach(([key, value]) => {
-          cdk.Tags.of(this.alarmTopic).add(key, value);
+          cdk.Tags.of(this.alarmTopic!).add(key, value);
         });
       }
 

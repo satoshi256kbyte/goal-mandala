@@ -236,10 +236,10 @@ export class CognitoStack extends cdk.Stack {
   ): void {
     // 型安全なアクセスのためのヘルパー関数
     const getNestedValue = (obj: Record<string, unknown>, path: string[]): string => {
-      let current: Record<string, unknown> | unknown = obj;
+      let current: unknown = obj;
       for (const key of path) {
-        if (current && typeof current === 'object' && key in current) {
-          current = current[key];
+        if (current && typeof current === 'object' && key in (current as Record<string, unknown>)) {
+          current = (current as Record<string, unknown>)[key];
         } else {
           return '';
         }
@@ -254,37 +254,39 @@ export class CognitoStack extends cdk.Stack {
 
     if (templates?.verification) {
       // メール確認テンプレート
-      if (templates.verification.emailSubject) {
-        cfnUserPool.emailVerificationSubject = templates.verification.emailSubject;
-      } else {
-        cfnUserPool.emailVerificationSubject = getNestedValue(securityConfig, [
-          'verification',
-          'emailSubject',
-        ]);
+      const verificationSubject =
+        typeof templates.verification.emailSubject === 'string'
+          ? templates.verification.emailSubject
+          : getNestedValue(securityConfig, ['verification', 'emailSubject']);
+
+      const verificationMessage =
+        typeof templates.verification.emailMessage === 'string'
+          ? templates.verification.emailMessage
+          : getNestedValue(securityConfig, ['verification', 'emailMessage']);
+
+      if (verificationSubject) {
+        cfnUserPool.emailVerificationSubject = verificationSubject;
       }
 
-      if (templates.verification.emailMessage) {
-        cfnUserPool.emailVerificationMessage = templates.verification.emailMessage;
-      } else {
-        cfnUserPool.emailVerificationMessage = getNestedValue(securityConfig, [
-          'verification',
-          'emailMessage',
-        ]);
+      if (verificationMessage) {
+        cfnUserPool.emailVerificationMessage = verificationMessage;
       }
 
       // リンクベースの確認メッセージ（オプション）
-      if (templates.verification.emailMessageByLink) {
+      const emailMessageByLink =
+        typeof templates.verification.emailMessageByLink === 'string'
+          ? templates.verification.emailMessageByLink
+          : '';
+
+      if (emailMessageByLink) {
         cfnUserPool.verificationMessageTemplate = {
           emailMessage:
-            templates.verification.emailMessage ||
-            getNestedValue(securityConfig, ['verification', 'emailMessage']),
-          emailMessageByLink: templates.verification.emailMessageByLink,
+            verificationMessage || getNestedValue(securityConfig, ['verification', 'emailMessage']),
+          emailMessageByLink: emailMessageByLink,
           emailSubject:
-            templates.verification.emailSubject ||
-            getNestedValue(securityConfig, ['verification', 'emailSubject']),
+            verificationSubject || getNestedValue(securityConfig, ['verification', 'emailSubject']),
           emailSubjectByLink:
-            templates.verification.emailSubject ||
-            getNestedValue(securityConfig, ['verification', 'emailSubject']),
+            verificationSubject || getNestedValue(securityConfig, ['verification', 'emailSubject']),
           smsMessage: getNestedValue(securityConfig, ['verification', 'smsMessage']),
           defaultEmailOption: 'CONFIRM_WITH_CODE', // デフォルトはコード確認
         };
@@ -309,12 +311,21 @@ export class CognitoStack extends cdk.Stack {
 
     // 招待メッセージテンプレート
     if (templates?.invitation) {
-      if (templates.invitation.emailSubject && templates.invitation.emailMessage) {
+      const invitationSubject =
+        typeof templates.invitation.emailSubject === 'string'
+          ? templates.invitation.emailSubject
+          : '';
+      const invitationMessage =
+        typeof templates.invitation.emailMessage === 'string'
+          ? templates.invitation.emailMessage
+          : '';
+
+      if (invitationSubject && invitationMessage) {
         cfnUserPool.adminCreateUserConfig = {
           ...cfnUserPool.adminCreateUserConfig,
           inviteMessageTemplate: {
-            emailMessage: templates.invitation.emailMessage,
-            emailSubject: templates.invitation.emailSubject,
+            emailMessage: invitationMessage,
+            emailSubject: invitationSubject,
             smsMessage: getNestedValue(securityConfig, ['userInvitation', 'smsMessage']),
           },
         };

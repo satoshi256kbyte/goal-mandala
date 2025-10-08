@@ -54,9 +54,30 @@ jest.mock('@prisma/client', () => ({
   })),
 }));
 
+// Mock CloudWatch clients for testing
+jest.mock('@aws-sdk/client-cloudwatch', () => ({
+  CloudWatchClient: jest.fn().mockImplementation(() => ({
+    send: jest.fn(),
+  })),
+  PutMetricDataCommand: jest.fn(),
+}));
+
+jest.mock('@aws-sdk/client-cloudwatch-logs', () => ({
+  CloudWatchLogsClient: jest.fn().mockImplementation(() => ({
+    send: jest.fn(),
+  })),
+  PutLogEventsCommand: jest.fn(),
+}));
+
 // Set test environment variables
 process.env.NODE_ENV = 'test';
 process.env.DATABASE_URL = 'postgresql://test:test@localhost:5432/test_db';
 process.env.JWT_SECRET = 'test-jwt-secret-key-for-testing-32chars';
 process.env.AWS_REGION = 'ap-northeast-1';
+process.env.BEDROCK_MODEL_ID = 'amazon.nova-micro-v1:0';
+process.env.BEDROCK_REGION = 'ap-northeast-1';
 process.env.FRONTEND_URL = 'http://localhost:5173';
+process.env.LOG_LEVEL = 'ERROR'; // テスト時はエラーログのみ
+
+// グローバルテストタイムアウト設定
+jest.setTimeout(10000);

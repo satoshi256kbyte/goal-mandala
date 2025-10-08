@@ -204,7 +204,24 @@ export class ApiStack extends cdk.Stack {
       },
     });
 
-    // AI処理 Lambda 関数（Bedrock統合）
+    // サブ目標生成 Lambda 関数（Bedrock統合）
+    this.lambdaConstruct.createBedrockFunction({
+      functionName: `${config.stackPrefix}-subgoal-generation`,
+      codePath: '../backend/dist',
+      description: 'Subgoal generation API with Amazon Bedrock',
+      handler: 'handlers/subgoal-generation.handler',
+      timeout: cdk.Duration.seconds(60), // サブ目標生成は比較的高速
+      memorySize: 1024,
+      reservedConcurrency: 10, // 同時実行数制限
+      environment: {
+        FUNCTION_TYPE: 'subgoal-generation',
+        BEDROCK_MODEL_ID: 'amazon.nova-micro-v1:0',
+        BEDROCK_REGION: config.region,
+        LOG_LEVEL: 'INFO',
+      },
+    });
+
+    // AI処理 Lambda 関数（Bedrock統合）- 将来のアクション生成・タスク生成用
     this.lambdaConstruct.createBedrockFunction({
       functionName: `${config.stackPrefix}-ai-processor`,
       codePath: '../backend/dist',
@@ -351,26 +368,42 @@ export class ApiStack extends cdk.Stack {
     }
 
     // AI処理エンドポイント（認証必須）
-    const aiResource = this.api.root.addResource('ai');
+    // /api/ai/generate/* の構造に変更
+    const apiResource = this.api.root.addResource('api');
+    const aiResource = apiResource.addResource('ai');
+    const generateResource = aiResource.addResource('generate');
+
+    // サブ目標生成Lambda関数
+    const subgoalGenerationFunction = this.lambdaConstruct.getFunction(
+      `${config.stackPrefix}-subgoal-generation`
+    );
+    if (subgoalGenerationFunction) {
+      const subgoalsResource = generateResource.addResource('subgoals');
+      subgoalsResource.addMethod(
+        'POST',
+        new apigateway.LambdaIntegration(subgoalGenerationFunction, {
+          timeout: cdk.Duration.seconds(60),
+        }),
+        {
+          authorizer: cognitoAuthorizer,
+          authorizationType: apigateway.AuthorizationType.COGNITO,
+        }
+      );
+    }
+
+    // 既存のAI処理関数（将来のアクション生成・タスク生成用）
     const aiFunction = this.lambdaConstruct.getFunction(`${config.stackPrefix}-ai-processor`);
     if (aiFunction) {
-      // サブ目標生成
-      const generateSubGoalsResource = aiResource.addResource('generate-subgoals');
-      generateSubGoalsResource.addMethod('POST', new apigateway.LambdaIntegration(aiFunction), {
+      // アクション生成（将来実装）
+      const actionsResource = generateResource.addResource('actions');
+      actionsResource.addMethod('POST', new apigateway.LambdaIntegration(aiFunction), {
         authorizer: cognitoAuthorizer,
         authorizationType: apigateway.AuthorizationType.COGNITO,
       });
 
-      // アクション生成
-      const generateActionsResource = aiResource.addResource('generate-actions');
-      generateActionsResource.addMethod('POST', new apigateway.LambdaIntegration(aiFunction), {
-        authorizer: cognitoAuthorizer,
-        authorizationType: apigateway.AuthorizationType.COGNITO,
-      });
-
-      // タスク生成
-      const generateTasksResource = aiResource.addResource('generate-tasks');
-      generateTasksResource.addMethod('POST', new apigateway.LambdaIntegration(aiFunction), {
+      // タスク生成（将来実装）
+      const tasksResource = generateResource.addResource('tasks');
+      tasksResource.addMethod('POST', new apigateway.LambdaIntegration(aiFunction), {
         authorizer: cognitoAuthorizer,
         authorizationType: apigateway.AuthorizationType.COGNITO,
       });

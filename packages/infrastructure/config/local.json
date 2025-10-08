@@ -88,9 +88,9 @@
         }
       },
       "emailSettings": {
-        "fromEmail": "noreply@localhost",
+        "fromEmail": "noreply@example.com",
         "fromName": "Goal Mandala Local",
-        "replyToEmail": "support@localhost"
+        "replyToEmail": "support@example.com"
       },
       "accountRecovery": ["verified_email"],
       "deletionProtection": false,
