@@ -26,6 +26,8 @@ const TaskSchema = z.object({
   description: z.string(),
   type: z.enum(['execution', 'habit']),
   estimatedMinutes: z.number(),
+  priority: z.enum(['HIGH', 'MEDIUM', 'LOW']).optional(),
+  dependencies: z.array(z.string()).optional(),
 });
 
 const SubGoalsResponseSchema = z.object({

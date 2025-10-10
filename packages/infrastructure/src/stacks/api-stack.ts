@@ -238,7 +238,24 @@ export class ApiStack extends cdk.Stack {
       },
     });
 
-    // AI処理 Lambda 関数（Bedrock統合）- 将来のタスク生成用
+    // タスク生成 Lambda 関数（Bedrock統合）
+    this.lambdaConstruct.createBedrockFunction({
+      functionName: `${config.stackPrefix}-task-generation`,
+      codePath: '../backend/dist',
+      description: 'Task generation API with Amazon Bedrock',
+      handler: 'handlers/task-generation.handler',
+      timeout: cdk.Duration.seconds(60), // タスク生成は60秒以内
+      memorySize: 1024,
+      reservedConcurrency: 10, // 同時実行数制限
+      environment: {
+        FUNCTION_TYPE: 'task-generation',
+        BEDROCK_MODEL_ID: 'amazon.nova-micro-v1:0',
+        BEDROCK_REGION: config.region,
+        LOG_LEVEL: 'INFO',
+      },
+    });
+
+    // AI処理 Lambda 関数（Bedrock統合）- 将来の拡張用
     this.lambdaConstruct.createBedrockFunction({
       functionName: `${config.stackPrefix}-ai-processor`,
       codePath: '../backend/dist',
@@ -426,15 +443,22 @@ export class ApiStack extends cdk.Stack {
       );
     }
 
-    // 既存のAI処理関数（将来のタスク生成用）
-    const aiFunction = this.lambdaConstruct.getFunction(`${config.stackPrefix}-ai-processor`);
-    if (aiFunction) {
-      // タスク生成（将来実装）
+    // タスク生成Lambda関数
+    const taskGenerationFunction = this.lambdaConstruct.getFunction(
+      `${config.stackPrefix}-task-generation`
+    );
+    if (taskGenerationFunction) {
       const tasksResource = generateResource.addResource('tasks');
-      tasksResource.addMethod('POST', new apigateway.LambdaIntegration(aiFunction), {
-        authorizer: cognitoAuthorizer,
-        authorizationType: apigateway.AuthorizationType.COGNITO,
-      });
+      tasksResource.addMethod(
+        'POST',
+        new apigateway.LambdaIntegration(taskGenerationFunction, {
+          timeout: cdk.Duration.seconds(60),
+        }),
+        {
+          authorizer: cognitoAuthorizer,
+          authorizationType: apigateway.AuthorizationType.COGNITO,
+        }
+      );
     }
 
     // ヘルスチェックエンドポイント

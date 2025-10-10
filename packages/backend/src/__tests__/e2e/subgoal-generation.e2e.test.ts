@@ -295,6 +295,8 @@ describe('サブ目標生成API E2Eテスト', () => {
 });
 
 describe('11.2 異常系テストケース', () => {
+  const authToken = 'Bearer test-token-user-123';
+
   it('JSON解析エラーが発生した場合、適切なエラーレスポンスを返す', async () => {
     // BedrockServiceのモックを変更してJSON解析エラーをシミュレート
     const mockGenerateSubGoals = jest
@@ -446,6 +448,8 @@ describe('11.2 異常系テストケース', () => {
 });
 
 describe('11.3 認証エラーテスト', () => {
+  const authToken = 'Bearer test-token-user-123';
+
   it('認証トークンがない場合、401エラーを返す', async () => {
     // リクエストデータ
     const requestData = {
@@ -619,6 +623,8 @@ describe('11.3 認証エラーテスト', () => {
 });
 
 describe('11.2 バリデーションエラーテスト（追加）', () => {
+  const authToken = 'Bearer test-token-user-123';
+
   it('タイトルが空の場合、400エラーを返す', async () => {
     // リクエストデータ（タイトルが空）
     const requestData = {
@@ -756,6 +762,8 @@ describe('11.2 バリデーションエラーテスト（追加）', () => {
 });
 
 describe('11.2 品質エラーテスト（追加）', () => {
+  const authToken = 'Bearer test-token-user-123';
+
   it('サブ目標が8個でない場合、422エラーを返す', async () => {
     // BedrockServiceのモックを変更して7個のサブ目標を返す
     const mockGenerateSubGoals = jest.fn().mockResolvedValue([

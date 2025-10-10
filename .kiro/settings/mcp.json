@@ -16,7 +16,7 @@
         "FASTMCP_LOG_LEVEL": "ERROR"
       },
       "disabled": false,
-      "autoApprove": []
+      "autoApprove": ["CheckCDKNagSuppressions"]
     },
     "aws-knowledge-mcp-server": {
       "command": "uvx",

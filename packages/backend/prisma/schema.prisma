@@ -176,6 +176,7 @@ model Task {
   // Indexes
   @@index([actionId, status])
   @@index([status, createdAt])
+  @@index([actionId, createdAt]) // タスク生成時の既存タスク取得用
   @@map("tasks")
 }
 

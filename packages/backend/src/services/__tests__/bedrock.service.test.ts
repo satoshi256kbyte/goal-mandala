@@ -6,6 +6,7 @@ import { BedrockRuntimeClient, InvokeModelCommand } from '@aws-sdk/client-bedroc
 import { BedrockService } from '../bedrock.service.js';
 import type { GoalInput, SubGoalInput, ActionInput } from '../../types/ai-generation.types.js';
 import type { GenerationContext } from '../../types/action-generation.types.js';
+import type { TaskGenerationContext } from '../../types/task-generation.types.js';
 
 // モック設定
 jest.mock('@aws-sdk/client-bedrock-runtime');
@@ -437,6 +438,240 @@ describe('BedrockService', () => {
       expect(result.length).toBeGreaterThan(0);
       expect(result[0]).toHaveProperty('title');
       expect(result[0]).toHaveProperty('estimatedMinutes');
+    });
+  });
+
+  describe('generateTasksWithContext', () => {
+    const taskGenerationContext = {
+      action: {
+        id: 'action-001',
+        title: 'TypeScript公式ドキュメントを読む',
+        description: '公式ドキュメントの型システムの章を読み込む',
+        background: '正確な知識を得るため',
+        type: 'execution' as const,
+      },
+      subGoal: {
+        id: 'subgoal-001',
+        title: '型システムを理解する',
+        description: 'TypeScriptの型システムの基礎から応用まで学ぶ',
+      },
+      goal: {
+        id: 'goal-001',
+        title: 'TypeScriptのエキスパートになる',
+        description: '6ヶ月でTypeScriptの高度な機能を習得する',
+        deadline: new Date('2025-12-31'),
+      },
+      user: {
+        preferences: {
+          workStyle: '朝型',
+          timeAvailable: 120,
+        },
+      },
+    };
+
+    it('TaskGenerationContextからタスクを生成する', async () => {
+      const mockResponseBody = {
+        output: {
+          message: {
+            role: 'assistant',
+            content: [
+              {
+                text: JSON.stringify({
+                  tasks: Array.from({ length: 5 }, (_, i) => ({
+                    title: `タスク${i + 1}`,
+                    description: `説明${i + 1}`.repeat(10),
+                    type: 'execution',
+                    estimatedMinutes: 45,
+                    priority: i === 0 ? 'HIGH' : 'MEDIUM',
+                    dependencies: i > 0 ? [`task-${i - 1}`] : [],
+                  })),
+                }),
+              },
+            ],
+          },
+        },
+        stopReason: 'end_turn',
+        usage: { inputTokens: 100, outputTokens: 200, totalTokens: 300 },
+      };
+
+      mockClient.send.mockResolvedValue({
+        body: new TextEncoder().encode(JSON.stringify(mockResponseBody)),
+      });
+
+      const result = await service.generateTasksWithContext(taskGenerationContext);
+
+      expect(result.length).toBeGreaterThan(0);
+      expect(result[0]).toHaveProperty('title');
+      expect(result[0]).toHaveProperty('description');
+      expect(result[0]).toHaveProperty('type');
+      expect(result[0]).toHaveProperty('estimatedMinutes');
+      expect(result[0].type).toBe('execution');
+    });
+
+    it('プロンプトに目標コンテキストが含まれる', async () => {
+      const mockInvokeModelCommand = jest.fn();
+      (InvokeModelCommand as jest.Mock) = mockInvokeModelCommand;
+
+      let capturedInput: any;
+      mockInvokeModelCommand.mockImplementation((input: any) => {
+        capturedInput = input;
+        return { input };
+      });
+
+      const mockResponseBody = {
+        output: {
+          message: {
+            role: 'assistant',
+            content: [
+              {
+                text: JSON.stringify({
+                  tasks: Array.from({ length: 3 }, (_, i) => ({
+                    title: `タスク${i + 1}`,
+                    description: `説明${i + 1}`.repeat(10),
+                    type: 'execution',
+                    estimatedMinutes: 45,
+                  })),
+                }),
+              },
+            ],
+          },
+        },
+        stopReason: 'end_turn',
+        usage: { inputTokens: 100, outputTokens: 200, totalTokens: 300 },
+      };
+
+      mockClient.send.mockResolvedValue({
+        body: new TextEncoder().encode(JSON.stringify(mockResponseBody)),
+      });
+
+      await service.generateTasksWithContext(taskGenerationContext);
+
+      expect(capturedInput).toBeDefined();
+      const requestBody = JSON.parse(capturedInput.body);
+      const promptText = requestBody.messages[0].content[0].text;
+
+      // プロンプトに目標情報が含まれることを確認
+      expect(promptText).toContain(taskGenerationContext.goal.title);
+      expect(promptText).toContain(taskGenerationContext.subGoal.title);
+      expect(promptText).toContain(taskGenerationContext.action.title);
+    });
+
+    it('プロンプトにユーザー設定が含まれる', async () => {
+      const mockInvokeModelCommand = jest.fn();
+      (InvokeModelCommand as jest.Mock) = mockInvokeModelCommand;
+
+      let capturedInput: any;
+      mockInvokeModelCommand.mockImplementation((input: any) => {
+        capturedInput = input;
+        return { input };
+      });
+
+      const mockResponseBody = {
+        output: {
+          message: {
+            role: 'assistant',
+            content: [
+              {
+                text: JSON.stringify({
+                  tasks: Array.from({ length: 3 }, (_, i) => ({
+                    title: `タスク${i + 1}`,
+                    description: `説明${i + 1}`.repeat(10),
+                    type: 'execution',
+                    estimatedMinutes: 45,
+                  })),
+                }),
+              },
+            ],
+          },
+        },
+        stopReason: 'end_turn',
+        usage: { inputTokens: 100, outputTokens: 200, totalTokens: 300 },
+      };
+
+      mockClient.send.mockResolvedValue({
+        body: new TextEncoder().encode(JSON.stringify(mockResponseBody)),
+      });
+
+      await service.generateTasksWithContext(taskGenerationContext);
+
+      expect(capturedInput).toBeDefined();
+      const requestBody = JSON.parse(capturedInput.body);
+      const promptText = requestBody.messages[0].content[0].text;
+
+      // プロンプトにユーザー設定が含まれることを確認
+      if (taskGenerationContext.user.preferences?.workStyle) {
+        expect(promptText).toContain(taskGenerationContext.user.preferences.workStyle);
+      }
+      if (taskGenerationContext.user.preferences?.timeAvailable) {
+        expect(promptText).toContain(
+          taskGenerationContext.user.preferences.timeAvailable.toString()
+        );
+      }
+    });
+
+    it('タスク粒度（30-60分）の指示が含まれる', async () => {
+      const mockInvokeModelCommand = jest.fn();
+      (InvokeModelCommand as jest.Mock) = mockInvokeModelCommand;
+
+      let capturedInput: any;
+      mockInvokeModelCommand.mockImplementation((input: any) => {
+        capturedInput = input;
+        return { input };
+      });
+
+      const mockResponseBody = {
+        output: {
+          message: {
+            role: 'assistant',
+            content: [
+              {
+                text: JSON.stringify({
+                  tasks: Array.from({ length: 3 }, (_, i) => ({
+                    title: `タスク${i + 1}`,
+                    description: `説明${i + 1}`.repeat(10),
+                    type: 'execution',
+                    estimatedMinutes: 45,
+                  })),
+                }),
+              },
+            ],
+          },
+        },
+        stopReason: 'end_turn',
+        usage: { inputTokens: 100, outputTokens: 200, totalTokens: 300 },
+      };
+
+      mockClient.send.mockResolvedValue({
+        body: new TextEncoder().encode(JSON.stringify(mockResponseBody)),
+      });
+
+      await service.generateTasksWithContext(taskGenerationContext);
+
+      expect(capturedInput).toBeDefined();
+      const requestBody = JSON.parse(capturedInput.body);
+      const promptText = requestBody.messages[0].content[0].text;
+
+      // タスク粒度の指示が含まれることを確認
+      expect(promptText).toMatch(/30.*60.*分/);
+    });
+
+    it('レスポンス解析エラーを適切に処理する', async () => {
+      const mockResponseBody = {
+        output: {
+          message: {
+            role: 'assistant',
+            content: [{ text: 'Invalid JSON' }],
+          },
+        },
+        stopReason: 'end_turn',
+        usage: { inputTokens: 100, outputTokens: 200, totalTokens: 300 },
+      };
+
+      mockClient.send.mockResolvedValue({
+        body: new TextEncoder().encode(JSON.stringify(mockResponseBody)),
+      });
+
+      await expect(service.generateTasksWithContext(taskGenerationContext)).rejects.toThrow();
     });
   });
 

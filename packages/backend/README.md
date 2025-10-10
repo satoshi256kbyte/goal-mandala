@@ -290,6 +290,83 @@ pnpm type-check
 
 詳細は [アクション生成API仕様書](./docs/action-generation-api-specification.md) を参照してください。
 
+### タスク生成API
+
+**エンドポイント**: `POST /api/ai/generate/tasks`
+
+**説明**: アクションから複数の具体的なタスクを自動生成します。各タスクは30-60分程度で実行可能な粒度に分解され、優先度と依存関係が設定されます。
+
+**認証**: 必須（JWT Bearer Token）
+
+**リクエスト例**:
+
+```json
+{
+  "actionId": "770e8400-e29b-41d4-a716-446655440000",
+  "regenerate": false
+}
+```
+
+**レスポンス例**:
+
+```json
+{
+  "success": true,
+  "data": {
+    "actionId": "770e8400-e29b-41d4-a716-446655440000",
+    "tasks": [
+      {
+        "id": "uuid",
+        "title": "TypeScript公式ドキュメントの基礎編を読む",
+        "description": "TypeScript公式ドキュメントの基礎編（型システム、インターフェース、クラス）を読み、サンプルコードを実際に動かして理解を深める",
+        "type": "execution",
+        "status": "not_started",
+        "estimatedMinutes": 45,
+        "priority": "high",
+        "dependencies": [],
+        "createdAt": "2025-10-10T10:00:00Z",
+        "updatedAt": "2025-10-10T10:00:00Z"
+      },
+      {
+        "id": "uuid",
+        "title": "TypeScriptの型システムを実践する",
+        "description": "学んだ型システムの知識を使って、簡単なTypeScriptプログラムを作成し、型の恩恵を体感する",
+        "type": "execution",
+        "status": "not_started",
+        "estimatedMinutes": 60,
+        "priority": "medium",
+        "dependencies": ["前のタスクのID"],
+        "createdAt": "2025-10-10T10:00:00Z",
+        "updatedAt": "2025-10-10T10:00:00Z"
+      }
+      // ... 追加のタスク
+    ]
+  },
+  "metadata": {
+    "generatedAt": "2025-10-10T10:00:00Z",
+    "tokensUsed": 2500,
+    "estimatedCost": 0.00038,
+    "actionContext": {
+      "goalTitle": "TypeScriptのエキスパートになる",
+      "subGoalTitle": "TypeScriptの基礎文法を習得する",
+      "actionTitle": "TypeScript公式ドキュメントを読む",
+      "actionType": "execution"
+    },
+    "taskCount": 3,
+    "totalEstimatedMinutes": 150
+  }
+}
+```
+
+**タスクの特徴**:
+
+- **粒度**: 各タスクは30-60分程度で実行可能（許容範囲: 15-120分）
+- **種別**: アクションの種別を継承（実行タスク/習慣タスク）
+- **優先度**: HIGH/MEDIUM/LOWの3段階で自動設定
+- **依存関係**: タスク間の前提条件を自動検出
+
+詳細は [タスク生成API仕様書](./docs/task-generation-api-specification.md) を参照してください。
+
 ### ヘルスチェック
 
 **エンドポイント**: `GET /health`
@@ -418,6 +495,12 @@ aws logs tail /aws/lambda/SubGoalGenerationFunction --follow
 - [トラブルシューティングガイド](./docs/action-generation-troubleshooting-guide.md)
 - [運用ガイド](./docs/action-generation-operations-guide.md)
 
+### タスク生成API
+
+- [エラーコード一覧](./docs/task-generation-error-codes.md)
+- [トラブルシューティングガイド](./docs/task-generation-troubleshooting-guide.md)
+- [運用ガイド](./docs/task-generation-operations-guide.md)
+
 ## ドキュメント
 
 ### サブ目標生成API
@@ -433,6 +516,13 @@ aws logs tail /aws/lambda/SubGoalGenerationFunction --follow
 - [エラーコード一覧](./docs/action-generation-error-codes.md) - エラーコードと対処方法
 - [運用ガイド](./docs/action-generation-operations-guide.md) - 監視項目、アラート対応手順、アクション種別判定の仕組み
 - [トラブルシューティングガイド](./docs/action-generation-troubleshooting-guide.md) - よくある問題と解決方法、品質エラーの対処
+
+### タスク生成API
+
+- [API仕様書](./docs/task-generation-api-specification.md) - エンドポイント、リクエスト、レスポンス、タスク粒度・優先度・依存関係の詳細
+- [エラーコード一覧](./docs/task-generation-error-codes.md) - エラーコードと対処方法
+- [運用ガイド](./docs/task-generation-operations-guide.md) - 監視項目、アラート対応手順、タスク粒度調整・優先度設定の仕組み
+- [トラブルシューティングガイド](./docs/task-generation-troubleshooting-guide.md) - よくある問題と解決方法、品質エラーの対処
 
 ## コントリビューション
 

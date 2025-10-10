@@ -4,6 +4,7 @@
 
 import type { GoalInput, SubGoalInput, ActionInput } from '../types/ai-generation.types.js';
 import type { GenerationContext } from '../types/action-generation.types.js';
+import type { TaskGenerationContext } from '../types/task-generation.types.js';
 import { INPUT_LIMITS, INJECTION_PATTERNS } from '../config/bedrock.config.js';
 
 /**
@@ -216,58 +217,92 @@ ${sanitizedConstraints}
     // 期限のフォーマット
     const deadlineStr = context.goal.deadline.toISOString().split('T')[0];
 
-    const systemMessage = `あなたは目標達成の専門家です。ユーザーのサブ目標を分析し、
-それを達成するための8つの具体的なアクションを提案してください。
+    // プロンプトを最適化：重要な情報に集中し、冗長な説明を削減
+    const systemMessage = `目標達成の専門家として、サブ目標を達成するための8つの具体的なアクションを提案してください。
 
-各アクションは以下の条件を満たす必要があります：
-- サブ目標達成に直接貢献する
-- 具体的で実行可能である
-- 互いに重複しない
-- バランスよくサブ目標をカバーする
-- 実行アクション（一度で完了）または習慣アクション（継続的実施）のいずれかである
+条件：
+- サブ目標達成に直接貢献
+- 具体的で実行可能
+- 重複なし
+- タイプ: execution（一度で完了）またはhabit（継続実施）`;
 
-アクション種別の判定基準：
-- 実行アクション: 一度実施すれば完了するもの（例：資料作成、登壇、リリース）
-- 習慣アクション: 継続的に実施する必要があるもの（例：毎日の学習、定期的な運動）`;
+    const userMessage = `目標: ${sanitizedGoalTitle}（期限: ${deadlineStr}）
+${sanitizedGoalDescription}
+${sanitizedGoalBackground ? `背景: ${sanitizedGoalBackground}` : ''}
+${sanitizedGoalConstraints ? `制約: ${sanitizedGoalConstraints}` : ''}
 
-    const userMessage = `# 目標情報
-タイトル: ${sanitizedGoalTitle}
-説明: ${sanitizedGoalDescription}
-達成期限: ${deadlineStr}
-背景: ${sanitizedGoalBackground}
-制約事項: ${sanitizedGoalConstraints}
+サブ目標: ${sanitizedSubGoalTitle}
+${sanitizedSubGoalDescription}
+${sanitizedSubGoalBackground ? `背景: ${sanitizedSubGoalBackground}` : ''}
 
-# サブ目標情報（アクションを生成する対象）
-タイトル: ${sanitizedSubGoalTitle}
-説明: ${sanitizedSubGoalDescription}
-背景: ${sanitizedSubGoalBackground}
-位置: ${context.subGoal.position}
+${relatedSubGoalsText ? `関連サブ目標:\n${relatedSubGoalsText}\n` : ''}
+ユーザー: ${userIndustry} / ${userJobType}
 
-# 関連サブ目標（参考情報）
-${relatedSubGoalsText}
+「${sanitizedSubGoalTitle}」を達成する8つのアクションを生成してください。
 
-# ユーザー情報
-業種: ${userIndustry}
-職種: ${userJobType}
-
-# 指示
-上記のサブ目標「${sanitizedSubGoalTitle}」を達成するために必要な8つのアクションを生成してください。
-目標全体のコンテキストと他のサブ目標との関係を考慮し、具体的で実行可能なアクションを提案してください。
-
-各アクションについて、それが「実行アクション」か「習慣アクション」かを判定してください。
-
-# 出力形式
-以下のJSON形式で出力してください：
+JSON形式で出力：
 {
   "actions": [
     {
-      "title": "アクションのタイトル（50文字以内）",
-      "description": "アクションの詳細説明（100-200文字）",
-      "background": "このアクションが必要な理由（100文字以内）",
-      "type": "execution" または "habit",
+      "title": "アクション名（50文字以内）",
+      "description": "詳細（100-200文字）",
+      "background": "理由（100文字以内）",
+      "type": "execution|habit",
       "position": 0
     }
-    // ... 8個のアクション
+  ]
+}`;
+
+    return `${systemMessage}\n\n${userMessage}`;
+  }
+
+  /**
+   * タスク生成プロンプトを構築（TaskGenerationContext版）
+   */
+  buildTaskPromptWithContext(context: TaskGenerationContext): string {
+    // 入力のサニタイズとインジェクション検出
+    const sanitizedGoalTitle = this.sanitizeInput(context.goal.title);
+    const sanitizedSubGoalTitle = this.sanitizeInput(context.subGoal.title);
+    const sanitizedActionTitle = this.sanitizeInput(context.action.title);
+    const sanitizedActionDescription = this.sanitizeInput(context.action.description);
+    const sanitizedActionBackground = this.sanitizeInput(context.action.background);
+
+    this.detectInjection(sanitizedActionTitle);
+    this.detectInjection(sanitizedActionDescription);
+    this.detectInjection(sanitizedActionBackground);
+
+    // 期限のフォーマット
+    const deadlineStr = context.goal.deadline.toISOString().split('T')[0];
+
+    // プロンプトを最適化：不要な情報を削減し、重要な情報に集中
+    const systemMessage = `タスク分解の専門家として、アクションを30-60分の具体的なタスクに分解してください。
+
+条件：
+- 所要時間: 30-60分
+- 具体的で実行可能
+- タイプ: ${context.action.type}
+- タスク数: ${context.action.type === 'execution' ? '3-10個' : '1-3個'}`;
+
+    const userMessage = `目標: ${sanitizedGoalTitle}（期限: ${deadlineStr}）
+サブ目標: ${sanitizedSubGoalTitle}
+
+アクション: ${sanitizedActionTitle}
+説明: ${sanitizedActionDescription}
+${sanitizedActionBackground ? `背景: ${sanitizedActionBackground}` : ''}
+
+${sanitizedActionTitle}を実行するタスクに分解してください。各タスク30-60分、具体的で実行可能な内容にしてください。
+
+JSON形式で出力：
+{
+  "tasks": [
+    {
+      "title": "タスク名（50文字以内）",
+      "description": "詳細（200文字以内）",
+      "type": "${context.action.type}",
+      "estimatedMinutes": 45,
+      "priority": "HIGH|MEDIUM|LOW",
+      "dependencies": []
+    }
   ]
 }`;
 

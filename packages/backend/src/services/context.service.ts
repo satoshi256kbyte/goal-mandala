@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { GenerationContext } from '../types/action-generation.types';
+import { TaskGenerationContext } from '../types/task-generation.types';
 import { NotFoundError, DatabaseError, ValidationError } from '../errors/action-generation.errors';
 
 /**
@@ -12,6 +13,13 @@ export interface IContextService {
    * @returns GenerationContext
    */
   getGenerationContext(subGoalId: string): Promise<GenerationContext>;
+
+  /**
+   * タスク生成に必要なコンテキスト情報を取得
+   * @param actionId アクションID
+   * @returns TaskGenerationContext
+   */
+  getTaskGenerationContext(actionId: string): Promise<TaskGenerationContext>;
 }
 
 /**
@@ -141,6 +149,77 @@ export class ContextService implements IContextService {
         throw error;
       }
       throw new DatabaseError('コンテキスト情報の取得に失敗しました', error as Error);
+    }
+  }
+
+  /**
+   * タスク生成に必要なコンテキスト情報を取得
+   * @param actionId アクションID
+   * @returns TaskGenerationContext
+   */
+  async getTaskGenerationContext(actionId: string): Promise<TaskGenerationContext> {
+    try {
+      // アクション情報の取得（サブ目標、目標、ユーザー情報を一度に取得してN+1問題を解消）
+      const action = await this.prisma.action.findUnique({
+        where: { id: actionId },
+        include: {
+          subGoal: {
+            include: {
+              goal: {
+                include: {
+                  user: {
+                    select: {
+                      industry: true,
+                      jobType: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (!action) {
+        throw new NotFoundError('アクションが見つかりません');
+      }
+
+      // TaskGenerationContextオブジェクトの構築（サニタイズ適用）
+      const context: TaskGenerationContext = {
+        action: {
+          id: action.id,
+          title: sanitizeText(action.title),
+          description: sanitizeText(action.description || ''),
+          background: sanitizeText(action.background || ''),
+          type: action.type as 'execution' | 'habit',
+        },
+        subGoal: {
+          id: action.subGoal.id,
+          title: sanitizeText(action.subGoal.title),
+          description: sanitizeText(action.subGoal.description || ''),
+        },
+        goal: {
+          id: action.subGoal.goal.id,
+          title: sanitizeText(action.subGoal.goal.title),
+          description: sanitizeText(action.subGoal.goal.description || ''),
+          deadline: action.subGoal.goal.deadline || new Date(),
+        },
+        user: action.subGoal.goal.user
+          ? {
+              preferences: {
+                workStyle: action.subGoal.goal.user.industry || undefined,
+                timeAvailable: undefined,
+              },
+            }
+          : {},
+      };
+
+      return context;
+    } catch (error) {
+      if (error instanceof NotFoundError || error instanceof ValidationError) {
+        throw error;
+      }
+      throw new DatabaseError('タスク生成コンテキスト情報の取得に失敗しました', error as Error);
     }
   }
 }

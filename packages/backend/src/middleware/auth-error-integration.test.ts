@@ -13,27 +13,29 @@ import { config } from '../config/environment';
 jest.mock('../utils/logger');
 
 // 環境設定のモック
-const mockConfig = {
-  NODE_ENV: 'test' as const,
-  ENABLE_MOCK_AUTH: false,
-  ENABLE_SECURITY_AUDIT: true,
-  COGNITO_USER_POOL_ID: 'test-pool-id',
-  COGNITO_CLIENT_ID: 'test-client-id',
-  AWS_REGION: 'ap-northeast-1',
-  JWT_CACHE_TTL: 3600,
-  DATABASE_URL: 'postgresql://test:test@localhost:5432/test',
-  JWT_SECRET: 'test-secret-key-for-testing-purposes-only',
-  FRONTEND_URL: 'http://localhost:3000',
-  MOCK_USER_ID: 'test-user-id',
-  MOCK_USER_EMAIL: 'test@example.com',
-  MOCK_USER_NAME: 'Test User',
-  LOG_LEVEL: 'ERROR' as const,
-};
+jest.mock('../config/environment', () => {
+  const mockConfig = {
+    NODE_ENV: 'test' as const,
+    ENABLE_MOCK_AUTH: false,
+    ENABLE_SECURITY_AUDIT: true,
+    COGNITO_USER_POOL_ID: 'test-pool-id',
+    COGNITO_CLIENT_ID: 'test-client-id',
+    AWS_REGION: 'ap-northeast-1',
+    JWT_CACHE_TTL: 3600,
+    DATABASE_URL: 'postgresql://test:test@localhost:5432/test',
+    JWT_SECRET: 'test-secret-key-for-testing-purposes-only',
+    FRONTEND_URL: 'http://localhost:3000',
+    MOCK_USER_ID: 'test-user-id',
+    MOCK_USER_EMAIL: 'test@example.com',
+    MOCK_USER_NAME: 'Test User',
+    LOG_LEVEL: 'ERROR' as const,
+  };
 
-jest.mock('../config/environment', () => ({
-  config: mockConfig,
-  getConfig: jest.fn(() => mockConfig),
-}));
+  return {
+    config: mockConfig,
+    getConfig: jest.fn(() => mockConfig),
+  };
+});
 
 // fetch APIのモック
 global.fetch = jest.fn();
@@ -43,7 +45,7 @@ describe('JWT認証ミドルウェア エラーハンドリング統合テスト
 
   beforeEach(() => {
     // モック認証を無効にする
-    mockConfig.ENABLE_MOCK_AUTH = false;
+    config.ENABLE_MOCK_AUTH = false;
 
     app = new Hono();
     app.use('/protected/*', jwtAuthMiddleware());

@@ -229,6 +229,12 @@ describe('ApiStack', () => {
       Timeout: 60,
       MemorySize: 1024,
     });
+
+    template.hasResourceProperties('AWS::Lambda::Function', {
+      FunctionName: 'goal-mandala-dev-task-generation',
+      Timeout: 60,
+      MemorySize: 1024,
+    });
   });
 
   test('アクション生成エンドポイントが作成される', () => {
@@ -250,6 +256,50 @@ describe('ApiStack', () => {
         },
       },
     });
+  });
+
+  test('タスク生成Lambda関数が作成される', () => {
+    template.hasResourceProperties('AWS::Lambda::Function', {
+      FunctionName: 'goal-mandala-dev-task-generation',
+      Runtime: 'nodejs20.x',
+      Handler: 'handlers/task-generation.handler',
+      Timeout: 60,
+      MemorySize: 1024,
+    });
+  });
+
+  test('タスク生成エンドポイントが作成される', () => {
+    // /api/ai/generate/tasks リソース
+    template.hasResourceProperties('AWS::ApiGateway::Resource', {
+      PathPart: 'tasks',
+    });
+  });
+
+  test('タスク生成Lambda関数の環境変数が設定される', () => {
+    template.hasResourceProperties('AWS::Lambda::Function', {
+      FunctionName: 'goal-mandala-dev-task-generation',
+      Environment: {
+        Variables: {
+          FUNCTION_TYPE: 'task-generation',
+          BEDROCK_MODEL_ID: 'amazon.nova-micro-v1:0',
+          BEDROCK_REGION: 'ap-northeast-1',
+          LOG_LEVEL: 'INFO',
+        },
+      },
+    });
+  });
+
+  test('タスク生成Lambda関数にCognito Authorizerが設定される', () => {
+    // タスク生成エンドポイントにCognito認証が設定されていることを確認
+    const methods = template.findResources('AWS::ApiGateway::Method', {
+      Properties: {
+        HttpMethod: 'POST',
+        AuthorizationType: 'COGNITO_USER_POOLS',
+      },
+    });
+
+    // 少なくとも1つのPOSTメソッドがCognito認証を使用していることを確認
+    expect(Object.keys(methods).length).toBeGreaterThan(0);
   });
 
   test('必要な出力が定義される', () => {
