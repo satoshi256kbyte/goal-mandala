@@ -15,6 +15,7 @@ import type {
   ActionOutput,
   TaskOutput,
 } from '../types/ai-generation.types.js';
+import type { GenerationContext } from '../types/action-generation.types.js';
 
 /**
  * BedrockService
@@ -45,6 +46,15 @@ export class BedrockService {
    */
   async generateActions(input: SubGoalInput): Promise<ActionOutput[]> {
     const prompt = this.promptManager.buildActionPrompt(input);
+    const response = await this.invokeModel(prompt);
+    return this.responseParser.parseActions(response);
+  }
+
+  /**
+   * アクションを生成（GenerationContext版）
+   */
+  async generateActionsWithContext(context: GenerationContext): Promise<ActionOutput[]> {
+    const prompt = this.promptManager.buildActionPromptWithContext(context);
     const response = await this.invokeModel(prompt);
     return this.responseParser.parseActions(response);
   }

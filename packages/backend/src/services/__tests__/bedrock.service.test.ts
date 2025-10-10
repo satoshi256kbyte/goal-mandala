@@ -5,6 +5,7 @@
 import { BedrockRuntimeClient, InvokeModelCommand } from '@aws-sdk/client-bedrock-runtime';
 import { BedrockService } from '../bedrock.service.js';
 import type { GoalInput, SubGoalInput, ActionInput } from '../../types/ai-generation.types.js';
+import type { GenerationContext } from '../../types/action-generation.types.js';
 
 // モック設定
 jest.mock('@aws-sdk/client-bedrock-runtime');
@@ -151,6 +152,247 @@ describe('BedrockService', () => {
       expect(result[0]).toHaveProperty('title');
       expect(result[0]).toHaveProperty('type');
       expect(['execution', 'habit']).toContain(result[0].type);
+    });
+  });
+
+  describe('generateActionsWithContext', () => {
+    const generationContext: GenerationContext = {
+      goal: {
+        id: 'goal-001',
+        title: 'TypeScriptのエキスパートになる',
+        description: '6ヶ月でTypeScriptの高度な機能を習得する',
+        deadline: new Date('2025-12-31'),
+        background: 'フロントエンド開発者として型安全性の高いコードを書けるようになりたい',
+        constraints: '平日は2時間、週末は4時間の学習時間を確保できる',
+      },
+      subGoal: {
+        id: 'subgoal-001',
+        title: '型システムを理解する',
+        description: 'TypeScriptの型システムの基礎から応用まで学ぶ',
+        background: '型安全性を高めるため',
+        position: 0,
+      },
+      relatedSubGoals: [
+        {
+          title: 'ジェネリクスを習得する',
+          description: 'ジェネリクスの使い方を学ぶ',
+          position: 1,
+        },
+        {
+          title: '高度な型を理解する',
+          description: 'Utility TypesやConditional Typesを学ぶ',
+          position: 2,
+        },
+      ],
+      user: {
+        industry: 'IT',
+        jobType: 'フロントエンドエンジニア',
+      },
+    };
+
+    it('GenerationContextからアクションを生成する', async () => {
+      const mockResponseBody = {
+        output: {
+          message: {
+            role: 'assistant',
+            content: [
+              {
+                text: JSON.stringify({
+                  actions: Array.from({ length: 8 }, (_, i) => ({
+                    title: `アクション${i + 1}`,
+                    description: `説明${i + 1}`.repeat(15), // 100文字以上
+                    type: i % 2 === 0 ? 'execution' : 'habit',
+                    background: `背景${i + 1}`,
+                    position: i,
+                  })),
+                }),
+              },
+            ],
+          },
+        },
+        stopReason: 'end_turn',
+        usage: { inputTokens: 100, outputTokens: 200, totalTokens: 300 },
+      };
+
+      mockClient.send.mockResolvedValue({
+        body: new TextEncoder().encode(JSON.stringify(mockResponseBody)),
+      });
+
+      const result = await service.generateActionsWithContext(generationContext);
+
+      expect(result).toHaveLength(8);
+      expect(result[0]).toHaveProperty('title');
+      expect(result[0]).toHaveProperty('description');
+      expect(result[0]).toHaveProperty('type');
+      expect(result[0]).toHaveProperty('background');
+      expect(result[0]).toHaveProperty('position');
+      expect(['execution', 'habit']).toContain(result[0].type);
+    });
+
+    it('プロンプトに目標コンテキストが含まれる', async () => {
+      // InvokeModelCommandのモックを作成
+      const mockInvokeModelCommand = jest.fn();
+      (InvokeModelCommand as jest.Mock) = mockInvokeModelCommand;
+
+      let capturedInput: any;
+      mockInvokeModelCommand.mockImplementation((input: any) => {
+        capturedInput = input;
+        return { input };
+      });
+
+      const mockResponseBody = {
+        output: {
+          message: {
+            role: 'assistant',
+            content: [
+              {
+                text: JSON.stringify({
+                  actions: Array.from({ length: 8 }, (_, i) => ({
+                    title: `アクション${i + 1}`,
+                    description: `説明${i + 1}`.repeat(15),
+                    type: 'execution',
+                    background: `背景${i + 1}`,
+                    position: i,
+                  })),
+                }),
+              },
+            ],
+          },
+        },
+        stopReason: 'end_turn',
+        usage: { inputTokens: 100, outputTokens: 200, totalTokens: 300 },
+      };
+
+      mockClient.send.mockResolvedValue({
+        body: new TextEncoder().encode(JSON.stringify(mockResponseBody)),
+      });
+
+      await service.generateActionsWithContext(generationContext);
+
+      expect(capturedInput).toBeDefined();
+      const requestBody = JSON.parse(capturedInput.body);
+      const promptText = requestBody.messages[0].content[0].text;
+
+      // プロンプトに目標情報が含まれることを確認
+      expect(promptText).toContain(generationContext.goal.title);
+      expect(promptText).toContain(generationContext.goal.description);
+      expect(promptText).toContain(generationContext.subGoal.title);
+      expect(promptText).toContain(generationContext.subGoal.description);
+    });
+
+    it('プロンプトに関連サブ目標が含まれる', async () => {
+      const mockInvokeModelCommand = jest.fn();
+      (InvokeModelCommand as jest.Mock) = mockInvokeModelCommand;
+
+      let capturedInput: any;
+      mockInvokeModelCommand.mockImplementation((input: any) => {
+        capturedInput = input;
+        return { input };
+      });
+
+      const mockResponseBody = {
+        output: {
+          message: {
+            role: 'assistant',
+            content: [
+              {
+                text: JSON.stringify({
+                  actions: Array.from({ length: 8 }, (_, i) => ({
+                    title: `アクション${i + 1}`,
+                    description: `説明${i + 1}`.repeat(15),
+                    type: 'execution',
+                    background: `背景${i + 1}`,
+                    position: i,
+                  })),
+                }),
+              },
+            ],
+          },
+        },
+        stopReason: 'end_turn',
+        usage: { inputTokens: 100, outputTokens: 200, totalTokens: 300 },
+      };
+
+      mockClient.send.mockResolvedValue({
+        body: new TextEncoder().encode(JSON.stringify(mockResponseBody)),
+      });
+
+      await service.generateActionsWithContext(generationContext);
+
+      expect(capturedInput).toBeDefined();
+      const requestBody = JSON.parse(capturedInput.body);
+      const promptText = requestBody.messages[0].content[0].text;
+
+      // プロンプトに関連サブ目標が含まれることを確認
+      expect(promptText).toContain(generationContext.relatedSubGoals[0].title);
+      expect(promptText).toContain(generationContext.relatedSubGoals[1].title);
+    });
+
+    it('プロンプトにユーザー情報が含まれる', async () => {
+      const mockInvokeModelCommand = jest.fn();
+      (InvokeModelCommand as jest.Mock) = mockInvokeModelCommand;
+
+      let capturedInput: any;
+      mockInvokeModelCommand.mockImplementation((input: any) => {
+        capturedInput = input;
+        return { input };
+      });
+
+      const mockResponseBody = {
+        output: {
+          message: {
+            role: 'assistant',
+            content: [
+              {
+                text: JSON.stringify({
+                  actions: Array.from({ length: 8 }, (_, i) => ({
+                    title: `アクション${i + 1}`,
+                    description: `説明${i + 1}`.repeat(15),
+                    type: 'execution',
+                    background: `背景${i + 1}`,
+                    position: i,
+                  })),
+                }),
+              },
+            ],
+          },
+        },
+        stopReason: 'end_turn',
+        usage: { inputTokens: 100, outputTokens: 200, totalTokens: 300 },
+      };
+
+      mockClient.send.mockResolvedValue({
+        body: new TextEncoder().encode(JSON.stringify(mockResponseBody)),
+      });
+
+      await service.generateActionsWithContext(generationContext);
+
+      expect(capturedInput).toBeDefined();
+      const requestBody = JSON.parse(capturedInput.body);
+      const promptText = requestBody.messages[0].content[0].text;
+
+      // プロンプトにユーザー情報が含まれることを確認
+      expect(promptText).toContain(generationContext.user.industry);
+      expect(promptText).toContain(generationContext.user.jobType);
+    });
+
+    it('レスポンス解析エラーを適切に処理する', async () => {
+      const mockResponseBody = {
+        output: {
+          message: {
+            role: 'assistant',
+            content: [{ text: 'Invalid JSON' }],
+          },
+        },
+        stopReason: 'end_turn',
+        usage: { inputTokens: 100, outputTokens: 200, totalTokens: 300 },
+      };
+
+      mockClient.send.mockResolvedValue({
+        body: new TextEncoder().encode(JSON.stringify(mockResponseBody)),
+      });
+
+      await expect(service.generateActionsWithContext(generationContext)).rejects.toThrow();
     });
   });
 

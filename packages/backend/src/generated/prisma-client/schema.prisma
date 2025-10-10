@@ -40,6 +40,11 @@ enum GoalStatus {
   CANCELLED
 }
 
+enum ActionType {
+  EXECUTION // 実行アクション
+  HABIT // 習慣アクション
+}
+
 enum TaskType {
   ACTION // 実行タスク
   LEARNING // 学習タスク
@@ -128,16 +133,17 @@ model SubGoal {
 }
 
 model Action {
-  id          String   @id @default(uuid()) @db.Uuid
-  subGoalId   String   @db.Uuid
-  title       String   @db.VarChar(200)
-  description String?  @db.Text
-  background  String?  @db.Text
-  constraints String?  @db.Text
-  position    Int      @db.SmallInt
-  progress    Int      @default(0) @db.SmallInt
-  createdAt   DateTime @default(now()) @db.Timestamptz
-  updatedAt   DateTime @updatedAt @db.Timestamptz
+  id          String     @id @default(uuid()) @db.Uuid
+  subGoalId   String     @db.Uuid
+  title       String     @db.VarChar(200)
+  description String?    @db.Text
+  background  String?    @db.Text
+  constraints String?    @db.Text
+  type        ActionType @default(EXECUTION)
+  position    Int        @db.SmallInt
+  progress    Int        @default(0) @db.SmallInt
+  createdAt   DateTime   @default(now()) @db.Timestamptz
+  updatedAt   DateTime   @updatedAt @db.Timestamptz
 
   // Relations
   subGoal SubGoal @relation(fields: [subGoalId], references: [id], onDelete: Cascade)

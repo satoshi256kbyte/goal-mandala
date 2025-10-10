@@ -27,7 +27,7 @@
     "test:cdk:synth": "./scripts/test-synth.sh",
     "clean": "rm -rf dist cdk.out node_modules/.cache coverage",
     "cdk": "npx cdk",
-    "cdk:synth": "npx cdk synth",
+    "cdk:synth": "npx cdk synth --no-lookups",
     "cdk:synth:test": "npx cdk synth --app 'npx ts-node src/index.ts' --context environment=test",
     "cdk:deploy": "npx cdk deploy",
     "cdk:destroy": "npx cdk destroy",

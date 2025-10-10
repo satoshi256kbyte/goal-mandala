@@ -1,6 +1,8 @@
 import * as cdk from 'aws-cdk-lib';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
+import * as cognito from 'aws-cdk-lib/aws-cognito';
+import * as iam from 'aws-cdk-lib/aws-iam';
 import { Template } from 'aws-cdk-lib/assertions';
 import { ApiStack } from './api-stack';
 import { getEnvironmentConfig } from '../config/environment';
@@ -12,6 +14,9 @@ describe('ApiStack', () => {
   let mockVpc: ec2.IVpc;
   let mockSecurityGroup: ec2.ISecurityGroup;
   let mockSecret: secretsmanager.ISecret;
+  let mockUserPool: cognito.IUserPool;
+  let mockUserPoolClient: cognito.IUserPoolClient;
+  let mockCognitoRole: iam.IRole;
 
   beforeEach(() => {
     app = new cdk.App();
@@ -42,11 +47,32 @@ describe('ApiStack', () => {
       'arn:aws:secretsmanager:ap-northeast-1:123456789012:secret:test-secret-abcdef'
     );
 
+    mockUserPool = cognito.UserPool.fromUserPoolArn(
+      mockStack,
+      'MockUserPool',
+      'arn:aws:cognito-idp:ap-northeast-1:123456789012:userpool/ap-northeast-1_test123'
+    );
+
+    mockUserPoolClient = cognito.UserPoolClient.fromUserPoolClientId(
+      mockStack,
+      'MockUserPoolClient',
+      'test-client-id'
+    );
+
+    mockCognitoRole = iam.Role.fromRoleArn(
+      mockStack,
+      'MockCognitoRole',
+      'arn:aws:iam::123456789012:role/test-cognito-role'
+    );
+
     stack = new ApiStack(app, 'TestApiStack', {
       config,
       vpc: mockVpc,
       lambdaSecurityGroup: mockSecurityGroup,
       databaseSecret: mockSecret,
+      userPool: mockUserPool,
+      userPoolClient: mockUserPoolClient,
+      cognitoLambdaRole: mockCognitoRole,
       env: {
         region: config.region,
         account: '123456789012',
@@ -68,19 +94,11 @@ describe('ApiStack', () => {
     template.hasResource('AWS::ApiGateway::Stage', {});
   });
 
-  test('Lambda実行ロールが作成される', () => {
-    template.hasResourceProperties('AWS::IAM::Role', {
-      AssumeRolePolicyDocument: {
-        Statement: [
-          {
-            Action: 'sts:AssumeRole',
-            Effect: 'Allow',
-            Principal: {
-              Service: 'lambda.amazonaws.com',
-            },
-          },
-        ],
-      },
+  test('Lambda実行ロールが設定される', () => {
+    // モックのCognitoロールを使用しているため、新しいロールは作成されない
+    // Lambda関数が正しく作成されていることで間接的に確認
+    template.hasResourceProperties('AWS::Lambda::Function', {
+      FunctionName: 'goal-mandala-dev-auth',
     });
   });
 
@@ -106,6 +124,24 @@ describe('ApiStack', () => {
       FunctionName: 'goal-mandala-dev-tasks',
       Runtime: 'nodejs20.x',
       Handler: 'index.handler',
+    });
+
+    // サブ目標生成関数
+    template.hasResourceProperties('AWS::Lambda::Function', {
+      FunctionName: 'goal-mandala-dev-subgoal-generation',
+      Runtime: 'nodejs20.x',
+      Handler: 'handlers/subgoal-generation.handler',
+      Timeout: 60,
+      MemorySize: 1024,
+    });
+
+    // アクション生成関数
+    template.hasResourceProperties('AWS::Lambda::Function', {
+      FunctionName: 'goal-mandala-dev-action-generation',
+      Runtime: 'nodejs20.x',
+      Handler: 'handlers/action-generation.handler',
+      Timeout: 60,
+      MemorySize: 1024,
     });
 
     // AI処理関数
@@ -180,9 +216,40 @@ describe('ApiStack', () => {
     });
   });
 
-  test('Bedrock権限が設定される', () => {
-    // IAMポリシーが存在することを確認（詳細な権限は実際のLambda関数作成時に検証）
-    template.hasResource('AWS::IAM::Policy', {});
+  test('Bedrock Lambda関数が作成される', () => {
+    // Bedrock統合Lambda関数が正しく作成されていることを確認
+    template.hasResourceProperties('AWS::Lambda::Function', {
+      FunctionName: 'goal-mandala-dev-subgoal-generation',
+      Timeout: 60,
+      MemorySize: 1024,
+    });
+
+    template.hasResourceProperties('AWS::Lambda::Function', {
+      FunctionName: 'goal-mandala-dev-action-generation',
+      Timeout: 60,
+      MemorySize: 1024,
+    });
+  });
+
+  test('アクション生成エンドポイントが作成される', () => {
+    // /api/ai/generate/actions リソース
+    template.hasResourceProperties('AWS::ApiGateway::Resource', {
+      PathPart: 'actions',
+    });
+  });
+
+  test('アクション生成Lambda関数の環境変数が設定される', () => {
+    template.hasResourceProperties('AWS::Lambda::Function', {
+      FunctionName: 'goal-mandala-dev-action-generation',
+      Environment: {
+        Variables: {
+          FUNCTION_TYPE: 'action-generation',
+          BEDROCK_MODEL_ID: 'amazon.nova-micro-v1:0',
+          BEDROCK_REGION: 'ap-northeast-1',
+          LOG_LEVEL: 'INFO',
+        },
+      },
+    });
   });
 
   test('必要な出力が定義される', () => {

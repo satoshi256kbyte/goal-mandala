@@ -164,6 +164,7 @@ exports.Prisma.ActionScalarFieldEnum = {
   description: 'description',
   background: 'background',
   constraints: 'constraints',
+  type: 'type',
   position: 'position',
   progress: 'progress',
   createdAt: 'createdAt',
@@ -272,6 +273,11 @@ exports.GoalStatus = exports.$Enums.GoalStatus = {
   COMPLETED: 'COMPLETED',
   PAUSED: 'PAUSED',
   CANCELLED: 'CANCELLED',
+};
+
+exports.ActionType = exports.$Enums.ActionType = {
+  EXECUTION: 'EXECUTION',
+  HABIT: 'HABIT',
 };
 
 exports.TaskType = exports.$Enums.TaskType = {

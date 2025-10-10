@@ -95,6 +95,13 @@ export namespace $Enums {
 
   export type GoalStatus = (typeof GoalStatus)[keyof typeof GoalStatus];
 
+  export const ActionType: {
+    EXECUTION: 'EXECUTION';
+    HABIT: 'HABIT';
+  };
+
+  export type ActionType = (typeof ActionType)[keyof typeof ActionType];
+
   export const TaskType: {
     ACTION: 'ACTION';
     LEARNING: 'LEARNING';
@@ -135,6 +142,10 @@ export const CompanySize: typeof $Enums.CompanySize;
 export type GoalStatus = $Enums.GoalStatus;
 
 export const GoalStatus: typeof $Enums.GoalStatus;
+
+export type ActionType = $Enums.ActionType;
+
+export const ActionType: typeof $Enums.ActionType;
 
 export type TaskType = $Enums.TaskType;
 
@@ -5355,6 +5366,7 @@ export namespace Prisma {
     description: string | null;
     background: string | null;
     constraints: string | null;
+    type: $Enums.ActionType | null;
     position: number | null;
     progress: number | null;
     createdAt: Date | null;
@@ -5368,6 +5380,7 @@ export namespace Prisma {
     description: string | null;
     background: string | null;
     constraints: string | null;
+    type: $Enums.ActionType | null;
     position: number | null;
     progress: number | null;
     createdAt: Date | null;
@@ -5381,6 +5394,7 @@ export namespace Prisma {
     description: number;
     background: number;
     constraints: number;
+    type: number;
     position: number;
     progress: number;
     createdAt: number;
@@ -5405,6 +5419,7 @@ export namespace Prisma {
     description?: true;
     background?: true;
     constraints?: true;
+    type?: true;
     position?: true;
     progress?: true;
     createdAt?: true;
@@ -5418,6 +5433,7 @@ export namespace Prisma {
     description?: true;
     background?: true;
     constraints?: true;
+    type?: true;
     position?: true;
     progress?: true;
     createdAt?: true;
@@ -5431,6 +5447,7 @@ export namespace Prisma {
     description?: true;
     background?: true;
     constraints?: true;
+    type?: true;
     position?: true;
     progress?: true;
     createdAt?: true;
@@ -5532,6 +5549,7 @@ export namespace Prisma {
     description: string | null;
     background: string | null;
     constraints: string | null;
+    type: $Enums.ActionType;
     position: number;
     progress: number;
     createdAt: Date;
@@ -5564,6 +5582,7 @@ export namespace Prisma {
         description?: boolean;
         background?: boolean;
         constraints?: boolean;
+        type?: boolean;
         position?: boolean;
         progress?: boolean;
         createdAt?: boolean;
@@ -5585,6 +5604,7 @@ export namespace Prisma {
       description?: boolean;
       background?: boolean;
       constraints?: boolean;
+      type?: boolean;
       position?: boolean;
       progress?: boolean;
       createdAt?: boolean;
@@ -5601,6 +5621,7 @@ export namespace Prisma {
     description?: boolean;
     background?: boolean;
     constraints?: boolean;
+    type?: boolean;
     position?: boolean;
     progress?: boolean;
     createdAt?: boolean;
@@ -5632,6 +5653,7 @@ export namespace Prisma {
         description: string | null;
         background: string | null;
         constraints: string | null;
+        type: $Enums.ActionType;
         position: number;
         progress: number;
         createdAt: Date;
@@ -6113,6 +6135,7 @@ export namespace Prisma {
     readonly description: FieldRef<'Action', 'String'>;
     readonly background: FieldRef<'Action', 'String'>;
     readonly constraints: FieldRef<'Action', 'String'>;
+    readonly type: FieldRef<'Action', 'ActionType'>;
     readonly position: FieldRef<'Action', 'Int'>;
     readonly progress: FieldRef<'Action', 'Int'>;
     readonly createdAt: FieldRef<'Action', 'DateTime'>;
@@ -12041,6 +12064,7 @@ export namespace Prisma {
     description: 'description';
     background: 'background';
     constraints: 'constraints';
+    type: 'type';
     position: 'position';
     progress: 'progress';
     createdAt: 'createdAt';
@@ -12235,6 +12259,22 @@ export namespace Prisma {
    * Reference to a field of type 'Int[]'
    */
   export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>;
+
+  /**
+   * Reference to a field of type 'ActionType'
+   */
+  export type EnumActionTypeFieldRefInput<$PrismaModel> = FieldRefInputType<
+    $PrismaModel,
+    'ActionType'
+  >;
+
+  /**
+   * Reference to a field of type 'ActionType[]'
+   */
+  export type ListEnumActionTypeFieldRefInput<$PrismaModel> = FieldRefInputType<
+    $PrismaModel,
+    'ActionType[]'
+  >;
 
   /**
    * Reference to a field of type 'TaskType'
@@ -12573,6 +12613,7 @@ export namespace Prisma {
     description?: StringNullableFilter<'Action'> | string | null;
     background?: StringNullableFilter<'Action'> | string | null;
     constraints?: StringNullableFilter<'Action'> | string | null;
+    type?: EnumActionTypeFilter<'Action'> | $Enums.ActionType;
     position?: IntFilter<'Action'> | number;
     progress?: IntFilter<'Action'> | number;
     createdAt?: DateTimeFilter<'Action'> | Date | string;
@@ -12588,6 +12629,7 @@ export namespace Prisma {
     description?: SortOrderInput | SortOrder;
     background?: SortOrderInput | SortOrder;
     constraints?: SortOrderInput | SortOrder;
+    type?: SortOrder;
     position?: SortOrder;
     progress?: SortOrder;
     createdAt?: SortOrder;
@@ -12608,6 +12650,7 @@ export namespace Prisma {
       description?: StringNullableFilter<'Action'> | string | null;
       background?: StringNullableFilter<'Action'> | string | null;
       constraints?: StringNullableFilter<'Action'> | string | null;
+      type?: EnumActionTypeFilter<'Action'> | $Enums.ActionType;
       position?: IntFilter<'Action'> | number;
       progress?: IntFilter<'Action'> | number;
       createdAt?: DateTimeFilter<'Action'> | Date | string;
@@ -12625,6 +12668,7 @@ export namespace Prisma {
     description?: SortOrderInput | SortOrder;
     background?: SortOrderInput | SortOrder;
     constraints?: SortOrderInput | SortOrder;
+    type?: SortOrder;
     position?: SortOrder;
     progress?: SortOrder;
     createdAt?: SortOrder;
@@ -12646,6 +12690,7 @@ export namespace Prisma {
     description?: StringNullableWithAggregatesFilter<'Action'> | string | null;
     background?: StringNullableWithAggregatesFilter<'Action'> | string | null;
     constraints?: StringNullableWithAggregatesFilter<'Action'> | string | null;
+    type?: EnumActionTypeWithAggregatesFilter<'Action'> | $Enums.ActionType;
     position?: IntWithAggregatesFilter<'Action'> | number;
     progress?: IntWithAggregatesFilter<'Action'> | number;
     createdAt?: DateTimeWithAggregatesFilter<'Action'> | Date | string;
@@ -13312,6 +13357,7 @@ export namespace Prisma {
     description?: string | null;
     background?: string | null;
     constraints?: string | null;
+    type?: $Enums.ActionType;
     position: number;
     progress?: number;
     createdAt?: Date | string;
@@ -13327,6 +13373,7 @@ export namespace Prisma {
     description?: string | null;
     background?: string | null;
     constraints?: string | null;
+    type?: $Enums.ActionType;
     position: number;
     progress?: number;
     createdAt?: Date | string;
@@ -13340,6 +13387,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null;
     background?: NullableStringFieldUpdateOperationsInput | string | null;
     constraints?: NullableStringFieldUpdateOperationsInput | string | null;
+    type?: EnumActionTypeFieldUpdateOperationsInput | $Enums.ActionType;
     position?: IntFieldUpdateOperationsInput | number;
     progress?: IntFieldUpdateOperationsInput | number;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
@@ -13355,6 +13403,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null;
     background?: NullableStringFieldUpdateOperationsInput | string | null;
     constraints?: NullableStringFieldUpdateOperationsInput | string | null;
+    type?: EnumActionTypeFieldUpdateOperationsInput | $Enums.ActionType;
     position?: IntFieldUpdateOperationsInput | number;
     progress?: IntFieldUpdateOperationsInput | number;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
@@ -13369,6 +13418,7 @@ export namespace Prisma {
     description?: string | null;
     background?: string | null;
     constraints?: string | null;
+    type?: $Enums.ActionType;
     position: number;
     progress?: number;
     createdAt?: Date | string;
@@ -13381,6 +13431,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null;
     background?: NullableStringFieldUpdateOperationsInput | string | null;
     constraints?: NullableStringFieldUpdateOperationsInput | string | null;
+    type?: EnumActionTypeFieldUpdateOperationsInput | $Enums.ActionType;
     position?: IntFieldUpdateOperationsInput | number;
     progress?: IntFieldUpdateOperationsInput | number;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
@@ -13394,6 +13445,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null;
     background?: NullableStringFieldUpdateOperationsInput | string | null;
     constraints?: NullableStringFieldUpdateOperationsInput | string | null;
+    type?: EnumActionTypeFieldUpdateOperationsInput | $Enums.ActionType;
     position?: IntFieldUpdateOperationsInput | number;
     progress?: IntFieldUpdateOperationsInput | number;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
@@ -14190,6 +14242,13 @@ export namespace Prisma {
     progress?: SortOrder;
   };
 
+  export type EnumActionTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.ActionType | EnumActionTypeFieldRefInput<$PrismaModel>;
+    in?: $Enums.ActionType[] | ListEnumActionTypeFieldRefInput<$PrismaModel>;
+    notIn?: $Enums.ActionType[] | ListEnumActionTypeFieldRefInput<$PrismaModel>;
+    not?: NestedEnumActionTypeFilter<$PrismaModel> | $Enums.ActionType;
+  };
+
   export type SubGoalRelationFilter = {
     is?: SubGoalWhereInput;
     isNot?: SubGoalWhereInput;
@@ -14217,6 +14276,7 @@ export namespace Prisma {
     description?: SortOrder;
     background?: SortOrder;
     constraints?: SortOrder;
+    type?: SortOrder;
     position?: SortOrder;
     progress?: SortOrder;
     createdAt?: SortOrder;
@@ -14235,6 +14295,7 @@ export namespace Prisma {
     description?: SortOrder;
     background?: SortOrder;
     constraints?: SortOrder;
+    type?: SortOrder;
     position?: SortOrder;
     progress?: SortOrder;
     createdAt?: SortOrder;
@@ -14248,6 +14309,7 @@ export namespace Prisma {
     description?: SortOrder;
     background?: SortOrder;
     constraints?: SortOrder;
+    type?: SortOrder;
     position?: SortOrder;
     progress?: SortOrder;
     createdAt?: SortOrder;
@@ -14257,6 +14319,16 @@ export namespace Prisma {
   export type ActionSumOrderByAggregateInput = {
     position?: SortOrder;
     progress?: SortOrder;
+  };
+
+  export type EnumActionTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ActionType | EnumActionTypeFieldRefInput<$PrismaModel>;
+    in?: $Enums.ActionType[] | ListEnumActionTypeFieldRefInput<$PrismaModel>;
+    notIn?: $Enums.ActionType[] | ListEnumActionTypeFieldRefInput<$PrismaModel>;
+    not?: NestedEnumActionTypeWithAggregatesFilter<$PrismaModel> | $Enums.ActionType;
+    _count?: NestedIntFilter<$PrismaModel>;
+    _min?: NestedEnumActionTypeFilter<$PrismaModel>;
+    _max?: NestedEnumActionTypeFilter<$PrismaModel>;
   };
 
   export type EnumTaskTypeFilter<$PrismaModel = never> = {
@@ -14986,6 +15058,10 @@ export namespace Prisma {
     connect?: TaskWhereUniqueInput | TaskWhereUniqueInput[];
   };
 
+  export type EnumActionTypeFieldUpdateOperationsInput = {
+    set?: $Enums.ActionType;
+  };
+
   export type SubGoalUpdateOneRequiredWithoutActionsNestedInput = {
     create?: XOR<SubGoalCreateWithoutActionsInput, SubGoalUncheckedCreateWithoutActionsInput>;
     connectOrCreate?: SubGoalCreateOrConnectWithoutActionsInput;
@@ -15526,6 +15602,23 @@ export namespace Prisma {
     not?: NestedFloatFilter<$PrismaModel> | number;
   };
 
+  export type NestedEnumActionTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.ActionType | EnumActionTypeFieldRefInput<$PrismaModel>;
+    in?: $Enums.ActionType[] | ListEnumActionTypeFieldRefInput<$PrismaModel>;
+    notIn?: $Enums.ActionType[] | ListEnumActionTypeFieldRefInput<$PrismaModel>;
+    not?: NestedEnumActionTypeFilter<$PrismaModel> | $Enums.ActionType;
+  };
+
+  export type NestedEnumActionTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ActionType | EnumActionTypeFieldRefInput<$PrismaModel>;
+    in?: $Enums.ActionType[] | ListEnumActionTypeFieldRefInput<$PrismaModel>;
+    notIn?: $Enums.ActionType[] | ListEnumActionTypeFieldRefInput<$PrismaModel>;
+    not?: NestedEnumActionTypeWithAggregatesFilter<$PrismaModel> | $Enums.ActionType;
+    _count?: NestedIntFilter<$PrismaModel>;
+    _min?: NestedEnumActionTypeFilter<$PrismaModel>;
+    _max?: NestedEnumActionTypeFilter<$PrismaModel>;
+  };
+
   export type NestedEnumTaskTypeFilter<$PrismaModel = never> = {
     equals?: $Enums.TaskType | EnumTaskTypeFieldRefInput<$PrismaModel>;
     in?: $Enums.TaskType[] | ListEnumTaskTypeFieldRefInput<$PrismaModel>;
@@ -15935,6 +16028,7 @@ export namespace Prisma {
     description?: string | null;
     background?: string | null;
     constraints?: string | null;
+    type?: $Enums.ActionType;
     position: number;
     progress?: number;
     createdAt?: Date | string;
@@ -15948,6 +16042,7 @@ export namespace Prisma {
     description?: string | null;
     background?: string | null;
     constraints?: string | null;
+    type?: $Enums.ActionType;
     position: number;
     progress?: number;
     createdAt?: Date | string;
@@ -16030,6 +16125,7 @@ export namespace Prisma {
     description?: StringNullableFilter<'Action'> | string | null;
     background?: StringNullableFilter<'Action'> | string | null;
     constraints?: StringNullableFilter<'Action'> | string | null;
+    type?: EnumActionTypeFilter<'Action'> | $Enums.ActionType;
     position?: IntFilter<'Action'> | number;
     progress?: IntFilter<'Action'> | number;
     createdAt?: DateTimeFilter<'Action'> | Date | string;
@@ -16180,6 +16276,7 @@ export namespace Prisma {
     description?: string | null;
     background?: string | null;
     constraints?: string | null;
+    type?: $Enums.ActionType;
     position: number;
     progress?: number;
     createdAt?: Date | string;
@@ -16194,6 +16291,7 @@ export namespace Prisma {
     description?: string | null;
     background?: string | null;
     constraints?: string | null;
+    type?: $Enums.ActionType;
     position: number;
     progress?: number;
     createdAt?: Date | string;
@@ -16278,6 +16376,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null;
     background?: NullableStringFieldUpdateOperationsInput | string | null;
     constraints?: NullableStringFieldUpdateOperationsInput | string | null;
+    type?: EnumActionTypeFieldUpdateOperationsInput | $Enums.ActionType;
     position?: IntFieldUpdateOperationsInput | number;
     progress?: IntFieldUpdateOperationsInput | number;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
@@ -16292,6 +16391,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null;
     background?: NullableStringFieldUpdateOperationsInput | string | null;
     constraints?: NullableStringFieldUpdateOperationsInput | string | null;
+    type?: EnumActionTypeFieldUpdateOperationsInput | $Enums.ActionType;
     position?: IntFieldUpdateOperationsInput | number;
     progress?: IntFieldUpdateOperationsInput | number;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
@@ -16714,6 +16814,7 @@ export namespace Prisma {
     description?: string | null;
     background?: string | null;
     constraints?: string | null;
+    type?: $Enums.ActionType;
     position: number;
     progress?: number;
     createdAt?: Date | string;
@@ -16726,6 +16827,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null;
     background?: NullableStringFieldUpdateOperationsInput | string | null;
     constraints?: NullableStringFieldUpdateOperationsInput | string | null;
+    type?: EnumActionTypeFieldUpdateOperationsInput | $Enums.ActionType;
     position?: IntFieldUpdateOperationsInput | number;
     progress?: IntFieldUpdateOperationsInput | number;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
@@ -16739,6 +16841,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null;
     background?: NullableStringFieldUpdateOperationsInput | string | null;
     constraints?: NullableStringFieldUpdateOperationsInput | string | null;
+    type?: EnumActionTypeFieldUpdateOperationsInput | $Enums.ActionType;
     position?: IntFieldUpdateOperationsInput | number;
     progress?: IntFieldUpdateOperationsInput | number;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
@@ -16752,6 +16855,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null;
     background?: NullableStringFieldUpdateOperationsInput | string | null;
     constraints?: NullableStringFieldUpdateOperationsInput | string | null;
+    type?: EnumActionTypeFieldUpdateOperationsInput | $Enums.ActionType;
     position?: IntFieldUpdateOperationsInput | number;
     progress?: IntFieldUpdateOperationsInput | number;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;

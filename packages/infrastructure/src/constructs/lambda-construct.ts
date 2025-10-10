@@ -302,7 +302,7 @@ export class LambdaConstruct extends Construct {
         statistic: 'Average',
         period: cdk.Duration.minutes(5),
       }),
-      threshold: 60000, // 60秒
+      threshold: 30000, // 30秒（アクション生成APIの要件に合わせて変更）
       evaluationPeriods: 2,
       comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
       treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,

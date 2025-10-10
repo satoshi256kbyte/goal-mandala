@@ -219,7 +219,76 @@ pnpm type-check
 }
 ```
 
-詳細は [API仕様書](./docs/subgoal-generation-api-specification.md) を参照してください。
+詳細は [サブ目標生成API仕様書](./docs/subgoal-generation-api-specification.md) を参照してください。
+
+### アクション生成API
+
+**エンドポイント**: `POST /api/ai/generate/actions`
+
+**説明**: サブ目標から8つのアクションを自動生成します。各アクションは「実行アクション」または「習慣アクション」に自動分類されます。
+
+**認証**: 必須（JWT Bearer Token）
+
+**リクエスト例**:
+
+```json
+{
+  "subGoalId": "550e8400-e29b-41d4-a716-446655440000",
+  "regenerate": false
+}
+```
+
+**レスポンス例**:
+
+```json
+{
+  "success": true,
+  "data": {
+    "subGoalId": "550e8400-e29b-41d4-a716-446655440000",
+    "actions": [
+      {
+        "id": "uuid",
+        "title": "TypeScript公式ドキュメントを読む",
+        "description": "TypeScript公式ドキュメントの基礎編を1日1章ずつ読み進め、サンプルコードを実際に動かして理解を深める",
+        "background": "公式ドキュメントは最も正確で体系的な情報源である",
+        "type": "execution",
+        "position": 0,
+        "progress": 0,
+        "createdAt": "2025-10-09T10:00:00Z",
+        "updatedAt": "2025-10-09T10:00:00Z"
+      },
+      {
+        "id": "uuid",
+        "title": "毎日TypeScriptコードを書く",
+        "description": "毎日最低30分はTypeScriptでコードを書き、型システムの理解を深める習慣を作る",
+        "background": "継続的な実践により、TypeScriptの型システムが自然に身につく",
+        "type": "habit",
+        "position": 1,
+        "progress": 0,
+        "createdAt": "2025-10-09T10:00:00Z",
+        "updatedAt": "2025-10-09T10:00:00Z"
+      }
+      // ... 残り6個のアクション
+    ]
+  },
+  "metadata": {
+    "generatedAt": "2025-10-09T10:00:00Z",
+    "tokensUsed": 2000,
+    "estimatedCost": 0.0003,
+    "goalContext": {
+      "goalTitle": "TypeScriptのエキスパートになる",
+      "subGoalTitle": "TypeScriptの基礎文法を習得する"
+    }
+  }
+}
+```
+
+**アクション種別**:
+
+- **実行アクション（EXECUTION）**: 一度実施すれば完了となるアクション（例：ドキュメントを読む、プロジェクトを実装）
+- **習慣アクション（HABIT）**: 継続的に実施する必要があるアクション（例：毎日コードを書く、週に3本記事を読む）
+
+詳細は [アクション生成API仕様書](./docs/action-generation-api-specification.md) を参照してください。
 
 ### ヘルスチェック
 
@@ -337,16 +406,33 @@ aws logs tail /aws/lambda/SubGoalGenerationFunction --follow
 
 よくある問題と解決方法については、以下のドキュメントを参照してください：
 
+### サブ目標生成API
+
 - [エラーコード一覧](./docs/subgoal-generation-error-codes.md)
 - [トラブルシューティングガイド](./docs/subgoal-generation-troubleshooting-guide.md)
 - [運用ガイド](./docs/subgoal-generation-operations-guide.md)
 
+### アクション生成API
+
+- [エラーコード一覧](./docs/action-generation-error-codes.md)
+- [トラブルシューティングガイド](./docs/action-generation-troubleshooting-guide.md)
+- [運用ガイド](./docs/action-generation-operations-guide.md)
+
 ## ドキュメント
+
+### サブ目標生成API
 
 - [API仕様書](./docs/subgoal-generation-api-specification.md) - エンドポイント、リクエスト、レスポンスの詳細
 - [エラーコード一覧](./docs/subgoal-generation-error-codes.md) - エラーコードと対処方法
 - [運用ガイド](./docs/subgoal-generation-operations-guide.md) - 監視項目、アラート対応手順
 - [トラブルシューティングガイド](./docs/subgoal-generation-troubleshooting-guide.md) - よくある問題と解決方法
+
+### アクション生成API
+
+- [API仕様書](./docs/action-generation-api-specification.md) - エンドポイント、リクエスト、レスポンス、アクション種別の詳細
+- [エラーコード一覧](./docs/action-generation-error-codes.md) - エラーコードと対処方法
+- [運用ガイド](./docs/action-generation-operations-guide.md) - 監視項目、アラート対応手順、アクション種別判定の仕組み
+- [トラブルシューティングガイド](./docs/action-generation-troubleshooting-guide.md) - よくある問題と解決方法、品質エラーの対処
 
 ## コントリビューション
 

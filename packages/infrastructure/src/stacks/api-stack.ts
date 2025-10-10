@@ -221,7 +221,24 @@ export class ApiStack extends cdk.Stack {
       },
     });
 
-    // AI処理 Lambda 関数（Bedrock統合）- 将来のアクション生成・タスク生成用
+    // アクション生成 Lambda 関数（Bedrock統合）
+    this.lambdaConstruct.createBedrockFunction({
+      functionName: `${config.stackPrefix}-action-generation`,
+      codePath: '../backend/dist',
+      description: 'Action generation API with Amazon Bedrock',
+      handler: 'handlers/action-generation.handler',
+      timeout: cdk.Duration.seconds(60), // アクション生成は60秒以内
+      memorySize: 1024,
+      reservedConcurrency: 10, // 同時実行数制限
+      environment: {
+        FUNCTION_TYPE: 'action-generation',
+        BEDROCK_MODEL_ID: 'amazon.nova-micro-v1:0',
+        BEDROCK_REGION: config.region,
+        LOG_LEVEL: 'INFO',
+      },
+    });
+
+    // AI処理 Lambda 関数（Bedrock統合）- 将来のタスク生成用
     this.lambdaConstruct.createBedrockFunction({
       functionName: `${config.stackPrefix}-ai-processor`,
       codePath: '../backend/dist',
@@ -391,16 +408,27 @@ export class ApiStack extends cdk.Stack {
       );
     }
 
-    // 既存のAI処理関数（将来のアクション生成・タスク生成用）
+    // アクション生成Lambda関数
+    const actionGenerationFunction = this.lambdaConstruct.getFunction(
+      `${config.stackPrefix}-action-generation`
+    );
+    if (actionGenerationFunction) {
+      const actionsResource = generateResource.addResource('actions');
+      actionsResource.addMethod(
+        'POST',
+        new apigateway.LambdaIntegration(actionGenerationFunction, {
+          timeout: cdk.Duration.seconds(60),
+        }),
+        {
+          authorizer: cognitoAuthorizer,
+          authorizationType: apigateway.AuthorizationType.COGNITO,
+        }
+      );
+    }
+
+    // 既存のAI処理関数（将来のタスク生成用）
     const aiFunction = this.lambdaConstruct.getFunction(`${config.stackPrefix}-ai-processor`);
     if (aiFunction) {
-      // アクション生成（将来実装）
-      const actionsResource = generateResource.addResource('actions');
-      actionsResource.addMethod('POST', new apigateway.LambdaIntegration(aiFunction), {
-        authorizer: cognitoAuthorizer,
-        authorizationType: apigateway.AuthorizationType.COGNITO,
-      });
-
       // タスク生成（将来実装）
       const tasksResource = generateResource.addResource('tasks');
       tasksResource.addMethod('POST', new apigateway.LambdaIntegration(aiFunction), {

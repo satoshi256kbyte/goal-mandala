@@ -3,6 +3,7 @@
  */
 
 import type { GoalInput, SubGoalInput, ActionInput } from '../types/ai-generation.types.js';
+import type { GenerationContext } from '../types/action-generation.types.js';
 import { INPUT_LIMITS, INJECTION_PATTERNS } from '../config/bedrock.config.js';
 
 /**
@@ -172,6 +173,101 @@ ${sanitizedConstraints}
       "estimatedMinutes": 30
     }
     // ... 必要な数のタスク
+  ]
+}`;
+
+    return `${systemMessage}\n\n${userMessage}`;
+  }
+
+  /**
+   * アクション生成プロンプトを構築（GenerationContext版）
+   */
+  buildActionPromptWithContext(context: GenerationContext): string {
+    // 入力のサニタイズとインジェクション検出
+    const sanitizedGoalTitle = this.sanitizeInput(context.goal.title);
+    const sanitizedGoalDescription = this.sanitizeInput(context.goal.description);
+    const sanitizedGoalBackground = this.sanitizeInput(context.goal.background);
+    const sanitizedGoalConstraints = context.goal.constraints
+      ? this.sanitizeInput(context.goal.constraints)
+      : 'なし';
+
+    const sanitizedSubGoalTitle = this.sanitizeInput(context.subGoal.title);
+    const sanitizedSubGoalDescription = this.sanitizeInput(context.subGoal.description);
+    const sanitizedSubGoalBackground = this.sanitizeInput(context.subGoal.background);
+
+    this.detectInjection(sanitizedGoalTitle);
+    this.detectInjection(sanitizedSubGoalTitle);
+    this.detectInjection(sanitizedSubGoalDescription);
+    this.detectInjection(sanitizedSubGoalBackground);
+
+    // 関連サブ目標の情報を構築
+    const relatedSubGoalsText = context.relatedSubGoals
+      .map(sg => {
+        const title = this.sanitizeInput(sg.title);
+        const description = this.sanitizeInput(sg.description);
+        return `- ${title}: ${description}`;
+      })
+      .join('\n');
+
+    // ユーザー情報の構築
+    const userIndustry = context.user.industry || '未設定';
+    const userJobType = context.user.jobType || '未設定';
+
+    // 期限のフォーマット
+    const deadlineStr = context.goal.deadline.toISOString().split('T')[0];
+
+    const systemMessage = `あなたは目標達成の専門家です。ユーザーのサブ目標を分析し、
+それを達成するための8つの具体的なアクションを提案してください。
+
+各アクションは以下の条件を満たす必要があります：
+- サブ目標達成に直接貢献する
+- 具体的で実行可能である
+- 互いに重複しない
+- バランスよくサブ目標をカバーする
+- 実行アクション（一度で完了）または習慣アクション（継続的実施）のいずれかである
+
+アクション種別の判定基準：
+- 実行アクション: 一度実施すれば完了するもの（例：資料作成、登壇、リリース）
+- 習慣アクション: 継続的に実施する必要があるもの（例：毎日の学習、定期的な運動）`;
+
+    const userMessage = `# 目標情報
+タイトル: ${sanitizedGoalTitle}
+説明: ${sanitizedGoalDescription}
+達成期限: ${deadlineStr}
+背景: ${sanitizedGoalBackground}
+制約事項: ${sanitizedGoalConstraints}
+
+# サブ目標情報（アクションを生成する対象）
+タイトル: ${sanitizedSubGoalTitle}
+説明: ${sanitizedSubGoalDescription}
+背景: ${sanitizedSubGoalBackground}
+位置: ${context.subGoal.position}
+
+# 関連サブ目標（参考情報）
+${relatedSubGoalsText}
+
+# ユーザー情報
+業種: ${userIndustry}
+職種: ${userJobType}
+
+# 指示
+上記のサブ目標「${sanitizedSubGoalTitle}」を達成するために必要な8つのアクションを生成してください。
+目標全体のコンテキストと他のサブ目標との関係を考慮し、具体的で実行可能なアクションを提案してください。
+
+各アクションについて、それが「実行アクション」か「習慣アクション」かを判定してください。
+
+# 出力形式
+以下のJSON形式で出力してください：
+{
+  "actions": [
+    {
+      "title": "アクションのタイトル（50文字以内）",
+      "description": "アクションの詳細説明（100-200文字）",
+      "background": "このアクションが必要な理由（100文字以内）",
+      "type": "execution" または "habit",
+      "position": 0
+    }
+    // ... 8個のアクション
   ]
 }`;
 
