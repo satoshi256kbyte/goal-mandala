@@ -223,12 +223,32 @@ exports.Prisma.ChangeHistoryScalarFieldEnum = {
   createdAt: 'createdAt',
 };
 
+exports.Prisma.ProcessingStateScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  type: 'type',
+  status: 'status',
+  targetId: 'targetId',
+  progress: 'progress',
+  result: 'result',
+  error: 'error',
+  retryCount: 'retryCount',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  completedAt: 'completedAt',
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc',
 };
 
 exports.Prisma.JsonNullValueInput = {
+  JsonNull: Prisma.JsonNull,
+};
+
+exports.Prisma.NullableJsonNullValueInput = {
+  DbNull: Prisma.DbNull,
   JsonNull: Prisma.JsonNull,
 };
 
@@ -302,6 +322,21 @@ exports.ReminderStatus = exports.$Enums.ReminderStatus = {
   CANCELLED: 'CANCELLED',
 };
 
+exports.ProcessingType = exports.$Enums.ProcessingType = {
+  SUBGOAL_GENERATION: 'SUBGOAL_GENERATION',
+  ACTION_GENERATION: 'ACTION_GENERATION',
+  TASK_GENERATION: 'TASK_GENERATION',
+};
+
+exports.ProcessingStatus = exports.$Enums.ProcessingStatus = {
+  PENDING: 'PENDING',
+  PROCESSING: 'PROCESSING',
+  COMPLETED: 'COMPLETED',
+  FAILED: 'FAILED',
+  TIMEOUT: 'TIMEOUT',
+  CANCELLED: 'CANCELLED',
+};
+
 exports.Prisma.ModelName = {
   User: 'User',
   Goal: 'Goal',
@@ -312,6 +347,7 @@ exports.Prisma.ModelName = {
   Reflection: 'Reflection',
   ProgressHistory: 'ProgressHistory',
   ChangeHistory: 'ChangeHistory',
+  ProcessingState: 'ProcessingState',
 };
 
 /**

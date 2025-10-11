@@ -3,7 +3,7 @@
  */
 
 import { TaskQualityValidator } from '../task-quality-validator.service';
-import { TaskOutput, TaskPriority, TaskType } from '../../types/task-generation.types';
+import { TaskOutput, TaskPriority, TaskCategory } from '../../types/task-generation.types';
 import { QUALITY_CRITERIA } from '../../schemas/task-generation.schema';
 import { QualityValidationError } from '../../errors/task-generation.errors';
 
@@ -26,7 +26,7 @@ describe('TaskQualityValidator', () => {
   const createValidTask = (position: number): TaskOutput => ({
     title: `タスク${position + 1}`,
     description: 'a'.repeat(100), // 20-200文字の範囲内
-    type: TaskType.EXECUTION,
+    category: TaskCategory.EXECUTION,
     estimatedMinutes: 45, // 15-120分の範囲内
     priority: TaskPriority.MEDIUM,
     position,

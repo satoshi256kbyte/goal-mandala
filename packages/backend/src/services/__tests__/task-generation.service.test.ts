@@ -8,7 +8,12 @@ import { ContextService } from '../context.service';
 import { BedrockService } from '../bedrock.service';
 import { TaskQualityValidator } from '../task-quality-validator.service';
 import { TaskDatabaseService } from '../task-database.service';
-import { TaskGenerationContext, TaskOutput, TaskPriority } from '../../types/task-generation.types';
+import {
+  TaskGenerationContext,
+  TaskOutput,
+  TaskPriority,
+  TaskCategory,
+} from '../../types/task-generation.types';
 import { ActionType, TaskType, TaskStatus } from '@prisma/client';
 import { QualityError, NotFoundError, ForbiddenError } from '../../errors/task-generation.errors';
 
@@ -144,8 +149,8 @@ describe('TaskGenerationService Integration Tests', () => {
         actionId: testActionId,
         title: task.title,
         description: task.description,
-        type: TaskType.EXECUTION,
-        status: TaskStatus.NOT_STARTED,
+        type: TaskType.ACTION,
+        status: TaskStatus.PENDING,
         estimatedMinutes: task.estimatedMinutes,
         completedAt: null,
         createdAt: new Date(),
@@ -185,8 +190,8 @@ describe('TaskGenerationService Integration Tests', () => {
       result.tasks.forEach((task, index) => {
         expect(task.id).toBe(`task-${index}`);
         expect(task.title).toBe(mockAITasks[index].title);
-        expect(task.type).toBe(TaskType.EXECUTION);
-        expect(task.status).toBe(TaskStatus.NOT_STARTED);
+        expect(task.type).toBe(TaskType.ACTION);
+        expect(task.status).toBe(TaskStatus.PENDING);
         expect(task.estimatedMinutes).toBe(mockAITasks[index].estimatedMinutes);
       });
 
@@ -238,8 +243,8 @@ describe('TaskGenerationService Integration Tests', () => {
         actionId: testActionId,
         title: task.title,
         description: task.description,
-        type: TaskType.HABIT,
-        status: TaskStatus.NOT_STARTED,
+        type: TaskType.ACTION,
+        status: TaskStatus.PENDING,
         estimatedMinutes: task.estimatedMinutes,
         completedAt: null,
         createdAt: new Date(),
@@ -260,7 +265,7 @@ describe('TaskGenerationService Integration Tests', () => {
 
       expect(result.actionId).toBe(testActionId);
       expect(result.tasks).toHaveLength(1);
-      expect(result.tasks[0].type).toBe(TaskType.HABIT);
+      expect(result.tasks[0].type).toBe(TaskType.ACTION);
       expect(result.metadata.actionContext.actionType).toBe(ActionType.HABIT);
     });
 
@@ -305,8 +310,8 @@ describe('TaskGenerationService Integration Tests', () => {
         actionId: testActionId,
         title: task.title,
         description: task.description,
-        type: TaskType.EXECUTION,
-        status: TaskStatus.NOT_STARTED,
+        type: TaskType.ACTION,
+        status: TaskStatus.PENDING,
         estimatedMinutes: task.estimatedMinutes,
         completedAt: null,
         createdAt: new Date(),
@@ -548,8 +553,8 @@ describe('TaskGenerationService Integration Tests', () => {
         actionId: testActionId,
         title: task.title,
         description: task.description,
-        type: TaskType.EXECUTION,
-        status: TaskStatus.NOT_STARTED,
+        type: TaskType.ACTION,
+        status: TaskStatus.PENDING,
         estimatedMinutes: task.estimatedMinutes,
         completedAt: null,
         createdAt: new Date(),

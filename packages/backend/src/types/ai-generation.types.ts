@@ -63,12 +63,11 @@ export interface ActionOutput {
 }
 
 /**
- * タスク出力
+ * タスク出力（AI生成用の簡易版）
  */
 export interface TaskOutput {
   title: string;
   description: string;
-  type: 'execution' | 'habit';
   estimatedMinutes: number;
 }
 

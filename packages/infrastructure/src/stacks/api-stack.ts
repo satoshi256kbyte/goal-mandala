@@ -1,11 +1,12 @@
 import * as cdk from 'aws-cdk-lib';
 import * as apigateway from 'aws-cdk-lib/aws-apigateway';
-// import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
 import * as cognito from 'aws-cdk-lib/aws-cognito';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as logs from 'aws-cdk-lib/aws-logs';
+import * as cloudwatch from 'aws-cdk-lib/aws-cloudwatch';
+import * as cloudwatchActions from 'aws-cdk-lib/aws-cloudwatch-actions';
 import { Construct } from 'constructs';
 import { LambdaConstruct } from '../constructs/lambda-construct';
 import { EnvironmentConfig } from '../config/environment';
@@ -126,6 +127,9 @@ export class ApiStack extends cdk.Stack {
     // Lambda 関数作成
     this.createLambdaFunctions(config);
 
+    // CloudWatchアラーム設定
+    this.setupCloudWatchAlarms(config);
+
     // API エンドポイント設定
     this.setupApiEndpoints(config, cognitoAuthorizer);
 
@@ -168,6 +172,100 @@ export class ApiStack extends cdk.Stack {
       description: 'Cognito Authorizer ID',
       exportName: `${config.stackPrefix}-api-cognito-authorizer-id`,
     });
+  }
+
+  /**
+   * CloudWatchアラームを設定する
+   */
+  private setupCloudWatchAlarms(config: EnvironmentConfig): void {
+    // アラーム通知用のSNSトピックを取得
+    const alarmTopic = this.lambdaConstruct.alarmTopic;
+    if (!alarmTopic) {
+      console.warn('Alarm topic not found, skipping alarm setup');
+      return;
+    }
+
+    // 非同期処理開始Lambda関数のアラーム
+    const asyncProcessingFunction = this.lambdaConstruct.getFunction(
+      `${config.stackPrefix}-async-processing`
+    );
+    if (asyncProcessingFunction) {
+      // エラー率アラーム
+      const asyncErrorAlarm = asyncProcessingFunction
+        .metricErrors({
+          statistic: 'Sum',
+          period: cdk.Duration.minutes(5),
+        })
+        .createAlarm(this, 'AsyncProcessingErrorAlarm', {
+          alarmName: `${config.stackPrefix}-async-processing-error-rate`,
+          alarmDescription: '非同期処理開始のエラー率が閾値を超えました',
+          threshold: 5, // 5分間で5回以上のエラー
+          evaluationPeriods: 2,
+          comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
+          treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
+        });
+
+      asyncErrorAlarm.addAlarmAction(new cloudwatchActions.SnsAction(alarmTopic));
+    }
+
+    // AI生成Worker Lambda関数のアラーム
+    const aiGenerationWorkerFunction = this.lambdaConstruct.getFunction(
+      `${config.stackPrefix}-ai-generation-worker`
+    );
+    if (aiGenerationWorkerFunction) {
+      // タイムアウト率アラーム（処理時間が4分を超える）
+      const workerDurationAlarm = aiGenerationWorkerFunction
+        .metricDuration({
+          statistic: 'Average',
+          period: cdk.Duration.minutes(5),
+        })
+        .createAlarm(this, 'AIGenerationWorkerDurationAlarm', {
+          alarmName: `${config.stackPrefix}-ai-generation-worker-duration`,
+          alarmDescription: 'AI生成処理の処理時間が閾値を超えました',
+          threshold: 240000, // 4分（ミリ秒）
+          evaluationPeriods: 2,
+          comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
+          treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
+        });
+
+      workerDurationAlarm.addAlarmAction(new cloudwatchActions.SnsAction(alarmTopic));
+
+      // エラー率アラーム
+      const workerErrorAlarm = aiGenerationWorkerFunction
+        .metricErrors({
+          statistic: 'Sum',
+          period: cdk.Duration.minutes(5),
+        })
+        .createAlarm(this, 'AIGenerationWorkerErrorAlarm', {
+          alarmName: `${config.stackPrefix}-ai-generation-worker-error-rate`,
+          alarmDescription: 'AI生成処理のエラー率が閾値を超えました',
+          threshold: 3, // 5分間で3回以上のエラー
+          evaluationPeriods: 2,
+          comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
+          treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
+        });
+
+      workerErrorAlarm.addAlarmAction(new cloudwatchActions.SnsAction(alarmTopic));
+    }
+
+    // 待機中処理数アラーム（カスタムメトリクス）
+    const queueDepthMetric = new cloudwatch.Metric({
+      namespace: 'GoalMandala/AsyncProcessing',
+      metricName: 'QueueDepth',
+      statistic: 'Average',
+      period: cdk.Duration.minutes(5),
+    });
+
+    const queueDepthAlarm = queueDepthMetric.createAlarm(this, 'QueueDepthAlarm', {
+      alarmName: `${config.stackPrefix}-queue-depth`,
+      alarmDescription: '待機中の処理数が閾値を超えました',
+      threshold: 100, // 100件以上の待機中処理
+      evaluationPeriods: 2,
+      comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
+      treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
+    });
+
+    queueDepthAlarm.addAlarmAction(new cloudwatchActions.SnsAction(alarmTopic));
   }
 
   /**
@@ -264,6 +362,97 @@ export class ApiStack extends cdk.Stack {
       memorySize: 1024,
       environment: {
         FUNCTION_TYPE: 'ai',
+      },
+    });
+
+    // 非同期処理開始 Lambda 関数
+    this.lambdaConstruct.createApiFunction({
+      functionName: `${config.stackPrefix}-async-processing`,
+      codePath: '../backend/dist',
+      description: 'Async processing handler',
+      handler: 'handlers/async-processing.handler',
+      timeout: cdk.Duration.seconds(30), // 即座に返却するため短い
+      memorySize: 512,
+      reservedConcurrency: 50, // 同時実行数制限
+      environment: {
+        FUNCTION_TYPE: 'async-processing',
+        LOG_LEVEL: 'INFO',
+      },
+    });
+
+    // 処理状態確認 Lambda 関数
+    this.lambdaConstruct.createApiFunction({
+      functionName: `${config.stackPrefix}-status-check`,
+      codePath: '../backend/dist',
+      description: 'Processing status check handler',
+      handler: 'handlers/status-check.handler',
+      timeout: cdk.Duration.seconds(10),
+      memorySize: 256,
+      reservedConcurrency: 100, // 頻繁にアクセスされる
+      environment: {
+        FUNCTION_TYPE: 'status-check',
+        LOG_LEVEL: 'INFO',
+      },
+    });
+
+    // 処理再試行 Lambda 関数
+    this.lambdaConstruct.createApiFunction({
+      functionName: `${config.stackPrefix}-retry`,
+      codePath: '../backend/dist',
+      description: 'Processing retry handler',
+      handler: 'handlers/retry.handler',
+      timeout: cdk.Duration.seconds(30),
+      memorySize: 512,
+      reservedConcurrency: 20,
+      environment: {
+        FUNCTION_TYPE: 'retry',
+        LOG_LEVEL: 'INFO',
+      },
+    });
+
+    // 処理キャンセル Lambda 関数
+    this.lambdaConstruct.createApiFunction({
+      functionName: `${config.stackPrefix}-cancel`,
+      codePath: '../backend/dist',
+      description: 'Processing cancel handler',
+      handler: 'handlers/cancel.handler',
+      timeout: cdk.Duration.seconds(30),
+      memorySize: 512,
+      reservedConcurrency: 20,
+      environment: {
+        FUNCTION_TYPE: 'cancel',
+        LOG_LEVEL: 'INFO',
+      },
+    });
+
+    // AI生成Worker Lambda 関数（Step Functions用）
+    this.lambdaConstruct.createBedrockFunction({
+      functionName: `${config.stackPrefix}-ai-generation-worker`,
+      codePath: '../backend/dist',
+      description: 'AI generation worker for Step Functions',
+      handler: 'handlers/ai-generation-worker.handler',
+      timeout: cdk.Duration.minutes(5), // 5分
+      memorySize: 1024,
+      reservedConcurrency: 10, // 同時実行数制限
+      environment: {
+        FUNCTION_TYPE: 'ai-generation-worker',
+        BEDROCK_MODEL_ID: 'amazon.nova-micro-v1:0',
+        BEDROCK_REGION: config.region,
+        LOG_LEVEL: 'INFO',
+      },
+    });
+
+    // 処理状態更新 Lambda 関数（Step Functions用）
+    this.lambdaConstruct.createApiFunction({
+      functionName: `${config.stackPrefix}-update-processing-state`,
+      codePath: '../backend/dist',
+      description: 'Processing state update handler for Step Functions',
+      handler: 'handlers/update-processing-state.handler',
+      timeout: cdk.Duration.seconds(10),
+      memorySize: 256,
+      environment: {
+        FUNCTION_TYPE: 'update-processing-state',
+        LOG_LEVEL: 'INFO',
       },
     });
   }
@@ -453,6 +642,80 @@ export class ApiStack extends cdk.Stack {
         'POST',
         new apigateway.LambdaIntegration(taskGenerationFunction, {
           timeout: cdk.Duration.seconds(60),
+        }),
+        {
+          authorizer: cognitoAuthorizer,
+          authorizationType: apigateway.AuthorizationType.COGNITO,
+        }
+      );
+    }
+
+    // 非同期処理エンドポイント（認証必須）
+    const asyncResource = aiResource.addResource('async');
+
+    // 非同期処理開始
+    const asyncProcessingFunction = this.lambdaConstruct.getFunction(
+      `${config.stackPrefix}-async-processing`
+    );
+    if (asyncProcessingFunction) {
+      const asyncGenerateResource = asyncResource.addResource('generate');
+      asyncGenerateResource.addMethod(
+        'POST',
+        new apigateway.LambdaIntegration(asyncProcessingFunction, {
+          timeout: cdk.Duration.seconds(30),
+        }),
+        {
+          authorizer: cognitoAuthorizer,
+          authorizationType: apigateway.AuthorizationType.COGNITO,
+        }
+      );
+    }
+
+    // 処理状態確認
+    const statusCheckFunction = this.lambdaConstruct.getFunction(
+      `${config.stackPrefix}-status-check`
+    );
+    if (statusCheckFunction) {
+      const statusResource = asyncResource.addResource('status');
+      const processIdResource = statusResource.addResource('{processId}');
+      processIdResource.addMethod(
+        'GET',
+        new apigateway.LambdaIntegration(statusCheckFunction, {
+          timeout: cdk.Duration.seconds(10),
+        }),
+        {
+          authorizer: cognitoAuthorizer,
+          authorizationType: apigateway.AuthorizationType.COGNITO,
+        }
+      );
+    }
+
+    // 処理再試行
+    const retryFunction = this.lambdaConstruct.getFunction(`${config.stackPrefix}-retry`);
+    if (retryFunction) {
+      const retryResource = asyncResource.addResource('retry');
+      const retryProcessIdResource = retryResource.addResource('{processId}');
+      retryProcessIdResource.addMethod(
+        'POST',
+        new apigateway.LambdaIntegration(retryFunction, {
+          timeout: cdk.Duration.seconds(30),
+        }),
+        {
+          authorizer: cognitoAuthorizer,
+          authorizationType: apigateway.AuthorizationType.COGNITO,
+        }
+      );
+    }
+
+    // 処理キャンセル
+    const cancelFunction = this.lambdaConstruct.getFunction(`${config.stackPrefix}-cancel`);
+    if (cancelFunction) {
+      const cancelResource = asyncResource.addResource('cancel');
+      const cancelProcessIdResource = cancelResource.addResource('{processId}');
+      cancelProcessIdResource.addMethod(
+        'POST',
+        new apigateway.LambdaIntegration(cancelFunction, {
+          timeout: cdk.Duration.seconds(30),
         }),
         {
           authorizer: cognitoAuthorizer,

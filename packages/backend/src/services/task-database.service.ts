@@ -72,9 +72,9 @@ export class TaskDatabaseService implements ITaskDatabaseService {
         actionId,
         title: task.title,
         description: task.description,
-        type: task.type.toUpperCase() as 'EXECUTION' | 'HABIT', // TaskTypeに変換
-        status: 'NOT_STARTED' as const, // TaskStatusに変換
-        estimatedMinutes: task.estimatedMinutes,
+        type: 'ACTION', // MVP版では全てACTIONタスク
+        status: 'PENDING', // 初期状態はPENDING
+        estimatedTime: task.estimatedMinutes,
       })),
     });
 

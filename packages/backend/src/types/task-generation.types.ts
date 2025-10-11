@@ -3,9 +3,9 @@
  */
 
 /**
- * タスク種別
+ * タスクカテゴリ（実行タイプ）
  */
-export enum TaskType {
+export enum TaskCategory {
   EXECUTION = 'execution', // 実行タスク（一度で完了）
   HABIT = 'habit', // 習慣タスク（継続的実施）
 }
@@ -34,11 +34,13 @@ export interface TaskOutput {
   id?: string; // UUID（保存後に付与）
   title: string; // タスクタイトル（50文字以内）
   description: string; // タスク説明（200文字以内）
-  type: TaskType; // タスク種別（EXECUTION/HABIT）
+  category: TaskCategory; // タスクカテゴリ（EXECUTION/HABIT）
   estimatedMinutes: number; // 推定所要時間（分単位、15-120分）
   priority: TaskPriority; // 優先度（HIGH/MEDIUM/LOW）
   dependencies?: string[]; // 依存タスクID配列
   position: number; // 位置（0から始まる連番）
+  status?: string; // タスク状態（保存後に付与）
+  completedAt?: string | null; // 完了日時（ISO 8601形式）
   createdAt?: string; // 作成日時（ISO 8601形式）
   updatedAt?: string; // 更新日時（ISO 8601形式）
 }

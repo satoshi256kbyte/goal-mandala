@@ -2,12 +2,12 @@
  * タスク生成APIのテストフィクスチャ
  */
 
-import type {
+import {
   TaskGenerationRequest,
   TaskGenerationContext,
   TaskOutput,
   ActionContext,
-  TaskType,
+  TaskCategory,
   TaskPriority,
 } from '../../types/task-generation.types.js';
 
@@ -96,7 +96,7 @@ export const mockExecutionTasks: TaskOutput[] = [
     title: 'TypeScript公式ドキュメントの基礎編を読む',
     description:
       'TypeScript公式ドキュメントの基礎編（型システム、インターフェース、クラス）を読み、サンプルコードを実際に動かして理解を深める',
-    type: TaskType.EXECUTION,
+    category: TaskCategory.EXECUTION,
     estimatedMinutes: 45,
     priority: TaskPriority.HIGH,
     dependencies: [],
@@ -106,7 +106,7 @@ export const mockExecutionTasks: TaskOutput[] = [
     title: 'TypeScriptの型システムを実践する',
     description:
       '学んだ型システムの知識を使って、簡単なTypeScriptプログラムを作成し、型の恩恵を体感する',
-    type: TaskType.EXECUTION,
+    category: TaskCategory.EXECUTION,
     estimatedMinutes: 60,
     priority: TaskPriority.MEDIUM,
     dependencies: [],
@@ -115,7 +115,7 @@ export const mockExecutionTasks: TaskOutput[] = [
   {
     title: 'インターフェースとクラスの違いを理解する',
     description: 'インターフェースとクラスの使い分けを学び、実際のコードで両方を使ってみる',
-    type: TaskType.EXECUTION,
+    category: TaskCategory.EXECUTION,
     estimatedMinutes: 30,
     priority: TaskPriority.MEDIUM,
     dependencies: [],
@@ -130,7 +130,7 @@ export const mockHabitTasks: TaskOutput[] = [
   {
     title: 'TypeScriptで簡単なプログラムを書く',
     description: '毎日30分、TypeScriptで簡単なプログラムを書いて、基本的な文法に慣れる',
-    type: TaskType.HABIT,
+    category: TaskCategory.HABIT,
     estimatedMinutes: 30,
     priority: TaskPriority.HIGH,
     dependencies: [],

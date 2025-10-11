@@ -56,6 +56,11 @@ export type ProgressHistory = $Result.DefaultSelection<Prisma.$ProgressHistoryPa
  *
  */
 export type ChangeHistory = $Result.DefaultSelection<Prisma.$ChangeHistoryPayload>;
+/**
+ * Model ProcessingState
+ *
+ */
+export type ProcessingState = $Result.DefaultSelection<Prisma.$ProcessingStatePayload>;
 
 /**
  * Enums
@@ -129,6 +134,25 @@ export namespace $Enums {
   };
 
   export type ReminderStatus = (typeof ReminderStatus)[keyof typeof ReminderStatus];
+
+  export const ProcessingType: {
+    SUBGOAL_GENERATION: 'SUBGOAL_GENERATION';
+    ACTION_GENERATION: 'ACTION_GENERATION';
+    TASK_GENERATION: 'TASK_GENERATION';
+  };
+
+  export type ProcessingType = (typeof ProcessingType)[keyof typeof ProcessingType];
+
+  export const ProcessingStatus: {
+    PENDING: 'PENDING';
+    PROCESSING: 'PROCESSING';
+    COMPLETED: 'COMPLETED';
+    FAILED: 'FAILED';
+    TIMEOUT: 'TIMEOUT';
+    CANCELLED: 'CANCELLED';
+  };
+
+  export type ProcessingStatus = (typeof ProcessingStatus)[keyof typeof ProcessingStatus];
 }
 
 export type UserIndustry = $Enums.UserIndustry;
@@ -158,6 +182,14 @@ export const TaskStatus: typeof $Enums.TaskStatus;
 export type ReminderStatus = $Enums.ReminderStatus;
 
 export const ReminderStatus: typeof $Enums.ReminderStatus;
+
+export type ProcessingType = $Enums.ProcessingType;
+
+export const ProcessingType: typeof $Enums.ProcessingType;
+
+export type ProcessingStatus = $Enums.ProcessingStatus;
+
+export const ProcessingStatus: typeof $Enums.ProcessingStatus;
 
 /**
  * ##  Prisma Client ʲˢ
@@ -392,6 +424,16 @@ export class PrismaClient<
    * ```
    */
   get changeHistory(): Prisma.ChangeHistoryDelegate<ExtArgs>;
+
+  /**
+   * `prisma.processingState`: Exposes CRUD operations for the **ProcessingState** model.
+   * Example usage:
+   * ```ts
+   * // Fetch zero or more ProcessingStates
+   * const processingStates = await prisma.processingState.findMany()
+   * ```
+   */
+  get processingState(): Prisma.ProcessingStateDelegate<ExtArgs>;
 }
 
 export namespace Prisma {
@@ -836,6 +878,7 @@ export namespace Prisma {
     Reflection: 'Reflection';
     ProgressHistory: 'ProgressHistory';
     ChangeHistory: 'ChangeHistory';
+    ProcessingState: 'ProcessingState';
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName];
@@ -866,7 +909,8 @@ export namespace Prisma {
         | 'taskReminder'
         | 'reflection'
         | 'progressHistory'
-        | 'changeHistory';
+        | 'changeHistory'
+        | 'processingState';
       txIsolationLevel: Prisma.TransactionIsolationLevel;
     };
     model: {
@@ -1500,6 +1544,76 @@ export namespace Prisma {
           };
         };
       };
+      ProcessingState: {
+        payload: Prisma.$ProcessingStatePayload<ExtArgs>;
+        fields: Prisma.ProcessingStateFieldRefs;
+        operations: {
+          findUnique: {
+            args: Prisma.ProcessingStateFindUniqueArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$ProcessingStatePayload> | null;
+          };
+          findUniqueOrThrow: {
+            args: Prisma.ProcessingStateFindUniqueOrThrowArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$ProcessingStatePayload>;
+          };
+          findFirst: {
+            args: Prisma.ProcessingStateFindFirstArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$ProcessingStatePayload> | null;
+          };
+          findFirstOrThrow: {
+            args: Prisma.ProcessingStateFindFirstOrThrowArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$ProcessingStatePayload>;
+          };
+          findMany: {
+            args: Prisma.ProcessingStateFindManyArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$ProcessingStatePayload>[];
+          };
+          create: {
+            args: Prisma.ProcessingStateCreateArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$ProcessingStatePayload>;
+          };
+          createMany: {
+            args: Prisma.ProcessingStateCreateManyArgs<ExtArgs>;
+            result: BatchPayload;
+          };
+          createManyAndReturn: {
+            args: Prisma.ProcessingStateCreateManyAndReturnArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$ProcessingStatePayload>[];
+          };
+          delete: {
+            args: Prisma.ProcessingStateDeleteArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$ProcessingStatePayload>;
+          };
+          update: {
+            args: Prisma.ProcessingStateUpdateArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$ProcessingStatePayload>;
+          };
+          deleteMany: {
+            args: Prisma.ProcessingStateDeleteManyArgs<ExtArgs>;
+            result: BatchPayload;
+          };
+          updateMany: {
+            args: Prisma.ProcessingStateUpdateManyArgs<ExtArgs>;
+            result: BatchPayload;
+          };
+          upsert: {
+            args: Prisma.ProcessingStateUpsertArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$ProcessingStatePayload>;
+          };
+          aggregate: {
+            args: Prisma.ProcessingStateAggregateArgs<ExtArgs>;
+            result: $Utils.Optional<AggregateProcessingState>;
+          };
+          groupBy: {
+            args: Prisma.ProcessingStateGroupByArgs<ExtArgs>;
+            result: $Utils.Optional<ProcessingStateGroupByOutputType>[];
+          };
+          count: {
+            args: Prisma.ProcessingStateCountArgs<ExtArgs>;
+            result: $Utils.Optional<ProcessingStateCountAggregateOutputType> | number;
+          };
+        };
+      };
     };
   } & {
     other: {
@@ -1669,6 +1783,7 @@ export namespace Prisma {
   export type UserCountOutputType = {
     goals: number;
     changeHistory: number;
+    processingState: number;
   };
 
   export type UserCountOutputTypeSelect<
@@ -1676,6 +1791,7 @@ export namespace Prisma {
   > = {
     goals?: boolean | UserCountOutputTypeCountGoalsArgs;
     changeHistory?: boolean | UserCountOutputTypeCountChangeHistoryArgs;
+    processingState?: boolean | UserCountOutputTypeCountProcessingStateArgs;
   };
 
   // Custom InputTypes
@@ -1707,6 +1823,15 @@ export namespace Prisma {
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
   > = {
     where?: ChangeHistoryWhereInput;
+  };
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountProcessingStateArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    where?: ProcessingStateWhereInput;
   };
 
   /**
@@ -2065,6 +2190,7 @@ export namespace Prisma {
         updatedAt?: boolean;
         goals?: boolean | User$goalsArgs<ExtArgs>;
         changeHistory?: boolean | User$changeHistoryArgs<ExtArgs>;
+        processingState?: boolean | User$processingStateArgs<ExtArgs>;
         _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>;
       },
       ExtArgs['result']['user']
@@ -2102,6 +2228,7 @@ export namespace Prisma {
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     goals?: boolean | User$goalsArgs<ExtArgs>;
     changeHistory?: boolean | User$changeHistoryArgs<ExtArgs>;
+    processingState?: boolean | User$processingStateArgs<ExtArgs>;
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>;
   };
   export type UserIncludeCreateManyAndReturn<
@@ -2113,6 +2240,7 @@ export namespace Prisma {
     objects: {
       goals: Prisma.$GoalPayload<ExtArgs>[];
       changeHistory: Prisma.$ChangeHistoryPayload<ExtArgs>[];
+      processingState: Prisma.$ProcessingStatePayload<ExtArgs>[];
     };
     scalars: $Extensions.GetPayloadResult<
       {
@@ -2565,6 +2693,11 @@ export namespace Prisma {
     ): Prisma.PrismaPromise<
       $Result.GetResult<Prisma.$ChangeHistoryPayload<ExtArgs>, T, 'findMany'> | Null
     >;
+    processingState<T extends User$processingStateArgs<ExtArgs> = {}>(
+      args?: Subset<T, User$processingStateArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<
+      $Result.GetResult<Prisma.$ProcessingStatePayload<ExtArgs>, T, 'findMany'> | Null
+    >;
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2974,6 +3107,28 @@ export namespace Prisma {
     take?: number;
     skip?: number;
     distinct?: ChangeHistoryScalarFieldEnum | ChangeHistoryScalarFieldEnum[];
+  };
+
+  /**
+   * User.processingState
+   */
+  export type User$processingStateArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    /**
+     * Select specific fields to fetch from the ProcessingState
+     */
+    select?: ProcessingStateSelect<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProcessingStateInclude<ExtArgs> | null;
+    where?: ProcessingStateWhereInput;
+    orderBy?: ProcessingStateOrderByWithRelationInput | ProcessingStateOrderByWithRelationInput[];
+    cursor?: ProcessingStateWhereUniqueInput;
+    take?: number;
+    skip?: number;
+    distinct?: ProcessingStateScalarFieldEnum | ProcessingStateScalarFieldEnum[];
   };
 
   /**
@@ -11998,6 +12153,1178 @@ export namespace Prisma {
   };
 
   /**
+   * Model ProcessingState
+   */
+
+  export type AggregateProcessingState = {
+    _count: ProcessingStateCountAggregateOutputType | null;
+    _avg: ProcessingStateAvgAggregateOutputType | null;
+    _sum: ProcessingStateSumAggregateOutputType | null;
+    _min: ProcessingStateMinAggregateOutputType | null;
+    _max: ProcessingStateMaxAggregateOutputType | null;
+  };
+
+  export type ProcessingStateAvgAggregateOutputType = {
+    progress: number | null;
+    retryCount: number | null;
+  };
+
+  export type ProcessingStateSumAggregateOutputType = {
+    progress: number | null;
+    retryCount: number | null;
+  };
+
+  export type ProcessingStateMinAggregateOutputType = {
+    id: string | null;
+    userId: string | null;
+    type: $Enums.ProcessingType | null;
+    status: $Enums.ProcessingStatus | null;
+    targetId: string | null;
+    progress: number | null;
+    retryCount: number | null;
+    createdAt: Date | null;
+    updatedAt: Date | null;
+    completedAt: Date | null;
+  };
+
+  export type ProcessingStateMaxAggregateOutputType = {
+    id: string | null;
+    userId: string | null;
+    type: $Enums.ProcessingType | null;
+    status: $Enums.ProcessingStatus | null;
+    targetId: string | null;
+    progress: number | null;
+    retryCount: number | null;
+    createdAt: Date | null;
+    updatedAt: Date | null;
+    completedAt: Date | null;
+  };
+
+  export type ProcessingStateCountAggregateOutputType = {
+    id: number;
+    userId: number;
+    type: number;
+    status: number;
+    targetId: number;
+    progress: number;
+    result: number;
+    error: number;
+    retryCount: number;
+    createdAt: number;
+    updatedAt: number;
+    completedAt: number;
+    _all: number;
+  };
+
+  export type ProcessingStateAvgAggregateInputType = {
+    progress?: true;
+    retryCount?: true;
+  };
+
+  export type ProcessingStateSumAggregateInputType = {
+    progress?: true;
+    retryCount?: true;
+  };
+
+  export type ProcessingStateMinAggregateInputType = {
+    id?: true;
+    userId?: true;
+    type?: true;
+    status?: true;
+    targetId?: true;
+    progress?: true;
+    retryCount?: true;
+    createdAt?: true;
+    updatedAt?: true;
+    completedAt?: true;
+  };
+
+  export type ProcessingStateMaxAggregateInputType = {
+    id?: true;
+    userId?: true;
+    type?: true;
+    status?: true;
+    targetId?: true;
+    progress?: true;
+    retryCount?: true;
+    createdAt?: true;
+    updatedAt?: true;
+    completedAt?: true;
+  };
+
+  export type ProcessingStateCountAggregateInputType = {
+    id?: true;
+    userId?: true;
+    type?: true;
+    status?: true;
+    targetId?: true;
+    progress?: true;
+    result?: true;
+    error?: true;
+    retryCount?: true;
+    createdAt?: true;
+    updatedAt?: true;
+    completedAt?: true;
+    _all?: true;
+  };
+
+  export type ProcessingStateAggregateArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    /**
+     * Filter which ProcessingState to aggregate.
+     */
+    where?: ProcessingStateWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of ProcessingStates to fetch.
+     */
+    orderBy?: ProcessingStateOrderByWithRelationInput | ProcessingStateOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the start position
+     */
+    cursor?: ProcessingStateWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` ProcessingStates from the position of the cursor.
+     */
+    take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` ProcessingStates.
+     */
+    skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Count returned ProcessingStates
+     **/
+    _count?: true | ProcessingStateCountAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to average
+     **/
+    _avg?: ProcessingStateAvgAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to sum
+     **/
+    _sum?: ProcessingStateSumAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to find the minimum value
+     **/
+    _min?: ProcessingStateMinAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to find the maximum value
+     **/
+    _max?: ProcessingStateMaxAggregateInputType;
+  };
+
+  export type GetProcessingStateAggregateType<T extends ProcessingStateAggregateArgs> = {
+    [P in keyof T & keyof AggregateProcessingState]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateProcessingState[P]>
+      : GetScalarType<T[P], AggregateProcessingState[P]>;
+  };
+
+  export type ProcessingStateGroupByArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    where?: ProcessingStateWhereInput;
+    orderBy?:
+      | ProcessingStateOrderByWithAggregationInput
+      | ProcessingStateOrderByWithAggregationInput[];
+    by: ProcessingStateScalarFieldEnum[] | ProcessingStateScalarFieldEnum;
+    having?: ProcessingStateScalarWhereWithAggregatesInput;
+    take?: number;
+    skip?: number;
+    _count?: ProcessingStateCountAggregateInputType | true;
+    _avg?: ProcessingStateAvgAggregateInputType;
+    _sum?: ProcessingStateSumAggregateInputType;
+    _min?: ProcessingStateMinAggregateInputType;
+    _max?: ProcessingStateMaxAggregateInputType;
+  };
+
+  export type ProcessingStateGroupByOutputType = {
+    id: string;
+    userId: string;
+    type: $Enums.ProcessingType;
+    status: $Enums.ProcessingStatus;
+    targetId: string | null;
+    progress: number;
+    result: JsonValue | null;
+    error: JsonValue | null;
+    retryCount: number;
+    createdAt: Date;
+    updatedAt: Date;
+    completedAt: Date | null;
+    _count: ProcessingStateCountAggregateOutputType | null;
+    _avg: ProcessingStateAvgAggregateOutputType | null;
+    _sum: ProcessingStateSumAggregateOutputType | null;
+    _min: ProcessingStateMinAggregateOutputType | null;
+    _max: ProcessingStateMaxAggregateOutputType | null;
+  };
+
+  type GetProcessingStateGroupByPayload<T extends ProcessingStateGroupByArgs> =
+    Prisma.PrismaPromise<
+      Array<
+        PickEnumerable<ProcessingStateGroupByOutputType, T['by']> & {
+          [P in keyof T & keyof ProcessingStateGroupByOutputType]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], ProcessingStateGroupByOutputType[P]>
+            : GetScalarType<T[P], ProcessingStateGroupByOutputType[P]>;
+        }
+      >
+    >;
+
+  export type ProcessingStateSelect<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = $Extensions.GetSelect<
+    {
+      id?: boolean;
+      userId?: boolean;
+      type?: boolean;
+      status?: boolean;
+      targetId?: boolean;
+      progress?: boolean;
+      result?: boolean;
+      error?: boolean;
+      retryCount?: boolean;
+      createdAt?: boolean;
+      updatedAt?: boolean;
+      completedAt?: boolean;
+      user?: boolean | UserDefaultArgs<ExtArgs>;
+    },
+    ExtArgs['result']['processingState']
+  >;
+
+  export type ProcessingStateSelectCreateManyAndReturn<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = $Extensions.GetSelect<
+    {
+      id?: boolean;
+      userId?: boolean;
+      type?: boolean;
+      status?: boolean;
+      targetId?: boolean;
+      progress?: boolean;
+      result?: boolean;
+      error?: boolean;
+      retryCount?: boolean;
+      createdAt?: boolean;
+      updatedAt?: boolean;
+      completedAt?: boolean;
+      user?: boolean | UserDefaultArgs<ExtArgs>;
+    },
+    ExtArgs['result']['processingState']
+  >;
+
+  export type ProcessingStateSelectScalar = {
+    id?: boolean;
+    userId?: boolean;
+    type?: boolean;
+    status?: boolean;
+    targetId?: boolean;
+    progress?: boolean;
+    result?: boolean;
+    error?: boolean;
+    retryCount?: boolean;
+    createdAt?: boolean;
+    updatedAt?: boolean;
+    completedAt?: boolean;
+  };
+
+  export type ProcessingStateInclude<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    user?: boolean | UserDefaultArgs<ExtArgs>;
+  };
+  export type ProcessingStateIncludeCreateManyAndReturn<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    user?: boolean | UserDefaultArgs<ExtArgs>;
+  };
+
+  export type $ProcessingStatePayload<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    name: 'ProcessingState';
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs>;
+    };
+    scalars: $Extensions.GetPayloadResult<
+      {
+        id: string;
+        userId: string;
+        type: $Enums.ProcessingType;
+        status: $Enums.ProcessingStatus;
+        targetId: string | null;
+        progress: number;
+        result: Prisma.JsonValue | null;
+        error: Prisma.JsonValue | null;
+        retryCount: number;
+        createdAt: Date;
+        updatedAt: Date;
+        completedAt: Date | null;
+      },
+      ExtArgs['result']['processingState']
+    >;
+    composites: {};
+  };
+
+  type ProcessingStateGetPayload<
+    S extends boolean | null | undefined | ProcessingStateDefaultArgs,
+  > = $Result.GetResult<Prisma.$ProcessingStatePayload, S>;
+
+  type ProcessingStateCountArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = Omit<ProcessingStateFindManyArgs, 'select' | 'include' | 'distinct'> & {
+    select?: ProcessingStateCountAggregateInputType | true;
+  };
+
+  export interface ProcessingStateDelegate<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > {
+    [K: symbol]: {
+      types: Prisma.TypeMap<ExtArgs>['model']['ProcessingState'];
+      meta: { name: 'ProcessingState' };
+    };
+    /**
+     * Find zero or one ProcessingState that matches the filter.
+     * @param {ProcessingStateFindUniqueArgs} args - Arguments to find a ProcessingState
+     * @example
+     * // Get one ProcessingState
+     * const processingState = await prisma.processingState.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ProcessingStateFindUniqueArgs>(
+      args: SelectSubset<T, ProcessingStateFindUniqueArgs<ExtArgs>>
+    ): Prisma__ProcessingStateClient<
+      $Result.GetResult<Prisma.$ProcessingStatePayload<ExtArgs>, T, 'findUnique'> | null,
+      null,
+      ExtArgs
+    >;
+
+    /**
+     * Find one ProcessingState that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {ProcessingStateFindUniqueOrThrowArgs} args - Arguments to find a ProcessingState
+     * @example
+     * // Get one ProcessingState
+     * const processingState = await prisma.processingState.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ProcessingStateFindUniqueOrThrowArgs>(
+      args: SelectSubset<T, ProcessingStateFindUniqueOrThrowArgs<ExtArgs>>
+    ): Prisma__ProcessingStateClient<
+      $Result.GetResult<Prisma.$ProcessingStatePayload<ExtArgs>, T, 'findUniqueOrThrow'>,
+      never,
+      ExtArgs
+    >;
+
+    /**
+     * Find the first ProcessingState that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ProcessingStateFindFirstArgs} args - Arguments to find a ProcessingState
+     * @example
+     * // Get one ProcessingState
+     * const processingState = await prisma.processingState.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ProcessingStateFindFirstArgs>(
+      args?: SelectSubset<T, ProcessingStateFindFirstArgs<ExtArgs>>
+    ): Prisma__ProcessingStateClient<
+      $Result.GetResult<Prisma.$ProcessingStatePayload<ExtArgs>, T, 'findFirst'> | null,
+      null,
+      ExtArgs
+    >;
+
+    /**
+     * Find the first ProcessingState that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ProcessingStateFindFirstOrThrowArgs} args - Arguments to find a ProcessingState
+     * @example
+     * // Get one ProcessingState
+     * const processingState = await prisma.processingState.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ProcessingStateFindFirstOrThrowArgs>(
+      args?: SelectSubset<T, ProcessingStateFindFirstOrThrowArgs<ExtArgs>>
+    ): Prisma__ProcessingStateClient<
+      $Result.GetResult<Prisma.$ProcessingStatePayload<ExtArgs>, T, 'findFirstOrThrow'>,
+      never,
+      ExtArgs
+    >;
+
+    /**
+     * Find zero or more ProcessingStates that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ProcessingStateFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all ProcessingStates
+     * const processingStates = await prisma.processingState.findMany()
+     *
+     * // Get first 10 ProcessingStates
+     * const processingStates = await prisma.processingState.findMany({ take: 10 })
+     *
+     * // Only select the `id`
+     * const processingStateWithIdOnly = await prisma.processingState.findMany({ select: { id: true } })
+     *
+     */
+    findMany<T extends ProcessingStateFindManyArgs>(
+      args?: SelectSubset<T, ProcessingStateFindManyArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<
+      $Result.GetResult<Prisma.$ProcessingStatePayload<ExtArgs>, T, 'findMany'>
+    >;
+
+    /**
+     * Create a ProcessingState.
+     * @param {ProcessingStateCreateArgs} args - Arguments to create a ProcessingState.
+     * @example
+     * // Create one ProcessingState
+     * const ProcessingState = await prisma.processingState.create({
+     *   data: {
+     *     // ... data to create a ProcessingState
+     *   }
+     * })
+     *
+     */
+    create<T extends ProcessingStateCreateArgs>(
+      args: SelectSubset<T, ProcessingStateCreateArgs<ExtArgs>>
+    ): Prisma__ProcessingStateClient<
+      $Result.GetResult<Prisma.$ProcessingStatePayload<ExtArgs>, T, 'create'>,
+      never,
+      ExtArgs
+    >;
+
+    /**
+     * Create many ProcessingStates.
+     * @param {ProcessingStateCreateManyArgs} args - Arguments to create many ProcessingStates.
+     * @example
+     * // Create many ProcessingStates
+     * const processingState = await prisma.processingState.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     */
+    createMany<T extends ProcessingStateCreateManyArgs>(
+      args?: SelectSubset<T, ProcessingStateCreateManyArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<BatchPayload>;
+
+    /**
+     * Create many ProcessingStates and returns the data saved in the database.
+     * @param {ProcessingStateCreateManyAndReturnArgs} args - Arguments to create many ProcessingStates.
+     * @example
+     * // Create many ProcessingStates
+     * const processingState = await prisma.processingState.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     * // Create many ProcessingStates and only return the `id`
+     * const processingStateWithIdOnly = await prisma.processingState.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     *
+     */
+    createManyAndReturn<T extends ProcessingStateCreateManyAndReturnArgs>(
+      args?: SelectSubset<T, ProcessingStateCreateManyAndReturnArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<
+      $Result.GetResult<Prisma.$ProcessingStatePayload<ExtArgs>, T, 'createManyAndReturn'>
+    >;
+
+    /**
+     * Delete a ProcessingState.
+     * @param {ProcessingStateDeleteArgs} args - Arguments to delete one ProcessingState.
+     * @example
+     * // Delete one ProcessingState
+     * const ProcessingState = await prisma.processingState.delete({
+     *   where: {
+     *     // ... filter to delete one ProcessingState
+     *   }
+     * })
+     *
+     */
+    delete<T extends ProcessingStateDeleteArgs>(
+      args: SelectSubset<T, ProcessingStateDeleteArgs<ExtArgs>>
+    ): Prisma__ProcessingStateClient<
+      $Result.GetResult<Prisma.$ProcessingStatePayload<ExtArgs>, T, 'delete'>,
+      never,
+      ExtArgs
+    >;
+
+    /**
+     * Update one ProcessingState.
+     * @param {ProcessingStateUpdateArgs} args - Arguments to update one ProcessingState.
+     * @example
+     * // Update one ProcessingState
+     * const processingState = await prisma.processingState.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     *
+     */
+    update<T extends ProcessingStateUpdateArgs>(
+      args: SelectSubset<T, ProcessingStateUpdateArgs<ExtArgs>>
+    ): Prisma__ProcessingStateClient<
+      $Result.GetResult<Prisma.$ProcessingStatePayload<ExtArgs>, T, 'update'>,
+      never,
+      ExtArgs
+    >;
+
+    /**
+     * Delete zero or more ProcessingStates.
+     * @param {ProcessingStateDeleteManyArgs} args - Arguments to filter ProcessingStates to delete.
+     * @example
+     * // Delete a few ProcessingStates
+     * const { count } = await prisma.processingState.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     *
+     */
+    deleteMany<T extends ProcessingStateDeleteManyArgs>(
+      args?: SelectSubset<T, ProcessingStateDeleteManyArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<BatchPayload>;
+
+    /**
+     * Update zero or more ProcessingStates.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ProcessingStateUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many ProcessingStates
+     * const processingState = await prisma.processingState.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     *
+     */
+    updateMany<T extends ProcessingStateUpdateManyArgs>(
+      args: SelectSubset<T, ProcessingStateUpdateManyArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<BatchPayload>;
+
+    /**
+     * Create or update one ProcessingState.
+     * @param {ProcessingStateUpsertArgs} args - Arguments to update or create a ProcessingState.
+     * @example
+     * // Update or create a ProcessingState
+     * const processingState = await prisma.processingState.upsert({
+     *   create: {
+     *     // ... data to create a ProcessingState
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the ProcessingState we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ProcessingStateUpsertArgs>(
+      args: SelectSubset<T, ProcessingStateUpsertArgs<ExtArgs>>
+    ): Prisma__ProcessingStateClient<
+      $Result.GetResult<Prisma.$ProcessingStatePayload<ExtArgs>, T, 'upsert'>,
+      never,
+      ExtArgs
+    >;
+
+    /**
+     * Count the number of ProcessingStates.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ProcessingStateCountArgs} args - Arguments to filter ProcessingStates to count.
+     * @example
+     * // Count the number of ProcessingStates
+     * const count = await prisma.processingState.count({
+     *   where: {
+     *     // ... the filter for the ProcessingStates we want to count
+     *   }
+     * })
+     **/
+    count<T extends ProcessingStateCountArgs>(
+      args?: Subset<T, ProcessingStateCountArgs>
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ProcessingStateCountAggregateOutputType>
+        : number
+    >;
+
+    /**
+     * Allows you to perform aggregations operations on a ProcessingState.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ProcessingStateAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+     **/
+    aggregate<T extends ProcessingStateAggregateArgs>(
+      args: Subset<T, ProcessingStateAggregateArgs>
+    ): Prisma.PrismaPromise<GetProcessingStateAggregateType<T>>;
+
+    /**
+     * Group by ProcessingState.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ProcessingStateGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     *
+     **/
+    groupBy<
+      T extends ProcessingStateGroupByArgs,
+      HasSelectOrTake extends Or<Extends<'skip', Keys<T>>, Extends<'take', Keys<T>>>,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ProcessingStateGroupByArgs['orderBy'] }
+        : { orderBy?: ProcessingStateGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+        ? `Error: "by" must not be empty.`
+        : HavingValid extends False
+          ? {
+              [P in HavingFields]: P extends ByFields
+                ? never
+                : P extends string
+                  ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+                  : [Error, 'Field ', P, ` in "having" needs to be provided in "by"`];
+            }[HavingFields]
+          : 'take' extends Keys<T>
+            ? 'orderBy' extends Keys<T>
+              ? ByValid extends True
+                ? {}
+                : {
+                    [P in OrderFields]: P extends ByFields
+                      ? never
+                      : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
+                  }[OrderFields]
+              : 'Error: If you provide "take", you also need to provide "orderBy"'
+            : 'skip' extends Keys<T>
+              ? 'orderBy' extends Keys<T>
+                ? ByValid extends True
+                  ? {}
+                  : {
+                      [P in OrderFields]: P extends ByFields
+                        ? never
+                        : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
+                    }[OrderFields]
+                : 'Error: If you provide "skip", you also need to provide "orderBy"'
+              : ByValid extends True
+                ? {}
+                : {
+                    [P in OrderFields]: P extends ByFields
+                      ? never
+                      : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
+                  }[OrderFields],
+    >(
+      args: SubsetIntersection<T, ProcessingStateGroupByArgs, OrderByArg> & InputErrors
+    ): {} extends InputErrors
+      ? GetProcessingStateGroupByPayload<T>
+      : Prisma.PrismaPromise<InputErrors>;
+    /**
+     * Fields of the ProcessingState model
+     */
+    readonly fields: ProcessingStateFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for ProcessingState.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ProcessingStateClient<
+    T,
+    Null = never,
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: 'PrismaPromise';
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(
+      args?: Subset<T, UserDefaultArgs<ExtArgs>>
+    ): Prisma__UserClient<
+      $Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, 'findUniqueOrThrow'> | Null,
+      Null,
+      ExtArgs
+    >;
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(
+      onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null,
+      onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null
+    ): $Utils.JsPromise<TResult1 | TResult2>;
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(
+      onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null
+    ): $Utils.JsPromise<T | TResult>;
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>;
+  }
+
+  /**
+   * Fields of the ProcessingState model
+   */
+  interface ProcessingStateFieldRefs {
+    readonly id: FieldRef<'ProcessingState', 'String'>;
+    readonly userId: FieldRef<'ProcessingState', 'String'>;
+    readonly type: FieldRef<'ProcessingState', 'ProcessingType'>;
+    readonly status: FieldRef<'ProcessingState', 'ProcessingStatus'>;
+    readonly targetId: FieldRef<'ProcessingState', 'String'>;
+    readonly progress: FieldRef<'ProcessingState', 'Int'>;
+    readonly result: FieldRef<'ProcessingState', 'Json'>;
+    readonly error: FieldRef<'ProcessingState', 'Json'>;
+    readonly retryCount: FieldRef<'ProcessingState', 'Int'>;
+    readonly createdAt: FieldRef<'ProcessingState', 'DateTime'>;
+    readonly updatedAt: FieldRef<'ProcessingState', 'DateTime'>;
+    readonly completedAt: FieldRef<'ProcessingState', 'DateTime'>;
+  }
+
+  // Custom InputTypes
+  /**
+   * ProcessingState findUnique
+   */
+  export type ProcessingStateFindUniqueArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    /**
+     * Select specific fields to fetch from the ProcessingState
+     */
+    select?: ProcessingStateSelect<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProcessingStateInclude<ExtArgs> | null;
+    /**
+     * Filter, which ProcessingState to fetch.
+     */
+    where: ProcessingStateWhereUniqueInput;
+  };
+
+  /**
+   * ProcessingState findUniqueOrThrow
+   */
+  export type ProcessingStateFindUniqueOrThrowArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    /**
+     * Select specific fields to fetch from the ProcessingState
+     */
+    select?: ProcessingStateSelect<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProcessingStateInclude<ExtArgs> | null;
+    /**
+     * Filter, which ProcessingState to fetch.
+     */
+    where: ProcessingStateWhereUniqueInput;
+  };
+
+  /**
+   * ProcessingState findFirst
+   */
+  export type ProcessingStateFindFirstArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    /**
+     * Select specific fields to fetch from the ProcessingState
+     */
+    select?: ProcessingStateSelect<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProcessingStateInclude<ExtArgs> | null;
+    /**
+     * Filter, which ProcessingState to fetch.
+     */
+    where?: ProcessingStateWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of ProcessingStates to fetch.
+     */
+    orderBy?: ProcessingStateOrderByWithRelationInput | ProcessingStateOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for searching for ProcessingStates.
+     */
+    cursor?: ProcessingStateWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` ProcessingStates from the position of the cursor.
+     */
+    take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` ProcessingStates.
+     */
+    skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of ProcessingStates.
+     */
+    distinct?: ProcessingStateScalarFieldEnum | ProcessingStateScalarFieldEnum[];
+  };
+
+  /**
+   * ProcessingState findFirstOrThrow
+   */
+  export type ProcessingStateFindFirstOrThrowArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    /**
+     * Select specific fields to fetch from the ProcessingState
+     */
+    select?: ProcessingStateSelect<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProcessingStateInclude<ExtArgs> | null;
+    /**
+     * Filter, which ProcessingState to fetch.
+     */
+    where?: ProcessingStateWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of ProcessingStates to fetch.
+     */
+    orderBy?: ProcessingStateOrderByWithRelationInput | ProcessingStateOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for searching for ProcessingStates.
+     */
+    cursor?: ProcessingStateWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` ProcessingStates from the position of the cursor.
+     */
+    take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` ProcessingStates.
+     */
+    skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of ProcessingStates.
+     */
+    distinct?: ProcessingStateScalarFieldEnum | ProcessingStateScalarFieldEnum[];
+  };
+
+  /**
+   * ProcessingState findMany
+   */
+  export type ProcessingStateFindManyArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    /**
+     * Select specific fields to fetch from the ProcessingState
+     */
+    select?: ProcessingStateSelect<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProcessingStateInclude<ExtArgs> | null;
+    /**
+     * Filter, which ProcessingStates to fetch.
+     */
+    where?: ProcessingStateWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of ProcessingStates to fetch.
+     */
+    orderBy?: ProcessingStateOrderByWithRelationInput | ProcessingStateOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for listing ProcessingStates.
+     */
+    cursor?: ProcessingStateWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` ProcessingStates from the position of the cursor.
+     */
+    take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` ProcessingStates.
+     */
+    skip?: number;
+    distinct?: ProcessingStateScalarFieldEnum | ProcessingStateScalarFieldEnum[];
+  };
+
+  /**
+   * ProcessingState create
+   */
+  export type ProcessingStateCreateArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    /**
+     * Select specific fields to fetch from the ProcessingState
+     */
+    select?: ProcessingStateSelect<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProcessingStateInclude<ExtArgs> | null;
+    /**
+     * The data needed to create a ProcessingState.
+     */
+    data: XOR<ProcessingStateCreateInput, ProcessingStateUncheckedCreateInput>;
+  };
+
+  /**
+   * ProcessingState createMany
+   */
+  export type ProcessingStateCreateManyArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    /**
+     * The data used to create many ProcessingStates.
+     */
+    data: ProcessingStateCreateManyInput | ProcessingStateCreateManyInput[];
+    skipDuplicates?: boolean;
+  };
+
+  /**
+   * ProcessingState createManyAndReturn
+   */
+  export type ProcessingStateCreateManyAndReturnArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    /**
+     * Select specific fields to fetch from the ProcessingState
+     */
+    select?: ProcessingStateSelectCreateManyAndReturn<ExtArgs> | null;
+    /**
+     * The data used to create many ProcessingStates.
+     */
+    data: ProcessingStateCreateManyInput | ProcessingStateCreateManyInput[];
+    skipDuplicates?: boolean;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProcessingStateIncludeCreateManyAndReturn<ExtArgs> | null;
+  };
+
+  /**
+   * ProcessingState update
+   */
+  export type ProcessingStateUpdateArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    /**
+     * Select specific fields to fetch from the ProcessingState
+     */
+    select?: ProcessingStateSelect<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProcessingStateInclude<ExtArgs> | null;
+    /**
+     * The data needed to update a ProcessingState.
+     */
+    data: XOR<ProcessingStateUpdateInput, ProcessingStateUncheckedUpdateInput>;
+    /**
+     * Choose, which ProcessingState to update.
+     */
+    where: ProcessingStateWhereUniqueInput;
+  };
+
+  /**
+   * ProcessingState updateMany
+   */
+  export type ProcessingStateUpdateManyArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    /**
+     * The data used to update ProcessingStates.
+     */
+    data: XOR<ProcessingStateUpdateManyMutationInput, ProcessingStateUncheckedUpdateManyInput>;
+    /**
+     * Filter which ProcessingStates to update
+     */
+    where?: ProcessingStateWhereInput;
+  };
+
+  /**
+   * ProcessingState upsert
+   */
+  export type ProcessingStateUpsertArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    /**
+     * Select specific fields to fetch from the ProcessingState
+     */
+    select?: ProcessingStateSelect<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProcessingStateInclude<ExtArgs> | null;
+    /**
+     * The filter to search for the ProcessingState to update in case it exists.
+     */
+    where: ProcessingStateWhereUniqueInput;
+    /**
+     * In case the ProcessingState found by the `where` argument doesn't exist, create a new ProcessingState with this data.
+     */
+    create: XOR<ProcessingStateCreateInput, ProcessingStateUncheckedCreateInput>;
+    /**
+     * In case the ProcessingState was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ProcessingStateUpdateInput, ProcessingStateUncheckedUpdateInput>;
+  };
+
+  /**
+   * ProcessingState delete
+   */
+  export type ProcessingStateDeleteArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    /**
+     * Select specific fields to fetch from the ProcessingState
+     */
+    select?: ProcessingStateSelect<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProcessingStateInclude<ExtArgs> | null;
+    /**
+     * Filter which ProcessingState to delete.
+     */
+    where: ProcessingStateWhereUniqueInput;
+  };
+
+  /**
+   * ProcessingState deleteMany
+   */
+  export type ProcessingStateDeleteManyArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    /**
+     * Filter which ProcessingStates to delete
+     */
+    where?: ProcessingStateWhereInput;
+  };
+
+  /**
+   * ProcessingState without action
+   */
+  export type ProcessingStateDefaultArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    /**
+     * Select specific fields to fetch from the ProcessingState
+     */
+    select?: ProcessingStateSelect<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProcessingStateInclude<ExtArgs> | null;
+  };
+
+  /**
    * Enums
    */
 
@@ -12140,6 +13467,24 @@ export namespace Prisma {
   export type ChangeHistoryScalarFieldEnum =
     (typeof ChangeHistoryScalarFieldEnum)[keyof typeof ChangeHistoryScalarFieldEnum];
 
+  export const ProcessingStateScalarFieldEnum: {
+    id: 'id';
+    userId: 'userId';
+    type: 'type';
+    status: 'status';
+    targetId: 'targetId';
+    progress: 'progress';
+    result: 'result';
+    error: 'error';
+    retryCount: 'retryCount';
+    createdAt: 'createdAt';
+    updatedAt: 'updatedAt';
+    completedAt: 'completedAt';
+  };
+
+  export type ProcessingStateScalarFieldEnum =
+    (typeof ProcessingStateScalarFieldEnum)[keyof typeof ProcessingStateScalarFieldEnum];
+
   export const SortOrder: {
     asc: 'asc';
     desc: 'desc';
@@ -12152,6 +13497,14 @@ export namespace Prisma {
   };
 
   export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput];
+
+  export const NullableJsonNullValueInput: {
+    DbNull: typeof DbNull;
+    JsonNull: typeof JsonNull;
+  };
+
+  export type NullableJsonNullValueInput =
+    (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput];
 
   export const QueryMode: {
     default: 'default';
@@ -12327,6 +13680,38 @@ export namespace Prisma {
   export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>;
 
   /**
+   * Reference to a field of type 'ProcessingType'
+   */
+  export type EnumProcessingTypeFieldRefInput<$PrismaModel> = FieldRefInputType<
+    $PrismaModel,
+    'ProcessingType'
+  >;
+
+  /**
+   * Reference to a field of type 'ProcessingType[]'
+   */
+  export type ListEnumProcessingTypeFieldRefInput<$PrismaModel> = FieldRefInputType<
+    $PrismaModel,
+    'ProcessingType[]'
+  >;
+
+  /**
+   * Reference to a field of type 'ProcessingStatus'
+   */
+  export type EnumProcessingStatusFieldRefInput<$PrismaModel> = FieldRefInputType<
+    $PrismaModel,
+    'ProcessingStatus'
+  >;
+
+  /**
+   * Reference to a field of type 'ProcessingStatus[]'
+   */
+  export type ListEnumProcessingStatusFieldRefInput<$PrismaModel> = FieldRefInputType<
+    $PrismaModel,
+    'ProcessingStatus[]'
+  >;
+
+  /**
    * Reference to a field of type 'Float'
    */
   export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>;
@@ -12355,6 +13740,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<'User'> | Date | string;
     goals?: GoalListRelationFilter;
     changeHistory?: ChangeHistoryListRelationFilter;
+    processingState?: ProcessingStateListRelationFilter;
   };
 
   export type UserOrderByWithRelationInput = {
@@ -12369,6 +13755,7 @@ export namespace Prisma {
     updatedAt?: SortOrder;
     goals?: GoalOrderByRelationAggregateInput;
     changeHistory?: ChangeHistoryOrderByRelationAggregateInput;
+    processingState?: ProcessingStateOrderByRelationAggregateInput;
   };
 
   export type UserWhereUniqueInput = Prisma.AtLeast<
@@ -12387,6 +13774,7 @@ export namespace Prisma {
       updatedAt?: DateTimeFilter<'User'> | Date | string;
       goals?: GoalListRelationFilter;
       changeHistory?: ChangeHistoryListRelationFilter;
+      processingState?: ProcessingStateListRelationFilter;
     },
     'id' | 'email'
   >;
@@ -13064,6 +14452,105 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<'ChangeHistory'> | Date | string;
   };
 
+  export type ProcessingStateWhereInput = {
+    AND?: ProcessingStateWhereInput | ProcessingStateWhereInput[];
+    OR?: ProcessingStateWhereInput[];
+    NOT?: ProcessingStateWhereInput | ProcessingStateWhereInput[];
+    id?: UuidFilter<'ProcessingState'> | string;
+    userId?: UuidFilter<'ProcessingState'> | string;
+    type?: EnumProcessingTypeFilter<'ProcessingState'> | $Enums.ProcessingType;
+    status?: EnumProcessingStatusFilter<'ProcessingState'> | $Enums.ProcessingStatus;
+    targetId?: UuidNullableFilter<'ProcessingState'> | string | null;
+    progress?: IntFilter<'ProcessingState'> | number;
+    result?: JsonNullableFilter<'ProcessingState'>;
+    error?: JsonNullableFilter<'ProcessingState'>;
+    retryCount?: IntFilter<'ProcessingState'> | number;
+    createdAt?: DateTimeFilter<'ProcessingState'> | Date | string;
+    updatedAt?: DateTimeFilter<'ProcessingState'> | Date | string;
+    completedAt?: DateTimeNullableFilter<'ProcessingState'> | Date | string | null;
+    user?: XOR<UserRelationFilter, UserWhereInput>;
+  };
+
+  export type ProcessingStateOrderByWithRelationInput = {
+    id?: SortOrder;
+    userId?: SortOrder;
+    type?: SortOrder;
+    status?: SortOrder;
+    targetId?: SortOrderInput | SortOrder;
+    progress?: SortOrder;
+    result?: SortOrderInput | SortOrder;
+    error?: SortOrderInput | SortOrder;
+    retryCount?: SortOrder;
+    createdAt?: SortOrder;
+    updatedAt?: SortOrder;
+    completedAt?: SortOrderInput | SortOrder;
+    user?: UserOrderByWithRelationInput;
+  };
+
+  export type ProcessingStateWhereUniqueInput = Prisma.AtLeast<
+    {
+      id?: string;
+      AND?: ProcessingStateWhereInput | ProcessingStateWhereInput[];
+      OR?: ProcessingStateWhereInput[];
+      NOT?: ProcessingStateWhereInput | ProcessingStateWhereInput[];
+      userId?: UuidFilter<'ProcessingState'> | string;
+      type?: EnumProcessingTypeFilter<'ProcessingState'> | $Enums.ProcessingType;
+      status?: EnumProcessingStatusFilter<'ProcessingState'> | $Enums.ProcessingStatus;
+      targetId?: UuidNullableFilter<'ProcessingState'> | string | null;
+      progress?: IntFilter<'ProcessingState'> | number;
+      result?: JsonNullableFilter<'ProcessingState'>;
+      error?: JsonNullableFilter<'ProcessingState'>;
+      retryCount?: IntFilter<'ProcessingState'> | number;
+      createdAt?: DateTimeFilter<'ProcessingState'> | Date | string;
+      updatedAt?: DateTimeFilter<'ProcessingState'> | Date | string;
+      completedAt?: DateTimeNullableFilter<'ProcessingState'> | Date | string | null;
+      user?: XOR<UserRelationFilter, UserWhereInput>;
+    },
+    'id'
+  >;
+
+  export type ProcessingStateOrderByWithAggregationInput = {
+    id?: SortOrder;
+    userId?: SortOrder;
+    type?: SortOrder;
+    status?: SortOrder;
+    targetId?: SortOrderInput | SortOrder;
+    progress?: SortOrder;
+    result?: SortOrderInput | SortOrder;
+    error?: SortOrderInput | SortOrder;
+    retryCount?: SortOrder;
+    createdAt?: SortOrder;
+    updatedAt?: SortOrder;
+    completedAt?: SortOrderInput | SortOrder;
+    _count?: ProcessingStateCountOrderByAggregateInput;
+    _avg?: ProcessingStateAvgOrderByAggregateInput;
+    _max?: ProcessingStateMaxOrderByAggregateInput;
+    _min?: ProcessingStateMinOrderByAggregateInput;
+    _sum?: ProcessingStateSumOrderByAggregateInput;
+  };
+
+  export type ProcessingStateScalarWhereWithAggregatesInput = {
+    AND?:
+      | ProcessingStateScalarWhereWithAggregatesInput
+      | ProcessingStateScalarWhereWithAggregatesInput[];
+    OR?: ProcessingStateScalarWhereWithAggregatesInput[];
+    NOT?:
+      | ProcessingStateScalarWhereWithAggregatesInput
+      | ProcessingStateScalarWhereWithAggregatesInput[];
+    id?: UuidWithAggregatesFilter<'ProcessingState'> | string;
+    userId?: UuidWithAggregatesFilter<'ProcessingState'> | string;
+    type?: EnumProcessingTypeWithAggregatesFilter<'ProcessingState'> | $Enums.ProcessingType;
+    status?: EnumProcessingStatusWithAggregatesFilter<'ProcessingState'> | $Enums.ProcessingStatus;
+    targetId?: UuidNullableWithAggregatesFilter<'ProcessingState'> | string | null;
+    progress?: IntWithAggregatesFilter<'ProcessingState'> | number;
+    result?: JsonNullableWithAggregatesFilter<'ProcessingState'>;
+    error?: JsonNullableWithAggregatesFilter<'ProcessingState'>;
+    retryCount?: IntWithAggregatesFilter<'ProcessingState'> | number;
+    createdAt?: DateTimeWithAggregatesFilter<'ProcessingState'> | Date | string;
+    updatedAt?: DateTimeWithAggregatesFilter<'ProcessingState'> | Date | string;
+    completedAt?: DateTimeNullableWithAggregatesFilter<'ProcessingState'> | Date | string | null;
+  };
+
   export type UserCreateInput = {
     id?: string;
     email: string;
@@ -13076,6 +14563,7 @@ export namespace Prisma {
     updatedAt?: Date | string;
     goals?: GoalCreateNestedManyWithoutUserInput;
     changeHistory?: ChangeHistoryCreateNestedManyWithoutUserInput;
+    processingState?: ProcessingStateCreateNestedManyWithoutUserInput;
   };
 
   export type UserUncheckedCreateInput = {
@@ -13090,6 +14578,7 @@ export namespace Prisma {
     updatedAt?: Date | string;
     goals?: GoalUncheckedCreateNestedManyWithoutUserInput;
     changeHistory?: ChangeHistoryUncheckedCreateNestedManyWithoutUserInput;
+    processingState?: ProcessingStateUncheckedCreateNestedManyWithoutUserInput;
   };
 
   export type UserUpdateInput = {
@@ -13104,6 +14593,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     goals?: GoalUpdateManyWithoutUserNestedInput;
     changeHistory?: ChangeHistoryUpdateManyWithoutUserNestedInput;
+    processingState?: ProcessingStateUpdateManyWithoutUserNestedInput;
   };
 
   export type UserUncheckedUpdateInput = {
@@ -13118,6 +14608,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     goals?: GoalUncheckedUpdateManyWithoutUserNestedInput;
     changeHistory?: ChangeHistoryUncheckedUpdateManyWithoutUserNestedInput;
+    processingState?: ProcessingStateUncheckedUpdateManyWithoutUserNestedInput;
   };
 
   export type UserCreateManyInput = {
@@ -13820,6 +15311,110 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
 
+  export type ProcessingStateCreateInput = {
+    id?: string;
+    type: $Enums.ProcessingType;
+    status?: $Enums.ProcessingStatus;
+    targetId?: string | null;
+    progress?: number;
+    result?: NullableJsonNullValueInput | InputJsonValue;
+    error?: NullableJsonNullValueInput | InputJsonValue;
+    retryCount?: number;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    completedAt?: Date | string | null;
+    user: UserCreateNestedOneWithoutProcessingStateInput;
+  };
+
+  export type ProcessingStateUncheckedCreateInput = {
+    id?: string;
+    userId: string;
+    type: $Enums.ProcessingType;
+    status?: $Enums.ProcessingStatus;
+    targetId?: string | null;
+    progress?: number;
+    result?: NullableJsonNullValueInput | InputJsonValue;
+    error?: NullableJsonNullValueInput | InputJsonValue;
+    retryCount?: number;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    completedAt?: Date | string | null;
+  };
+
+  export type ProcessingStateUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    type?: EnumProcessingTypeFieldUpdateOperationsInput | $Enums.ProcessingType;
+    status?: EnumProcessingStatusFieldUpdateOperationsInput | $Enums.ProcessingStatus;
+    targetId?: NullableStringFieldUpdateOperationsInput | string | null;
+    progress?: IntFieldUpdateOperationsInput | number;
+    result?: NullableJsonNullValueInput | InputJsonValue;
+    error?: NullableJsonNullValueInput | InputJsonValue;
+    retryCount?: IntFieldUpdateOperationsInput | number;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    user?: UserUpdateOneRequiredWithoutProcessingStateNestedInput;
+  };
+
+  export type ProcessingStateUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    userId?: StringFieldUpdateOperationsInput | string;
+    type?: EnumProcessingTypeFieldUpdateOperationsInput | $Enums.ProcessingType;
+    status?: EnumProcessingStatusFieldUpdateOperationsInput | $Enums.ProcessingStatus;
+    targetId?: NullableStringFieldUpdateOperationsInput | string | null;
+    progress?: IntFieldUpdateOperationsInput | number;
+    result?: NullableJsonNullValueInput | InputJsonValue;
+    error?: NullableJsonNullValueInput | InputJsonValue;
+    retryCount?: IntFieldUpdateOperationsInput | number;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  };
+
+  export type ProcessingStateCreateManyInput = {
+    id?: string;
+    userId: string;
+    type: $Enums.ProcessingType;
+    status?: $Enums.ProcessingStatus;
+    targetId?: string | null;
+    progress?: number;
+    result?: NullableJsonNullValueInput | InputJsonValue;
+    error?: NullableJsonNullValueInput | InputJsonValue;
+    retryCount?: number;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    completedAt?: Date | string | null;
+  };
+
+  export type ProcessingStateUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    type?: EnumProcessingTypeFieldUpdateOperationsInput | $Enums.ProcessingType;
+    status?: EnumProcessingStatusFieldUpdateOperationsInput | $Enums.ProcessingStatus;
+    targetId?: NullableStringFieldUpdateOperationsInput | string | null;
+    progress?: IntFieldUpdateOperationsInput | number;
+    result?: NullableJsonNullValueInput | InputJsonValue;
+    error?: NullableJsonNullValueInput | InputJsonValue;
+    retryCount?: IntFieldUpdateOperationsInput | number;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  };
+
+  export type ProcessingStateUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    userId?: StringFieldUpdateOperationsInput | string;
+    type?: EnumProcessingTypeFieldUpdateOperationsInput | $Enums.ProcessingType;
+    status?: EnumProcessingStatusFieldUpdateOperationsInput | $Enums.ProcessingStatus;
+    targetId?: NullableStringFieldUpdateOperationsInput | string | null;
+    progress?: IntFieldUpdateOperationsInput | number;
+    result?: NullableJsonNullValueInput | InputJsonValue;
+    error?: NullableJsonNullValueInput | InputJsonValue;
+    retryCount?: IntFieldUpdateOperationsInput | number;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  };
+
   export type UuidFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>;
     in?: string[] | ListStringFieldRefInput<$PrismaModel>;
@@ -13899,6 +15494,12 @@ export namespace Prisma {
     none?: ChangeHistoryWhereInput;
   };
 
+  export type ProcessingStateListRelationFilter = {
+    every?: ProcessingStateWhereInput;
+    some?: ProcessingStateWhereInput;
+    none?: ProcessingStateWhereInput;
+  };
+
   export type SortOrderInput = {
     sort: SortOrder;
     nulls?: NullsOrder;
@@ -13909,6 +15510,10 @@ export namespace Prisma {
   };
 
   export type ChangeHistoryOrderByRelationAggregateInput = {
+    _count?: SortOrder;
+  };
+
+  export type ProcessingStateOrderByRelationAggregateInput = {
     _count?: SortOrder;
   };
 
@@ -14670,6 +16275,171 @@ export namespace Prisma {
     _max?: NestedJsonFilter<$PrismaModel>;
   };
 
+  export type EnumProcessingTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.ProcessingType | EnumProcessingTypeFieldRefInput<$PrismaModel>;
+    in?: $Enums.ProcessingType[] | ListEnumProcessingTypeFieldRefInput<$PrismaModel>;
+    notIn?: $Enums.ProcessingType[] | ListEnumProcessingTypeFieldRefInput<$PrismaModel>;
+    not?: NestedEnumProcessingTypeFilter<$PrismaModel> | $Enums.ProcessingType;
+  };
+
+  export type EnumProcessingStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.ProcessingStatus | EnumProcessingStatusFieldRefInput<$PrismaModel>;
+    in?: $Enums.ProcessingStatus[] | ListEnumProcessingStatusFieldRefInput<$PrismaModel>;
+    notIn?: $Enums.ProcessingStatus[] | ListEnumProcessingStatusFieldRefInput<$PrismaModel>;
+    not?: NestedEnumProcessingStatusFilter<$PrismaModel> | $Enums.ProcessingStatus;
+  };
+
+  export type UuidNullableFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null;
+    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null;
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null;
+    lt?: string | StringFieldRefInput<$PrismaModel>;
+    lte?: string | StringFieldRefInput<$PrismaModel>;
+    gt?: string | StringFieldRefInput<$PrismaModel>;
+    gte?: string | StringFieldRefInput<$PrismaModel>;
+    mode?: QueryMode;
+    not?: NestedUuidNullableFilter<$PrismaModel> | string | null;
+  };
+  export type JsonNullableFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<
+          Required<JsonNullableFilterBase<$PrismaModel>>,
+          Exclude<keyof Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>
+        >,
+        Required<JsonNullableFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>;
+
+  export type JsonNullableFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter;
+    path?: string[];
+    string_contains?: string | StringFieldRefInput<$PrismaModel>;
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>;
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>;
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null;
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null;
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null;
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>;
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>;
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>;
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>;
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter;
+  };
+
+  export type ProcessingStateCountOrderByAggregateInput = {
+    id?: SortOrder;
+    userId?: SortOrder;
+    type?: SortOrder;
+    status?: SortOrder;
+    targetId?: SortOrder;
+    progress?: SortOrder;
+    result?: SortOrder;
+    error?: SortOrder;
+    retryCount?: SortOrder;
+    createdAt?: SortOrder;
+    updatedAt?: SortOrder;
+    completedAt?: SortOrder;
+  };
+
+  export type ProcessingStateAvgOrderByAggregateInput = {
+    progress?: SortOrder;
+    retryCount?: SortOrder;
+  };
+
+  export type ProcessingStateMaxOrderByAggregateInput = {
+    id?: SortOrder;
+    userId?: SortOrder;
+    type?: SortOrder;
+    status?: SortOrder;
+    targetId?: SortOrder;
+    progress?: SortOrder;
+    retryCount?: SortOrder;
+    createdAt?: SortOrder;
+    updatedAt?: SortOrder;
+    completedAt?: SortOrder;
+  };
+
+  export type ProcessingStateMinOrderByAggregateInput = {
+    id?: SortOrder;
+    userId?: SortOrder;
+    type?: SortOrder;
+    status?: SortOrder;
+    targetId?: SortOrder;
+    progress?: SortOrder;
+    retryCount?: SortOrder;
+    createdAt?: SortOrder;
+    updatedAt?: SortOrder;
+    completedAt?: SortOrder;
+  };
+
+  export type ProcessingStateSumOrderByAggregateInput = {
+    progress?: SortOrder;
+    retryCount?: SortOrder;
+  };
+
+  export type EnumProcessingTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ProcessingType | EnumProcessingTypeFieldRefInput<$PrismaModel>;
+    in?: $Enums.ProcessingType[] | ListEnumProcessingTypeFieldRefInput<$PrismaModel>;
+    notIn?: $Enums.ProcessingType[] | ListEnumProcessingTypeFieldRefInput<$PrismaModel>;
+    not?: NestedEnumProcessingTypeWithAggregatesFilter<$PrismaModel> | $Enums.ProcessingType;
+    _count?: NestedIntFilter<$PrismaModel>;
+    _min?: NestedEnumProcessingTypeFilter<$PrismaModel>;
+    _max?: NestedEnumProcessingTypeFilter<$PrismaModel>;
+  };
+
+  export type EnumProcessingStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ProcessingStatus | EnumProcessingStatusFieldRefInput<$PrismaModel>;
+    in?: $Enums.ProcessingStatus[] | ListEnumProcessingStatusFieldRefInput<$PrismaModel>;
+    notIn?: $Enums.ProcessingStatus[] | ListEnumProcessingStatusFieldRefInput<$PrismaModel>;
+    not?: NestedEnumProcessingStatusWithAggregatesFilter<$PrismaModel> | $Enums.ProcessingStatus;
+    _count?: NestedIntFilter<$PrismaModel>;
+    _min?: NestedEnumProcessingStatusFilter<$PrismaModel>;
+    _max?: NestedEnumProcessingStatusFilter<$PrismaModel>;
+  };
+
+  export type UuidNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null;
+    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null;
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null;
+    lt?: string | StringFieldRefInput<$PrismaModel>;
+    lte?: string | StringFieldRefInput<$PrismaModel>;
+    gt?: string | StringFieldRefInput<$PrismaModel>;
+    gte?: string | StringFieldRefInput<$PrismaModel>;
+    mode?: QueryMode;
+    not?: NestedUuidNullableWithAggregatesFilter<$PrismaModel> | string | null;
+    _count?: NestedIntNullableFilter<$PrismaModel>;
+    _min?: NestedStringNullableFilter<$PrismaModel>;
+    _max?: NestedStringNullableFilter<$PrismaModel>;
+  };
+  export type JsonNullableWithAggregatesFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<
+          Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>,
+          Exclude<keyof Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>
+        >,
+        Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>;
+
+  export type JsonNullableWithAggregatesFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter;
+    path?: string[];
+    string_contains?: string | StringFieldRefInput<$PrismaModel>;
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>;
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>;
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null;
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null;
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null;
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>;
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>;
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>;
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>;
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter;
+    _count?: NestedIntNullableFilter<$PrismaModel>;
+    _min?: NestedJsonNullableFilter<$PrismaModel>;
+    _max?: NestedJsonNullableFilter<$PrismaModel>;
+  };
+
   export type GoalCreateNestedManyWithoutUserInput = {
     create?:
       | XOR<GoalCreateWithoutUserInput, GoalUncheckedCreateWithoutUserInput>
@@ -14692,6 +16462,18 @@ export namespace Prisma {
     connect?: ChangeHistoryWhereUniqueInput | ChangeHistoryWhereUniqueInput[];
   };
 
+  export type ProcessingStateCreateNestedManyWithoutUserInput = {
+    create?:
+      | XOR<ProcessingStateCreateWithoutUserInput, ProcessingStateUncheckedCreateWithoutUserInput>
+      | ProcessingStateCreateWithoutUserInput[]
+      | ProcessingStateUncheckedCreateWithoutUserInput[];
+    connectOrCreate?:
+      | ProcessingStateCreateOrConnectWithoutUserInput
+      | ProcessingStateCreateOrConnectWithoutUserInput[];
+    createMany?: ProcessingStateCreateManyUserInputEnvelope;
+    connect?: ProcessingStateWhereUniqueInput | ProcessingStateWhereUniqueInput[];
+  };
+
   export type GoalUncheckedCreateNestedManyWithoutUserInput = {
     create?:
       | XOR<GoalCreateWithoutUserInput, GoalUncheckedCreateWithoutUserInput>
@@ -14712,6 +16494,18 @@ export namespace Prisma {
       | ChangeHistoryCreateOrConnectWithoutUserInput[];
     createMany?: ChangeHistoryCreateManyUserInputEnvelope;
     connect?: ChangeHistoryWhereUniqueInput | ChangeHistoryWhereUniqueInput[];
+  };
+
+  export type ProcessingStateUncheckedCreateNestedManyWithoutUserInput = {
+    create?:
+      | XOR<ProcessingStateCreateWithoutUserInput, ProcessingStateUncheckedCreateWithoutUserInput>
+      | ProcessingStateCreateWithoutUserInput[]
+      | ProcessingStateUncheckedCreateWithoutUserInput[];
+    connectOrCreate?:
+      | ProcessingStateCreateOrConnectWithoutUserInput
+      | ProcessingStateCreateOrConnectWithoutUserInput[];
+    createMany?: ProcessingStateCreateManyUserInputEnvelope;
+    connect?: ProcessingStateWhereUniqueInput | ProcessingStateWhereUniqueInput[];
   };
 
   export type StringFieldUpdateOperationsInput = {
@@ -14782,6 +16576,31 @@ export namespace Prisma {
     deleteMany?: ChangeHistoryScalarWhereInput | ChangeHistoryScalarWhereInput[];
   };
 
+  export type ProcessingStateUpdateManyWithoutUserNestedInput = {
+    create?:
+      | XOR<ProcessingStateCreateWithoutUserInput, ProcessingStateUncheckedCreateWithoutUserInput>
+      | ProcessingStateCreateWithoutUserInput[]
+      | ProcessingStateUncheckedCreateWithoutUserInput[];
+    connectOrCreate?:
+      | ProcessingStateCreateOrConnectWithoutUserInput
+      | ProcessingStateCreateOrConnectWithoutUserInput[];
+    upsert?:
+      | ProcessingStateUpsertWithWhereUniqueWithoutUserInput
+      | ProcessingStateUpsertWithWhereUniqueWithoutUserInput[];
+    createMany?: ProcessingStateCreateManyUserInputEnvelope;
+    set?: ProcessingStateWhereUniqueInput | ProcessingStateWhereUniqueInput[];
+    disconnect?: ProcessingStateWhereUniqueInput | ProcessingStateWhereUniqueInput[];
+    delete?: ProcessingStateWhereUniqueInput | ProcessingStateWhereUniqueInput[];
+    connect?: ProcessingStateWhereUniqueInput | ProcessingStateWhereUniqueInput[];
+    update?:
+      | ProcessingStateUpdateWithWhereUniqueWithoutUserInput
+      | ProcessingStateUpdateWithWhereUniqueWithoutUserInput[];
+    updateMany?:
+      | ProcessingStateUpdateManyWithWhereWithoutUserInput
+      | ProcessingStateUpdateManyWithWhereWithoutUserInput[];
+    deleteMany?: ProcessingStateScalarWhereInput | ProcessingStateScalarWhereInput[];
+  };
+
   export type GoalUncheckedUpdateManyWithoutUserNestedInput = {
     create?:
       | XOR<GoalCreateWithoutUserInput, GoalUncheckedCreateWithoutUserInput>
@@ -14828,6 +16647,31 @@ export namespace Prisma {
       | ChangeHistoryUpdateManyWithWhereWithoutUserInput
       | ChangeHistoryUpdateManyWithWhereWithoutUserInput[];
     deleteMany?: ChangeHistoryScalarWhereInput | ChangeHistoryScalarWhereInput[];
+  };
+
+  export type ProcessingStateUncheckedUpdateManyWithoutUserNestedInput = {
+    create?:
+      | XOR<ProcessingStateCreateWithoutUserInput, ProcessingStateUncheckedCreateWithoutUserInput>
+      | ProcessingStateCreateWithoutUserInput[]
+      | ProcessingStateUncheckedCreateWithoutUserInput[];
+    connectOrCreate?:
+      | ProcessingStateCreateOrConnectWithoutUserInput
+      | ProcessingStateCreateOrConnectWithoutUserInput[];
+    upsert?:
+      | ProcessingStateUpsertWithWhereUniqueWithoutUserInput
+      | ProcessingStateUpsertWithWhereUniqueWithoutUserInput[];
+    createMany?: ProcessingStateCreateManyUserInputEnvelope;
+    set?: ProcessingStateWhereUniqueInput | ProcessingStateWhereUniqueInput[];
+    disconnect?: ProcessingStateWhereUniqueInput | ProcessingStateWhereUniqueInput[];
+    delete?: ProcessingStateWhereUniqueInput | ProcessingStateWhereUniqueInput[];
+    connect?: ProcessingStateWhereUniqueInput | ProcessingStateWhereUniqueInput[];
+    update?:
+      | ProcessingStateUpdateWithWhereUniqueWithoutUserInput
+      | ProcessingStateUpdateWithWhereUniqueWithoutUserInput[];
+    updateMany?:
+      | ProcessingStateUpdateManyWithWhereWithoutUserInput
+      | ProcessingStateUpdateManyWithWhereWithoutUserInput[];
+    deleteMany?: ProcessingStateScalarWhereInput | ProcessingStateScalarWhereInput[];
   };
 
   export type UserCreateNestedOneWithoutGoalsInput = {
@@ -15359,6 +17203,40 @@ export namespace Prisma {
     >;
   };
 
+  export type UserCreateNestedOneWithoutProcessingStateInput = {
+    create?: XOR<
+      UserCreateWithoutProcessingStateInput,
+      UserUncheckedCreateWithoutProcessingStateInput
+    >;
+    connectOrCreate?: UserCreateOrConnectWithoutProcessingStateInput;
+    connect?: UserWhereUniqueInput;
+  };
+
+  export type EnumProcessingTypeFieldUpdateOperationsInput = {
+    set?: $Enums.ProcessingType;
+  };
+
+  export type EnumProcessingStatusFieldUpdateOperationsInput = {
+    set?: $Enums.ProcessingStatus;
+  };
+
+  export type UserUpdateOneRequiredWithoutProcessingStateNestedInput = {
+    create?: XOR<
+      UserCreateWithoutProcessingStateInput,
+      UserUncheckedCreateWithoutProcessingStateInput
+    >;
+    connectOrCreate?: UserCreateOrConnectWithoutProcessingStateInput;
+    upsert?: UserUpsertWithoutProcessingStateInput;
+    connect?: UserWhereUniqueInput;
+    update?: XOR<
+      XOR<
+        UserUpdateToOneWithWhereWithoutProcessingStateInput,
+        UserUpdateWithoutProcessingStateInput
+      >,
+      UserUncheckedUpdateWithoutProcessingStateInput
+    >;
+  };
+
   export type NestedUuidFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>;
     in?: string[] | ListStringFieldRefInput<$PrismaModel>;
@@ -15722,6 +17600,90 @@ export namespace Prisma {
     not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter;
   };
 
+  export type NestedEnumProcessingTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.ProcessingType | EnumProcessingTypeFieldRefInput<$PrismaModel>;
+    in?: $Enums.ProcessingType[] | ListEnumProcessingTypeFieldRefInput<$PrismaModel>;
+    notIn?: $Enums.ProcessingType[] | ListEnumProcessingTypeFieldRefInput<$PrismaModel>;
+    not?: NestedEnumProcessingTypeFilter<$PrismaModel> | $Enums.ProcessingType;
+  };
+
+  export type NestedEnumProcessingStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.ProcessingStatus | EnumProcessingStatusFieldRefInput<$PrismaModel>;
+    in?: $Enums.ProcessingStatus[] | ListEnumProcessingStatusFieldRefInput<$PrismaModel>;
+    notIn?: $Enums.ProcessingStatus[] | ListEnumProcessingStatusFieldRefInput<$PrismaModel>;
+    not?: NestedEnumProcessingStatusFilter<$PrismaModel> | $Enums.ProcessingStatus;
+  };
+
+  export type NestedUuidNullableFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null;
+    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null;
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null;
+    lt?: string | StringFieldRefInput<$PrismaModel>;
+    lte?: string | StringFieldRefInput<$PrismaModel>;
+    gt?: string | StringFieldRefInput<$PrismaModel>;
+    gte?: string | StringFieldRefInput<$PrismaModel>;
+    not?: NestedUuidNullableFilter<$PrismaModel> | string | null;
+  };
+
+  export type NestedEnumProcessingTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ProcessingType | EnumProcessingTypeFieldRefInput<$PrismaModel>;
+    in?: $Enums.ProcessingType[] | ListEnumProcessingTypeFieldRefInput<$PrismaModel>;
+    notIn?: $Enums.ProcessingType[] | ListEnumProcessingTypeFieldRefInput<$PrismaModel>;
+    not?: NestedEnumProcessingTypeWithAggregatesFilter<$PrismaModel> | $Enums.ProcessingType;
+    _count?: NestedIntFilter<$PrismaModel>;
+    _min?: NestedEnumProcessingTypeFilter<$PrismaModel>;
+    _max?: NestedEnumProcessingTypeFilter<$PrismaModel>;
+  };
+
+  export type NestedEnumProcessingStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ProcessingStatus | EnumProcessingStatusFieldRefInput<$PrismaModel>;
+    in?: $Enums.ProcessingStatus[] | ListEnumProcessingStatusFieldRefInput<$PrismaModel>;
+    notIn?: $Enums.ProcessingStatus[] | ListEnumProcessingStatusFieldRefInput<$PrismaModel>;
+    not?: NestedEnumProcessingStatusWithAggregatesFilter<$PrismaModel> | $Enums.ProcessingStatus;
+    _count?: NestedIntFilter<$PrismaModel>;
+    _min?: NestedEnumProcessingStatusFilter<$PrismaModel>;
+    _max?: NestedEnumProcessingStatusFilter<$PrismaModel>;
+  };
+
+  export type NestedUuidNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null;
+    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null;
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null;
+    lt?: string | StringFieldRefInput<$PrismaModel>;
+    lte?: string | StringFieldRefInput<$PrismaModel>;
+    gt?: string | StringFieldRefInput<$PrismaModel>;
+    gte?: string | StringFieldRefInput<$PrismaModel>;
+    not?: NestedUuidNullableWithAggregatesFilter<$PrismaModel> | string | null;
+    _count?: NestedIntNullableFilter<$PrismaModel>;
+    _min?: NestedStringNullableFilter<$PrismaModel>;
+    _max?: NestedStringNullableFilter<$PrismaModel>;
+  };
+  export type NestedJsonNullableFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<
+          Required<NestedJsonNullableFilterBase<$PrismaModel>>,
+          Exclude<keyof Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>
+        >,
+        Required<NestedJsonNullableFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>;
+
+  export type NestedJsonNullableFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter;
+    path?: string[];
+    string_contains?: string | StringFieldRefInput<$PrismaModel>;
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>;
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>;
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null;
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null;
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null;
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>;
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>;
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>;
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>;
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter;
+  };
+
   export type GoalCreateWithoutUserInput = {
     id?: string;
     title: string;
@@ -15785,6 +17747,47 @@ export namespace Prisma {
 
   export type ChangeHistoryCreateManyUserInputEnvelope = {
     data: ChangeHistoryCreateManyUserInput | ChangeHistoryCreateManyUserInput[];
+    skipDuplicates?: boolean;
+  };
+
+  export type ProcessingStateCreateWithoutUserInput = {
+    id?: string;
+    type: $Enums.ProcessingType;
+    status?: $Enums.ProcessingStatus;
+    targetId?: string | null;
+    progress?: number;
+    result?: NullableJsonNullValueInput | InputJsonValue;
+    error?: NullableJsonNullValueInput | InputJsonValue;
+    retryCount?: number;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    completedAt?: Date | string | null;
+  };
+
+  export type ProcessingStateUncheckedCreateWithoutUserInput = {
+    id?: string;
+    type: $Enums.ProcessingType;
+    status?: $Enums.ProcessingStatus;
+    targetId?: string | null;
+    progress?: number;
+    result?: NullableJsonNullValueInput | InputJsonValue;
+    error?: NullableJsonNullValueInput | InputJsonValue;
+    retryCount?: number;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    completedAt?: Date | string | null;
+  };
+
+  export type ProcessingStateCreateOrConnectWithoutUserInput = {
+    where: ProcessingStateWhereUniqueInput;
+    create: XOR<
+      ProcessingStateCreateWithoutUserInput,
+      ProcessingStateUncheckedCreateWithoutUserInput
+    >;
+  };
+
+  export type ProcessingStateCreateManyUserInputEnvelope = {
+    data: ProcessingStateCreateManyUserInput | ProcessingStateCreateManyUserInput[];
     skipDuplicates?: boolean;
   };
 
@@ -15853,6 +17856,52 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<'ChangeHistory'> | Date | string;
   };
 
+  export type ProcessingStateUpsertWithWhereUniqueWithoutUserInput = {
+    where: ProcessingStateWhereUniqueInput;
+    update: XOR<
+      ProcessingStateUpdateWithoutUserInput,
+      ProcessingStateUncheckedUpdateWithoutUserInput
+    >;
+    create: XOR<
+      ProcessingStateCreateWithoutUserInput,
+      ProcessingStateUncheckedCreateWithoutUserInput
+    >;
+  };
+
+  export type ProcessingStateUpdateWithWhereUniqueWithoutUserInput = {
+    where: ProcessingStateWhereUniqueInput;
+    data: XOR<
+      ProcessingStateUpdateWithoutUserInput,
+      ProcessingStateUncheckedUpdateWithoutUserInput
+    >;
+  };
+
+  export type ProcessingStateUpdateManyWithWhereWithoutUserInput = {
+    where: ProcessingStateScalarWhereInput;
+    data: XOR<
+      ProcessingStateUpdateManyMutationInput,
+      ProcessingStateUncheckedUpdateManyWithoutUserInput
+    >;
+  };
+
+  export type ProcessingStateScalarWhereInput = {
+    AND?: ProcessingStateScalarWhereInput | ProcessingStateScalarWhereInput[];
+    OR?: ProcessingStateScalarWhereInput[];
+    NOT?: ProcessingStateScalarWhereInput | ProcessingStateScalarWhereInput[];
+    id?: UuidFilter<'ProcessingState'> | string;
+    userId?: UuidFilter<'ProcessingState'> | string;
+    type?: EnumProcessingTypeFilter<'ProcessingState'> | $Enums.ProcessingType;
+    status?: EnumProcessingStatusFilter<'ProcessingState'> | $Enums.ProcessingStatus;
+    targetId?: UuidNullableFilter<'ProcessingState'> | string | null;
+    progress?: IntFilter<'ProcessingState'> | number;
+    result?: JsonNullableFilter<'ProcessingState'>;
+    error?: JsonNullableFilter<'ProcessingState'>;
+    retryCount?: IntFilter<'ProcessingState'> | number;
+    createdAt?: DateTimeFilter<'ProcessingState'> | Date | string;
+    updatedAt?: DateTimeFilter<'ProcessingState'> | Date | string;
+    completedAt?: DateTimeNullableFilter<'ProcessingState'> | Date | string | null;
+  };
+
   export type UserCreateWithoutGoalsInput = {
     id?: string;
     email: string;
@@ -15864,6 +17913,7 @@ export namespace Prisma {
     createdAt?: Date | string;
     updatedAt?: Date | string;
     changeHistory?: ChangeHistoryCreateNestedManyWithoutUserInput;
+    processingState?: ProcessingStateCreateNestedManyWithoutUserInput;
   };
 
   export type UserUncheckedCreateWithoutGoalsInput = {
@@ -15877,6 +17927,7 @@ export namespace Prisma {
     createdAt?: Date | string;
     updatedAt?: Date | string;
     changeHistory?: ChangeHistoryUncheckedCreateNestedManyWithoutUserInput;
+    processingState?: ProcessingStateUncheckedCreateNestedManyWithoutUserInput;
   };
 
   export type UserCreateOrConnectWithoutGoalsInput = {
@@ -15942,6 +17993,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     changeHistory?: ChangeHistoryUpdateManyWithoutUserNestedInput;
+    processingState?: ProcessingStateUpdateManyWithoutUserNestedInput;
   };
 
   export type UserUncheckedUpdateWithoutGoalsInput = {
@@ -15955,6 +18007,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     changeHistory?: ChangeHistoryUncheckedUpdateManyWithoutUserNestedInput;
+    processingState?: ProcessingStateUncheckedUpdateManyWithoutUserNestedInput;
   };
 
   export type SubGoalUpsertWithWhereUniqueWithoutGoalInput = {
@@ -16611,6 +18664,7 @@ export namespace Prisma {
     createdAt?: Date | string;
     updatedAt?: Date | string;
     goals?: GoalCreateNestedManyWithoutUserInput;
+    processingState?: ProcessingStateCreateNestedManyWithoutUserInput;
   };
 
   export type UserUncheckedCreateWithoutChangeHistoryInput = {
@@ -16624,6 +18678,7 @@ export namespace Prisma {
     createdAt?: Date | string;
     updatedAt?: Date | string;
     goals?: GoalUncheckedCreateNestedManyWithoutUserInput;
+    processingState?: ProcessingStateUncheckedCreateNestedManyWithoutUserInput;
   };
 
   export type UserCreateOrConnectWithoutChangeHistoryInput = {
@@ -16653,6 +18708,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     goals?: GoalUpdateManyWithoutUserNestedInput;
+    processingState?: ProcessingStateUpdateManyWithoutUserNestedInput;
   };
 
   export type UserUncheckedUpdateWithoutChangeHistoryInput = {
@@ -16666,6 +18722,91 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     goals?: GoalUncheckedUpdateManyWithoutUserNestedInput;
+    processingState?: ProcessingStateUncheckedUpdateManyWithoutUserNestedInput;
+  };
+
+  export type UserCreateWithoutProcessingStateInput = {
+    id?: string;
+    email: string;
+    name: string;
+    industry?: $Enums.UserIndustry | null;
+    companySize?: $Enums.CompanySize | null;
+    jobType?: string | null;
+    position?: string | null;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    goals?: GoalCreateNestedManyWithoutUserInput;
+    changeHistory?: ChangeHistoryCreateNestedManyWithoutUserInput;
+  };
+
+  export type UserUncheckedCreateWithoutProcessingStateInput = {
+    id?: string;
+    email: string;
+    name: string;
+    industry?: $Enums.UserIndustry | null;
+    companySize?: $Enums.CompanySize | null;
+    jobType?: string | null;
+    position?: string | null;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    goals?: GoalUncheckedCreateNestedManyWithoutUserInput;
+    changeHistory?: ChangeHistoryUncheckedCreateNestedManyWithoutUserInput;
+  };
+
+  export type UserCreateOrConnectWithoutProcessingStateInput = {
+    where: UserWhereUniqueInput;
+    create: XOR<
+      UserCreateWithoutProcessingStateInput,
+      UserUncheckedCreateWithoutProcessingStateInput
+    >;
+  };
+
+  export type UserUpsertWithoutProcessingStateInput = {
+    update: XOR<
+      UserUpdateWithoutProcessingStateInput,
+      UserUncheckedUpdateWithoutProcessingStateInput
+    >;
+    create: XOR<
+      UserCreateWithoutProcessingStateInput,
+      UserUncheckedCreateWithoutProcessingStateInput
+    >;
+    where?: UserWhereInput;
+  };
+
+  export type UserUpdateToOneWithWhereWithoutProcessingStateInput = {
+    where?: UserWhereInput;
+    data: XOR<
+      UserUpdateWithoutProcessingStateInput,
+      UserUncheckedUpdateWithoutProcessingStateInput
+    >;
+  };
+
+  export type UserUpdateWithoutProcessingStateInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    email?: StringFieldUpdateOperationsInput | string;
+    name?: StringFieldUpdateOperationsInput | string;
+    industry?: NullableEnumUserIndustryFieldUpdateOperationsInput | $Enums.UserIndustry | null;
+    companySize?: NullableEnumCompanySizeFieldUpdateOperationsInput | $Enums.CompanySize | null;
+    jobType?: NullableStringFieldUpdateOperationsInput | string | null;
+    position?: NullableStringFieldUpdateOperationsInput | string | null;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    goals?: GoalUpdateManyWithoutUserNestedInput;
+    changeHistory?: ChangeHistoryUpdateManyWithoutUserNestedInput;
+  };
+
+  export type UserUncheckedUpdateWithoutProcessingStateInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    email?: StringFieldUpdateOperationsInput | string;
+    name?: StringFieldUpdateOperationsInput | string;
+    industry?: NullableEnumUserIndustryFieldUpdateOperationsInput | $Enums.UserIndustry | null;
+    companySize?: NullableEnumCompanySizeFieldUpdateOperationsInput | $Enums.CompanySize | null;
+    jobType?: NullableStringFieldUpdateOperationsInput | string | null;
+    position?: NullableStringFieldUpdateOperationsInput | string | null;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    goals?: GoalUncheckedUpdateManyWithoutUserNestedInput;
+    changeHistory?: ChangeHistoryUncheckedUpdateManyWithoutUserNestedInput;
   };
 
   export type GoalCreateManyUserInput = {
@@ -16688,6 +18829,20 @@ export namespace Prisma {
     changedAt?: Date | string;
     changes: JsonNullValueInput | InputJsonValue;
     createdAt?: Date | string;
+  };
+
+  export type ProcessingStateCreateManyUserInput = {
+    id?: string;
+    type: $Enums.ProcessingType;
+    status?: $Enums.ProcessingStatus;
+    targetId?: string | null;
+    progress?: number;
+    result?: NullableJsonNullValueInput | InputJsonValue;
+    error?: NullableJsonNullValueInput | InputJsonValue;
+    retryCount?: number;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    completedAt?: Date | string | null;
   };
 
   export type GoalUpdateWithoutUserInput = {
@@ -16756,6 +18911,48 @@ export namespace Prisma {
     changedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     changes?: JsonNullValueInput | InputJsonValue;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+  };
+
+  export type ProcessingStateUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    type?: EnumProcessingTypeFieldUpdateOperationsInput | $Enums.ProcessingType;
+    status?: EnumProcessingStatusFieldUpdateOperationsInput | $Enums.ProcessingStatus;
+    targetId?: NullableStringFieldUpdateOperationsInput | string | null;
+    progress?: IntFieldUpdateOperationsInput | number;
+    result?: NullableJsonNullValueInput | InputJsonValue;
+    error?: NullableJsonNullValueInput | InputJsonValue;
+    retryCount?: IntFieldUpdateOperationsInput | number;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  };
+
+  export type ProcessingStateUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    type?: EnumProcessingTypeFieldUpdateOperationsInput | $Enums.ProcessingType;
+    status?: EnumProcessingStatusFieldUpdateOperationsInput | $Enums.ProcessingStatus;
+    targetId?: NullableStringFieldUpdateOperationsInput | string | null;
+    progress?: IntFieldUpdateOperationsInput | number;
+    result?: NullableJsonNullValueInput | InputJsonValue;
+    error?: NullableJsonNullValueInput | InputJsonValue;
+    retryCount?: IntFieldUpdateOperationsInput | number;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  };
+
+  export type ProcessingStateUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    type?: EnumProcessingTypeFieldUpdateOperationsInput | $Enums.ProcessingType;
+    status?: EnumProcessingStatusFieldUpdateOperationsInput | $Enums.ProcessingStatus;
+    targetId?: NullableStringFieldUpdateOperationsInput | string | null;
+    progress?: IntFieldUpdateOperationsInput | number;
+    result?: NullableJsonNullValueInput | InputJsonValue;
+    error?: NullableJsonNullValueInput | InputJsonValue;
+    retryCount?: IntFieldUpdateOperationsInput | number;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   };
 
   export type SubGoalCreateManyGoalInput = {
@@ -17066,6 +19263,12 @@ export namespace Prisma {
   export type ChangeHistoryArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
   > = ChangeHistoryDefaultArgs<ExtArgs>;
+  /**
+   * @deprecated Use ProcessingStateDefaultArgs instead
+   */
+  export type ProcessingStateArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = ProcessingStateDefaultArgs<ExtArgs>;
 
   /**
    * Batch Payload for updateMany & deleteMany & createMany

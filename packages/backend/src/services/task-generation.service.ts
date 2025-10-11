@@ -14,7 +14,12 @@ import { ContextService } from './context.service';
 import { BedrockService } from './bedrock.service';
 import { TaskQualityValidator } from './task-quality-validator.service';
 import { TaskDatabaseService } from './task-database.service';
-import { TaskGenerationResult, TaskType } from '../types/task-generation.types';
+import {
+  TaskGenerationResult,
+  TaskCategory,
+  TaskPriority,
+  TaskOutput,
+} from '../types/task-generation.types';
 import { logger, createTimer } from '../utils/logger';
 
 /**
@@ -94,25 +99,22 @@ export class TaskGenerationService implements ITaskGenerationService {
         action: 'ai_generation_completed',
       });
 
-      // 3. 品質検証
-      this.qualityValidator.validateQuality(aiGeneratedTasks);
+      // 3. AI生成タスクを完全なTaskOutputに変換
+      const tasksWithMetadata: TaskOutput[] = aiGeneratedTasks.map((task, index) => ({
+        title: task.title,
+        description: task.description,
+        category: TaskCategory.EXECUTION, // MVP版では全てEXECUTION
+        estimatedMinutes: task.estimatedMinutes,
+        priority: TaskPriority.MEDIUM, // MVP版ではデフォルト優先度
+        position: index,
+      }));
+
+      // 4. 品質検証
+      this.qualityValidator.validateQuality(tasksWithMetadata);
       logger.info('品質検証完了', {
         userId,
         actionId,
         action: 'quality_validation_completed',
-      });
-
-      // 4. タスク種別の継承（アクションのtypeをタスクに継承）
-      const tasksWithType = aiGeneratedTasks.map(task => ({
-        ...task,
-        type: context.action.type === 'EXECUTION' ? TaskType.EXECUTION : TaskType.HABIT,
-      }));
-
-      logger.info('タスク種別継承完了', {
-        userId,
-        actionId,
-        taskType: context.action.type,
-        action: 'task_type_inherited',
       });
 
       // 5. データベース保存
@@ -127,7 +129,7 @@ export class TaskGenerationService implements ITaskGenerationService {
       }
 
       // タスクを作成
-      const savedTasks = await this.databaseService.createTasks(actionId, tasksWithType);
+      const savedTasks = await this.databaseService.createTasks(actionId, tasksWithMetadata);
       logger.info('タスク保存完了', {
         userId,
         actionId,
@@ -137,7 +139,7 @@ export class TaskGenerationService implements ITaskGenerationService {
 
       // 6. 結果の構築
       const totalEstimatedMinutes = savedTasks.reduce(
-        (sum, task) => sum + (task.estimatedMinutes || 0),
+        (sum, task) => sum + (task.estimatedTime || 0),
         0
       );
 
@@ -151,9 +153,11 @@ export class TaskGenerationService implements ITaskGenerationService {
           id: task.id,
           title: task.title,
           description: task.description || '',
-          type: task.type as TaskType,
+          category: TaskCategory.EXECUTION, // MVP版では全てEXECUTION
           status: task.status,
-          estimatedMinutes: task.estimatedMinutes || 0,
+          estimatedMinutes: task.estimatedTime || 0,
+          priority: TaskPriority.MEDIUM, // MVP版ではデフォルト優先度
+          position: 0, // 位置情報は別途管理
           completedAt: task.completedAt?.toISOString() || null,
           createdAt: task.createdAt.toISOString(),
           updatedAt: task.updatedAt.toISOString(),

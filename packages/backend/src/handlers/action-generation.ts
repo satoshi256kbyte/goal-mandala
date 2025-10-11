@@ -23,6 +23,7 @@ import {
 } from '../errors/action-generation.errors.js';
 import { sanitizeErrorForLogging } from '../utils/security.js';
 import { logger as utilLogger, createTimer } from '../utils/logger.js';
+import { prisma } from '../config/database.js';
 
 // Honoアプリケーションの作成
 const app = new Hono();
@@ -45,7 +46,7 @@ import { ActionQualityValidator } from '../services/action-quality-validator.ser
 import { ActionTypeClassifier } from '../services/action-type-classifier.service.js';
 import { ActionDatabaseService } from '../services/action-database.service.js';
 
-const contextService = new ContextService();
+const contextService = new ContextService(prisma);
 const bedrockService = new BedrockService();
 const qualityValidator = new ActionQualityValidator();
 const typeClassifier = new ActionTypeClassifier();

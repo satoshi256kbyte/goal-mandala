@@ -22,6 +22,7 @@ import {
 } from '../errors/task-generation.errors.js';
 import { sanitizeErrorForLogging } from '../utils/security.js';
 import { logger as utilLogger, createTimer } from '../utils/logger.js';
+import { prisma } from '../config/database.js';
 
 // Honoアプリケーションの作成
 const app = new Hono();
@@ -44,7 +45,7 @@ import { BedrockService } from '../services/bedrock.service.js';
 import { TaskQualityValidator } from '../services/task-quality-validator.service.js';
 import { TaskDatabaseService } from '../services/task-database.service.js';
 
-const contextService = new ContextService();
+const contextService = new ContextService(prisma);
 const bedrockService = new BedrockService();
 const qualityValidator = new TaskQualityValidator();
 const databaseService = new TaskDatabaseService();

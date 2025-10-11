@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import * as cdk from 'aws-cdk-lib';
 import { VpcStack, DatabaseStack, CognitoStack, ApiStack, FrontendStack } from './stacks';
+import { StepFunctionsStack } from './stacks/step-functions-stack';
 import { getEnvironmentConfig } from './config/environment';
 
 const app = new cdk.App();
@@ -62,6 +63,16 @@ try {
   apiStack.addDependency(databaseStack);
   apiStack.addDependency(cognitoStack);
 
+  // Step Functionsスタック作成（APIスタックに依存）
+  const stepFunctionsStack = new StepFunctionsStack(app, `${config.stackPrefix}-step-functions`, {
+    env,
+    config,
+    updateProcessingStateFunctionArn: `arn:aws:lambda:${config.region}:${env.account}:function:${config.stackPrefix}-update-processing-state`,
+    aiGenerationWorkerFunctionArn: `arn:aws:lambda:${config.region}:${env.account}:function:${config.stackPrefix}-ai-generation-worker`,
+    description: `Step Functions stack for ${config.stackPrefix} environment`,
+  });
+  stepFunctionsStack.addDependency(apiStack);
+
   // フロントエンドスタック作成（Cognitoスタックに依存）
   const frontendStack = new FrontendStack(app, `${config.stackPrefix}-frontend`, {
     env,
@@ -91,4 +102,4 @@ try {
 }
 
 // エクスポート（テスト用）
-export { VpcStack, DatabaseStack, CognitoStack, ApiStack, FrontendStack };
+export { VpcStack, DatabaseStack, CognitoStack, ApiStack, FrontendStack, StepFunctionsStack };

@@ -1,0 +1,357 @@
+# 実装タスクリスト
+
+## 概要
+
+このタスクリストは、AI生成処理の非同期実行と状態管理機能の実装手順を定義します。2.2.1〜2.2.4で実装したAI生成APIを非同期処理として実行し、処理状態の管理、進捗通知、タイムアウト処理、リトライ機能を実装します。
+
+## タスク一覧
+
+- [x] 1. プロジェクト基盤とセットアップ
+- [x] 1.1 型定義ファイルの作成
+  - types/async-processing.types.tsファイル作成
+  - ProcessingType、ProcessingStatus、AsyncProcessingRequest、AsyncProcessingResponseなどのインターフェース定義
+  - _要件: 1.1, 2.1_
+- [x] 1.2 Prismaスキーマの拡張
+  - packages/backend/prisma/schema.prismaにProcessingStateモデル追加
+  - ProcessingType、ProcessingStatusのenum定義
+  - インデックス設定
+  - _要件: 2.1, 2.2, 2.3_
+- [x] 1.3 マイグレーションの作成と実行
+  - `npx prisma migrate dev --name add-processing-state`実行
+  - マイグレーションファイルの確認
+  - _要件: 2.1_
+- [x] 1.4 バリデーションスキーマの定義
+  - schemas/async-processing.schema.ts作成
+  - AsyncProcessingRequestSchema、ProcessingTypeSchema定義
+  - _要件: 1.1, 1.2_
+- [x] 1.5 エラークラスの定義
+  - errors/async-processing.errors.ts作成
+  - ProcessingNotFoundError、ProcessingCancelledErrorなどのカスタムエラークラス定義
+  - _要件: 11.1, 11.2_
+- [x] 1.6 npm run formatとnpm run lintの実行
+  - コード品質チェック
+  - エラー・警告のゼロ化
+
+- [x] 2. ProcessingStateServiceの実装
+- [x] 2.1 ProcessingStateServiceクラスの作成
+  - services/processing-state.service.tsファイル作成
+  - IProcessingStateServiceインターフェースの実装
+  - PrismaClientのインスタンス化
+  - _要件: 2.1, 2.2, 4.1_
+- [x] 2.2 処理状態作成メソッドの実装
+  - createProcessingState()メソッド実装
+  - 初期ステータス「PENDING」の設定
+  - _要件: 1.1, 1.4, 1.5_
+- [x] 2.3 処理状態取得メソッドの実装
+  - getProcessingState()メソッド実装
+  - ユーザー権限チェック
+  - _要件: 3.1, 3.2, 3.4, 3.5_
+- [x] 2.4 処理状態更新メソッドの実装
+  - updateProcessingStatus()メソッド実装
+  - updateProcessingProgress()メソッド実装
+  - updateProcessingResult()メソッド実装
+  - updateProcessingError()メソッド実装
+  - _要件: 4.1, 4.2, 4.3, 4.4, 4.5_
+- [x] 2.5 処理履歴取得メソッドの実装
+  - getProcessingHistory()メソッド実装
+  - ページネーション対応
+  - フィルタリング機能（type、status、日付範囲）
+  - _要件: 10.1, 10.2, 10.3, 10.4, 10.5, 10.6, 10.7_
+- [x] 2.6 ユニットテストの作成
+  - services/__tests__/processing-state.service.test.ts作成
+  - 全メソッドのテストケース
+  - _要件: 全般_
+- [x] 2.7 npm run formatとnpm run lintの実行
+
+- [x] 3. AsyncProcessingHandlerの実装
+- [x] 3.1 AsyncProcessingHandlerの作成
+  - handlers/async-processing.tsファイル作成
+  - handler()メソッドの実装
+  - _要件: 1.1, 1.2, 1.3_
+- [x] 3.2 リクエスト検証の実装
+  - validateRequest()メソッド実装
+  - AsyncProcessingRequestSchemaを使用した検証
+  - _要件: 1.2_
+- [x] 3.3 認証・認可チェックの実装
+  - extractUserId()メソッド実装
+  - JWT認証トークンの検証
+  - _要件: 1.3, 13.1, 13.2_
+- [x] 3.4 処理状態レコード作成の実装
+  - ProcessingStateServiceを使用した処理状態作成
+  - 処理IDの生成
+  - _要件: 1.4, 1.5_
+- [x] 3.5 Step Functions起動の実装
+  - startStepFunctionsExecution()メソッド実装
+  - AWS SDK for JavaScript v3を使用
+  - _要件: 1.1_
+- [x] 3.6 完了予定時刻の推定
+  - estimateCompletionTime()メソッド実装
+  - 処理タイプごとの推定時間設定
+  - _要件: 1.1_
+- [x] 3.7 レスポンス返却の実装
+  - formatResponse()メソッド実装
+  - 202 Acceptedステータスコード
+  - _要件: 1.6_
+- [x] 3.8 ユニットテストの作成
+  - handlers/__tests__/async-processing.test.ts作成
+  - _要件: 全般_
+- [x] 3.9 npm run formatとnpm run lintの実行
+
+- [x] 4. StatusCheckHandlerの実装
+- [x] 4.1 StatusCheckHandlerの作成
+  - handlers/status-check.tsファイル作成
+  - handler()メソッドの実装
+  - _要件: 3.1, 3.2_
+- [x] 4.2 処理ID検証の実装
+  - validateProcessId()メソッド実装
+  - UUID形式チェック
+  - _要件: 3.2_
+- [x] 4.3 認証・認可チェックの実装
+  - extractUserId()メソッド実装
+  - 処理所有者チェック
+  - _要件: 3.3, 3.4, 3.5, 13.1, 13.2, 13.3_
+- [x] 4.4 処理状態取得の実装
+  - ProcessingStateServiceを使用した状態取得
+  - _要件: 3.2, 3.6, 3.7_
+- [x] 4.5 レスポンス返却の実装
+  - formatResponse()メソッド実装
+  - 200 OKステータスコード
+  - _要件: 3.1_
+- [x] 4.6 ユニットテストの作成
+  - handlers/__tests__/status-check.test.ts作成
+  - _要件: 全般_
+- [x] 4.7 npm run formatとnpm run lintの実行
+
+- [x] 5. RetryHandlerの実装
+- [x] 5.1 RetryHandlerの作成
+  - handlers/retry.tsファイル作成
+  - handler()メソッドの実装
+  - _要件: 7.1, 7.2_
+- [x] 5.2 リトライ可能性チェックの実装
+  - checkRetryable()メソッド実装
+  - ステータスチェック（FAILED、TIMEOUT）
+  - リトライ回数上限チェック（3回）
+  - _要件: 7.2, 7.3, 7.6_
+- [x] 5.3 新規処理状態作成の実装
+  - 元の処理の入力パラメータを使用
+  - 新しい処理IDの生成
+  - リトライ回数のインクリメント
+  - _要件: 7.4, 7.5, 7.7_
+- [x] 5.4 Step Functions再起動の実装
+  - startStepFunctionsExecution()メソッド実装
+  - _要件: 7.1_
+- [x] 5.5 ユニットテストの作成
+  - handlers/__tests__/retry.test.ts作成
+  - _要件: 全般_
+- [x] 5.6 npm run formatとnpm run lintの実行
+
+- [x] 6. CancelHandlerの実装
+- [x] 6.1 CancelHandlerの作成
+  - handlers/cancel.tsファイル作成
+  - handler()メソッドの実装
+  - _要件: 9.1, 9.2_
+- [x] 6.2 キャンセル可能性チェックの実装
+  - checkCancellable()メソッド実装
+  - ステータスチェック（PENDING、PROCESSING）
+  - _要件: 9.2, 9.3_
+- [x] 6.3 Step Functions実行停止の実装
+  - stopStepFunctionsExecution()メソッド実装
+  - AWS SDK for JavaScript v3を使用
+  - _要件: 9.5_
+- [x] 6.4 処理状態更新の実装
+  - ステータスを「CANCELLED」に更新
+  - キャンセル理由の記録
+  - _要件: 9.4, 9.7_
+- [x] 6.5 リソースクリーンアップの実装
+  - cleanupResources()メソッド実装
+  - _要件: 9.6_
+- [x] 6.6 ユニットテストの作成
+  - handlers/__tests__/cancel.test.ts作成
+  - _要件: 全般_
+- [x] 6.7 npm run formatとnpm run lintの実行
+
+- [x] 7. AIGenerationWorkerの実装
+- [x] 7.1 AIGenerationWorkerの作成
+  - handlers/ai-generation-worker.tsファイル作成
+  - handler()メソッドの実装
+  - _要件: 全般_
+- [x] 7.2 処理タイプ別ルーティングの実装
+  - routeByProcessingType()メソッド実装
+  - SUBGOAL_GENERATION、ACTION_GENERATION、TASK_GENERATIONの分岐
+  - _要件: 1.1_
+- [x] 7.3 サブ目標生成処理の実装
+  - executeSubGoalGeneration()メソッド実装
+  - 既存のSubGoalGenerationServiceを使用
+  - 進捗更新（0% → 50% → 100%）
+  - _要件: 5.1, 5.2, 5.3_
+- [x] 7.4 アクション生成処理の実装
+  - executeActionGeneration()メソッド実装
+  - 既存のActionGenerationServiceを使用
+  - 進捗更新（段階的）
+  - _要件: 5.4, 5.5_
+- [x] 7.5 タスク生成処理の実装
+  - executeTaskGeneration()メソッド実装
+  - 既存のTaskGenerationServiceを使用
+  - 進捗更新（段階的）
+  - _要件: 5.6, 5.7_
+- [x] 7.6 エラーハンドリングの実装
+  - try-catchによるエラー捕捉
+  - エラー情報の記録
+  - 処理状態の更新（FAILED）
+  - _要件: 11.1, 11.2, 11.3, 11.4, 11.5, 11.6, 11.7_
+- [x] 7.7 ユニットテストの作成
+  - handlers/__tests__/ai-generation-worker.test.ts作成
+  - _要件: 全般_
+- [x] 7.8 npm run formatとnpm run lintの実行
+
+- [x] 8. Step Functions ワークフロー定義
+- [x] 8.1 ワークフロー定義ファイルの作成
+  - packages/infrastructure/src/workflows/ai-generation-workflow.tsファイル作成
+  - Step Functions定義の作成
+  - _要件: 全般_
+- [x] 8.2 状態遷移の定義
+  - UpdateStatusToProcessing状態の定義
+  - ExecuteAIGeneration状態の定義
+  - UpdateStatusToCompleted状態の定義
+  - _要件: 4.1, 4.2, 4.3_
+- [x] 8.3 タイムアウト処理の定義
+  - HandleTimeout状態の定義
+  - TimeoutSeconds設定（300秒）
+  - HeartbeatSeconds設定（60秒）
+  - _要件: 6.1, 6.2, 6.3, 6.4, 6.5_
+- [x] 8.4 エラーハンドリングの定義
+  - HandleError状態の定義
+  - Catchブロックの設定
+  - _要件: 11.1, 11.2, 11.3_
+- [x] 8.5 リトライ設定の定義
+  - Retry設定の追加
+  - エクスポネンシャルバックオフの設定
+  - _要件: 8.1, 8.2, 8.3, 8.4, 8.5, 8.6, 8.7_
+
+- [-] 9. CDKインフラの実装
+- [x] 9.1 Lambda関数の定義
+  - AsyncProcessingHandler、StatusCheckHandler、RetryHandler、CancelHandler、AIGenerationWorkerの定義
+  - メモリサイズ、タイムアウト、同時実行数の設定
+  - 環境変数の設定
+  - _要件: 12.1, 12.2_
+- [x] 9.2 Step Functions State Machineの定義
+  - StateMachineの作成
+  - ワークフロー定義の適用
+  - タイムアウト設定
+  - _要件: 全般_
+- [x] 9.3 IAM権限の設定
+  - Lambda実行ロールの作成
+  - Step Functions実行権限の付与
+  - DynamoDB/Aurora アクセス権限の付与
+  - CloudWatch Logs権限の付与
+  - _要件: 13.1, 13.2, 13.3_
+- [x] 9.4 API Gateway統合
+  - /api/ai/async/generateエンドポイントの追加
+  - /api/ai/async/status/:processIdエンドポイントの追加
+  - /api/ai/async/retry/:processIdエンドポイントの追加
+  - /api/ai/async/cancel/:processIdエンドポイントの追加
+  - Cognito Authorizerの設定
+  - _要件: 1.1, 3.1, 7.1, 9.1_
+- [x] 9.5 CloudWatchアラームの設定
+  - エラー率アラームの作成
+  - タイムアウト率アラームの作成
+  - 処理時間アラームの作成
+  - 待機中処理数アラームの作成
+  - SNS通知の設定
+  - _要件: 14.5, 14.6, 14.7_
+- [x] 9.6 npm run formatとnpm run lintの実行
+
+- [x] 10. 監視とログの実装
+- [x] 10.1 構造化ログの実装
+  - utils/logger.tsファイル作成
+  - logInfo()、logWarn()、logError()メソッド実装
+  - JSON形式のログ出力
+  - _要件: 14.1, 14.2_
+- [x] 10.2 CloudWatchメトリクスの実装
+  - sendMetrics()メソッド実装
+  - カスタムメトリクスの送信（AsyncProcessingStarted、AsyncProcessingCompleted、AsyncProcessingFailed、AsyncProcessingTimeout、ProcessingDuration、QueueDepth）
+  - _要件: 14.3, 14.4_
+- [x] 10.3 ユニットテストの作成
+  - utils/__tests__/logger.test.ts作成
+  - _要件: 全般_
+- [x] 10.4 npm run formatとnpm run lintの実行
+
+- [x] 11. 統合テストの実装
+- [x] 11.1 非同期処理完全フローのテスト
+  - tests/integration/async-processing-flow.test.ts作成
+  - 処理開始 → 状態確認 → 完了確認のフロー
+  - _要件: 全般_
+- [x] 11.2 タイムアウト処理のテスト
+  - tests/integration/timeout-handling.test.ts作成
+  - 長時間実行のシミュレーション
+  - _要件: 6.1, 6.2, 6.3, 6.4, 6.5_
+- [x] 11.3 エラーハンドリングのテスト
+  - tests/integration/error-handling.test.ts作成
+  - 各種エラーケースのテスト
+  - _要件: 11.1, 11.2, 11.3, 11.4, 11.5, 11.6, 11.7_
+- [x] 11.4 リトライ機能のテスト
+  - tests/integration/retry-functionality.test.ts作成
+  - 自動リトライと手動リトライのテスト
+  - _要件: 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 7.7, 8.1, 8.2, 8.3, 8.4, 8.5, 8.6, 8.7_
+- [x] 11.5 キャンセル機能のテスト
+  - tests/integration/cancel-functionality.test.ts作成
+  - 処理キャンセルのテスト
+  - _要件: 9.1, 9.2, 9.3, 9.4, 9.5, 9.6, 9.7_
+- [x] 11.6 npm run formatとnpm run lintの実行
+
+- [x] 12. ドキュメントの作成
+- [x] 12.1 API仕様書の作成
+  - docs/async-processing-api-specification.md作成
+  - 各エンドポイントの詳細仕様
+  - リクエスト・レスポンス例
+  - _要件: 全般_
+- [x] 12.2 運用ガイドの作成
+  - docs/async-processing-operations-guide.md作成
+  - 監視方法、アラート対応手順
+  - _要件: 14.1, 14.2, 14.3, 14.4, 14.5, 14.6, 14.7_
+- [x] 12.3 トラブルシューティングガイドの作成
+  - docs/async-processing-troubleshooting-guide.md作成
+  - よくある問題と解決方法
+  - _要件: 11.1, 11.2, 11.3, 11.4, 11.5, 11.6, 11.7_
+- [x] 12.4 エラーコード一覧の作成
+  - docs/async-processing-error-codes.md作成
+  - 全エラーコードの説明
+  - _要件: 11.1, 11.2, 11.3, 11.4, 11.5, 11.6, 11.7_
+
+- [x] 13. 最終検証とコード品質確認
+- [x] 13.1 全ユニットテストの実行
+  - `npm run test`実行
+  - カバレッジ80%以上の確認
+  - _要件: 全般_
+- [x] 13.2 全統合テストの実行
+  - 統合テストスイートの実行
+  - 全テストの成功確認
+  - _要件: 全般_
+- [x] 13.3 型チェックの実行
+  - `npm run type-check`実行
+  - 型エラーのゼロ化
+  - _要件: 全般_
+- [x] 13.4 リントの実行
+  - `npm run lint`実行
+  - エラー・警告のゼロ化
+  - _要件: 全般_
+- [x] 13.5 フォーマットの実行
+  - `npm run format`実行
+  - コードスタイルの統一
+  - _要件: 全般_
+- [x] 13.6 CDKスタックのsynthテスト
+  - `npm run cdk:synth`実行
+  - CloudFormationテンプレートの生成確認
+  - _要件: 全般_
+- [x] 13.7 最終コードレビュー
+  - コード品質の確認
+  - ベストプラクティスの適用確認
+  - セキュリティチェック
+  - _要件: 全般_
+
+## 注記
+
+- 各タスクは順番に実行することを推奨します
+- タスク完了後は必ず`npm run format`と`npm run lint`を実行してください
+- 統合テストは全ユニットテスト完了後に実行してください
+- CDKインフラの実装は全Lambda関数実装完了後に実行してください
