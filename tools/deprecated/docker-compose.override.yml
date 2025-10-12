@@ -1,0 +1,55 @@
+# 開発環境用のDocker Compose設定オーバーライド
+# このファイルは自動的にdocker-compose.ymlとマージされます
+
+version: "3.8"
+
+services:
+  postgres:
+    # 開発環境用の追加設定
+    environment:
+      # デバッグ用ログレベル
+      POSTGRES_LOG_STATEMENT: all
+      POSTGRES_LOG_DURATION: "on"
+    # 開発用ポートマッピング（必要に応じて変更可能）
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    # 開発用ボリュームマウント（設定ファイルの動的変更用）
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./tools/docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./tools/docker/postgres/postgresql.conf:/etc/postgresql/postgresql.conf:ro
+      - ./tools/docker/postgres/pg_hba.conf:/etc/postgresql/pg_hba.conf:ro
+    # 開発用コマンドオーバーライド
+    command: >
+      postgres
+      -c config_file=/etc/postgresql/postgresql.conf
+      -c hba_file=/etc/postgresql/pg_hba.conf
+
+  cognito-local:
+    # 開発環境用の追加設定
+    environment:
+      # デバッグモード有効化
+      DEBUG: "cognito-local:*"
+      NODE_ENV: development
+    # 開発用ポートマッピング（必要に応じて変更可能）
+    ports:
+      - "${COGNITO_LOCAL_PORT:-9229}:9229"
+    # 開発用ボリュームマウント（設定の動的変更用）
+    volumes:
+      - cognito-data:/app/.cognito
+      - ./tools/docker/cognito-local/config.json:/app/.cognito/config.json:ro
+
+# 開発環境用の追加ボリューム
+volumes:
+  postgres-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/data/postgres
+  cognito-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/data/cognito

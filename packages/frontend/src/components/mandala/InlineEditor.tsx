@@ -32,7 +32,8 @@ const InlineEditorComponent: React.FC<InlineEditorProps> = ({
   });
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-  const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // errorIdをuseMemoで生成（再レンダリング時に変わらないようにする）
   const errorId = useMemo(
@@ -84,16 +85,14 @@ const InlineEditorComponent: React.FC<InlineEditorProps> = ({
 
   // 初期フォーカス
   useEffect(() => {
-    if (inputRef.current) {
+    if (multiline && textareaRef.current) {
+      textareaRef.current.focus();
+      textareaRef.current.setSelectionRange(0, textareaRef.current.value.length);
+    } else if (!multiline && inputRef.current) {
       inputRef.current.focus();
-      // テキストを全選択
-      if (inputRef.current instanceof HTMLInputElement) {
-        inputRef.current.select();
-      } else if (inputRef.current instanceof HTMLTextAreaElement) {
-        inputRef.current.setSelectionRange(0, inputRef.current.value.length);
-      }
+      inputRef.current.select();
     }
-  }, []);
+  }, [multiline]);
 
   // 保存処理
   const handleSave = useCallback(async () => {
@@ -166,7 +165,6 @@ const InlineEditorComponent: React.FC<InlineEditorProps> = ({
   // commonPropsをuseMemoでメモ化
   const commonProps = useMemo(
     () => ({
-      ref: inputRef,
       value,
       onChange: handleChange,
       onKeyDown: handleKeyDown,
@@ -200,11 +198,12 @@ const InlineEditorComponent: React.FC<InlineEditorProps> = ({
       {multiline ? (
         <textarea
           {...commonProps}
+          ref={textareaRef}
           rows={3}
           className={`${commonProps.className} inline-editor-textarea`}
         />
       ) : (
-        <input {...commonProps} type="text" />
+        <input {...commonProps} ref={inputRef} type="text" />
       )}
 
       {validation.errorMessage && (

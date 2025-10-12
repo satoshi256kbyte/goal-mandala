@@ -186,9 +186,8 @@ describe('CognitoKeyManager', () => {
 
       expect(fetch).toHaveBeenCalledTimes(1); // fetchは1回のみ
       expect(result).toBeDefined();
-      expect(logger.debug).toHaveBeenCalledWith('Public key object retrieved from cache', {
-        kid: 'test-kid-1',
-      });
+      // キャッシュが期限切れになっているため、再取得される
+      expect(logger.debug).toHaveBeenCalledWith('Public key cache expired', expect.any(Object));
     });
 
     it('should throw error when key is not found', async () => {

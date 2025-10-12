@@ -8,6 +8,12 @@ import { PrismaClient } from '../../generated/prisma-client';
 import { ProgressCalculationEngine } from '../progress-calculation';
 import { InMemoryProgressDataStore } from '../progress-data-store';
 
+// データベース接続が利用可能かチェック
+const isDatabaseAvailable = () => {
+  const databaseUrl = process.env.DATABASE_URL;
+  return databaseUrl && databaseUrl.startsWith('postgresql://');
+};
+
 // パフォーマンス測定ヘルパー
 const measurePerformance = async (operation: () => Promise<void> | void): Promise<number> => {
   const start = process.hrtime.bigint();
@@ -110,7 +116,7 @@ const createTestPrisma = (): PrismaClient => {
   });
 };
 
-describe('進捗計算エンジンパフォーマンステスト', () => {
+(isDatabaseAvailable() ? describe : describe.skip)('進捗計算エンジンパフォーマンステスト', () => {
   let prisma: PrismaClient;
   let progressDataStore: InMemoryProgressDataStore;
   let engine: ProgressCalculationEngine;

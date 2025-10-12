@@ -5,6 +5,8 @@
  * 要件5: エラーハンドリング
  */
 
+import { BedrockError } from '../types/bedrock.types.js';
+
 /**
  * エラータイプの列挙
  */
@@ -25,22 +27,6 @@ export enum ErrorType {
   PARSE = 'PARSE',
   /** 未知のエラー（リトライ可能） */
   UNKNOWN = 'UNKNOWN',
-}
-
-/**
- * Bedrockエラーインターフェース
- */
-export interface BedrockError {
-  /** エラータイプ */
-  type: ErrorType;
-  /** エラーメッセージ */
-  message: string;
-  /** リトライ可能かどうか */
-  retryable: boolean;
-  /** 元のエラーオブジェクト */
-  originalError: Error;
-  /** 追加の詳細情報 */
-  details?: Record<string, unknown>;
 }
 
 /**
@@ -107,21 +93,26 @@ export function classifyError(error: Error): BedrockError {
   const errorType = ERROR_TYPE_MAP[errorName] || ErrorType.UNKNOWN;
   const retryable = RETRYABLE_ERROR_NAMES.includes(errorName);
 
-  return {
-    type: errorType,
-    message: error.message || USER_FRIENDLY_MESSAGES[errorType],
-    retryable,
-    originalError: error,
-  };
+  // Error型を継承したBedrockErrorオブジェクトを作成
+  const bedrockError = Object.create(Error.prototype) as BedrockError;
+  bedrockError.name = errorName;
+  bedrockError.message = error.message || USER_FRIENDLY_MESSAGES[errorType as ErrorType];
+  bedrockError.retryable = retryable;
+  bedrockError.code = errorName;
+  bedrockError.type = errorType;
+  bedrockError.originalError = error;
+  bedrockError.stack = error.stack;
+
+  return bedrockError;
 }
 
 /**
- * エラーがリトライ可能かどうかを判定する
+ * エラーがリトライ可能かどうかを判定する（BedrockError用）
  *
  * @param error - 判定するエラー
  * @returns リトライ可能な場合はtrue
  */
-export function isRetryableError(error: BedrockError): boolean {
+export function isRetryableBedrockError(error: BedrockError): boolean {
   return error.retryable;
 }
 
@@ -134,12 +125,13 @@ export function isRetryableError(error: BedrockError): boolean {
 export function createErrorResponse(error: BedrockError): ErrorResponse {
   // 機密情報をマスキング
   const sanitizedMessage = sanitizeErrorMessage(error.message);
+  const errorType = error.type || ErrorType.UNKNOWN;
 
   return {
     success: false,
     error: {
-      code: error.type,
-      message: USER_FRIENDLY_MESSAGES[error.type] || sanitizedMessage,
+      code: errorType,
+      message: USER_FRIENDLY_MESSAGES[errorType as ErrorType] || sanitizedMessage,
       retryable: error.retryable,
       // 詳細情報は本番環境では含めない
     },
@@ -153,6 +145,10 @@ export function createErrorResponse(error: BedrockError): ErrorResponse {
  * @returns マスキングされたメッセージ
  */
 function sanitizeErrorMessage(message: string): string {
+  if (!message || typeof message !== 'string') {
+    return '';
+  }
+
   // APIキーのパターンをマスキング
   let sanitized = message.replace(/sk-[a-zA-Z0-9]+/g, 'sk-***');
 
@@ -181,6 +177,152 @@ function sanitizeErrorMessage(message: string): string {
   sanitized = sanitized.replace(/([?&])(token|key|secret)=([^&\s]+)/gi, '$1$2=***');
 
   return sanitized;
+}
+
+/**
+ * 一般的なエラーハンドリング関数
+ */
+export function handleError(error: unknown): {
+  success: false;
+  error: { message: string; code: string };
+} {
+  if (!error) {
+    return {
+      success: false,
+      error: {
+        message: 'Unknown error occurred',
+        code: 'UNKNOWN_ERROR',
+      },
+    };
+  }
+
+  if (typeof error === 'string') {
+    return {
+      success: false,
+      error: {
+        message: error,
+        code: 'UNKNOWN_ERROR',
+      },
+    };
+  }
+
+  if (error instanceof Error) {
+    return {
+      success: false,
+      error: {
+        message: error.message,
+        code: getErrorCode(error),
+      },
+    };
+  }
+
+  if (typeof error === 'object' && error !== null && 'message' in error) {
+    return {
+      success: false,
+      error: {
+        message: String((error as Error).message || 'Unknown error'),
+        code: 'UNKNOWN_ERROR',
+      },
+    };
+  }
+
+  return {
+    success: false,
+    error: {
+      message: 'Unknown error occurred',
+      code: 'UNKNOWN_ERROR',
+    },
+  };
+}
+
+/**
+ * エラーログ出力関数
+ */
+export function logError(error: Error, context?: Record<string, unknown>): void {
+  console.error('Error occurred:', {
+    message: error.message,
+    name: error.name,
+    stack: error.stack,
+    context,
+  });
+}
+
+/**
+ * エラーコード取得関数
+ */
+export function getErrorCode(error: Error): string {
+  const errorName = error.name || 'Error';
+
+  switch (errorName) {
+    case 'ValidationError':
+      return 'VALIDATION_ERROR';
+    case 'NotFoundError':
+      return 'NOT_FOUND_ERROR';
+    case 'AuthenticationError':
+      return 'AUTHENTICATION_ERROR';
+    case 'ForbiddenError':
+      return 'FORBIDDEN_ERROR';
+    case 'DatabaseError':
+      return 'DATABASE_ERROR';
+    default:
+      return 'UNKNOWN_ERROR';
+  }
+}
+
+/**
+ * エラー情報サニタイズ関数
+ */
+export function sanitizeError(error: Error): { message: string; name: string; stack?: string } {
+  return {
+    message: sanitizeErrorMessage(error.message),
+    name: error.name,
+    stack: error.stack,
+  };
+}
+
+/**
+ * ユーザー向けエラーフォーマット関数
+ */
+export function formatErrorForUser(error: Error): string {
+  const message = error.message.toLowerCase();
+
+  if (message.includes('database') || message.includes('connection')) {
+    return 'システムエラーが発生しました。しばらく時間をおいてから再度お試しください。';
+  }
+
+  if (message.includes('validation') || message.includes('invalid')) {
+    return '入力内容に問題があります。内容を確認してください。';
+  }
+
+  if (message.includes('not found')) {
+    return '指定されたリソースが見つかりません。';
+  }
+
+  if (message.includes('unauthorized') || message.includes('authentication')) {
+    return '認証が必要です。ログインしてください。';
+  }
+
+  if (message.includes('forbidden') || message.includes('permission')) {
+    return 'この操作を実行する権限がありません。';
+  }
+
+  return 'システムエラーが発生しました。';
+}
+
+/**
+ * リトライ可能エラー判定関数（オーバーロード）
+ */
+export function isRetryableError(error: Error): boolean {
+  const retryableErrors = [
+    'ThrottlingException',
+    'ServiceUnavailableException',
+    'InternalServerError',
+    'TimeoutError',
+    'NetworkError',
+    'DatabaseConnectionError',
+  ];
+
+  return retryableErrors.includes(error.name);
 }
 
 /**
@@ -278,7 +420,7 @@ export class ErrorHandler {
   private logError(error: BedrockError): void {
     // メッセージとスタックトレースから機密情報を除外
     const sanitizedMessage = sanitizeErrorMessage(error.message);
-    const sanitizedStack = error.originalError.stack
+    const sanitizedStack = error.originalError?.stack
       ? sanitizeErrorMessage(error.originalError.stack)
       : undefined;
     const sanitizedDetails = error.details ? sanitizeErrorDetails(error.details) : undefined;
@@ -305,7 +447,7 @@ export class ErrorHandler {
    */
   isRetryable(error: Error): boolean {
     const classified = classifyError(error);
-    return isRetryableError(classified);
+    return isRetryableBedrockError(classified);
   }
 
   /**

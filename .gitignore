@@ -274,10 +274,6 @@ Thumbs.db
 *.sqlite
 *.sqlite3
 
-# Docker
-.dockerignore
-docker-compose.override.yml
-
 # Testing
 coverage/
 .nyc_output/

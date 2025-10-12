@@ -40,7 +40,7 @@ export const getConfig = (): EnvironmentConfig => {
     // 認証設定
     ENABLE_MOCK_AUTH:
       process.env.ENABLE_MOCK_AUTH === 'true' ||
-      (process.env.NODE_ENV || 'development') === 'development',
+      ['development', 'test'].includes(process.env.NODE_ENV || 'development'),
     JWT_CACHE_TTL: parseInt(process.env.JWT_CACHE_TTL || '3600', 10),
     // モック認証設定
     MOCK_USER_ID: process.env.MOCK_USER_ID || 'dev-user-001',
@@ -74,9 +74,14 @@ export const getConfig = (): EnvironmentConfig => {
  * 設定値の検証
  */
 export const validateConfig = (config: EnvironmentConfig): void => {
-  // DATABASE_URLの形式チェック
-  if (!config.DATABASE_URL.startsWith('postgresql://')) {
-    throw new Error('DATABASE_URL must be a valid PostgreSQL connection string');
+  // DATABASE_URLの形式チェック（テスト環境ではSQLiteも許可）
+  const isValidUrl =
+    config.DATABASE_URL.startsWith('postgresql://') ||
+    config.DATABASE_URL.startsWith('file:') ||
+    config.NODE_ENV === 'test';
+
+  if (!isValidUrl) {
+    throw new Error('DATABASE_URL must be a valid PostgreSQL connection string or SQLite file URL');
   }
 
   // JWT_SECREの長さチェック
@@ -107,11 +112,11 @@ export const validateConfig = (config: EnvironmentConfig): void => {
 
   // モック認証設定の検証
   if (config.ENABLE_MOCK_AUTH) {
-    if (!config.MOCK_USER_EMAIL.includes('@')) {
+    if (!config.MOCK_USER_EMAIL || !config.MOCK_USER_EMAIL.includes('@')) {
       throw new Error('MOCK_USER_EMAIL must be a valid email address');
     }
 
-    if (config.MOCK_USER_ID.length < 3) {
+    if (!config.MOCK_USER_ID || config.MOCK_USER_ID.length < 3) {
       throw new Error('MOCK_USER_ID must be at least 3 characters long');
     }
 

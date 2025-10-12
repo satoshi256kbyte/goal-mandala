@@ -5,7 +5,7 @@
  * 要件5.2, 5.3: リトライ機能
  */
 
-import { classifyError, isRetryableError } from './error-handler';
+import { classifyError, isRetryableBedrockError } from './error-handler';
 
 /**
  * リトライ設定
@@ -65,7 +65,7 @@ export async function retryWithBackoff<T>(
       const classifiedError = classifyError(lastError);
 
       // リトライ不可能なエラーの場合は即座に失敗
-      if (!isRetryableError(classifiedError)) {
+      if (!isRetryableBedrockError(classifiedError)) {
         throw lastError;
       }
 

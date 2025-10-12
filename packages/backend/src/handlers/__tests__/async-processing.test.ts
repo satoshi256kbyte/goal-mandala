@@ -60,7 +60,7 @@ describe('AsyncProcessingHandler - ユニットテスト', () => {
       const validRequest = {
         type: 'SUBGOAL_GENERATION',
         params: {
-          goalId: 'goal-123',
+          goalId: '550e8400-e29b-41d4-a716-446655440000',
           title: 'TypeScriptのエキスパートになる',
           description: '6ヶ月でTypeScriptの高度な機能を習得し、実務で活用できるレベルになる',
           deadline: '2025-12-31T23:59:59Z',
@@ -107,7 +107,7 @@ describe('AsyncProcessingHandler - ユニットテスト', () => {
       expect(mockCreateProcessingState).toHaveBeenCalledWith({
         userId: 'test-user-id',
         type: ProcessingType.SUBGOAL_GENERATION,
-        targetId: 'goal-123',
+        targetId: '550e8400-e29b-41d4-a716-446655440000',
       });
 
       // Step Functionsが起動されたことを確認
@@ -118,7 +118,7 @@ describe('AsyncProcessingHandler - ユニットテスト', () => {
       const validRequest = {
         type: 'ACTION_GENERATION',
         params: {
-          subGoalId: 'subgoal-123',
+          subGoalId: '550e8400-e29b-41d4-a716-446655440001',
         },
       };
 
@@ -157,7 +157,7 @@ describe('AsyncProcessingHandler - ユニットテスト', () => {
       expect(mockCreateProcessingState).toHaveBeenCalledWith({
         userId: 'test-user-id',
         type: ProcessingType.ACTION_GENERATION,
-        targetId: 'subgoal-123',
+        targetId: '550e8400-e29b-41d4-a716-446655440001',
       });
     });
 
@@ -165,7 +165,7 @@ describe('AsyncProcessingHandler - ユニットテスト', () => {
       const validRequest = {
         type: 'TASK_GENERATION',
         params: {
-          actionId: 'action-123',
+          actionId: '550e8400-e29b-41d4-a716-446655440002',
         },
       };
 
@@ -204,7 +204,7 @@ describe('AsyncProcessingHandler - ユニットテスト', () => {
       expect(mockCreateProcessingState).toHaveBeenCalledWith({
         userId: 'test-user-id',
         type: ProcessingType.TASK_GENERATION,
-        targetId: 'action-123',
+        targetId: '550e8400-e29b-41d4-a716-446655440002',
       });
     });
   });
@@ -293,7 +293,7 @@ describe('AsyncProcessingHandler - ユニットテスト', () => {
       const validRequest = {
         type: 'SUBGOAL_GENERATION',
         params: {
-          goalId: 'goal-123',
+          goalId: '550e8400-e29b-41d4-a716-446655440000',
           title: 'Test',
           description: 'Test description',
           deadline: '2025-12-31T23:59:59Z',
@@ -323,7 +323,7 @@ describe('AsyncProcessingHandler - ユニットテスト', () => {
       const validRequest = {
         type: 'SUBGOAL_GENERATION',
         params: {
-          goalId: 'goal-123',
+          goalId: '550e8400-e29b-41d4-a716-446655440000',
           title: 'Test',
           description: 'Test description',
           deadline: '2025-12-31T23:59:59Z',
@@ -366,7 +366,7 @@ describe('AsyncProcessingHandler - ユニットテスト', () => {
       const validRequest = {
         type: 'SUBGOAL_GENERATION',
         params: {
-          goalId: 'goal-123',
+          goalId: '550e8400-e29b-41d4-a716-446655440000',
           title: 'Test',
           description: 'Test description',
           deadline: '2025-12-31T23:59:59Z',

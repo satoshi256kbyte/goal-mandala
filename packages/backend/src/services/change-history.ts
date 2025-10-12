@@ -1,4 +1,4 @@
-import { PrismaClient } from '../generated/prisma-client';
+import { PrismaClient, Prisma } from '../generated/prisma-client';
 import { logger } from '../utils/logger';
 
 /**
@@ -126,7 +126,7 @@ export async function recordChangeHistory(
         entityType,
         entityId,
         userId,
-        changes: changes as unknown, // Prisma JsonValue型にキャスト
+        changes: changes as unknown as Prisma.InputJsonValue,
       },
     });
 

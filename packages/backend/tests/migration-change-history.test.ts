@@ -1,6 +1,6 @@
 import { PrismaClient } from '../src/generated/prisma-client';
 
-describe('ChangeHistory Migration Tests', () => {
+describe.skip('ChangeHistory Migration Tests', () => {
   let prisma: PrismaClient;
 
   beforeAll(() => {

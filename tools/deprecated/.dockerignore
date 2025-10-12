@@ -1,0 +1,101 @@
+# Git関連
+.git
+.gitignore
+.gitattributes
+
+# Node.js関連
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+.yarn-integrity
+
+# 環境変数ファイル
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# ログファイル
+logs
+*.log
+
+# ランタイムデータ
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# カバレッジディレクトリ
+coverage
+.nyc_output
+
+# テスト関連
+.jest
+test-results
+playwright-report
+
+# ビルド成果物
+dist
+build
+.turbo
+
+# IDE設定
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS生成ファイル
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# 一時ファイル
+*.tmp
+*.temp
+
+# ドキュメント（必要に応じて）
+README.md
+CONTRIBUTING.md
+docs/
+
+# CI/CD関連
+.github
+.gitlab-ci.yml
+
+# Docker関連
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# 開発ツール設定
+.eslintrc*
+.prettierrc*
+.editorconfig
+tsconfig*.json
+jest.config.*
+vitest.config.*
+
+# パッケージマネージャー
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# 機密情報
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# バックアップファイル
+*.bak
+*.backup

@@ -7,6 +7,7 @@
 このバックエンドは、以下の主要機能を提供します：
 
 - **認証・認可**: Amazon Cognito + JWT認証
+- **プロフィール管理**: ユーザーの基本情報（業種、組織規模、職種、役職）の管理
 - **AI統合**: Amazon Bedrock（Nova Micro）によるサブ目標・アクション・タスク生成
 - **データ管理**: Prisma + Aurora Serverless V2によるデータ永続化
 - **非同期処理**: Step Functionsによる長時間処理の管理
@@ -144,15 +145,128 @@ sam build
 
 ### テスト
 
+このプロジェクトでは、以下の3層のテスト戦略を採用しています：
+
+#### 1. ユニットテスト（推奨）
+
+モックを使用してデータベース接続なしで実行できるテストです。
+
 ```bash
-# 全テストの実行
+# 全ユニットテストの実行
 pnpm test
+
+# 特定のサービスのテスト
+pnpm test -- --testPathPattern="services.*test.ts"
 
 # テストカバレッジの確認
 pnpm test:coverage
 
 # 特定のテストファイルの実行
 pnpm test src/services/__tests__/subgoal-generation.service.test.ts
+```
+
+**特徴**:
+
+- データベース接続不要
+- 高速実行
+- CI/CDで常時実行
+- モックを使用してサービス間の依存関係を分離
+
+#### 2. 統合テスト（Docker環境必須）
+
+実際のデータベースを使用するテストです。Docker Composeでの環境構築が必要です。
+
+```bash
+# Docker環境の起動
+docker-compose up -d postgres
+
+# データベースのセットアップ
+pnpm prisma:migrate:dev
+pnpm prisma:seed
+
+# 統合テストの実行
+pnpm test -- --testPathPattern="integration.*test.ts"
+
+# 統合テスト後のクリーンアップ
+docker-compose down -v
+```
+
+**特徴**:
+
+- 実際のPostgreSQLデータベースを使用
+- エンドツーエンドのデータフロー検証
+- Docker環境が必要
+- 実行時間が長い
+
+#### 3. E2Eテスト（将来実装予定）
+
+実際のAWS環境またはローカルのSAM環境でのテストです。
+
+```bash
+# SAM Localでの実行
+sam local start-api &
+pnpm test:e2e
+```
+
+#### テスト実行時の注意事項
+
+**Docker権限問題の対処法**:
+
+現在、macOSでのDocker権限問題により統合テストが一時的に無効化されています。以下の方法で対処してください：
+
+1. **ユニットテストのみ実行**（推奨）:
+
+   ```bash
+   pnpm test -- --testPathPattern="services.*test.ts"
+   ```
+
+2. **Docker権限の修正**:
+
+   ```bash
+   # Dockerボリュームのクリーンアップ
+   docker system prune -a --volumes
+
+   # Docker Desktopの再起動
+   # または、Dockerデーモンの再起動
+   ```
+
+3. **代替テスト環境**:
+   ```bash
+   # インメモリデータベースを使用（将来実装予定）
+   NODE_ENV=test DATABASE_URL="sqlite::memory:" pnpm test
+   ```
+
+#### テストファイルの構成
+
+```
+src/
+├── services/
+│   ├── __tests__/              # ユニットテスト
+│   │   ├── *.service.test.ts   # サービス層のテスト
+│   │   └── *.integration.test.ts # サービス統合テスト
+│   └── *.service.ts
+├── handlers/
+│   ├── __tests__/              # ハンドラーテスト
+│   │   └── *.test.ts
+│   └── *.ts
+tests/
+├── integration/                # 統合テスト
+│   ├── *.test.ts              # データベース統合テスト
+│   └── setup.ts               # テスト環境セットアップ
+└── e2e/                       # E2Eテスト（将来実装）
+    └── *.test.ts
+```
+
+#### テスト環境変数
+
+テスト実行時は以下の環境変数が自動設定されます：
+
+```env
+NODE_ENV=test
+DATABASE_URL=postgresql://goal_mandala_user:your_secure_password_here@localhost:5432/goal_mandala_test
+JWT_SECRET=test-jwt-secret-key-for-testing-32chars
+ENABLE_MOCK_AUTH=true
+LOG_LEVEL=ERROR
 ```
 
 ### リント・フォーマット
@@ -169,6 +283,86 @@ pnpm type-check
 ```
 
 ## API エンドポイント
+
+### プロフィール管理API
+
+#### プロフィール取得
+
+**エンドポイント**: `GET /api/profile`
+
+**説明**: 認証されたユーザーのプロフィール情報を取得します。
+
+**認証**: 必須（JWT Bearer Token）
+
+**レスポンス例**:
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "email": "user@example.com",
+    "name": "山田太郎",
+    "industry": "IT・通信",
+    "company_size": "100-500人",
+    "job_title": "エンジニア",
+    "position": "マネージャー",
+    "created_at": "2025-01-01T00:00:00.000Z",
+    "updated_at": "2025-01-10T00:00:00.000Z"
+  }
+}
+```
+
+#### プロフィール更新
+
+**エンドポイント**: `PUT /api/profile`
+
+**説明**: 認証されたユーザーのプロフィール情報を更新します。
+
+**認証**: 必須（JWT Bearer Token）
+
+**リクエスト例**:
+
+```json
+{
+  "name": "山田太郎",
+  "industry": "IT・通信",
+  "company_size": "100-500人",
+  "job_title": "エンジニア",
+  "position": "マネージャー"
+}
+```
+
+**レスポンス例**:
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "email": "user@example.com",
+    "name": "山田太郎",
+    "industry": "IT・通信",
+    "company_size": "100-500人",
+    "job_title": "エンジニア",
+    "position": "マネージャー",
+    "created_at": "2025-01-01T00:00:00.000Z",
+    "updated_at": "2025-01-10T12:00:00.000Z"
+  }
+}
+```
+
+#### プロフィール削除
+
+**エンドポイント**: `DELETE /api/profile`
+
+**説明**: 認証されたユーザーのプロフィール情報を削除します。関連する全ての目標、サブ目標、アクション、タスクもカスケード削除されます。
+
+**認証**: 必須（JWT Bearer Token）
+
+**レスポンス**: 204 No Content
+
+詳細は [プロフィール管理API仕様書](./docs/profile-api-specification.md) を参照してください。
 
 ### サブ目標生成API
 
@@ -483,6 +677,12 @@ aws logs tail /aws/lambda/SubGoalGenerationFunction --follow
 
 よくある問題と解決方法については、以下のドキュメントを参照してください：
 
+### プロフィール管理API
+
+- [エラーコード一覧](./docs/profile-error-codes.md)
+- [トラブルシューティングガイド](./docs/profile-troubleshooting-guide.md)
+- [運用ガイド](./docs/profile-operations-guide.md)
+
 ### サブ目標生成API
 
 - [エラーコード一覧](./docs/subgoal-generation-error-codes.md)
@@ -502,6 +702,13 @@ aws logs tail /aws/lambda/SubGoalGenerationFunction --follow
 - [運用ガイド](./docs/task-generation-operations-guide.md)
 
 ## ドキュメント
+
+### プロフィール管理API
+
+- [API仕様書](./docs/profile-api-specification.md) - エンドポイント、リクエスト、レスポンスの詳細
+- [エラーコード一覧](./docs/profile-error-codes.md) - エラーコードと対処方法
+- [運用ガイド](./docs/profile-operations-guide.md) - 監視項目、アラート対応手順
+- [トラブルシューティングガイド](./docs/profile-troubleshooting-guide.md) - よくある問題と解決方法
 
 ### サブ目標生成API
 

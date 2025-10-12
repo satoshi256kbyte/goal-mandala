@@ -93,7 +93,7 @@ export const EditModal: React.FC<EditModalProps> = ({
     criteriaMode: 'all',
   });
 
-  function getDefaultValues() {
+  function getDefaultValues(): any {
     if (entityType === 'goal') {
       const goal = initialData as Goal;
       return {

@@ -113,25 +113,29 @@ function validateAndParseRequest(event: APIGatewayProxyEvent): GenerateRequest {
   const requestBody = body as Record<string, unknown>;
 
   // 必須フィールドのチェック
-  if (!requestBody.type) {
-    throw new ValidationError('typeフィールドが存在しません');
+  if (!requestBody.type || typeof requestBody.type !== 'string') {
+    throw new ValidationError('typeフィールドが存在しないか、文字列ではありません');
   }
 
-  if (!requestBody.input) {
-    throw new ValidationError('inputフィールドが存在しません');
+  if (!requestBody.input || typeof requestBody.input !== 'object') {
+    throw new ValidationError('inputフィールドが存在しないか、オブジェクトではありません');
   }
 
-  if (!requestBody.userId) {
-    throw new ValidationError('userIdフィールドが存在しません');
+  if (!requestBody.userId || typeof requestBody.userId !== 'string') {
+    throw new ValidationError('userIdフィールドが存在しないか、文字列ではありません');
   }
 
   // typeの値チェック
   const validTypes = ['subgoal', 'action', 'task'];
-  if (!validTypes.includes(requestBody.type as string)) {
+  if (!validTypes.includes(requestBody.type)) {
     throw new ValidationError(`不正なtypeです。有効な値: ${validTypes.join(', ')}`);
   }
 
-  return requestBody as GenerateRequest;
+  return {
+    type: requestBody.type as 'subgoal' | 'action' | 'task',
+    input: requestBody.input as Record<string, unknown>,
+    userId: requestBody.userId,
+  } as unknown as GenerateRequest;
 }
 
 /**

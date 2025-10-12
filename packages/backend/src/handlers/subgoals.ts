@@ -33,7 +33,7 @@ const SubGoalUpdateSchema = z.object({
 app.put('/:subGoalId', authMiddleware, async c => {
   try {
     const subGoalId = c.req.param('subGoalId');
-    const userId = c.get('userId');
+    const userId = c.get('userId') as string;
 
     // 認証チェック
     if (!userId) {

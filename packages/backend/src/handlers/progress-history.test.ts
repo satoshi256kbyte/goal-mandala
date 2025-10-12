@@ -153,14 +153,14 @@ describe('Progress History Handler', () => {
           entityId: 'goal-1',
           entityType: 'goal',
           progress: 25,
-          timestamp: new Date('2024-01-01T00:00:00Z'),
+          timestamp: '2024-01-01T00:00:00.000Z',
         },
         {
           id: '2',
           entityId: 'goal-1',
           entityType: 'goal',
           progress: 50,
-          timestamp: new Date('2024-01-02T00:00:00Z'),
+          timestamp: '2024-01-02T00:00:00.000Z',
         },
       ];
 
@@ -279,7 +279,7 @@ describe('Progress History Handler', () => {
     it('有効なパラメータで重要な変化点を取得する', async () => {
       const mockChanges = [
         {
-          date: new Date('2024-01-01T00:00:00Z'),
+          date: '2024-01-01T00:00:00.000Z',
           progress: 75,
           change: 25,
           reason: 'Major milestone achieved',

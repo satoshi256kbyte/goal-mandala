@@ -1,4 +1,4 @@
-// バリデーションミドルウェア
-export const validationMiddleware = () => {
-  // TODO: 実装予定
+export const validationMiddleware = {
+  validate: () => true,
+  sanitize: (input: string) => input,
 };

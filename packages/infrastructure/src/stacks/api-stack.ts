@@ -266,6 +266,44 @@ export class ApiStack extends cdk.Stack {
     });
 
     queueDepthAlarm.addAlarmAction(new cloudwatchActions.SnsAction(alarmTopic));
+
+    // プロフィール管理Lambda関数のアラーム
+    const profileFunction = this.lambdaConstruct.getFunction(`${config.stackPrefix}-profile`);
+    if (profileFunction) {
+      // エラー率アラーム（5%閾値）
+      const profileErrorAlarm = profileFunction
+        .metricErrors({
+          statistic: 'Sum',
+          period: cdk.Duration.minutes(5),
+        })
+        .createAlarm(this, 'ProfileErrorAlarm', {
+          alarmName: `${config.stackPrefix}-profile-error-rate`,
+          alarmDescription: 'プロフィール管理APIのエラー率が5%を超えました',
+          threshold: 5, // 5分間で5回以上のエラー（約5%）
+          evaluationPeriods: 2,
+          comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
+          treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
+        });
+
+      profileErrorAlarm.addAlarmAction(new cloudwatchActions.SnsAction(alarmTopic));
+
+      // 処理時間アラーム（2秒閾値）
+      const profileDurationAlarm = profileFunction
+        .metricDuration({
+          statistic: 'Average',
+          period: cdk.Duration.minutes(5),
+        })
+        .createAlarm(this, 'ProfileDurationAlarm', {
+          alarmName: `${config.stackPrefix}-profile-duration`,
+          alarmDescription: 'プロフィール管理APIの処理時間が2秒を超えました',
+          threshold: 2000, // 2秒（ミリ秒）
+          evaluationPeriods: 2,
+          comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
+          treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
+        });
+
+      profileDurationAlarm.addAlarmAction(new cloudwatchActions.SnsAction(alarmTopic));
+    }
   }
 
   /**
@@ -452,6 +490,21 @@ export class ApiStack extends cdk.Stack {
       memorySize: 256,
       environment: {
         FUNCTION_TYPE: 'update-processing-state',
+        LOG_LEVEL: 'INFO',
+      },
+    });
+
+    // プロフィール管理 Lambda 関数
+    this.lambdaConstruct.createApiFunction({
+      functionName: `${config.stackPrefix}-profile`,
+      codePath: '../backend/dist',
+      description: 'Profile management API handler',
+      handler: 'handlers/profile.handler',
+      timeout: cdk.Duration.seconds(10),
+      memorySize: 512,
+      reservedConcurrency: 10, // 同時実行数制限
+      environment: {
+        FUNCTION_TYPE: 'profile',
         LOG_LEVEL: 'INFO',
       },
     });
@@ -716,6 +769,48 @@ export class ApiStack extends cdk.Stack {
         'POST',
         new apigateway.LambdaIntegration(cancelFunction, {
           timeout: cdk.Duration.seconds(30),
+        }),
+        {
+          authorizer: cognitoAuthorizer,
+          authorizationType: apigateway.AuthorizationType.COGNITO,
+        }
+      );
+    }
+
+    // プロフィール管理エンドポイント（認証必須）
+    const profileFunction = this.lambdaConstruct.getFunction(`${config.stackPrefix}-profile`);
+    if (profileFunction) {
+      const profileResource = apiResource.addResource('profile');
+
+      // GET /api/profile - プロフィール取得
+      profileResource.addMethod(
+        'GET',
+        new apigateway.LambdaIntegration(profileFunction, {
+          timeout: cdk.Duration.seconds(10),
+        }),
+        {
+          authorizer: cognitoAuthorizer,
+          authorizationType: apigateway.AuthorizationType.COGNITO,
+        }
+      );
+
+      // PUT /api/profile - プロフィール更新
+      profileResource.addMethod(
+        'PUT',
+        new apigateway.LambdaIntegration(profileFunction, {
+          timeout: cdk.Duration.seconds(10),
+        }),
+        {
+          authorizer: cognitoAuthorizer,
+          authorizationType: apigateway.AuthorizationType.COGNITO,
+        }
+      );
+
+      // DELETE /api/profile - プロフィール削除
+      profileResource.addMethod(
+        'DELETE',
+        new apigateway.LambdaIntegration(profileFunction, {
+          timeout: cdk.Duration.seconds(10),
         }),
         {
           authorizer: cognitoAuthorizer,

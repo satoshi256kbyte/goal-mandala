@@ -1,4 +1,5 @@
-// AIサービス
-export const aiService = () => {
-  // TODO: 実装予定
+export const aiService = {
+  generateSubGoals: () => Promise.resolve([]),
+  generateActions: () => Promise.resolve([]),
+  generateTasks: () => Promise.resolve([]),
 };

@@ -11,6 +11,8 @@ import { MiddlewareHandler, Context } from 'hono';
 // Honoコンテキストの型拡張（要件4.2, 4.3）
 declare module 'hono' {
   interface ContextVariableMap {
+    userId?: string;
+    isAdmin?: boolean;
     user?: AuthenticatedUser;
     isAuthenticated?: boolean;
     authContext?: AuthContext;

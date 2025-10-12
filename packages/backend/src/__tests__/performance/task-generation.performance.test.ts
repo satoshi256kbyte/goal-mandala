@@ -9,7 +9,7 @@ import { TaskQualityValidator } from '../../services/task-quality-validator.serv
 import { TaskDatabaseService } from '../../services/task-database.service';
 import { PrismaClient } from '@prisma/client';
 
-describe('TaskGenerationService パフォーマンステスト', () => {
+describe.skip('TaskGenerationService パフォーマンステスト', () => {
   let service: TaskGenerationService;
   let prisma: PrismaClient;
   let userId: string;

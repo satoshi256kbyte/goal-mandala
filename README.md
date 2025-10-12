@@ -23,6 +23,8 @@
 
 ### ローカルテスト
 
+#### GitHub Actionsワークフローのテスト
+
 GitHub Actionsワークフローをローカルでテストできます：
 
 ```bash
@@ -47,6 +49,44 @@ pnpm run act:dry-run
 
 詳細は [act使用ガイド](./docs/act-usage-guide.md) を参照してください。
 
+#### バックエンドテスト戦略
+
+バックエンドでは3層のテスト戦略を採用しています：
+
+**1. ユニットテスト（推奨・常時実行可能）**
+```bash
+cd packages/backend
+pnpm test
+```
+- モックを使用してデータベース接続なしで実行
+- 高速で安定した実行
+- CI/CDで常時実行
+
+**2. 統合テスト（将来実装予定）**
+```bash
+# 統合テスト実行
+cd packages/backend
+pnpm test -- --testPathPattern="integration.*test.ts"
+```
+- 実際のデータベースを使用した結合テスト
+- エンドツーエンドのデータフロー検証
+- 現在はユニットテストで代替
+
+**3. E2Eテスト（将来実装予定）**
+```bash
+# SAM Local環境でのテスト
+cd packages/backend
+pnpm dev &
+pnpm test:e2e
+```
+
+**テスト実行のベストプラクティス**:
+高速で安定したテスト実行のため、ユニットテストを中心に実行してください：
+```bash
+cd packages/backend
+pnpm test
+```
+
 ## クイックスタート
 
 ### 1. 環境変数の設定
@@ -68,39 +108,7 @@ pnpm run env:check
 
 詳細な環境変数設定については [環境変数設定ガイド](./docs/environment-variables.md) を参照してください。
 
-Docker環境の詳細なセットアップ手順については [Docker環境セットアップガイド](./docs/docker-setup-guide.md) を参照してください。
-
-### 3. Docker環境の起動
-
-```bash
-# 開発環境の起動
-docker-compose up -d
-
-# または、Makefileを使用（推奨）
-make -C tools/docker up
-
-# サービスの状態確認
-make -C tools/docker health
-```
-
-### 4. ローカル開発環境の起動
-
-#### Docker環境の管理
-
-Docker環境の操作には、便利なMakefileコマンドが利用できます：
-
-```bash
-# 利用可能なコマンドを表示
-make -C tools/docker help
-
-# 主要なコマンド
-make -C tools/docker up      # 環境起動
-make -C tools/docker down    # 環境停止
-make -C tools/docker restart # 環境再起動
-make -C tools/docker logs    # ログ表示
-make -C tools/docker health  # ヘルスチェック
-make -C tools/docker clean   # 環境クリーンアップ
-```
+### 3. ローカル開発環境の起動
 
 #### AWS SAM CLI環境の起動
 
@@ -120,15 +128,13 @@ pnpm --filter @goal-mandala/frontend dev
 curl http://localhost:3001/health
 ```
 
-**前提条件**: AWS SAM CLIとDocker Desktopがインストールされている必要があります。詳細は [CONTRIBUTING.md](./CONTRIBUTING.md) を参照してください。
+**前提条件**: AWS SAM CLIがインストールされている必要があります。詳細は [CONTRIBUTING.md](./CONTRIBUTING.md) を参照してください。
 
 ## ドキュメント
 
 ### 開発者向けドキュメント
 
 - [CONTRIBUTING.md](./CONTRIBUTING.md) - 開発者向け詳細ガイド（SAM CLI環境の使用方法を含む）
-- [Docker環境セットアップガイド](./docs/docker-setup-guide.md) - Docker環境の詳細セットアップ手順
-- [Docker環境トラブルシューティングガイド](./docs/docker-troubleshooting.md) - Docker関連問題の解決方法
 - [環境変数設定ガイド](./docs/environment-variables.md) - 環境変数の詳細設定
 - [AWS SAM CLI公式ドキュメント](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/) - SAM CLIの詳細な使用方法
 

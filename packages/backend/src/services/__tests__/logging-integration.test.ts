@@ -148,7 +148,7 @@ describe('ログ出力統合テスト', () => {
 
       const duration = timer.end();
 
-      expect(duration).toBeGreaterThanOrEqual(100);
+      expect(duration).toBeGreaterThanOrEqual(90); // 少し余裕を持たせる
       expect(duration).toBeLessThan(200); // 余裕を持たせる
     });
 

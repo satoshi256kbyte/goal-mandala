@@ -1,4 +1,5 @@
-// データベースサービス
-export const databaseService = () => {
-  // TODO: 実装予定
+export const databaseService = {
+  connect: () => Promise.resolve(),
+  disconnect: () => Promise.resolve(),
+  query: () => Promise.resolve([]),
 };

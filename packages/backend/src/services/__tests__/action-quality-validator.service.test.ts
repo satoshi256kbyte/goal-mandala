@@ -17,8 +17,8 @@ describe('ActionQualityValidator', () => {
     it('8個の有効なアクションを検証できる', () => {
       const actions: ActionOutput[] = Array.from({ length: 8 }, (_, i) => ({
         title: `アクション${i + 1}`,
-        description: 'a'.repeat(150), // 100-200文字の範囲内
-        background: '背景説明',
+        description: `アクション${i + 1}の詳細説明: ${'a'.repeat(100 + i * 5)}`, // 各アクションで異なる説明
+        background: `アクション${i + 1}の背景説明`,
         type: ActionType.EXECUTION,
         position: i,
       }));

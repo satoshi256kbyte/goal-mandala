@@ -8,7 +8,7 @@ import type { Context } from 'hono';
 // モックを最初に設定
 const mockValidateTaskGenerationRequest = jest.fn();
 const mockGenerateAndSaveTasks = jest.fn();
-const mockGetActionWithRelations = jest.fn();
+const mockGetActionWithSubGoalAndGoal = jest.fn();
 const mockDisconnect = jest.fn();
 
 // TaskGenerationRequestSchemaをモック
@@ -28,7 +28,7 @@ jest.mock('../../services/task-generation.service', () => ({
 // DatabaseServiceをモック（認可チェック用）
 jest.mock('../../services/task-database.service', () => ({
   TaskDatabaseService: jest.fn().mockImplementation(() => ({
-    getActionWithRelations: mockGetActionWithRelations,
+    getActionWithSubGoalAndGoal: mockGetActionWithSubGoalAndGoal,
     disconnect: mockDisconnect,
   })),
 }));
@@ -48,6 +48,18 @@ jest.mock('../../middleware/auth', () => ({
 
 // 動的インポートでハンドラーを読み込み
 let app: any;
+
+// Helper function to create correct mock data structure
+const createMockActionData = (userId: string = 'test-user-id') => ({
+  id: 'action-123',
+  subGoal: {
+    id: 'subgoal-123',
+    goal: {
+      id: 'goal-123',
+      userId: userId,
+    },
+  },
+});
 
 describe('Task Generation Handler - Integration Tests', () => {
   beforeEach(async () => {
@@ -80,20 +92,7 @@ describe('Task Generation Handler - Integration Tests', () => {
 
     it('アクションからタスクを生成できる', async () => {
       mockValidateTaskGenerationRequest.mockReturnValue(validRequest);
-      mockGetActionWithRelations.mockResolvedValue({
-        id: 'action-123',
-        subGoalId: 'subgoal-123',
-        type: 'execution',
-        subGoal: {
-          id: 'subgoal-123',
-          goalId: 'goal-123',
-          goal: {
-            id: 'goal-123',
-            userId: 'test-user-id',
-            title: 'TypeScriptのエキスパートになる',
-          },
-        },
-      });
+      mockGetActionWithSubGoalAndGoal.mockResolvedValue(createMockActionData());
       mockGenerateAndSaveTasks.mockResolvedValue({
         actionId: 'action-123',
         tasks: mockTasks,
@@ -139,20 +138,7 @@ describe('Task Generation Handler - Integration Tests', () => {
       };
 
       mockValidateTaskGenerationRequest.mockReturnValue(requestWithRegenerate);
-      mockGetActionWithRelations.mockResolvedValue({
-        id: 'action-123',
-        subGoalId: 'subgoal-123',
-        type: 'execution',
-        subGoal: {
-          id: 'subgoal-123',
-          goalId: 'goal-123',
-          goal: {
-            id: 'goal-123',
-            userId: 'test-user-id',
-            title: 'TypeScriptのエキスパートになる',
-          },
-        },
-      });
+      mockGetActionWithSubGoalAndGoal.mockResolvedValue(createMockActionData());
       mockGenerateAndSaveTasks.mockResolvedValue({
         actionId: 'action-123',
         tasks: mockTasks,
@@ -190,20 +176,7 @@ describe('Task Generation Handler - Integration Tests', () => {
       const habitTasks = mockTasks.map(task => ({ ...task, type: 'habit' }));
 
       mockValidateTaskGenerationRequest.mockReturnValue(validRequest);
-      mockGetActionWithRelations.mockResolvedValue({
-        id: 'action-123',
-        subGoalId: 'subgoal-123',
-        type: 'habit',
-        subGoal: {
-          id: 'subgoal-123',
-          goalId: 'goal-123',
-          goal: {
-            id: 'goal-123',
-            userId: 'test-user-id',
-            title: 'TypeScriptのエキスパートになる',
-          },
-        },
-      });
+      mockGetActionWithSubGoalAndGoal.mockResolvedValue(createMockActionData());
       mockGenerateAndSaveTasks.mockResolvedValue({
         actionId: 'action-123',
         tasks: habitTasks,
@@ -346,20 +319,7 @@ describe('Task Generation Handler - Integration Tests', () => {
 
     it('他人のアクションにアクセスしようとした場合は403エラーを返す', async () => {
       mockValidateTaskGenerationRequest.mockReturnValue(validRequest);
-      mockGetActionWithRelations.mockResolvedValue({
-        id: 'action-123',
-        subGoalId: 'subgoal-123',
-        type: 'execution',
-        subGoal: {
-          id: 'subgoal-123',
-          goalId: 'goal-123',
-          goal: {
-            id: 'goal-123',
-            userId: 'other-user-id', // 異なるユーザーID
-            title: '他人の目標',
-          },
-        },
-      });
+      mockGetActionWithSubGoalAndGoal.mockResolvedValue(createMockActionData('other-user-id'));
 
       const res = await app.request('/api/ai/generate/tasks', {
         method: 'POST',
@@ -380,7 +340,7 @@ describe('Task Generation Handler - Integration Tests', () => {
 
     it('存在しないアクションにアクセスしようとした場合は404エラーを返す', async () => {
       mockValidateTaskGenerationRequest.mockReturnValue(validRequest);
-      mockGetActionWithRelations.mockResolvedValue(null);
+      mockGetActionWithSubGoalAndGoal.mockResolvedValue(null);
 
       const res = await app.request('/api/ai/generate/tasks', {
         method: 'POST',
@@ -407,20 +367,7 @@ describe('Task Generation Handler - Integration Tests', () => {
     it('品質エラーが発生した場合は422エラーを返す', async () => {
       const { QualityValidationError } = await import('../../errors/task-generation.errors.js');
       mockValidateTaskGenerationRequest.mockReturnValue(validRequest);
-      mockGetActionWithRelations.mockResolvedValue({
-        id: 'action-123',
-        subGoalId: 'subgoal-123',
-        type: 'execution',
-        subGoal: {
-          id: 'subgoal-123',
-          goalId: 'goal-123',
-          goal: {
-            id: 'goal-123',
-            userId: 'test-user-id',
-            title: 'TypeScriptのエキスパートになる',
-          },
-        },
-      });
+      mockGetActionWithSubGoalAndGoal.mockResolvedValue(createMockActionData());
       mockGenerateAndSaveTasks.mockRejectedValue(
         new QualityValidationError('タスクは最低1個以上必要です')
       );
@@ -444,20 +391,7 @@ describe('Task Generation Handler - Integration Tests', () => {
     it('データベースエラーが発生した場合は500エラーを返す', async () => {
       const { DatabaseError } = await import('../../errors/task-generation.errors.js');
       mockValidateTaskGenerationRequest.mockReturnValue(validRequest);
-      mockGetActionWithRelations.mockResolvedValue({
-        id: 'action-123',
-        subGoalId: 'subgoal-123',
-        type: 'execution',
-        subGoal: {
-          id: 'subgoal-123',
-          goalId: 'goal-123',
-          goal: {
-            id: 'goal-123',
-            userId: 'test-user-id',
-            title: 'TypeScriptのエキスパートになる',
-          },
-        },
-      });
+      mockGetActionWithSubGoalAndGoal.mockResolvedValue(createMockActionData());
       mockGenerateAndSaveTasks.mockRejectedValue(new DatabaseError('データの保存に失敗しました'));
 
       const res = await app.request('/api/ai/generate/tasks', {
@@ -479,20 +413,7 @@ describe('Task Generation Handler - Integration Tests', () => {
     it('AIエラーが発生した場合は500エラーを返す', async () => {
       const { AIGenerationError } = await import('../../errors/task-generation.errors.js');
       mockValidateTaskGenerationRequest.mockReturnValue(validRequest);
-      mockGetActionWithRelations.mockResolvedValue({
-        id: 'action-123',
-        subGoalId: 'subgoal-123',
-        type: 'execution',
-        subGoal: {
-          id: 'subgoal-123',
-          goalId: 'goal-123',
-          goal: {
-            id: 'goal-123',
-            userId: 'test-user-id',
-            title: 'TypeScriptのエキスパートになる',
-          },
-        },
-      });
+      mockGetActionWithSubGoalAndGoal.mockResolvedValue(createMockActionData());
       mockGenerateAndSaveTasks.mockRejectedValue(
         new AIGenerationError('AI生成サービスが一時的に利用できません')
       );
@@ -515,20 +436,7 @@ describe('Task Generation Handler - Integration Tests', () => {
 
     it('予期しないエラーが発生した場合は500エラーを返す', async () => {
       mockValidateTaskGenerationRequest.mockReturnValue(validRequest);
-      mockGetActionWithRelations.mockResolvedValue({
-        id: 'action-123',
-        subGoalId: 'subgoal-123',
-        type: 'execution',
-        subGoal: {
-          id: 'subgoal-123',
-          goalId: 'goal-123',
-          goal: {
-            id: 'goal-123',
-            userId: 'test-user-id',
-            title: 'TypeScriptのエキスパートになる',
-          },
-        },
-      });
+      mockGetActionWithSubGoalAndGoal.mockResolvedValue(createMockActionData());
       mockGenerateAndSaveTasks.mockRejectedValue(new Error('Unexpected error'));
 
       const res = await app.request('/api/ai/generate/tasks', {

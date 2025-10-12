@@ -291,12 +291,14 @@ describe('PrismaProgressDataStore', () => {
       const entityId = 'goal-1';
       const days = 30;
 
-      store.getProgressHistory = jest.fn().mockResolvedValue([
-        { date: new Date('2024-01-01'), progress: 10 },
-        { date: new Date('2024-01-02'), progress: 20 },
+      store.getProgressHistoryEntries = jest.fn().mockResolvedValue([
+        { date: new Date('2024-01-01'), progress: 0 },
+        { date: new Date('2024-01-02'), progress: 15 },
         { date: new Date('2024-01-03'), progress: 30 },
-        { date: new Date('2024-01-04'), progress: 40 },
-        { date: new Date('2024-01-05'), progress: 50 },
+        { date: new Date('2024-01-04'), progress: 45 },
+        { date: new Date('2024-01-05'), progress: 60 },
+        { date: new Date('2024-01-06'), progress: 75 },
+        { date: new Date('2024-01-07'), progress: 90 },
       ]);
 
       // Act
@@ -314,12 +316,14 @@ describe('PrismaProgressDataStore', () => {
       const entityId = 'goal-1';
       const days = 30;
 
-      store.getProgressHistory = jest.fn().mockResolvedValue([
-        { date: new Date('2024-01-01'), progress: 50 },
-        { date: new Date('2024-01-02'), progress: 40 },
-        { date: new Date('2024-01-03'), progress: 30 },
-        { date: new Date('2024-01-04'), progress: 20 },
-        { date: new Date('2024-01-05'), progress: 10 },
+      store.getProgressHistoryEntries = jest.fn().mockResolvedValue([
+        { date: new Date('2024-01-01'), progress: 90 },
+        { date: new Date('2024-01-02'), progress: 75 },
+        { date: new Date('2024-01-03'), progress: 60 },
+        { date: new Date('2024-01-04'), progress: 45 },
+        { date: new Date('2024-01-05'), progress: 30 },
+        { date: new Date('2024-01-06'), progress: 15 },
+        { date: new Date('2024-01-07'), progress: 0 },
       ]);
 
       // Act

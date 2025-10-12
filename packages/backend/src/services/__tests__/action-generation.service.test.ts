@@ -18,7 +18,7 @@ type MockedContextService = {
 };
 
 type MockedBedrockService = {
-  generateActions: jest.Mock;
+  generateActionsWithContext: jest.Mock;
 };
 
 type MockedActionQualityValidator = {
@@ -55,7 +55,7 @@ describe('ActionGenerationService Integration Tests', () => {
 
     // BedrockServiceのモック
     mockBedrockService = {
-      generateActions: jest.fn(),
+      generateActionsWithContext: jest.fn(),
     };
 
     // ActionQualityValidatorのモック
@@ -149,7 +149,7 @@ describe('ActionGenerationService Integration Tests', () => {
 
       // モックの設定
       mockContextService.getGenerationContext.mockResolvedValue(mockContext);
-      mockBedrockService.generateActions.mockResolvedValue(mockAIActions);
+      mockBedrockService.generateActionsWithContext.mockResolvedValue(mockAIActions);
       mockQualityValidator.validateQuality.mockReturnValue(undefined);
       mockTypeClassifier.classifyActions.mockReturnValue(mockClassifiedActions);
       mockDatabaseService.executeInTransaction.mockImplementation(async (callback: any) => {
@@ -184,9 +184,27 @@ describe('ActionGenerationService Integration Tests', () => {
 
       // モックの呼び出しを検証
       expect(mockContextService.getGenerationContext).toHaveBeenCalledWith(testSubGoalId);
-      expect(mockBedrockService.generateActions).toHaveBeenCalledWith(mockContext);
-      expect(mockQualityValidator.validateQuality).toHaveBeenCalledWith(mockAIActions);
-      expect(mockTypeClassifier.classifyActions).toHaveBeenCalledWith(mockAIActions);
+      expect(mockBedrockService.generateActionsWithContext).toHaveBeenCalledWith(mockContext);
+      expect(mockQualityValidator.validateQuality).toHaveBeenCalledWith(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: expect.any(String),
+            title: expect.any(String),
+            description: expect.any(String),
+            background: expect.any(String),
+            position: expect.any(Number),
+            progress: 0,
+            type: expect.any(String),
+          }),
+        ])
+      );
+      expect(mockTypeClassifier.classifyActions).toHaveBeenCalledWith(
+        expect.arrayContaining([
+          expect.objectContaining({
+            type: expect.any(String),
+          }),
+        ])
+      );
       expect(mockDatabaseService.executeInTransaction).toHaveBeenCalled();
     });
 
@@ -240,7 +258,7 @@ describe('ActionGenerationService Integration Tests', () => {
       }));
 
       mockContextService.getGenerationContext.mockResolvedValue(mockContext);
-      mockBedrockService.generateActions.mockResolvedValue(mockAIActions);
+      mockBedrockService.generateActionsWithContext.mockResolvedValue(mockAIActions);
       mockQualityValidator.validateQuality.mockReturnValue(undefined);
       mockTypeClassifier.classifyActions.mockReturnValue(mockClassifiedActions);
       mockDatabaseService.executeInTransaction.mockImplementation(async (callback: any) => {
@@ -330,7 +348,7 @@ describe('ActionGenerationService Integration Tests', () => {
 
       mockDatabaseService.executeInTransaction.mockImplementation(async (callback: any) => {
         mockContextService.getGenerationContext.mockResolvedValue(mockContext);
-        mockBedrockService.generateActions.mockResolvedValue(mockAIActions);
+        mockBedrockService.generateActionsWithContext.mockResolvedValue(mockAIActions);
         mockQualityValidator.validateQuality.mockImplementation(() => {
           throw new QualityError('アクションは8個である必要があります（現在: 7個）');
         });
@@ -369,7 +387,7 @@ describe('ActionGenerationService Integration Tests', () => {
 
       mockDatabaseService.executeInTransaction.mockImplementation(async (callback: any) => {
         mockContextService.getGenerationContext.mockResolvedValue(mockContext);
-        mockBedrockService.generateActions.mockRejectedValue(
+        mockBedrockService.generateActionsWithContext.mockRejectedValue(
           new Error('Bedrock API呼び出しエラー')
         );
         return await callback({
@@ -419,7 +437,7 @@ describe('ActionGenerationService Integration Tests', () => {
       }));
 
       mockContextService.getGenerationContext.mockResolvedValue(mockContext);
-      mockBedrockService.generateActions.mockResolvedValue(mockAIActions);
+      mockBedrockService.generateActionsWithContext.mockResolvedValue(mockAIActions);
       mockQualityValidator.validateQuality.mockReturnValue(undefined);
       mockTypeClassifier.classifyActions.mockReturnValue(mockClassifiedActions);
       mockDatabaseService.executeInTransaction.mockImplementation(async (callback: any) => {

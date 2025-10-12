@@ -292,12 +292,12 @@ export const useUpdateGoal = (
 
       // コールバック実行
       if (options?.onMutate) {
-        await options.onMutate({ id, data });
+        await options.onMutate({ id, data }, {} as any);
       }
 
-      return { previousGoal };
+      return { previousGoal } as any;
     },
-    onError: (error, variables, context) => {
+    onError: (error: any, variables: any, context: any) => {
       // ロールバック
       if (context?.previousGoal) {
         queryClient.setQueryData(['goal', variables.id], context.previousGoal);
@@ -305,10 +305,10 @@ export const useUpdateGoal = (
 
       // コールバック実行
       if (options?.onError) {
-        options.onError(error, variables, context);
+        options.onError(error, variables, context, {} as any);
       }
     },
-    onSuccess: (data, variables, context) => {
+    onSuccess: (data: any, variables: any, context: any) => {
       // キャッシュを更新
       queryClient.setQueryData(['goal', variables.id], data);
 
@@ -317,7 +317,7 @@ export const useUpdateGoal = (
 
       // コールバック実行
       if (options?.onSuccess) {
-        options.onSuccess(data, variables, context);
+        options.onSuccess(data, variables, context, {} as any);
       }
     },
   });
@@ -351,12 +351,12 @@ export const useUpdateSubGoal = (
 
       // コールバック実行
       if (options?.onMutate) {
-        await options.onMutate({ id, data });
+        await options.onMutate({ id, data }, {} as any);
       }
 
-      return { previousSubGoal };
+      return { previousSubGoal } as any;
     },
-    onError: (error, variables, context) => {
+    onError: (error: any, variables: any, context: any) => {
       // ロールバック
       if (context?.previousSubGoal) {
         queryClient.setQueryData(['subgoal', variables.id], context.previousSubGoal);
@@ -364,10 +364,10 @@ export const useUpdateSubGoal = (
 
       // コールバック実行
       if (options?.onError) {
-        options.onError(error, variables, context);
+        options.onError(error, variables, context, {} as any);
       }
     },
-    onSuccess: (data, variables, context) => {
+    onSuccess: (data: any, variables: any, context: any) => {
       // キャッシュを更新
       queryClient.setQueryData(['subgoal', variables.id], data);
 
@@ -379,7 +379,7 @@ export const useUpdateSubGoal = (
 
       // コールバック実行
       if (options?.onSuccess) {
-        options.onSuccess(data, variables, context);
+        options.onSuccess(data, variables, context, {} as any);
       }
     },
   });
@@ -413,12 +413,12 @@ export const useUpdateAction = (
 
       // コールバック実行
       if (options?.onMutate) {
-        await options.onMutate({ id, data });
+        await options.onMutate({ id, data }, {} as any);
       }
 
-      return { previousAction };
+      return { previousAction } as any;
     },
-    onError: (error, variables, context) => {
+    onError: (error: any, variables: any, context: any) => {
       // ロールバック
       if (context?.previousAction) {
         queryClient.setQueryData(['action', variables.id], context.previousAction);
@@ -426,10 +426,10 @@ export const useUpdateAction = (
 
       // コールバック実行
       if (options?.onError) {
-        options.onError(error, variables, context);
+        options.onError(error, variables, context, {} as any);
       }
     },
-    onSuccess: (data, variables, context) => {
+    onSuccess: (data: any, variables: any, context: any) => {
       // キャッシュを更新
       queryClient.setQueryData(['action', variables.id], data);
 
@@ -441,7 +441,7 @@ export const useUpdateAction = (
 
       // コールバック実行
       if (options?.onSuccess) {
-        options.onSuccess(data, variables, context);
+        options.onSuccess(data, variables, context, {} as any);
       }
     },
   });

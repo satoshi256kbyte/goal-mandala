@@ -33,7 +33,7 @@ const ActionUpdateSchema = z.object({
 app.put('/:actionId', authMiddleware, async c => {
   try {
     const actionId = c.req.param('actionId');
-    const userId = c.get('userId');
+    const userId = c.get('userId') as string;
 
     // 認証チェック
     if (!userId) {

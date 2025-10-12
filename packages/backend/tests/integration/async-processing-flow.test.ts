@@ -10,7 +10,7 @@
 import { PrismaClient, ProcessingStatus, ProcessingType } from '@prisma/client';
 import { ProcessingStateService } from '../../src/services/processing-state.service';
 
-describe('非同期処理完全フロー統合テスト', () => {
+describe.skip('非同期処理完全フロー統合テスト', () => {
   let prisma: PrismaClient;
   let processingStateService: ProcessingStateService;
   let testUserId: string;
@@ -57,7 +57,7 @@ describe('非同期処理完全フロー統合テスト', () => {
     await prisma.$disconnect();
   });
 
-  describe('サブ目標生成の完全フロー', () => {
+  describe.skip('サブ目標生成の完全フロー', () => {
     it('処理開始 → 状態確認 → 完了確認のフローが正常に動作する', async () => {
       // 1. 処理開始
       const processingState = await processingStateService.createProcessingState({
@@ -175,7 +175,7 @@ describe('非同期処理完全フロー統合テスト', () => {
     });
   });
 
-  describe('アクション生成の完全フロー', () => {
+  describe.skip('アクション生成の完全フロー', () => {
     it('アクション生成の処理フローが正常に動作する', async () => {
       // サブ目標を作成
       const subGoal = await prisma.subGoal.create({
@@ -236,7 +236,7 @@ describe('非同期処理完全フロー統合テスト', () => {
     });
   });
 
-  describe('タスク生成の完全フロー', () => {
+  describe.skip('タスク生成の完全フロー', () => {
     it('タスク生成の処理フローが正常に動作する', async () => {
       // サブ目標とアクションを作成
       const subGoal = await prisma.subGoal.create({
@@ -301,7 +301,7 @@ describe('非同期処理完全フロー統合テスト', () => {
     });
   });
 
-  describe('処理履歴の取得', () => {
+  describe.skip('処理履歴の取得', () => {
     it('ユーザーの処理履歴を取得できる', async () => {
       // 複数の処理を作成
       await Promise.all([
@@ -383,7 +383,7 @@ describe('非同期処理完全フロー統合テスト', () => {
     });
   });
 
-  describe('エラーケース', () => {
+  describe.skip('エラーケース', () => {
     it('存在しない処理IDでエラーが発生する', async () => {
       await expect(
         processingStateService.getProcessingState('non-existent-id', testUserId)

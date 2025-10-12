@@ -72,16 +72,8 @@ export class ActionGenerationService implements IActionGenerationService {
 
       // 2. AI生成
       const aiTimer = createTimer();
-      // GenerationContextからSubGoalInputを作成
-      const subGoalInput = {
-        goalTitle: context.goal.title,
-        goalDescription: context.goal.description,
-        subGoalTitle: context.subGoal.title,
-        subGoalDescription: context.subGoal.description,
-        background: context.subGoal.background,
-        constraints: context.goal.constraints,
-      };
-      const aiGeneratedActions = await this.bedrockService.generateActions(subGoalInput);
+      // GenerationContextを直接使用してアクション生成
+      const aiGeneratedActions = await this.bedrockService.generateActionsWithContext(context);
       logger.info('AI生成完了', {
         userId,
         subGoalId,

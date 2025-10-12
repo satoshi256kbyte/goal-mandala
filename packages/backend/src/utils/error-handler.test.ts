@@ -2,7 +2,7 @@ import {
   ErrorHandler,
   BedrockError,
   ErrorType,
-  isRetryableError,
+  isRetryableBedrockError,
   classifyError,
   createErrorResponse,
 } from './error-handler';
@@ -106,7 +106,7 @@ describe('ErrorHandler', () => {
         originalError: new Error('ThrottlingException'),
       };
 
-      expect(isRetryableError(error)).toBe(true);
+      expect(isRetryableBedrockError(error)).toBe(true);
     });
 
     it('サービス利用不可エラーはリトライ可能', () => {
@@ -117,7 +117,7 @@ describe('ErrorHandler', () => {
         originalError: new Error('ServiceUnavailableException'),
       };
 
-      expect(isRetryableError(error)).toBe(true);
+      expect(isRetryableBedrockError(error)).toBe(true);
     });
 
     it('内部サーバーエラーはリトライ可能', () => {
@@ -128,7 +128,7 @@ describe('ErrorHandler', () => {
         originalError: new Error('InternalServerException'),
       };
 
-      expect(isRetryableError(error)).toBe(true);
+      expect(isRetryableBedrockError(error)).toBe(true);
     });
 
     it('タイムアウトエラーはリトライ可能', () => {
@@ -139,7 +139,7 @@ describe('ErrorHandler', () => {
         originalError: new Error('TimeoutError'),
       };
 
-      expect(isRetryableError(error)).toBe(true);
+      expect(isRetryableBedrockError(error)).toBe(true);
     });
 
     it('検証エラーはリトライ不可', () => {
@@ -150,7 +150,7 @@ describe('ErrorHandler', () => {
         originalError: new Error('ValidationException'),
       };
 
-      expect(isRetryableError(error)).toBe(false);
+      expect(isRetryableBedrockError(error)).toBe(false);
     });
 
     it('認証エラーはリトライ不可', () => {
@@ -161,7 +161,7 @@ describe('ErrorHandler', () => {
         originalError: new Error('AccessDeniedException'),
       };
 
-      expect(isRetryableError(error)).toBe(false);
+      expect(isRetryableBedrockError(error)).toBe(false);
     });
 
     it('解析エラーはリトライ不可', () => {
@@ -172,7 +172,7 @@ describe('ErrorHandler', () => {
         originalError: new Error('ParseError'),
       };
 
-      expect(isRetryableError(error)).toBe(false);
+      expect(isRetryableBedrockError(error)).toBe(false);
     });
   });
 

@@ -16,7 +16,7 @@ async function getChangeHistory(
   entityId: string
 ) {
   try {
-    const userId = c.get('userId');
+    const userId = c.get('userId') as string;
 
     // 認証チェック
     if (!userId) {
@@ -130,8 +130,8 @@ export default app;
 app.post('/goals/:goalId/rollback', authMiddleware, async c => {
   try {
     const goalId = c.req.param('goalId');
-    const userId = c.get('userId');
-    const isAdmin = c.get('isAdmin');
+    const userId = c.get('userId') as string;
+    const isAdmin = c.get('isAdmin') as boolean;
 
     // 認証チェック
     if (!userId) {
@@ -220,8 +220,8 @@ app.post('/goals/:goalId/rollback', authMiddleware, async c => {
 app.post('/subgoals/:subGoalId/rollback', authMiddleware, async c => {
   try {
     const subGoalId = c.req.param('subGoalId');
-    const userId = c.get('userId');
-    const isAdmin = c.get('isAdmin');
+    const userId = c.get('userId') as string;
+    const isAdmin = c.get('isAdmin') as boolean;
 
     if (!userId) {
       return createResponse(c, 401, '認証が必要です');
@@ -298,8 +298,8 @@ app.post('/subgoals/:subGoalId/rollback', authMiddleware, async c => {
 app.post('/actions/:actionId/rollback', authMiddleware, async c => {
   try {
     const actionId = c.req.param('actionId');
-    const userId = c.get('userId');
-    const isAdmin = c.get('isAdmin');
+    const userId = c.get('userId') as string;
+    const isAdmin = c.get('isAdmin') as boolean;
 
     if (!userId) {
       return createResponse(c, 401, '認証が必要です');

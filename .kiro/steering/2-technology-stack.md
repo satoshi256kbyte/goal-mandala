@@ -64,14 +64,13 @@
 
 ## ローカル開発環境
 
-- データベース: Docker Compose + PostgreSQL
-- 認証: cognito-local（Docker）+ 開発用固定トークンのフォールバック
+- テスト: インメモリSQLite（Docker不要）
+- 認証: 開発用固定トークン（モック認証）
 - AI: 開発用モックレスポンス（Bedrockエミュレータなし）
 - API: AWS SAM CLI（Lambda + API Gatewayエミュレータ）
 - Step Functions: AWS SAM CLI（ローカル実行サポート）
 - CI/CDテスト: act（GitHub Actionsワークフローのローカル実行）
 - 開発フロー:
-  - `docker-compose up` でPostgreSQL + cognito-local起動
   - `sam local start-api` でLambda + API Gateway起動
   - フロントエンドは通常の開発サーバーで起動
   - `act` でCI/CDワークフローの事前テスト

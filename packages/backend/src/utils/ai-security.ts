@@ -153,11 +153,11 @@ export function sanitizeForLog(input: unknown): string {
   // メールアドレスをマスク
   sanitized = sanitized.replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g, '[EMAIL]');
 
-  // 電話番号をマスク（日本の電話番号形式）
-  sanitized = sanitized.replace(/0\d{1,4}-?\d{1,4}-?\d{4}/g, '[PHONE]');
-
   // クレジットカード番号をマスク（ハイフンまたはスペース区切りの16桁）
   sanitized = sanitized.replace(/\b\d{4}[-\s]\d{4}[-\s]\d{4}[-\s]\d{4}\b/g, '[CREDIT_CARD]');
+
+  // 電話番号をマスク（日本の電話番号形式）
+  sanitized = sanitized.replace(/0\d{1,4}-?\d{1,4}-?\d{4}/g, '[PHONE]');
 
   // APIキーをマスク（sk-で始まる6文字以上の英数字）
   sanitized = sanitized.replace(/sk-[a-zA-Z0-9]{6,}/g, '[API_KEY]');

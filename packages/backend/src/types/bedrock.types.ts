@@ -1,10 +1,10 @@
-/**
- * Bedrock関連の型定義
- */
+export interface BedrockConfig {
+  region: string;
+  modelId: string;
+  maxTokens: number;
+  temperature: number;
+}
 
-/**
- * Bedrockモデル設定
- */
 export interface BedrockModelConfig {
   modelId: string;
   region: string;
@@ -15,55 +15,27 @@ export interface BedrockModelConfig {
   };
 }
 
-/**
- * Bedrockリクエスト形式
- */
-export interface BedrockRequest {
-  modelId: string;
-  contentType: string;
-  accept: string;
-  body: string;
-}
-
-/**
- * Bedrockレスポンス形式
- */
-export interface BedrockResponse {
-  output: {
-    message: {
-      role: string;
-      content: Array<{
-        text: string;
-      }>;
-    };
-  };
-  stopReason: string;
-  usage: {
-    inputTokens: number;
-    outputTokens: number;
-    totalTokens: number;
-  };
-}
-
-/**
- * エラータイプ
- */
-export enum BedrockErrorType {
-  THROTTLING = 'ThrottlingException',
-  VALIDATION = 'ValidationException',
-  SERVICE_UNAVAILABLE = 'ServiceUnavailableException',
-  INTERNAL_SERVER = 'InternalServerException',
-  TIMEOUT = 'TimeoutError',
-  PARSE_ERROR = 'ParseError',
-  UNKNOWN = 'UnknownError',
-}
-
-/**
- * リトライ設定
- */
 export interface RetryConfig {
   maxRetries: number;
   baseDelay: number;
   maxDelay: number;
   backoffMultiplier: number;
+}
+
+export interface BedrockError extends Error {
+  retryable: boolean;
+  code?: string;
+  name: string;
+  type?: string;
+  originalError?: Error;
+  details?: Record<string, unknown>;
+}
+
+export interface BedrockResponse {
+  content: string;
+  model: string;
+  usage?: {
+    inputTokens: number;
+    outputTokens: number;
+  };
 }

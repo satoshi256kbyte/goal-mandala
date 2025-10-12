@@ -33,7 +33,7 @@ export const MockTestPage: React.FC<{ pageType: string }> = ({ pageType }) => {
           ?.value || '';
 
       const isValid = title.trim() && description.trim() && deadline.trim() && background.trim();
-      setFormValid(isValid);
+      setFormValid(Boolean(isValid));
     }, 100);
   };
 

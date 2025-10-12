@@ -3,7 +3,7 @@
  * 非同期処理の状態管理を行うサービス
  */
 
-import { PrismaClient, ProcessingType, ProcessingStatus } from '../generated/prisma-client';
+import { PrismaClient, ProcessingType, ProcessingStatus, Prisma } from '../generated/prisma-client';
 import {
   ProcessingError,
   ProcessingHistoryRequest,
@@ -220,7 +220,7 @@ export class ProcessingStateService implements IProcessingStateService {
         id: processId,
       },
       data: {
-        result,
+        result: result as unknown as Prisma.InputJsonValue,
         status: ProcessingStatus.COMPLETED,
         progress: 100,
         completedAt: new Date(),
@@ -237,7 +237,7 @@ export class ProcessingStateService implements IProcessingStateService {
         id: processId,
       },
       data: {
-        error,
+        error: error as unknown as Prisma.InputJsonValue,
         status: ProcessingStatus.FAILED,
         completedAt: new Date(),
       },

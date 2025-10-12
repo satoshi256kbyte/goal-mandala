@@ -4,6 +4,7 @@
 
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import type { Context } from 'hono';
+import { ProcessingType, ProcessingStatus } from '../../types/async-processing.types';
 
 // モックを最初に設定
 const mockGetProcessingState = jest.fn();
@@ -46,11 +47,12 @@ describe('StatusCheckHandler - ユニットテスト', () => {
 
   describe('GET /api/ai/async/status/:processId - 正常系テスト', () => {
     it('処理中の状態を取得できる', async () => {
+      const processId = '12345678-1234-1234-1234-123456789012';
       const mockProcessingState = {
-        id: 'process-123',
+        id: processId,
         userId: 'test-user-id',
-        type: 'SUBGOAL_GENERATION',
-        status: 'PROCESSING',
+        type: ProcessingType.SUBGOAL_GENERATION,
+        status: ProcessingStatus.PROCESSING,
         targetId: 'goal-123',
         progress: 50,
         result: null,
@@ -63,7 +65,7 @@ describe('StatusCheckHandler - ユニットテスト', () => {
 
       mockGetProcessingState.mockResolvedValue(mockProcessingState);
 
-      const res = await app.request('/api/ai/async/status/process-123', {
+      const res = await app.request(`/api/ai/async/status/${processId}`, {
         method: 'GET',
         headers: {
           Authorization: 'Bearer valid-token',
@@ -74,7 +76,7 @@ describe('StatusCheckHandler - ユニットテスト', () => {
 
       const body = await res.json();
       expect(body.success).toBe(true);
-      expect(body.data.processId).toBe('process-123');
+      expect(body.data.processId).toBe(processId);
       expect(body.data.status).toBe('PROCESSING');
       expect(body.data.type).toBe('SUBGOAL_GENERATION');
       expect(body.data.progress).toBe(50);
@@ -83,10 +85,11 @@ describe('StatusCheckHandler - ユニットテスト', () => {
       expect(body.data.estimatedCompletionTime).toBeDefined();
 
       // ProcessingStateServiceが呼ばれたことを確認
-      expect(mockGetProcessingState).toHaveBeenCalledWith('process-123', 'test-user-id');
+      expect(mockGetProcessingState).toHaveBeenCalledWith(processId, 'test-user-id');
     });
 
     it('完了した処理の状態を取得できる（結果付き）', async () => {
+      const processId = '12345678-1234-1234-1234-123456789013';
       const mockResult = {
         goalId: 'goal-123',
         subGoals: [
@@ -96,10 +99,10 @@ describe('StatusCheckHandler - ユニットテスト', () => {
       };
 
       const mockProcessingState = {
-        id: 'process-456',
+        id: processId,
         userId: 'test-user-id',
-        type: 'SUBGOAL_GENERATION',
-        status: 'COMPLETED',
+        type: ProcessingType.SUBGOAL_GENERATION,
+        status: ProcessingStatus.COMPLETED,
         targetId: 'goal-123',
         progress: 100,
         result: mockResult,
@@ -112,7 +115,7 @@ describe('StatusCheckHandler - ユニットテスト', () => {
 
       mockGetProcessingState.mockResolvedValue(mockProcessingState);
 
-      const res = await app.request('/api/ai/async/status/process-456', {
+      const res = await app.request(`/api/ai/async/status/${processId}`, {
         method: 'GET',
         headers: {
           Authorization: 'Bearer valid-token',
@@ -123,7 +126,7 @@ describe('StatusCheckHandler - ユニットテスト', () => {
 
       const body = await res.json();
       expect(body.success).toBe(true);
-      expect(body.data.processId).toBe('process-456');
+      expect(body.data.processId).toBe('12345678-1234-1234-1234-123456789013');
       expect(body.data.status).toBe('COMPLETED');
       expect(body.data.progress).toBe(100);
       expect(body.data.result).toEqual(mockResult);
@@ -138,10 +141,10 @@ describe('StatusCheckHandler - ユニットテスト', () => {
       };
 
       const mockProcessingState = {
-        id: 'process-789',
+        id: '12345678-1234-1234-1234-123456789014',
         userId: 'test-user-id',
         type: 'ACTION_GENERATION',
-        status: 'FAILED',
+        status: ProcessingStatus.FAILED,
         targetId: 'subgoal-123',
         progress: 50,
         result: null,
@@ -154,7 +157,7 @@ describe('StatusCheckHandler - ユニットテスト', () => {
 
       mockGetProcessingState.mockResolvedValue(mockProcessingState);
 
-      const res = await app.request('/api/ai/async/status/process-789', {
+      const res = await app.request('/api/ai/async/status/12345678-1234-1234-1234-123456789014', {
         method: 'GET',
         headers: {
           Authorization: 'Bearer valid-token',
@@ -165,10 +168,10 @@ describe('StatusCheckHandler - ユニットテスト', () => {
 
       const body = await res.json();
       expect(body.success).toBe(true);
-      expect(body.data.processId).toBe('process-789');
+      expect(body.data.processId).toBe('12345678-1234-1234-1234-123456789014');
       expect(body.data.status).toBe('FAILED');
       expect(body.data.progress).toBe(50);
-      expect(body.data.error).toEqual(mockError);
+      expect(body.error).toEqual(mockError);
       expect(body.data.completedAt).toBe('2025-10-10T10:03:00.000Z');
     });
 
@@ -180,7 +183,7 @@ describe('StatusCheckHandler - ユニットテスト', () => {
       };
 
       const mockProcessingState = {
-        id: 'process-timeout',
+        id: '12345678-1234-1234-1234-123456789015',
         userId: 'test-user-id',
         type: ProcessingType.TASK_GENERATION,
         status: ProcessingStatus.TIMEOUT,
@@ -196,7 +199,7 @@ describe('StatusCheckHandler - ユニットテスト', () => {
 
       mockGetProcessingState.mockResolvedValue(mockProcessingState);
 
-      const res = await app.request('/api/ai/async/status/process-timeout', {
+      const res = await app.request('/api/ai/async/status/12345678-1234-1234-1234-123456789015', {
         method: 'GET',
         headers: {
           Authorization: 'Bearer valid-token',
@@ -208,12 +211,12 @@ describe('StatusCheckHandler - ユニットテスト', () => {
       const body = await res.json();
       expect(body.success).toBe(true);
       expect(body.data.status).toBe('TIMEOUT');
-      expect(body.data.error).toEqual(mockError);
+      expect(body.error).toEqual(mockError);
     });
 
     it('PENDING状態の処理を取得できる', async () => {
       const mockProcessingState = {
-        id: 'process-pending',
+        id: '12345678-1234-1234-1234-123456789016',
         userId: 'test-user-id',
         type: ProcessingType.SUBGOAL_GENERATION,
         status: ProcessingStatus.PENDING,
@@ -229,7 +232,7 @@ describe('StatusCheckHandler - ユニットテスト', () => {
 
       mockGetProcessingState.mockResolvedValue(mockProcessingState);
 
-      const res = await app.request('/api/ai/async/status/process-pending', {
+      const res = await app.request('/api/ai/async/status/12345678-1234-1234-1234-123456789016', {
         method: 'GET',
         headers: {
           Authorization: 'Bearer valid-token',

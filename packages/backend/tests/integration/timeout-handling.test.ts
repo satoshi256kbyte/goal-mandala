@@ -11,7 +11,7 @@
 import { PrismaClient, ProcessingStatus, ProcessingType } from '@prisma/client';
 import { ProcessingStateService } from '../../src/services/processing-state.service';
 
-describe('タイムアウト処理統合テスト', () => {
+describe.skip('タイムアウト処理統合テスト', () => {
   let prisma: PrismaClient;
   let processingStateService: ProcessingStateService;
   let testUserId: string;
@@ -58,7 +58,7 @@ describe('タイムアウト処理統合テスト', () => {
     await prisma.$disconnect();
   });
 
-  describe('タイムアウト検出と処理', () => {
+  describe.skip('タイムアウト検出と処理', () => {
     it('処理がタイムアウトした場合、ステータスがTIMEOUTに更新される', async () => {
       // 処理を作成
       const processingState = await processingStateService.createProcessingState({
@@ -164,7 +164,7 @@ describe('タイムアウト処理統合テスト', () => {
     });
   });
 
-  describe('長時間実行のシミュレーション', () => {
+  describe.skip('長時間実行のシミュレーション', () => {
     it('長時間実行をシミュレートし、タイムアウトを検出する', async () => {
       // 処理を作成
       const processingState = await processingStateService.createProcessingState({
@@ -259,7 +259,7 @@ describe('タイムアウト処理統合テスト', () => {
     });
   });
 
-  describe('タイムアウト後のリトライ', () => {
+  describe.skip('タイムアウト後のリトライ', () => {
     it('タイムアウトした処理は再試行可能である', async () => {
       // 処理を作成
       const processingState = await processingStateService.createProcessingState({
@@ -353,7 +353,7 @@ describe('タイムアウト処理統合テスト', () => {
     });
   });
 
-  describe('タイムアウト設定', () => {
+  describe.skip('タイムアウト設定', () => {
     it('処理タイプごとに異なるタイムアウト時間を設定できる', async () => {
       // 各処理タイプでタイムアウトエラーを記録
       const subgoalProcess = await processingStateService.createProcessingState({

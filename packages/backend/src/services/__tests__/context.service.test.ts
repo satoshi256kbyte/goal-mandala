@@ -672,6 +672,17 @@ describe('ContextService', () => {
             progress: 0,
             createdAt: new Date(),
             updatedAt: new Date(),
+            user: {
+              id: testUserId,
+              email: 'test@example.com',
+              name: 'テストユーザー',
+              industry: 'TECHNOLOGY',
+              companySize: 'MEDIUM',
+              jobType: 'フロントエンドエンジニア',
+              position: 'シニアエンジニア',
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            },
           },
         },
       };
@@ -724,16 +735,18 @@ describe('ContextService', () => {
         include: {
           subGoal: {
             include: {
-              goal: true,
+              goal: {
+                include: {
+                  user: {
+                    select: {
+                      industry: true,
+                      jobType: true,
+                    },
+                  },
+                },
+              },
             },
           },
-        },
-      });
-      expect(prisma.user.findUnique).toHaveBeenCalledWith({
-        where: { id: testUserId },
-        select: {
-          industry: true,
-          jobType: true,
         },
       });
     });
