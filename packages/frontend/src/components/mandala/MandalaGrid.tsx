@@ -47,25 +47,27 @@ const MandalaGrid: React.FC<MandalaGridProps> = ({
 
   return (
     <div className="mandala-grid" role="grid" aria-label="マンダラチャート">
-      {gridData.cells.map((row, rowIndex) =>
-        row.map((cellData, colIndex) => (
-          <div
-            key={`${rowIndex}-${colIndex}`}
-            onDragOver={handleDragOver}
-            onDrop={e => handleDrop(e, { row: rowIndex, col: colIndex })}
-          >
-            <MandalaCell
-              cellData={cellData}
-              position={{ row: rowIndex, col: colIndex }}
-              editable={editable}
-              onClick={onCellClick}
-              onEdit={onCellEdit}
-              onDragStart={handleDragStart}
-              onDragEnd={handleDragEnd}
-            />
-          </div>
-        ))
-      )}
+      {gridData.cells.map((row, rowIndex) => (
+        <div key={rowIndex} className="mandala-row" role="row">
+          {row.map((cellData, colIndex) => (
+            <div
+              key={`${rowIndex}-${colIndex}`}
+              onDragOver={handleDragOver}
+              onDrop={e => handleDrop(e, { row: rowIndex, col: colIndex })}
+            >
+              <MandalaCell
+                cellData={cellData}
+                position={{ row: rowIndex, col: colIndex }}
+                editable={editable}
+                onClick={onCellClick}
+                onEdit={onCellEdit}
+                onDragStart={handleDragStart}
+                onDragEnd={handleDragEnd}
+              />
+            </div>
+          ))}
+        </div>
+      ))}
     </div>
   );
 };

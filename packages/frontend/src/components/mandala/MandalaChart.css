@@ -26,15 +26,24 @@
 
 /* Grid Layout */
 .mandala-grid {
-  display: grid;
-  grid-template-columns: repeat(9, 1fr);
-  grid-template-rows: repeat(9, 1fr);
+  display: flex;
+  flex-direction: column;
   gap: 2px;
   aspect-ratio: 1;
   max-width: 100%;
   background-color: #e0e0e0;
   border-radius: 8px;
   padding: 4px;
+}
+
+.mandala-row {
+  display: flex;
+  flex: 1;
+  gap: 2px;
+}
+
+.mandala-row > div {
+  flex: 1;
 }
 
 /* Cell Styles */

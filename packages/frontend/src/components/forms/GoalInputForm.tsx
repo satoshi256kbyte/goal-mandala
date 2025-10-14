@@ -332,7 +332,8 @@ export const GoalInputForm: React.FC<GoalInputFormProps> = ({
         >
           <div className="space-y-2">
             <TextInput
-              {...register('title')}
+              name="title"
+              register={register}
               placeholder="例：プログラミングスキルを向上させる"
               maxLength={FIELD_LIMITS.TITLE_MAX}
               disabled={disabled}
@@ -354,7 +355,8 @@ export const GoalInputForm: React.FC<GoalInputFormProps> = ({
         >
           <div className="space-y-2">
             <TextArea
-              {...register('description')}
+              name="description"
+              register={register}
               placeholder="例：Webアプリケーション開発に必要なフロントエンド技術（React、TypeScript）とバックエンド技術（Node.js、データベース）を習得し、個人プロジェクトを完成させる"
               rows={4}
               maxLength={FIELD_LIMITS.DESCRIPTION_MAX}
@@ -376,7 +378,8 @@ export const GoalInputForm: React.FC<GoalInputFormProps> = ({
           helpText="目標を達成したい日付を選択してください（今日から1年以内）"
         >
           <DatePicker
-            {...register('deadline')}
+            name="deadline"
+            register={register}
             minDate={new Date(dateUtils.getMinDate())}
             maxDate={new Date(dateUtils.getMaxDate())}
             disabled={disabled}
@@ -393,7 +396,8 @@ export const GoalInputForm: React.FC<GoalInputFormProps> = ({
         >
           <div className="space-y-2">
             <TextArea
-              {...register('background')}
+              name="background"
+              register={register}
               placeholder="例：現在の職場でWebアプリケーション開発の需要が高まっており、キャリアアップのために技術力を向上させたい。基本的なHTML/CSSは理解しているが、モダンな開発手法については学習が必要"
               rows={3}
               maxLength={FIELD_LIMITS.BACKGROUND_MAX}
@@ -415,7 +419,8 @@ export const GoalInputForm: React.FC<GoalInputFormProps> = ({
         >
           <div className="space-y-2">
             <TextArea
-              {...register('constraints')}
+              name="constraints"
+              register={register}
               placeholder="例：平日は仕事があるため学習時間は限られる。予算の制約により有料の学習サービスは月1万円まで"
               rows={3}
               maxLength={FIELD_LIMITS.CONSTRAINTS_MAX}

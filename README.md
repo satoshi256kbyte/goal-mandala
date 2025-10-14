@@ -81,11 +81,21 @@ pnpm test:e2e
 ```
 
 **テスト実行のベストプラクティス**:
-高速で安定したテスト実行のため、ユニットテストを中心に実行してください：
+高速で安定したテスト実行のため、タイムアウト付きテストを使用してください：
 ```bash
-cd packages/backend
-pnpm test
+# 全パッケージのテスト（推奨）
+pnpm run test:timeout
+
+# 個別パッケージのテスト
+pnpm run test:timeout:backend
+pnpm run test:timeout:frontend
+pnpm run test:timeout:shared
+
+# 安全モード（長めのタイムアウト）
+pnpm run test:safe
 ```
+
+詳細は [テスト実行ルール](./docs/test-execution-rules.md) を参照してください。
 
 ## クイックスタート
 

@@ -4,10 +4,10 @@ export default defineConfig({
   testDir: './e2e',
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
-  retries: 0,
-  workers: 1,
-  reporter: 'line',
-  timeout: 15000,
+  retries: process.env.CI ? 1 : 0,
+  workers: process.env.CI ? 2 : 1,
+  reporter: process.env.CI ? 'github' : 'line',
+  timeout: 30000, // Increased timeout to 30 seconds
   use: {
     baseURL: 'http://localhost:3000',
     trace: 'off',
@@ -27,20 +27,25 @@ export default defineConfig({
         },
       },
     },
-    {
-      name: 'firefox',
-      use: {
-        ...devices['Desktop Firefox'],
-        headless: true,
-      },
-    },
-    {
-      name: 'webkit',
-      use: {
-        ...devices['Desktop Safari'],
-        headless: true,
-      },
-    },
+    // Enable other browsers only in CI or when explicitly requested
+    ...(process.env.CI || process.env.ALL_BROWSERS
+      ? [
+          {
+            name: 'firefox',
+            use: {
+              ...devices['Desktop Firefox'],
+              headless: true,
+            },
+          },
+          {
+            name: 'webkit',
+            use: {
+              ...devices['Desktop Safari'],
+              headless: true,
+            },
+          },
+        ]
+      : []),
   ],
 
   webServer: {

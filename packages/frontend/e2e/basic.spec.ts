@@ -1,21 +1,9 @@
 import { test, expect } from '@playwright/test';
+import { setupTestEnvironment } from './test-setup';
 
 test.describe('Basic E2E Tests', () => {
   test.beforeEach(async ({ page }) => {
-    // Set up mock authentication
-    await page.addInitScript(() => {
-      localStorage.setItem('mock_auth_enabled', 'true');
-      localStorage.setItem(
-        'mock_user',
-        JSON.stringify({
-          id: 'test-user-id',
-          email: 'test@example.com',
-          name: 'Test User',
-          profileComplete: true,
-        })
-      );
-      localStorage.setItem('mock_token', 'mock-jwt-token');
-    });
+    await setupTestEnvironment(page);
   });
 
   test('should load the application', async ({ page }) => {

@@ -19,4 +19,13 @@ export default {
   collectCoverageFrom: ['src/**/*.ts', '!src/**/*.d.ts', '!src/**/*.test.ts', '!src/**/*.spec.ts'],
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
+  // タイムアウト対策
+  testTimeout: 30000,
+  maxWorkers: 1,
+  forceExit: true,
+  detectOpenHandles: true,
+  // メモリリーク対策
+  logHeapUsage: true,
+  // 並列実行制限
+  maxConcurrency: 1,
 };

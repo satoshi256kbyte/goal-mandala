@@ -294,7 +294,7 @@ export const GoalFormProvider: React.FC<GoalFormProviderProps> = ({
     if (!state.isInitialized) {
       dispatch({ type: 'INITIALIZE_FORM', payload: { initialData } });
     }
-  }, [initialData, state.isInitialized]);
+  }, [state.isInitialized]); // initialDataを依存配列から削除
 
   // アクション関数
   const initializeForm = useCallback((initialData?: Partial<GoalFormData>) => {

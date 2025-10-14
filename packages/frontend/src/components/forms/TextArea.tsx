@@ -105,9 +105,11 @@ export const TextArea: React.FC<TextAreaProps> = ({
         placeholder={placeholder}
         rows={rows}
         className={getTextAreaClassName()}
-        {...register(name, {
-          onChange: handleChange,
-        })}
+        {...(register
+          ? register(name, {
+              onChange: handleChange,
+            })
+          : { name, onChange: handleChange })}
       />
 
       {/* 文字数カウンター */}

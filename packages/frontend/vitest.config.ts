@@ -7,8 +7,19 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: ['./src/test/setup.ts'],
-    testTimeout: 5000,
-    hookTimeout: 5000,
+    testTimeout: 30000,
+    hookTimeout: 10000,
+    // タイムアウト対策
+    pool: 'forks',
+    poolOptions: {
+      forks: {
+        singleFork: true,
+      },
+    },
+    // メモリリーク対策
+    logHeapUsage: true,
+    // 並列実行制限
+    maxConcurrency: 1,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],

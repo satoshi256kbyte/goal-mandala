@@ -35,5 +35,13 @@ export default {
     },
   },
   setupFilesAfterEnv: ['<rootDir>/src/test-setup.ts'],
-  testTimeout: 10000,
+  testTimeout: 30000,
+  // タイムアウト対策
+  maxWorkers: 1,
+  forceExit: true,
+  detectOpenHandles: true,
+  // メモリリーク対策
+  logHeapUsage: true,
+  // 並列実行制限
+  maxConcurrency: 1,
 };

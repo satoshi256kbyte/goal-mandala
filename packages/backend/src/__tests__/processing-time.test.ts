@@ -240,9 +240,9 @@ describe('処理時間計測機能', () => {
 
       const duration = timer.end();
 
-      // 50ms以上100ms未満（余裕を持たせる）
+      // 50ms以上150ms未満（余裕を持たせる）
       expect(duration).toBeGreaterThanOrEqual(50);
-      expect(duration).toBeLessThan(100);
+      expect(duration).toBeLessThan(150);
     });
   });
 

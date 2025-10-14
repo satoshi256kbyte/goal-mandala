@@ -103,9 +103,11 @@ export const TextInput: React.FC<TextInputProps> = ({
         type={type}
         placeholder={placeholder}
         className={getInputClassName()}
-        {...register(name, {
-          onChange: handleChange,
-        })}
+        {...(register
+          ? register(name, {
+              onChange: handleChange,
+            })
+          : { name, onChange: handleChange })}
       />
 
       {/* 文字数カウンター */}

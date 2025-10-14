@@ -308,7 +308,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
       />
 
       {/* 隠しinput（React Hook Form用） */}
-      <input type="hidden" {...register(name)} value={inputValue} />
+      <input type="hidden" {...(register ? register(name) : { name })} value={inputValue} />
 
       {/* 日付表示ヘルパー */}
       {selectedDate && (
