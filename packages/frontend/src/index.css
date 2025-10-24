@@ -1,6 +1,9 @@
 /* アクセシビリティスタイルのインポート */
 @import './styles/accessibility.css';
 
+/* プロフィール入力画面のレスポンシブスタイルのインポート */
+@import './styles/profile-responsive.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

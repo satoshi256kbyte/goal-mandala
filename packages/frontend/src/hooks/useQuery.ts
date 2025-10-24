@@ -9,11 +9,10 @@ import {
   UseQueryOptions,
   UseMutationOptions,
 } from '@tanstack/react-query';
-// import { useMemo } from 'react'; // 未使用のため一時的にコメントアウト
+import { useCallback } from 'react';
 import { SubGoal, Action } from '../types/mandala';
 import { subGoalAPI } from '../services/subgoal-api';
 import { actionAPI } from '../services/action-api';
-import { useStableCallback } from '../utils/performance';
 
 /**
  * クエリキーの定数定義
@@ -318,21 +317,21 @@ export const useBulkUpdateActions = (
 export const useBackgroundRefresh = () => {
   const queryClient = useQueryClient();
 
-  const refreshSubGoals = useStableCallback(
+  const refreshSubGoals = useCallback(
     (goalId: string) => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.subGoals(goalId) });
     },
     [queryClient]
   );
 
-  const refreshActions = useStableCallback(
+  const refreshActions = useCallback(
     (goalId: string) => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.actions(goalId) });
     },
     [queryClient]
   );
 
-  const refreshAll = useStableCallback(() => {
+  const refreshAll = useCallback(() => {
     queryClient.invalidateQueries();
   }, [queryClient]);
 
@@ -350,7 +349,7 @@ export const useCacheStrategy = () => {
   const queryClient = useQueryClient();
 
   // プリフェッチ機能
-  const prefetchSubGoals = useStableCallback(
+  const prefetchSubGoals = useCallback(
     async (goalId: string) => {
       await queryClient.prefetchQuery({
         queryKey: QUERY_KEYS.subGoals(goalId),
@@ -361,7 +360,7 @@ export const useCacheStrategy = () => {
     [queryClient]
   );
 
-  const prefetchActions = useStableCallback(
+  const prefetchActions = useCallback(
     async (goalId: string) => {
       await queryClient.prefetchQuery({
         queryKey: QUERY_KEYS.actions(goalId),
@@ -373,7 +372,7 @@ export const useCacheStrategy = () => {
   );
 
   // キャッシュクリア機能
-  const clearCache = useStableCallback(
+  const clearCache = useCallback(
     (pattern?: string) => {
       if (pattern) {
         queryClient.removeQueries({ queryKey: [pattern] });
@@ -385,7 +384,7 @@ export const useCacheStrategy = () => {
   );
 
   // キャッシュサイズ監視
-  const getCacheInfo = useStableCallback(() => {
+  const getCacheInfo = useCallback(() => {
     const cache = queryClient.getQueryCache();
     return {
       queryCount: cache.getAll().length,
@@ -412,7 +411,7 @@ export const useOfflineSupport = () => {
   const queryClient = useQueryClient();
 
   // オフライン時のデータ取得
-  const getOfflineData = useStableCallback(
+  const getOfflineData = useCallback(
     <T>(queryKey: readonly unknown[]): T | undefined => {
       return queryClient.getQueryData<T>(queryKey);
     },
@@ -420,7 +419,7 @@ export const useOfflineSupport = () => {
   );
 
   // オンライン復帰時の同期
-  const syncOnReconnect = useStableCallback(() => {
+  const syncOnReconnect = useCallback(() => {
     queryClient.resumePausedMutations();
     queryClient.invalidateQueries();
   }, [queryClient]);
@@ -437,7 +436,7 @@ export const useOfflineSupport = () => {
 export const useQueryPerformance = () => {
   const queryClient = useQueryClient();
 
-  const getPerformanceMetrics = useStableCallback(() => {
+  const getPerformanceMetrics = useCallback(() => {
     const cache = queryClient.getQueryCache();
     const queries = cache.getAll();
 

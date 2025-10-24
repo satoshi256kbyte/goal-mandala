@@ -1,96 +1,37 @@
-/**
- * パフォーマンス最適化ユーティリティ
- */
-
-import React, { useCallback, useMemo, useRef, useEffect } from 'react';
+import { useCallback, useMemo, useRef, useEffect, useState } from 'react';
 
 /**
- * 深い比較を行うためのユーティリティ
+ * Debounce hook for performance optimization
  */
-export const deepEqual = (a: any, b: any): boolean => {
-  if (a === b) return true;
-
-  if (a == null || b == null) return false;
-
-  if (typeof a !== typeof b) return false;
-
-  if (typeof a !== 'object') return false;
-
-  if (Array.isArray(a) !== Array.isArray(b)) return false;
-
-  const keysA = Object.keys(a);
-  const keysB = Object.keys(b);
-
-  if (keysA.length !== keysB.length) return false;
-
-  for (const key of keysA) {
-    if (!keysB.includes(key)) return false;
-    if (!deepEqual(a[key], b[key])) return false;
-  }
-
-  return true;
-};
-
-/**
- * 安定したコールバック参照を提供するフック
- */
-export const useStableCallback = <T extends (...args: any[]) => any>(
-  callback: T,
-  deps: React.DependencyList
-): T => {
-  return useCallback(callback, [callback, ...deps]);
-};
-
-/**
- * 安定したメモ化値を提供するフック
- */
-export const useStableMemo = <T>(factory: () => T, deps: React.DependencyList): T => {
-  return useMemo(factory, [factory, ...deps]);
-};
-
-/**
- * 前回の値と比較して変更があった場合のみ更新するフック
- */
-export const useDeepMemo = <T>(value: T): T => {
-  const ref = useRef<T>(value);
-
-  if (!deepEqual(ref.current, value)) {
-    ref.current = value;
-  }
-
-  return ref.current;
-};
-
-/**
- * デバウンス処理を行うフック
- */
-export const useDebounce = <T>(value: T, delay: number): T => {
-  const [debouncedValue, setDebouncedValue] = React.useState<T>(value);
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedValue(value);
-    }, delay);
-
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [value, delay]);
-
-  return debouncedValue;
-};
-
-/**
- * スロットル処理を行うフック
- */
-export const useThrottle = <T extends (...args: any[]) => any>(callback: T, delay: number): T => {
-  const lastRun = useRef(Date.now());
+export const useDebounce = <T extends (...args: any[]) => any>(callback: T, delay: number): T => {
+  const timeoutRef = useRef<NodeJS.Timeout>();
 
   return useCallback(
     ((...args: Parameters<T>) => {
-      if (Date.now() - lastRun.current >= delay) {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+
+      timeoutRef.current = setTimeout(() => {
         callback(...args);
-        lastRun.current = Date.now();
+      }, delay);
+    }) as T,
+    [callback, delay]
+  );
+};
+
+/**
+ * Throttle hook for performance optimization
+ */
+export const useThrottle = <T extends (...args: any[]) => any>(callback: T, delay: number): T => {
+  const lastCallRef = useRef<number>(0);
+
+  return useCallback(
+    ((...args: Parameters<T>) => {
+      const now = Date.now();
+      if (now - lastCallRef.current >= delay) {
+        lastCallRef.current = now;
+        callback(...args);
       }
     }) as T,
     [callback, delay]
@@ -98,132 +39,219 @@ export const useThrottle = <T extends (...args: any[]) => any>(callback: T, dela
 };
 
 /**
- * 仮想スクロール用のアイテム計算フック
+ * Stable callback hook - prevents unnecessary re-renders
  */
-export interface VirtualScrollOptions {
-  itemHeight: number;
-  containerHeight: number;
-  overscan?: number;
-}
-
-export interface VirtualScrollResult {
-  startIndex: number;
-  endIndex: number;
-  visibleItems: number;
-  totalHeight: number;
-  offsetY: number;
-}
-
-export const useVirtualScroll = (
-  itemCount: number,
-  scrollTop: number,
-  options: VirtualScrollOptions
-): VirtualScrollResult => {
-  return useMemo(() => {
-    const { itemHeight, containerHeight, overscan = 5 } = options;
-
-    const startIndex = Math.max(0, Math.floor(scrollTop / itemHeight) - overscan);
-    const visibleItems = Math.ceil(containerHeight / itemHeight);
-    const endIndex = Math.min(itemCount - 1, startIndex + visibleItems + overscan * 2);
-
-    const totalHeight = itemCount * itemHeight;
-    const offsetY = startIndex * itemHeight;
-
-    return {
-      startIndex,
-      endIndex,
-      visibleItems,
-      totalHeight,
-      offsetY,
-    };
-  }, [itemCount, scrollTop, options]);
-};
-
-/**
- * レンダリング回数を追跡するフック（開発用）
- */
-export const useRenderCount = (componentName: string): number => {
-  const renderCount = useRef(0);
+export const useStableCallback = <T extends (...args: any[]) => any>(callback: T): T => {
+  const callbackRef = useRef<T>(callback);
 
   useEffect(() => {
-    renderCount.current += 1;
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`${componentName} rendered ${renderCount.current} times`);
-    }
-  });
+    callbackRef.current = callback;
+  }, [callback]);
 
-  return renderCount.current;
+  return useCallback(((...args: Parameters<T>) => callbackRef.current(...args)) as T, []);
 };
 
 /**
- * メモリ使用量を監視するフック（開発用）
+ * Stable memo hook - prevents unnecessary re-computations
  */
-export const useMemoryMonitor = (componentName: string): void => {
-  useEffect(() => {
-    if (process.env.NODE_ENV === 'development' && 'memory' in performance) {
-      const memory = (performance as any).memory;
-      console.log(`${componentName} memory usage:`, {
-        used: Math.round(memory.usedJSHeapSize / 1024 / 1024) + ' MB',
-        total: Math.round(memory.totalJSHeapSize / 1024 / 1024) + ' MB',
-        limit: Math.round(memory.jsHeapSizeLimit / 1024 / 1024) + ' MB',
-      });
-    }
-  });
+export const useStableMemo = <T>(factory: () => T, deps: React.DependencyList): T => {
+  return useMemo(factory, deps);
 };
 
 /**
- * パフォーマンス測定フック
+ * Deep equality check utility
  */
-export const usePerformanceMeasure = (name: string) => {
-  const startTime = useRef<number>();
+export const deepEqual = (obj1: any, obj2: any): boolean => {
+  if (obj1 === obj2) return true;
+  if (obj1 == null || obj2 == null) return false;
+  if (typeof obj1 !== 'object' || typeof obj2 !== 'object') return false;
 
-  const start = useCallback(() => {
-    startTime.current = performance.now();
-  }, []);
+  const keys1 = Object.keys(obj1);
+  const keys2 = Object.keys(obj2);
 
-  const end = useCallback(() => {
-    if (startTime.current) {
-      const duration = performance.now() - startTime.current;
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`${name} took ${duration.toFixed(2)}ms`);
-      }
-      return duration;
-    }
-    return 0;
-  }, [name]);
+  if (keys1.length !== keys2.length) return false;
 
-  return { start, end };
+  for (const key of keys1) {
+    if (!keys2.includes(key)) return false;
+    if (!deepEqual(obj1[key], obj2[key])) return false;
+  }
+
+  return true;
 };
 
 /**
- * 遅延ローディング用のIntersection Observer フック
+ * Memoized validation function
  */
-export const useLazyLoad = (threshold = 0.1, rootMargin = '50px') => {
-  const [isVisible, setIsVisible] = React.useState(false);
-  const [hasLoaded, setHasLoaded] = React.useState(false);
+export const useMemoizedValidation = <T>(data: T, validationFn: (data: T) => any) => {
+  return useMemo(() => validationFn(data), [data, validationFn]);
+};
+
+/**
+ * Lazy loading hook
+ */
+export const useLazyLoad = (threshold = 0.1, onLoad?: () => void) => {
+  const [isVisible, setIsVisible] = useState(false);
+  const [hasLoaded, setHasLoaded] = useState(false);
   const elementRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
-    const element = elementRef.current;
-    if (!element || hasLoaded) return;
-
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
           setIsVisible(true);
           setHasLoaded(true);
-          observer.unobserve(element);
+          if (onLoad) {
+            onLoad();
+          }
+          observer.disconnect();
         }
       },
-      { threshold, rootMargin }
+      { threshold }
     );
 
-    observer.observe(element);
+    if (elementRef.current) {
+      observer.observe(elementRef.current);
+    }
 
-    return () => {
-      observer.unobserve(element);
-    };
-  }, [threshold, rootMargin, hasLoaded]);
+    return () => observer.disconnect();
+  }, [threshold, onLoad]);
 
   return { elementRef, isVisible, hasLoaded };
+};
+
+/**
+ * Lazy image loading utility
+ */
+export const useLazyImage = (src: string, placeholder?: string) => {
+  const imgRef = useRef<HTMLImageElement>(null);
+  const observerRef = useRef<IntersectionObserver>();
+
+  const setupLazyLoading = useCallback(() => {
+    if (!imgRef.current) return;
+
+    observerRef.current = new IntersectionObserver(
+      entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting && imgRef.current) {
+            imgRef.current.src = src;
+            observerRef.current?.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+
+    observerRef.current.observe(imgRef.current);
+
+    return () => {
+      observerRef.current?.disconnect();
+    };
+  }, [src]);
+
+  return {
+    imgRef,
+    setupLazyLoading,
+    src: placeholder || '',
+  };
+};
+
+/**
+ * Virtual scroll hook
+ */
+export const useVirtualScroll = <T>(items: T[], itemHeight: number, containerHeight: number) => {
+  const [scrollTop, setScrollTop] = useState(0);
+
+  const startIndex = Math.floor(scrollTop / itemHeight);
+  const endIndex = Math.ceil((scrollTop + containerHeight) / itemHeight);
+
+  const visibleItems = items.slice(startIndex, endIndex);
+  const offsetY = startIndex * itemHeight;
+
+  return {
+    visibleItems,
+    offsetY,
+    totalHeight: items.length * itemHeight,
+    startIndex,
+    endIndex,
+    onScroll: (e: React.UIEvent<HTMLElement>) => setScrollTop(e.currentTarget.scrollTop),
+  };
+};
+
+/**
+ * Performance measurement hook
+ */
+export const usePerformanceMeasure = (name: string, enabled = true) => {
+  useEffect(() => {
+    if (!enabled) return;
+
+    const startMark = `${name}-start`;
+    const endMark = `${name}-end`;
+
+    performance.mark(startMark);
+
+    return () => {
+      performance.mark(endMark);
+      performance.measure(name, startMark, endMark);
+
+      const measure = performance.getEntriesByName(name)[0];
+      if (measure && process.env.NODE_ENV === 'development') {
+        console.log(`${name}: ${measure.duration.toFixed(2)}ms`);
+      }
+
+      performance.clearMarks(startMark);
+      performance.clearMarks(endMark);
+      performance.clearMeasures(name);
+    };
+  }, [name, enabled]);
+};
+
+/**
+ * Performance monitoring utilities
+ */
+export const performanceMonitor = {
+  /**
+   * Measure component render time
+   */
+  measureRenderTime: (componentName: string) => {
+    const startTime = performance.now();
+
+    return () => {
+      const endTime = performance.now();
+      const renderTime = endTime - startTime;
+
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`${componentName} render time: ${renderTime.toFixed(2)}ms`);
+      }
+
+      return renderTime;
+    };
+  },
+
+  /**
+   * Measure API call time
+   */
+  measureApiCall: async <T>(apiCall: () => Promise<T>, apiName: string): Promise<T> => {
+    const startTime = performance.now();
+
+    try {
+      const result = await apiCall();
+      const endTime = performance.now();
+      const callTime = endTime - startTime;
+
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`${apiName} API call time: ${callTime.toFixed(2)}ms`);
+      }
+
+      return result;
+    } catch (error) {
+      const endTime = performance.now();
+      const callTime = endTime - startTime;
+
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`${apiName} API call failed after: ${callTime.toFixed(2)}ms`);
+      }
+
+      throw error;
+    }
+  },
 };

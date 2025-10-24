@@ -88,22 +88,16 @@ export const VirtualScroll = <T extends VirtualScrollItem>({
   ]);
 
   // スクロールハンドラー
-  const handleScroll = useStableCallback(
-    (event: React.UIEvent<HTMLDivElement>) => {
-      const newScrollTop = event.currentTarget.scrollTop;
-      setScrollTop(newScrollTop);
-      onScroll?.(newScrollTop);
-    },
-    [onScroll]
-  );
+  const handleScroll = useStableCallback((event: React.UIEvent<HTMLDivElement>) => {
+    const newScrollTop = event.currentTarget.scrollTop;
+    setScrollTop(newScrollTop);
+    onScroll?.(newScrollTop);
+  });
 
   // アイテムクリックハンドラー
-  const handleItemClick = useStableCallback(
-    (item: T, index: number) => {
-      onItemClick?.(item, virtualScrollResult.startIndex + index);
-    },
-    [onItemClick, virtualScrollResult.startIndex]
-  );
+  const handleItemClick = useStableCallback((item: T, index: number) => {
+    onItemClick?.(item, virtualScrollResult.startIndex + index);
+  });
 
   // キーボードナビゲーション
   const handleKeyDown = useCallback(
@@ -351,23 +345,17 @@ export const VirtualGrid = <T extends VirtualScrollItem>({
   }, [visibleItems, itemsPerRow]);
 
   // スクロールハンドラー
-  const handleScroll = useStableCallback(
-    (event: React.UIEvent<HTMLDivElement>) => {
-      const newScrollTop = event.currentTarget.scrollTop;
-      setScrollTop(newScrollTop);
-      onScroll?.(newScrollTop);
-    },
-    [onScroll]
-  );
+  const handleScroll = useStableCallback((event: React.UIEvent<HTMLDivElement>) => {
+    const newScrollTop = event.currentTarget.scrollTop;
+    setScrollTop(newScrollTop);
+    onScroll?.(newScrollTop);
+  });
 
   // アイテムクリックハンドラー
-  const handleItemClick = useStableCallback(
-    (item: T, rowIndex: number, itemIndex: number) => {
-      const globalIndex = (virtualScrollResult.startIndex + rowIndex) * itemsPerRow + itemIndex;
-      onItemClick?.(item, globalIndex);
-    },
-    [onItemClick, virtualScrollResult.startIndex, itemsPerRow]
-  );
+  const handleItemClick = useStableCallback((item: T, rowIndex: number, itemIndex: number) => {
+    const globalIndex = (virtualScrollResult.startIndex + rowIndex) * itemsPerRow + itemIndex;
+    onItemClick?.(item, globalIndex);
+  });
 
   // ローディング、エラー、空の状態は VirtualScroll と同じ
   if (loading) {

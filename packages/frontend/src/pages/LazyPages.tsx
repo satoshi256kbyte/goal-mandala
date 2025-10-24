@@ -62,6 +62,9 @@ export const LazyProfilePage = lazy(() =>
   })
 );
 
+// プロフィール設定ページ（初回ログイン時）
+export const LazyProfileSetupPage = lazy(() => import('./ProfileSetupPage'));
+
 // 404ページ
 export const LazyNotFoundPage = lazy(() =>
   Promise.resolve({

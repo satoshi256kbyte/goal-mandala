@@ -1,5 +1,5 @@
 // カスタムフックのエクスポート
-export { default as useAuth } from './useAuth';
+export { useAuth, AuthContext, useAuthContext } from './useAuth';
 export { default as useGoal } from './useGoal';
 export { useErrorHandler } from './useErrorHandler';
 export { useNetworkStatus } from './useNetworkStatus';

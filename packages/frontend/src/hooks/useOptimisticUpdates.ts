@@ -77,8 +77,7 @@ export const useOptimisticUpdates = () => {
       rollbackFunctions.current.set(`subgoal-${id}`, rollback);
 
       return { previousData, rollback };
-    },
-    [queryClient]
+    }
   );
 
   /**
@@ -133,8 +132,7 @@ export const useOptimisticUpdates = () => {
       rollbackFunctions.current.set(`action-${id}`, rollback);
 
       return { previousData, rollback };
-    },
-    [queryClient]
+    }
   );
 
   /**
@@ -182,8 +180,7 @@ export const useOptimisticUpdates = () => {
       rollbackFunctions.current.set(`subgoals-bulk-${goalId}`, rollback);
 
       return { previousData, rollback };
-    },
-    [queryClient]
+    }
   );
 
   /**
@@ -231,8 +228,7 @@ export const useOptimisticUpdates = () => {
       rollbackFunctions.current.set(`actions-bulk-${goalId}`, rollback);
 
       return { previousData, rollback };
-    },
-    [queryClient]
+    }
   );
 
   /**
@@ -262,8 +258,7 @@ export const useOptimisticUpdates = () => {
       rollbackFunctions.current.set(`subgoals-reorder-${goalId}`, rollback);
 
       return { previousData, rollback };
-    },
-    [queryClient]
+    }
   );
 
   /**
@@ -293,8 +288,7 @@ export const useOptimisticUpdates = () => {
       rollbackFunctions.current.set(`actions-reorder-${subGoalId}`, rollback);
 
       return { previousData, rollback };
-    },
-    [queryClient]
+    }
   );
 
   /**
@@ -306,7 +300,7 @@ export const useOptimisticUpdates = () => {
       rollback();
       rollbackFunctions.current.delete(key);
     }
-  }, []);
+  });
 
   /**
    * すべてのロールバック関数を実行
@@ -316,21 +310,21 @@ export const useOptimisticUpdates = () => {
       rollback();
     });
     rollbackFunctions.current.clear();
-  }, []);
+  });
 
   /**
    * 楽観的更新の確定（ロールバック関数を削除）
    */
   const confirmOptimisticUpdate = useStableCallback((key: string) => {
     rollbackFunctions.current.delete(key);
-  }, []);
+  });
 
   /**
    * すべての楽観的更新を確定
    */
   const confirmAllOptimisticUpdates = useStableCallback(() => {
     rollbackFunctions.current.clear();
-  }, []);
+  });
 
   return {
     optimisticUpdateSubGoal,

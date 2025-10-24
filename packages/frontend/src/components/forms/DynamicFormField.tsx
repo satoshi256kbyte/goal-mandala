@@ -120,62 +120,59 @@ const DynamicFormFieldComponent: React.FC<DynamicFormFieldProps> = ({
   });
 
   // バリデーション実行（最適化版）
-  const validateField = useStableCallback(
-    (inputValue: unknown): string | undefined => {
-      if (!field.validation) return undefined;
+  const validateField = useStableCallback((inputValue: unknown): string | undefined => {
+    if (!field.validation) return undefined;
 
-      for (const rule of field.validation) {
-        switch (rule.type) {
-          case 'required':
-            if (!inputValue || (typeof inputValue === 'string' && inputValue.trim() === '')) {
+    for (const rule of field.validation) {
+      switch (rule.type) {
+        case 'required':
+          if (!inputValue || (typeof inputValue === 'string' && inputValue.trim() === '')) {
+            return rule.message;
+          }
+          break;
+
+        case 'minLength':
+          if (
+            typeof inputValue === 'string' &&
+            typeof rule.value === 'number' &&
+            inputValue.length < rule.value
+          ) {
+            return rule.message;
+          }
+          break;
+
+        case 'maxLength':
+          if (
+            typeof inputValue === 'string' &&
+            typeof rule.value === 'number' &&
+            inputValue.length > rule.value
+          ) {
+            return rule.message;
+          }
+          break;
+
+        case 'pattern':
+          if (
+            typeof inputValue === 'string' &&
+            (typeof rule.value === 'string' || rule.value instanceof RegExp)
+          ) {
+            const regex = rule.value instanceof RegExp ? rule.value : new RegExp(rule.value);
+            if (!regex.test(inputValue)) {
               return rule.message;
             }
-            break;
+          }
+          break;
 
-          case 'minLength':
-            if (
-              typeof inputValue === 'string' &&
-              typeof rule.value === 'number' &&
-              inputValue.length < rule.value
-            ) {
-              return rule.message;
-            }
-            break;
-
-          case 'maxLength':
-            if (
-              typeof inputValue === 'string' &&
-              typeof rule.value === 'number' &&
-              inputValue.length > rule.value
-            ) {
-              return rule.message;
-            }
-            break;
-
-          case 'pattern':
-            if (
-              typeof inputValue === 'string' &&
-              (typeof rule.value === 'string' || rule.value instanceof RegExp)
-            ) {
-              const regex = rule.value instanceof RegExp ? rule.value : new RegExp(rule.value);
-              if (!regex.test(inputValue)) {
-                return rule.message;
-              }
-            }
-            break;
-
-          case 'custom':
-            if (rule.validator && !rule.validator(inputValue)) {
-              return rule.message;
-            }
-            break;
-        }
+        case 'custom':
+          if (rule.validator && !rule.validator(inputValue)) {
+            return rule.message;
+          }
+          break;
       }
+    }
 
-      return undefined;
-    },
-    [field.validation]
-  );
+    return undefined;
+  });
 
   // リアルタイムバリデーション（最適化版）
   const realtimeError = useStableMemo(() => {
@@ -190,60 +187,54 @@ const DynamicFormFieldComponent: React.FC<DynamicFormFieldProps> = ({
   const handleFocus = useStableCallback(() => {
     setIsFocused(true);
     onFocus?.();
-  }, [onFocus]);
+  });
 
   const handleBlur = useStableCallback(() => {
     setIsFocused(false);
     onBlur?.();
-  }, [onBlur]);
+  });
 
   // 入力変更ハンドラー（最適化版）
-  const handleChange = useStableCallback(
-    (newValue: unknown) => {
-      // 文字数制限チェック
-      if (field.maxLength && typeof newValue === 'string' && newValue.length > field.maxLength) {
-        const truncatedValue = newValue.slice(0, field.maxLength);
-        onChange(truncatedValue);
-        updateLength(truncatedValue);
+  const handleChange = useStableCallback((newValue: unknown) => {
+    // 文字数制限チェック
+    if (field.maxLength && typeof newValue === 'string' && newValue.length > field.maxLength) {
+      const truncatedValue = newValue.slice(0, field.maxLength);
+      onChange(truncatedValue);
+      updateLength(truncatedValue);
 
-        // 文字数制限に達したことをスクリーンリーダーに通知
-        announce(`文字数制限に達しました。最大${field.maxLength}文字です。`, 'assertive');
-      } else {
-        onChange(newValue);
-        updateLength(String(newValue));
+      // 文字数制限に達したことをスクリーンリーダーに通知
+      announce(`文字数制限に達しました。最大${field.maxLength}文字です。`, 'assertive');
+    } else {
+      onChange(newValue);
+      updateLength(String(newValue));
 
-        // 文字数の変化をスクリーンリーダーに通知（警告レベルの場合のみ）
-        if (field.maxLength && typeof newValue === 'string' && isWarning) {
-          const remaining = field.maxLength - newValue.length;
-          if (remaining <= 10 && remaining > 0) {
-            announce(`残り${remaining}文字です`, 'polite');
-          }
+      // 文字数の変化をスクリーンリーダーに通知（警告レベルの場合のみ）
+      if (field.maxLength && typeof newValue === 'string' && isWarning) {
+        const remaining = field.maxLength - newValue.length;
+        if (remaining <= 10 && remaining > 0) {
+          announce(`残り${remaining}文字です`, 'polite');
         }
       }
-    },
-    [field.maxLength, onChange, updateLength, announce, isWarning]
-  );
+    }
+  });
 
   // キーボードイベントハンドラー（最適化版）
-  const handleKeyDown = useStableCallback(
-    (event: React.KeyboardEvent) => {
-      // Enterキーで保存処理（textareaの場合は除く）
-      if (event.key === 'Enter' && field.type !== 'textarea') {
-        event.preventDefault();
-        // 親コンポーネントに保存イベントを通知
-        const saveEvent = new CustomEvent('dynamicFormSave', {
-          detail: { fieldName: field.name, value },
-        });
-        document.dispatchEvent(saveEvent);
-      }
+  const handleKeyDown = useStableCallback((event: React.KeyboardEvent) => {
+    // Enterキーで保存処理（textareaの場合は除く）
+    if (event.key === 'Enter' && field.type !== 'textarea') {
+      event.preventDefault();
+      // 親コンポーネントに保存イベントを通知
+      const saveEvent = new CustomEvent('dynamicFormSave', {
+        detail: { fieldName: field.name, value },
+      });
+      document.dispatchEvent(saveEvent);
+    }
 
-      // Tabキーでフォーカス移動（デフォルト動作を維持）
-      if (event.key === 'Tab') {
-        // デフォルトのTab動作を維持
-      }
-    },
-    [field.name, field.type, value]
-  );
+    // Tabキーでフォーカス移動（デフォルト動作を維持）
+    if (event.key === 'Tab') {
+      // デフォルトのTab動作を維持
+    }
+  });
 
   // ARIA属性を生成（最適化版）
   const ariaAttributes = useStableMemo(() => {

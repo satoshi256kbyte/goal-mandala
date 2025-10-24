@@ -1,0 +1,302 @@
+/**
+ * プロフィール入力画面のレスポンシブスタイル
+ *
+ * ブレークポイント:
+ * - モバイル: < 768px
+ * - タブレット: 768px - 1024px
+ * - デスクトップ: > 1024px
+ */
+
+/* ========================================
+   モバイルレイアウト (< 768px)
+   ======================================== */
+
+/* フォームコンテナ - モバイル */
+@media (max-width: 767px) {
+  .profile-form-container {
+    @apply px-4 py-6;
+    max-width: 100%;
+  }
+
+  /* セクション - モバイル */
+  .profile-form-section {
+    @apply mb-6 p-4 bg-white rounded-lg shadow-sm;
+  }
+
+  .profile-section-title {
+    @apply text-base font-semibold text-gray-900 mb-3;
+  }
+
+  /* フォームフィールド - モバイル */
+  .profile-form-field {
+    @apply mb-4;
+  }
+
+  .profile-form-label {
+    @apply block text-sm font-medium text-gray-700 mb-1.5;
+  }
+
+  /* 入力要素 - モバイル（タッチ操作対応） */
+  .profile-form-input,
+  .profile-form-select {
+    @apply w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm;
+    @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
+    @apply disabled:bg-gray-100 disabled:cursor-not-allowed;
+    /* タッチ操作に適したサイズ（最小44px × 44px） */
+    min-height: 44px;
+    font-size: 16px; /* iOS Safariのズーム防止 */
+  }
+
+  /* エラー状態 - モバイル */
+  .profile-form-input-error,
+  .profile-form-select-error {
+    @apply border-red-300;
+    @apply focus:ring-red-500 focus:border-red-500;
+  }
+
+  .profile-form-error {
+    @apply mt-1.5 text-sm text-red-600;
+  }
+
+  /* 送信ボタン - モバイル（タッチ操作対応） */
+  .profile-submit-button {
+    @apply w-full py-3 px-4 bg-blue-600 text-white font-medium rounded-md;
+    @apply hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500;
+    @apply disabled:bg-gray-400 disabled:cursor-not-allowed;
+    @apply transition-colors duration-200;
+    /* タッチ操作に適したサイズ */
+    min-height: 44px;
+    font-size: 16px;
+  }
+
+  .profile-submit-button-loading {
+    @apply flex items-center justify-center;
+  }
+
+  /* 文字数カウント - モバイル */
+  .profile-character-count {
+    @apply text-xs text-gray-500;
+  }
+
+  .profile-character-count-warning {
+    @apply text-orange-600;
+  }
+
+  /* エラーアラート - モバイル */
+  .profile-error-alert {
+    @apply mb-4 p-3 bg-red-50 border border-red-200 rounded-md;
+  }
+
+  .profile-error-alert-text {
+    @apply text-sm text-red-800;
+  }
+
+  /* 成功メッセージ - モバイル */
+  .profile-success-message {
+    @apply mb-4 p-3 bg-green-50 border border-green-200 rounded-md;
+  }
+
+  .profile-success-message-text {
+    @apply text-sm text-green-800;
+  }
+}
+
+/* ========================================
+   タブレットレイアウト (768px - 1024px)
+   ======================================== */
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .profile-form-container {
+    @apply max-w-2xl mx-auto px-6 py-8;
+  }
+
+  .profile-form-section {
+    @apply mb-8 p-6 bg-white rounded-lg shadow-sm;
+  }
+
+  .profile-section-title {
+    @apply text-lg font-semibold text-gray-900 mb-4;
+  }
+
+  .profile-form-field {
+    @apply mb-6;
+  }
+
+  .profile-form-label {
+    @apply block text-sm font-medium text-gray-700 mb-2;
+  }
+
+  .profile-form-input,
+  .profile-form-select {
+    @apply w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm;
+    @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
+    @apply disabled:bg-gray-100 disabled:cursor-not-allowed;
+  }
+
+  .profile-form-input-error,
+  .profile-form-select-error {
+    @apply border-red-300;
+    @apply focus:ring-red-500 focus:border-red-500;
+  }
+
+  .profile-form-error {
+    @apply mt-1 text-sm text-red-600;
+  }
+
+  .profile-submit-button {
+    @apply w-full py-3 px-4 bg-blue-600 text-white font-medium rounded-md;
+    @apply hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500;
+    @apply disabled:bg-gray-400 disabled:cursor-not-allowed;
+    @apply transition-colors duration-200;
+  }
+
+  .profile-submit-button-loading {
+    @apply flex items-center justify-center;
+  }
+
+  .profile-character-count {
+    @apply text-xs text-gray-500;
+  }
+
+  .profile-character-count-warning {
+    @apply text-orange-600;
+  }
+
+  .profile-error-alert {
+    @apply mb-6 p-4 bg-red-50 border border-red-200 rounded-md;
+  }
+
+  .profile-error-alert-text {
+    @apply text-sm text-red-800;
+  }
+
+  .profile-success-message {
+    @apply mb-6 p-4 bg-green-50 border border-green-200 rounded-md;
+  }
+
+  .profile-success-message-text {
+    @apply text-sm text-green-800;
+  }
+}
+
+/* ========================================
+   デスクトップレイアウト (> 1024px)
+   ======================================== */
+
+@media (min-width: 1024px) {
+  .profile-form-container {
+    @apply max-w-3xl mx-auto px-8 py-8;
+  }
+
+  .profile-form-section {
+    @apply mb-8 p-6 bg-white rounded-lg shadow-sm;
+  }
+
+  .profile-section-title {
+    @apply text-lg font-semibold text-gray-900 mb-4;
+  }
+
+  .profile-form-field {
+    @apply mb-6;
+  }
+
+  .profile-form-label {
+    @apply block text-sm font-medium text-gray-700 mb-2;
+  }
+
+  .profile-form-input,
+  .profile-form-select {
+    @apply w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm;
+    @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
+    @apply disabled:bg-gray-100 disabled:cursor-not-allowed;
+  }
+
+  .profile-form-input-error,
+  .profile-form-select-error {
+    @apply border-red-300;
+    @apply focus:ring-red-500 focus:border-red-500;
+  }
+
+  .profile-form-error {
+    @apply mt-1 text-sm text-red-600;
+  }
+
+  .profile-submit-button {
+    @apply w-full py-3 px-4 bg-blue-600 text-white font-medium rounded-md;
+    @apply hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500;
+    @apply disabled:bg-gray-400 disabled:cursor-not-allowed;
+    @apply transition-colors duration-200;
+  }
+
+  .profile-submit-button-loading {
+    @apply flex items-center justify-center;
+  }
+
+  .profile-character-count {
+    @apply text-xs text-gray-500;
+  }
+
+  .profile-character-count-warning {
+    @apply text-orange-600;
+  }
+
+  .profile-error-alert {
+    @apply mb-6 p-4 bg-red-50 border border-red-200 rounded-md;
+  }
+
+  .profile-error-alert-text {
+    @apply text-sm text-red-800;
+  }
+
+  .profile-success-message {
+    @apply mb-6 p-4 bg-green-50 border border-green-200 rounded-md;
+  }
+
+  .profile-success-message-text {
+    @apply text-sm text-green-800;
+  }
+}
+
+/* ========================================
+   共通スタイル（全デバイス）
+   ======================================== */
+
+/* ページタイトル */
+.profile-page-title {
+  @apply text-2xl font-bold text-gray-900 mb-6 text-center;
+}
+
+@media (max-width: 767px) {
+  .profile-page-title {
+    @apply text-xl mb-4;
+  }
+}
+
+/* ローディングスピナー */
+.profile-loading-spinner {
+  @apply inline-block w-5 h-5 border-2 border-white border-t-transparent rounded-full;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* フォーカスインジケーター */
+.profile-form-input:focus,
+.profile-form-select:focus,
+.profile-submit-button:focus {
+  @apply outline-none ring-2 ring-offset-2;
+}
+
+/* 必須マーク */
+.profile-required-mark {
+  @apply text-red-500 ml-1;
+}
+
+/* 任意マーク */
+.profile-optional-mark {
+  @apply text-gray-500 text-xs ml-1;
+}

@@ -111,31 +111,28 @@ export const useOptimizedDraftSave = (
   /**
    * データ圧縮関数
    */
-  const compressData = useStableCallback(
-    async (data: unknown): Promise<string> => {
-      if (!opts.compression.enabled) {
-        return JSON.stringify(data);
-      }
+  const compressData = useStableCallback(async (data: unknown): Promise<string> => {
+    if (!opts.compression.enabled) {
+      return JSON.stringify(data);
+    }
 
-      const jsonString = JSON.stringify(data);
+    const jsonString = JSON.stringify(data);
 
-      // しきい値以下の場合は圧縮しない
-      if (jsonString.length < opts.compression.threshold) {
-        return jsonString;
-      }
+    // しきい値以下の場合は圧縮しない
+    if (jsonString.length < opts.compression.threshold) {
+      return jsonString;
+    }
 
-      try {
-        // Web Workerを使用した非同期圧縮（実装時に追加）
-        // 現在は簡易的な圧縮を実装
-        const compressed = await simpleCompress(jsonString);
-        return compressed;
-      } catch (error) {
-        console.warn('Compression failed, using uncompressed data:', error);
-        return jsonString;
-      }
-    },
-    [opts.compression]
-  );
+    try {
+      // Web Workerを使用した非同期圧縮（実装時に追加）
+      // 現在は簡易的な圧縮を実装
+      const compressed = await simpleCompress(jsonString);
+      return compressed;
+    } catch (error) {
+      console.warn('Compression failed, using uncompressed data:', error);
+      return jsonString;
+    }
+  });
 
   /**
    * データ展開関数
@@ -155,59 +152,53 @@ export const useOptimizedDraftSave = (
       console.error('Decompression failed:', error);
       throw error;
     }
-  }, []);
+  });
 
   /**
    * 差分検出関数
    */
-  const detectChanges = useStableCallback(
-    (newData: unknown, oldData: unknown): boolean => {
-      if (!opts.enableDiffDetection) {
-        return true; // 差分検出無効の場合は常に変更ありとみなす
-      }
+  const detectChanges = useStableCallback((newData: unknown, oldData: unknown): boolean => {
+    if (!opts.enableDiffDetection) {
+      return true; // 差分検出無効の場合は常に変更ありとみなす
+    }
 
-      return !deepEqual(newData, oldData);
-    },
-    [opts.enableDiffDetection]
-  );
+    return !deepEqual(newData, oldData);
+  });
 
   /**
    * ローカルストレージへの保存
    */
-  const saveToLocalStorage = useStableCallback(
-    async (data: unknown): Promise<void> => {
-      if (!opts.useLocalStorage) return;
+  const saveToLocalStorage = useStableCallback(async (data: unknown): Promise<void> => {
+    if (!opts.useLocalStorage) return;
 
-      try {
-        const compressed = await compressData(data);
-        const draftData: DraftData = {
-          id: draftId,
-          type: draftType,
-          data: compressed,
-          timestamp: Date.now(),
-          version: saveVersionRef.current,
-        };
+    try {
+      const compressed = await compressData(data);
+      const draftData: DraftData = {
+        id: draftId,
+        type: draftType,
+        data: compressed,
+        timestamp: Date.now(),
+        version: saveVersionRef.current,
+      };
 
-        localStorage.setItem(`draft_${draftId}`, JSON.stringify(draftData));
+      localStorage.setItem(`draft_${draftId}`, JSON.stringify(draftData));
 
-        // 履歴管理
-        const historyKey = `draft_history_${draftId}`;
-        const history = JSON.parse(localStorage.getItem(historyKey) || '[]');
-        history.unshift(draftData);
+      // 履歴管理
+      const historyKey = `draft_history_${draftId}`;
+      const history = JSON.parse(localStorage.getItem(historyKey) || '[]');
+      history.unshift(draftData);
 
-        // 最大履歴数を超えた場合は古いものを削除
-        if (history.length > opts.maxHistoryCount) {
-          history.splice(opts.maxHistoryCount);
-        }
-
-        localStorage.setItem(historyKey, JSON.stringify(history));
-      } catch (error) {
-        console.error('Failed to save to localStorage:', error);
-        throw error;
+      // 最大履歴数を超えた場合は古いものを削除
+      if (history.length > opts.maxHistoryCount) {
+        history.splice(opts.maxHistoryCount);
       }
-    },
-    [draftId, draftType, opts.useLocalStorage, opts.maxHistoryCount, compressData]
-  );
+
+      localStorage.setItem(historyKey, JSON.stringify(history));
+    } catch (error) {
+      console.error('Failed to save to localStorage:', error);
+      throw error;
+    }
+  });
 
   /**
    * ローカルストレージからの読み込み
@@ -225,88 +216,79 @@ export const useOptimizedDraftSave = (
       console.error('Failed to load from localStorage:', error);
       return null;
     }
-  }, [draftId, opts.useLocalStorage, decompressData]);
+  });
 
   /**
    * サーバーへの保存
    */
-  const saveToServer = useStableCallback(
-    async (data: unknown): Promise<void> => {
-      try {
-        const compressed = await compressData(data);
-        await draftService.saveDraft(compressed as any);
-      } catch (error) {
-        console.error('Failed to save to server:', error);
-        throw error;
-      }
-    },
-    [draftId, draftType, compressData]
-  );
+  const saveToServer = useStableCallback(async (data: unknown): Promise<void> => {
+    try {
+      const compressed = await compressData(data);
+      await draftService.saveDraft(compressed as any);
+    } catch (error) {
+      console.error('Failed to save to server:', error);
+      throw error;
+    }
+  });
 
   /**
    * 実際の保存処理
    */
-  const performSave = useStableCallback(
-    async (data: unknown, force = false): Promise<void> => {
-      // 差分チェック
-      if (!force && !detectChanges(data, lastSavedDataRef.current)) {
-        return; // 変更がない場合はスキップ
+  const performSave = useStableCallback(async (data: unknown, force = false): Promise<void> => {
+    // 差分チェック
+    if (!force && !detectChanges(data, lastSavedDataRef.current)) {
+      return; // 変更がない場合はスキップ
+    }
+
+    setSaveState(prev => ({ ...prev, isSaving: true, error: null }));
+
+    try {
+      // バージョンを更新
+      saveVersionRef.current += 1;
+
+      // 並列保存（ローカルストレージとサーバー）
+      const savePromises: Promise<void>[] = [];
+
+      if (opts.useLocalStorage) {
+        savePromises.push(saveToLocalStorage(data));
       }
 
-      setSaveState(prev => ({ ...prev, isSaving: true, error: null }));
+      savePromises.push(saveToServer(data));
 
-      try {
-        // バージョンを更新
-        saveVersionRef.current += 1;
+      await Promise.all(savePromises);
 
-        // 並列保存（ローカルストレージとサーバー）
-        const savePromises: Promise<void>[] = [];
+      // 保存成功
+      lastSavedDataRef.current = data;
+      setSaveState(prev => ({
+        ...prev,
+        isSaving: false,
+        lastSaved: new Date(),
+        hasUnsavedChanges: false,
+        saveSuccess: true,
+        error: null,
+      }));
 
-        if (opts.useLocalStorage) {
-          savePromises.push(saveToLocalStorage(data));
-        }
-
-        savePromises.push(saveToServer(data));
-
-        await Promise.all(savePromises);
-
-        // 保存成功
-        lastSavedDataRef.current = data;
-        setSaveState(prev => ({
-          ...prev,
-          isSaving: false,
-          lastSaved: new Date(),
-          hasUnsavedChanges: false,
-          saveSuccess: true,
-          error: null,
-        }));
-
-        // 成功フラグを3秒後にリセット
-        setTimeout(() => {
-          setSaveState(prev => ({ ...prev, saveSuccess: false }));
-        }, 3000);
-      } catch (error) {
-        console.error('Save failed:', error);
-        setSaveState(prev => ({
-          ...prev,
-          isSaving: false,
-          error: error instanceof Error ? error.message : '保存に失敗しました',
-        }));
-      }
-    },
-    [detectChanges, saveToLocalStorage, saveToServer, opts.useLocalStorage]
-  );
+      // 成功フラグを3秒後にリセット
+      setTimeout(() => {
+        setSaveState(prev => ({ ...prev, saveSuccess: false }));
+      }, 3000);
+    } catch (error) {
+      console.error('Save failed:', error);
+      setSaveState(prev => ({
+        ...prev,
+        isSaving: false,
+        error: error instanceof Error ? error.message : '保存に失敗しました',
+      }));
+    }
+  });
 
   /**
    * デバウンス付き保存
    */
   const debouncedSave = useDebounce(
-    useStableCallback(
-      (data: unknown) => {
-        performSave(data);
-      },
-      [performSave]
-    ),
+    useStableCallback((data: unknown) => {
+      performSave(data);
+    }),
     opts.debounceDelay
   );
 
@@ -319,40 +301,34 @@ export const useOptimizedDraftSave = (
   //       performSave(data);
   //     },
   //     [performSave]
-  //   ),
+  //   )
   //   opts.throttleInterval
   // );
 
   /**
    * 自動保存処理
    */
-  const autoSave = useStableCallback(
-    (data: unknown) => {
-      if (!opts.enableAutoSave) return;
+  const autoSave = useStableCallback((data: unknown) => {
+    if (!opts.enableAutoSave) return;
 
-      currentDataRef.current = data;
+    currentDataRef.current = data;
 
-      // 変更があることを記録
-      setSaveState(prev => ({ ...prev, hasUnsavedChanges: true }));
+    // 変更があることを記録
+    setSaveState(prev => ({ ...prev, hasUnsavedChanges: true }));
 
-      // デバウンス付きで保存
-      debouncedSave(data);
-    },
-    [opts.enableAutoSave, debouncedSave]
-  );
+    // デバウンス付きで保存
+    debouncedSave(data);
+  });
 
   /**
    * 手動保存処理
    */
-  const manualSave = useStableCallback(
-    async (data?: unknown): Promise<void> => {
-      const saveData = data || currentDataRef.current;
-      if (!saveData) return;
+  const manualSave = useStableCallback(async (data?: unknown): Promise<void> => {
+    const saveData = data || currentDataRef.current;
+    if (!saveData) return;
 
-      await performSave(saveData, true); // 強制保存
-    },
-    [performSave]
-  );
+    await performSave(saveData, true); // 強制保存
+  });
 
   /**
    * 下書き復元処理
@@ -389,7 +365,7 @@ export const useOptimizedDraftSave = (
       }));
       return null;
     }
-  }, [draftId, draftType, loadFromLocalStorage, decompressData]);
+  });
 
   /**
    * 下書き削除処理
@@ -422,7 +398,7 @@ export const useOptimizedDraftSave = (
         error: error instanceof Error ? error.message : '下書きの削除に失敗しました',
       }));
     }
-  }, [draftId, draftType, opts.useLocalStorage]);
+  });
 
   /**
    * 履歴取得処理
@@ -438,7 +414,7 @@ export const useOptimizedDraftSave = (
       console.error('Failed to get draft history:', error);
       return [];
     }
-  }, [draftId, opts.useLocalStorage]);
+  });
 
   /**
    * クリーンアップ処理

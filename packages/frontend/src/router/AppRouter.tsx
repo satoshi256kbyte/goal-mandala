@@ -12,6 +12,7 @@ import {
   LazyDashboardPage,
   LazyMandalaPage,
   LazyProfilePage,
+  LazyProfileSetupPage,
   LazyGoalInputPage,
   LazySubGoalEditPage,
   LazyActionEditPage,
@@ -119,6 +120,16 @@ export const AppRouter: React.FC = () => {
                 <ProtectedRoute>
                   <LazyLoader>
                     <LazyProfilePage />
+                  </LazyLoader>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/profile/setup"
+              element={
+                <ProtectedRoute requireProfileSetup={false}>
+                  <LazyLoader>
+                    <LazyProfileSetupPage />
                   </LazyLoader>
                 </ProtectedRoute>
               }
