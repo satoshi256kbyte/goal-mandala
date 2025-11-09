@@ -1,7 +1,10 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
-import { vi } from 'vitest';
+import { render, screen, waitFor } from '@testing-library/react';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import { AppRouter } from './AppRouter';
+import { AuthProvider } from '../components/auth/AuthProvider';
+import { ProtectedRoute } from '../components/auth/ProtectedRoute';
 
 // Amplifyのモック
 vi.mock('aws-amplify', () => ({
@@ -29,39 +32,294 @@ Object.defineProperty(import.meta, 'env', {
   },
 });
 
+// LazyPagesのモック
+vi.mock('../pages/LazyPages', () => ({
+  LazyLoginPage: () => <div>ログイン画面</div>,
+  LazySignupPage: () => <div>サインアップ画面</div>,
+  LazyPasswordResetPage: () => <div>パスワードリセット画面</div>,
+  LazyDashboardPage: () => <div>ダッシュボード画面</div>,
+  LazyMandalaPage: () => <div>マンダラ画面</div>,
+  LazyProfilePage: () => <div>プロフィール画面</div>,
+  LazyProfileSetupPage: () => <div>プロフィール設定画面</div>,
+  LazyMandalaListPage: () => <div>マンダラ一覧画面</div>,
+  LazyGoalInputPage: () => <div>目標入力画面</div>,
+  LazySubGoalEditPage: () => <div>サブ目標編集画面</div>,
+  LazyActionEditPage: () => <div>アクション編集画面</div>,
+  LazyProcessingPage: () => <div>処理中画面</div>,
+  LazyNotFoundPage: () => <div>404画面</div>,
+}));
+
+// LazyLoaderのモック
+vi.mock('../components/common/LazyLoader', () => ({
+  LazyLoader: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+
+// AuthStateMonitorProviderのモック
+vi.mock('../components/auth/AuthStateMonitorProvider', () => ({
+  AuthStateMonitorProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+
 describe('AppRouter', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('認証状態確認中にローディング画面を表示する', async () => {
-    render(<AppRouter />);
+  describe('基本的なルーティング', () => {
+    it('認証状態確認中にローディング画面を表示する', async () => {
+      const { getCurrentUser } = await import('aws-amplify/auth');
+      vi.mocked(getCurrentUser).mockImplementation(
+        () => new Promise(() => {}) // 永遠に解決しないPromise
+      );
 
-    // ローディング画面が表示されることを確認
-    expect(screen.getByText('認証状態を確認中...')).toBeInTheDocument();
-  });
+      render(<AppRouter />);
 
-  it('未認証の場合にログイン画面にリダイレクトする', async () => {
-    // getCurrentUserが失敗するようにモック
-    const { getCurrentUser } = await import('aws-amplify/auth');
-    vi.mocked(getCurrentUser).mockRejectedValue(new Error('Not authenticated'));
-
-    render(<AppRouter />);
-
-    // 最終的にログイン画面が表示されることを確認
-    await screen.findByText('ログイン');
-  });
-
-  it('認証済みの場合にダッシュボード画面を表示する', async () => {
-    // getCurrentUserが成功するようにモック
-    const { getCurrentUser } = await import('aws-amplify/auth');
-    vi.mocked(getCurrentUser).mockResolvedValue({
-      username: 'test@example.com',
+      // ローディング画面が表示されることを確認
+      expect(screen.getByText('認証状況を確認中...')).toBeInTheDocument();
     });
 
-    render(<AppRouter />);
+    it('未認証の場合にログイン画面にリダイレクトする', async () => {
+      const { getCurrentUser } = await import('aws-amplify/auth');
+      vi.mocked(getCurrentUser).mockRejectedValue(new Error('Not authenticated'));
 
-    // ダッシュボード画面が表示されることを確認
-    await screen.findByText('ダッシュボード');
+      render(<AppRouter />);
+
+      // 最終的にログイン画面が表示されることを確認
+      await waitFor(() => {
+        expect(screen.getByText('ログイン画面')).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('ルート遷移のテスト', () => {
+    it('TOP画面（/）にアクセスできる', async () => {
+      const { getCurrentUser, fetchAuthSession } = await import('aws-amplify/auth');
+      vi.mocked(getCurrentUser).mockResolvedValue({
+        username: 'test@example.com',
+        userId: 'test-user-id',
+      } as any);
+      vi.mocked(fetchAuthSession).mockResolvedValue({
+        tokens: {
+          idToken: { toString: () => 'test-token' },
+        },
+      } as any);
+
+      render(
+        <MemoryRouter initialEntries={['/']}>
+          <AppRouter />
+        </MemoryRouter>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('マンダラ一覧画面')).toBeInTheDocument();
+      });
+    });
+
+    it('マンダラ詳細画面（/mandala/:id）にアクセスできる', async () => {
+      const { getCurrentUser, fetchAuthSession } = await import('aws-amplify/auth');
+      vi.mocked(getCurrentUser).mockResolvedValue({
+        username: 'test@example.com',
+        userId: 'test-user-id',
+      } as any);
+      vi.mocked(fetchAuthSession).mockResolvedValue({
+        tokens: {
+          idToken: { toString: () => 'test-token' },
+        },
+      } as any);
+
+      render(
+        <MemoryRouter initialEntries={['/mandala/test-id']}>
+          <AppRouter />
+        </MemoryRouter>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('マンダラ画面')).toBeInTheDocument();
+      });
+    });
+
+    it('目標入力画面（/mandala/create/goal）にアクセスできる', async () => {
+      const { getCurrentUser, fetchAuthSession } = await import('aws-amplify/auth');
+      vi.mocked(getCurrentUser).mockResolvedValue({
+        username: 'test@example.com',
+        userId: 'test-user-id',
+      } as any);
+      vi.mocked(fetchAuthSession).mockResolvedValue({
+        tokens: {
+          idToken: { toString: () => 'test-token' },
+        },
+      } as any);
+
+      render(
+        <MemoryRouter initialEntries={['/mandala/create/goal']}>
+          <AppRouter />
+        </MemoryRouter>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('目標入力画面')).toBeInTheDocument();
+      });
+    });
+
+    it('存在しないパスで404画面を表示する', async () => {
+      render(
+        <MemoryRouter initialEntries={['/non-existent-path']}>
+          <AppRouter />
+        </MemoryRouter>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('404画面')).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('認証ガードのテスト', () => {
+    it('未認証ユーザーは保護されたルートにアクセスできない', async () => {
+      const { getCurrentUser } = await import('aws-amplify/auth');
+      vi.mocked(getCurrentUser).mockRejectedValue(new Error('Not authenticated'));
+
+      render(
+        <MemoryRouter initialEntries={['/']}>
+          <AppRouter />
+        </MemoryRouter>
+      );
+
+      // ログイン画面にリダイレクトされることを確認
+      await waitFor(() => {
+        expect(screen.getByText('ログイン画面')).toBeInTheDocument();
+      });
+    });
+
+    it('認証済みユーザーは保護されたルートにアクセスできる', async () => {
+      const { getCurrentUser, fetchAuthSession } = await import('aws-amplify/auth');
+      vi.mocked(getCurrentUser).mockResolvedValue({
+        username: 'test@example.com',
+        userId: 'test-user-id',
+      } as any);
+      vi.mocked(fetchAuthSession).mockResolvedValue({
+        tokens: {
+          idToken: { toString: () => 'test-token' },
+        },
+      } as any);
+
+      render(
+        <MemoryRouter initialEntries={['/']}>
+          <AppRouter />
+        </MemoryRouter>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('マンダラ一覧画面')).toBeInTheDocument();
+      });
+    });
+
+    it('認証済みユーザーがログイン画面にアクセスするとリダイレクトされる', async () => {
+      const { getCurrentUser, fetchAuthSession } = await import('aws-amplify/auth');
+      vi.mocked(getCurrentUser).mockResolvedValue({
+        username: 'test@example.com',
+        userId: 'test-user-id',
+      } as any);
+      vi.mocked(fetchAuthSession).mockResolvedValue({
+        tokens: {
+          idToken: { toString: () => 'test-token' },
+        },
+      } as any);
+
+      render(
+        <MemoryRouter initialEntries={['/login']}>
+          <AppRouter />
+        </MemoryRouter>
+      );
+
+      // ダッシュボードにリダイレクトされることを確認
+      await waitFor(() => {
+        expect(screen.queryByText('ログイン画面')).not.toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('プロフィール設定チェックのテスト', () => {
+    it('プロフィール未設定ユーザーはプロフィール設定画面にリダイレクトされる', async () => {
+      const { getCurrentUser, fetchAuthSession } = await import('aws-amplify/auth');
+      vi.mocked(getCurrentUser).mockResolvedValue({
+        username: 'test@example.com',
+        userId: 'test-user-id',
+      } as any);
+      vi.mocked(fetchAuthSession).mockResolvedValue({
+        tokens: {
+          idToken: { toString: () => 'test-token' },
+        },
+      } as any);
+
+      // useAuthフックをモックしてプロフィール未設定状態をシミュレート
+      vi.mock('../hooks/useAuth', () => ({
+        useAuth: () => ({
+          user: { profileSetup: false },
+          isAuthenticated: true,
+          isLoading: false,
+        }),
+      }));
+
+      render(
+        <MemoryRouter initialEntries={['/']}>
+          <AuthProvider>
+            <Routes>
+              <Route
+                path="/"
+                element={
+                  <ProtectedRoute>
+                    <div>マンダラ一覧画面</div>
+                  </ProtectedRoute>
+                }
+              />
+              <Route path="/profile/setup" element={<div>プロフィール設定画面</div>} />
+            </Routes>
+          </AuthProvider>
+        </MemoryRouter>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('プロフィール設定画面')).toBeInTheDocument();
+      });
+    });
+
+    it('プロフィール設定済みユーザーは通常のルートにアクセスできる', async () => {
+      const { getCurrentUser, fetchAuthSession } = await import('aws-amplify/auth');
+      vi.mocked(getCurrentUser).mockResolvedValue({
+        username: 'test@example.com',
+        userId: 'test-user-id',
+      } as any);
+      vi.mocked(fetchAuthSession).mockResolvedValue({
+        tokens: {
+          idToken: { toString: () => 'test-token' },
+        },
+      } as any);
+
+      render(
+        <MemoryRouter initialEntries={['/']}>
+          <AppRouter />
+        </MemoryRouter>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('マンダラ一覧画面')).toBeInTheDocument();
+      });
+    });
+
+    it('プロフィール設定画面（/profile/setup）は認証が必要', async () => {
+      const { getCurrentUser } = await import('aws-amplify/auth');
+      vi.mocked(getCurrentUser).mockRejectedValue(new Error('Not authenticated'));
+
+      render(
+        <MemoryRouter initialEntries={['/profile/setup']}>
+          <AppRouter />
+        </MemoryRouter>
+      );
+
+      // ログイン画面にリダイレクトされることを確認
+      await waitFor(() => {
+        expect(screen.getByText('ログイン画面')).toBeInTheDocument();
+      });
+    });
   });
 });

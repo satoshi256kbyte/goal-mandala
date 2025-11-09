@@ -89,7 +89,7 @@ export const useMemoizedValidation = <T>(data: T, validationFn: (data: T) => any
 /**
  * Lazy loading hook
  */
-export const useLazyLoad = (threshold = 0.1, onLoad?: () => void) => {
+export const useLazyLoad = (threshold = 0.1, rootMargin = '0px', onLoad?: () => void) => {
   const [isVisible, setIsVisible] = useState(false);
   const [hasLoaded, setHasLoaded] = useState(false);
   const elementRef = useRef<HTMLElement>(null);
@@ -106,7 +106,7 @@ export const useLazyLoad = (threshold = 0.1, onLoad?: () => void) => {
           observer.disconnect();
         }
       },
-      { threshold }
+      { threshold, rootMargin }
     );
 
     if (elementRef.current) {
@@ -114,7 +114,7 @@ export const useLazyLoad = (threshold = 0.1, onLoad?: () => void) => {
     }
 
     return () => observer.disconnect();
-  }, [threshold, onLoad]);
+  }, [threshold, rootMargin, onLoad]);
 
   return { elementRef, isVisible, hasLoaded };
 };
@@ -158,22 +158,30 @@ export const useLazyImage = (src: string, placeholder?: string) => {
 /**
  * Virtual scroll hook
  */
-export const useVirtualScroll = <T>(items: T[], itemHeight: number, containerHeight: number) => {
-  const [scrollTop, setScrollTop] = useState(0);
+export const useVirtualScroll = (
+  itemCount: number,
+  scrollTop: number,
+  options: {
+    itemHeight: number;
+    containerHeight: number;
+    overscan?: number;
+  }
+) => {
+  const { itemHeight, containerHeight, overscan = 3 } = options;
 
-  const startIndex = Math.floor(scrollTop / itemHeight);
-  const endIndex = Math.ceil((scrollTop + containerHeight) / itemHeight);
+  const startIndex = Math.max(0, Math.floor(scrollTop / itemHeight) - overscan);
+  const endIndex = Math.min(
+    itemCount - 1,
+    Math.ceil((scrollTop + containerHeight) / itemHeight) + overscan
+  );
 
-  const visibleItems = items.slice(startIndex, endIndex);
   const offsetY = startIndex * itemHeight;
 
   return {
-    visibleItems,
     offsetY,
-    totalHeight: items.length * itemHeight,
+    totalHeight: itemCount * itemHeight,
     startIndex,
     endIndex,
-    onScroll: (e: React.UIEvent<HTMLElement>) => setScrollTop(e.currentTarget.scrollTop),
   };
 };
 
@@ -181,28 +189,30 @@ export const useVirtualScroll = <T>(items: T[], itemHeight: number, containerHei
  * Performance measurement hook
  */
 export const usePerformanceMeasure = (name: string, enabled = true) => {
-  useEffect(() => {
+  const startMarkRef = useRef<string>(`${name}-start-${Date.now()}`);
+  const endMarkRef = useRef<string>(`${name}-end-${Date.now()}`);
+
+  const start = useCallback(() => {
     if (!enabled) return;
+    performance.mark(startMarkRef.current);
+  }, [enabled]);
 
-    const startMark = `${name}-start`;
-    const endMark = `${name}-end`;
+  const end = useCallback(() => {
+    if (!enabled) return;
+    performance.mark(endMarkRef.current);
+    performance.measure(name, startMarkRef.current, endMarkRef.current);
 
-    performance.mark(startMark);
+    const measure = performance.getEntriesByName(name)[0];
+    if (measure && process.env.NODE_ENV === 'development') {
+      console.log(`${name}: ${measure.duration.toFixed(2)}ms`);
+    }
 
-    return () => {
-      performance.mark(endMark);
-      performance.measure(name, startMark, endMark);
-
-      const measure = performance.getEntriesByName(name)[0];
-      if (measure && process.env.NODE_ENV === 'development') {
-        console.log(`${name}: ${measure.duration.toFixed(2)}ms`);
-      }
-
-      performance.clearMarks(startMark);
-      performance.clearMarks(endMark);
-      performance.clearMeasures(name);
-    };
+    performance.clearMarks(startMarkRef.current);
+    performance.clearMarks(endMarkRef.current);
+    performance.clearMeasures(name);
   }, [name, enabled]);
+
+  return { start, end };
 };
 
 /**

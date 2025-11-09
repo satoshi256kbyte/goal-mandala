@@ -5,6 +5,7 @@ interface User {
   email: string;
   name: string;
   profileSetup: boolean;
+  [key: string]: unknown;
 }
 
 interface UseAuthReturn {

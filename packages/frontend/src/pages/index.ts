@@ -6,3 +6,5 @@ export { PasswordResetPage } from './PasswordResetPage';
 export { default as PasswordResetPageDefault } from './PasswordResetPage';
 export { GoalInputPage } from './GoalInputPage';
 export { default as GoalInputPageDefault } from './GoalInputPage';
+export { MandalaListPage } from './MandalaListPage';
+export { default as MandalaListPageDefault } from './MandalaListPage';

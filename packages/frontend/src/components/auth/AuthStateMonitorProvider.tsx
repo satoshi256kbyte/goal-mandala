@@ -167,15 +167,18 @@ export const AuthStateMonitorProvider: React.FC<AuthStateMonitorProviderProps> =
     autoStart,
     config,
     initialState: authContext.isAuthenticated
-      ? {
-          isAuthenticated: authContext.isAuthenticated,
-          isLoading: authContext.isLoading,
-          user: authContext.user,
-          error: authContext.error,
-          tokenExpirationTime: authContext.getTokenExpirationTime(),
-          lastActivity: new Date(),
-          sessionId: null,
-        }
+      ? (() => {
+          const expirationTime = authContext.getTokenExpirationTime();
+          return {
+            isAuthenticated: authContext.isAuthenticated,
+            isLoading: authContext.isLoading,
+            user: authContext.user,
+            error: authContext.error?.message || null,
+            tokenExpirationTime: expirationTime ? new Date(expirationTime) : null,
+            lastActivity: new Date(),
+            sessionId: null,
+          };
+        })()
       : undefined,
     onAuthStateChange: handleAuthStateChange,
     onTokenExpired: handleTokenExpired,

@@ -65,6 +65,9 @@ export const LazyProfilePage = lazy(() =>
 // プロフィール設定ページ（初回ログイン時）
 export const LazyProfileSetupPage = lazy(() => import('./ProfileSetupPage'));
 
+// マンダラチャート一覧ページ
+export const LazyMandalaListPage = lazy(() => import('./MandalaListPage'));
+
 // 404ページ
 export const LazyNotFoundPage = lazy(() =>
   Promise.resolve({

@@ -13,6 +13,7 @@ import {
   LazyMandalaPage,
   LazyProfilePage,
   LazyProfileSetupPage,
+  LazyMandalaListPage,
   LazyGoalInputPage,
   LazySubGoalEditPage,
   LazyActionEditPage,
@@ -89,7 +90,7 @@ export const AppRouter: React.FC = () => {
               element={
                 <ProtectedRoute>
                   <LazyLoader>
-                    <LazyDashboardPage />
+                    <LazyMandalaListPage />
                   </LazyLoader>
                 </ProtectedRoute>
               }

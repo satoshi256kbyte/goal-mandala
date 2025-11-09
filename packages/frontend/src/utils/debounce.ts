@@ -1,9 +1,7 @@
 /**
  * デバウンス関数
  *
- * @description
- * 指定された遅延時間内に複数回呼び出された場合、最後の呼び出しのみを実行する。
- * パフォーマンス最適化のために使用される。
+ * 指定された遅延時間内に複数回呼び出された場合、最後の呼び出しのみを実行します。
  *
  * @param func - デバウンスする関数
  * @param delay - 遅延時間（ミリ秒）
@@ -11,64 +9,30 @@
  *
  * @example
  * ```typescript
- * const debouncedValidate = debounce((field: string) => {
- *   validateField(field);
+ * const debouncedSearch = debounce((keyword: string) => {
+ *   console.log('Searching:', keyword);
  * }, 300);
- * ```
  *
- * 要件: 11.3 - バリデーションのデバウンス
+ * debouncedSearch('test'); // 300ms後に実行
+ * debouncedSearch('test2'); // 前の呼び出しはキャンセルされ、300ms後に実行
+ * ```
  */
 export function debounce<T extends (...args: any[]) => any>(
   func: T,
   delay: number
 ): (...args: Parameters<T>) => void {
-  let timeoutId: NodeJS.Timeout | null = null;
+  let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
   return function debounced(...args: Parameters<T>) {
-    if (timeoutId) {
+    // 既存のタイマーをクリア
+    if (timeoutId !== null) {
       clearTimeout(timeoutId);
     }
 
+    // 新しいタイマーを設定
     timeoutId = setTimeout(() => {
       func(...args);
       timeoutId = null;
     }, delay);
   };
-}
-
-/**
- * デバウンスのキャンセル機能付きバージョン
- *
- * @param func - デバウンスする関数
- * @param delay - 遅延時間（ミリ秒）
- * @returns デバウンスされた関数とキャンセル関数
- */
-export function debounceWithCancel<T extends (...args: any[]) => any>(
-  func: T,
-  delay: number
-): {
-  debounced: (...args: Parameters<T>) => void;
-  cancel: () => void;
-} {
-  let timeoutId: NodeJS.Timeout | null = null;
-
-  const debounced = (...args: Parameters<T>) => {
-    if (timeoutId) {
-      clearTimeout(timeoutId);
-    }
-
-    timeoutId = setTimeout(() => {
-      func(...args);
-      timeoutId = null;
-    }, delay);
-  };
-
-  const cancel = () => {
-    if (timeoutId) {
-      clearTimeout(timeoutId);
-      timeoutId = null;
-    }
-  };
-
-  return { debounced, cancel };
 }
