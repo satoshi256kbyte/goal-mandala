@@ -3,6 +3,21 @@
  * 要件4.1, 4.2, 4.3に対応
  */
 
+import {
+  AnimationPerformanceMonitor,
+  AnimationInterruptController,
+  AdaptiveAnimationQuality,
+  AnimationAccessibilityManager,
+} from './animation-performance';
+
+// 再エクスポート
+export {
+  AnimationPerformanceMonitor,
+  AnimationInterruptController,
+  AdaptiveAnimationQuality,
+  AnimationAccessibilityManager,
+};
+
 /**
  * アニメーション設定の型定義
  */
@@ -399,6 +414,58 @@ export const globalAnimationController = {
 
   cleanup: () => globalAnimationController.instance.cleanup(),
 };
+
+// AnimationPerformanceMonitor is not implemented yet
+// export const globalPerformanceMonitor = {
+//   get instance(): AnimationPerformanceMonitor {
+//     if (!_globalPerformanceMonitor) {
+//       _globalPerformanceMonitor = new AnimationPerformanceMonitor();
+//     }
+//     return _globalPerformanceMonitor;
+//   },
+//   startMonitoring: () => globalPerformanceMonitor.instance.startMonitoring(),
+//   stopMonitoring: () => globalPerformanceMonitor.instance.stopMonitoring(),
+//   getMetrics: () => globalPerformanceMonitor.instance.getMetrics(),
+// };
+
+// AnimationInterruptController is not implemented yet
+// export const globalInterruptController = {
+//   get instance(): AnimationInterruptController {
+//     if (!_globalInterruptController) {
+//       _globalInterruptController = new AnimationInterruptController();
+//     }
+//     return _globalInterruptController;
+//   },
+//   interruptAnimation: (id: string) => globalInterruptController.instance.interruptAnimation(id),
+//   interruptAnimationsByType: (type: string) =>
+//     globalInterruptController.instance.interruptAnimationsByType(type),
+//   interruptAllAnimations: () => globalInterruptController.instance.interruptAllAnimations(),
+// };
+
+// AnimationAccessibilityManager is not implemented yet
+// export const globalAccessibilityManager = {
+//   get instance(): AnimationAccessibilityManager {
+//     if (!_globalAccessibilityManager) {
+//       _globalAccessibilityManager = new AnimationAccessibilityManager();
+//     }
+//     return _globalAccessibilityManager;
+//   },
+//   shouldReduceMotion: () => globalAccessibilityManager.instance.shouldReduceMotion(),
+//   getAnimationSettings: () => globalAccessibilityManager.instance.getAnimationSettings(),
+// };
+
+// AdaptiveAnimationQuality is not implemented yet
+// export const globalAdaptiveQuality = {
+//   get instance(): AdaptiveAnimationQuality {
+//     if (!_globalAdaptiveQuality) {
+//       _globalAdaptiveQuality = new AdaptiveAnimationQuality();
+//     }
+//     return _globalAdaptiveQuality;
+//   },
+//   startAdaptiveAdjustment: () => globalAdaptiveQuality.instance.startAdaptiveAdjustment(),
+//   stopAdaptiveAdjustment: () => globalAdaptiveQuality.instance.stopAdaptiveAdjustment(),
+//   getCurrentQuality: () => globalAdaptiveQuality.instance.getCurrentQuality(),
+// };
 
 /**
  * 達成アニメーションのキーフレーム定義

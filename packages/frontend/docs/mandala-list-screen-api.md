@@ -16,23 +16,23 @@ GET /api/goals
 
 #### クエリパラメータ
 
-| パラメータ | 型 | 必須 | デフォルト | 説明 |
-|-----------|-----|------|-----------|------|
-| search | string | No | - | 検索キーワード（目標タイトル・説明を対象に部分一致検索） |
-| status | GoalStatus | No | - | 目標状態でフィルタリング |
-| sort | SortOption | No | created_at_desc | ソート条件 |
-| page | number | No | 1 | ページ番号（1から開始） |
-| limit | number | No | 20 | 1ページあたりの件数 |
+| パラメータ | 型         | 必須 | デフォルト      | 説明                                                     |
+| ---------- | ---------- | ---- | --------------- | -------------------------------------------------------- |
+| search     | string     | No   | -               | 検索キーワード（目標タイトル・説明を対象に部分一致検索） |
+| status     | GoalStatus | No   | -               | 目標状態でフィルタリング                                 |
+| sort       | SortOption | No   | created_at_desc | ソート条件                                               |
+| page       | number     | No   | 1               | ページ番号（1から開始）                                  |
+| limit      | number     | No   | 20              | 1ページあたりの件数                                      |
 
 #### GoalStatus（目標状態）
 
 ```typescript
 enum GoalStatus {
-  DRAFT = 'draft',           // 下書き
-  ACTIVE = 'active',         // 活動中
-  COMPLETED = 'completed',   // 完了
-  PAUSED = 'paused',         // 一時停止
-  CANCELLED = 'cancelled'    // 中止
+  DRAFT = 'draft', // 下書き
+  ACTIVE = 'active', // 活動中
+  COMPLETED = 'completed', // 完了
+  PAUSED = 'paused', // 一時停止
+  CANCELLED = 'cancelled', // 中止
 }
 ```
 
@@ -40,14 +40,14 @@ enum GoalStatus {
 
 ```typescript
 type SortOption =
-  | 'created_at_desc'    // 作成日時（新しい順）
-  | 'created_at_asc'     // 作成日時（古い順）
-  | 'updated_at_desc'    // 更新日時（新しい順）
-  | 'updated_at_asc'     // 更新日時（古い順）
-  | 'deadline_asc'       // 達成期限（近い順）
-  | 'deadline_desc'      // 達成期限（遠い順）
-  | 'progress_desc'      // 進捗率（高い順）
-  | 'progress_asc';      // 進捗率（低い順）
+  | 'created_at_desc' // 作成日時（新しい順）
+  | 'created_at_asc' // 作成日時（古い順）
+  | 'updated_at_desc' // 更新日時（新しい順）
+  | 'updated_at_asc' // 更新日時（古い順）
+  | 'deadline_asc' // 達成期限（近い順）
+  | 'deadline_desc' // 達成期限（遠い順）
+  | 'progress_desc' // 進捗率（高い順）
+  | 'progress_asc'; // 進捗率（低い順）
 ```
 
 #### リクエスト例
@@ -118,28 +118,28 @@ curl -X GET "https://api.example.com/api/goals?search=プログラミング&stat
 
 #### レスポンスフィールド
 
-| フィールド | 型 | 説明 |
-|-----------|-----|------|
-| success | boolean | リクエストの成功/失敗 |
-| data | MandalaChartSummary[] | マンダラチャート一覧 |
-| total | number | 総件数 |
-| page | number | 現在のページ番号 |
-| limit | number | 1ページあたりの件数 |
-| totalPages | number | 総ページ数 |
+| フィールド | 型                    | 説明                  |
+| ---------- | --------------------- | --------------------- |
+| success    | boolean               | リクエストの成功/失敗 |
+| data       | MandalaChartSummary[] | マンダラチャート一覧  |
+| total      | number                | 総件数                |
+| page       | number                | 現在のページ番号      |
+| limit      | number                | 1ページあたりの件数   |
+| totalPages | number                | 総ページ数            |
 
 #### MandalaChartSummary（マンダラチャート概要）
 
 ```typescript
 interface MandalaChartSummary {
-  id: string;           // マンダラチャートID（UUID）
-  user_id: string;      // ユーザーID（UUID）
-  title: string;        // 目標タイトル
-  description: string;  // 目標説明
-  deadline: string;     // 達成期限（ISO 8601形式）
-  status: GoalStatus;   // 目標状態
-  progress: number;     // 進捗率（0-100）
-  created_at: string;   // 作成日時（ISO 8601形式）
-  updated_at: string;   // 更新日時（ISO 8601形式）
+  id: string; // マンダラチャートID（UUID）
+  user_id: string; // ユーザーID（UUID）
+  title: string; // 目標タイトル
+  description: string; // 目標説明
+  deadline: string; // 達成期限（ISO 8601形式）
+  status: GoalStatus; // 目標状態
+  progress: number; // 進捗率（0-100）
+  created_at: string; // 作成日時（ISO 8601形式）
+  updated_at: string; // 更新日時（ISO 8601形式）
 }
 ```
 
@@ -159,15 +159,15 @@ interface MandalaChartSummary {
 
 #### エラーコード
 
-| コード | ステータス | 説明 |
-|--------|-----------|------|
-| INVALID_PARAMETER | 400 | 無効なパラメータが指定された |
-| UNAUTHORIZED | 401 | 認証トークンが無効または期限切れ |
-| FORBIDDEN | 403 | アクセス権限がない |
-| NOT_FOUND | 404 | リソースが見つからない |
-| INTERNAL_ERROR | 500 | サーバー内部エラー |
-| DATABASE_ERROR | 500 | データベースエラー |
-| NETWORK_ERROR | 503 | ネットワークエラー |
+| コード            | ステータス | 説明                             |
+| ----------------- | ---------- | -------------------------------- |
+| INVALID_PARAMETER | 400        | 無効なパラメータが指定された     |
+| UNAUTHORIZED      | 401        | 認証トークンが無効または期限切れ |
+| FORBIDDEN         | 403        | アクセス権限がない               |
+| NOT_FOUND         | 404        | リソースが見つからない           |
+| INTERNAL_ERROR    | 500        | サーバー内部エラー               |
+| DATABASE_ERROR    | 500        | データベースエラー               |
+| NETWORK_ERROR     | 503        | ネットワークエラー               |
 
 ## データ型定義
 
@@ -335,11 +335,11 @@ import axios from 'axios';
 
 async function getGoals(params: GoalsListParams): Promise<GoalsListResponse> {
   const token = await getAuthToken();
-  
+
   const response = await axios.get('/api/goals', {
     params,
     headers: {
-      'Authorization': `Bearer ${token}`,
+      Authorization: `Bearer ${token}`,
     },
   });
 

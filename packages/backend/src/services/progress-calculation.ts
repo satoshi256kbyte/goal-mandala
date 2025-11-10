@@ -1,5 +1,6 @@
 import { PrismaClient, TaskStatus as PrismaTaskStatus } from '../generated/prisma-client';
 import { ExtendedProgressDataStore } from './progress-data-store';
+import { ProgressValidator } from './progress-validator';
 
 // Prisma の TaskStatus を再エクスポート
 export type TaskStatus = PrismaTaskStatus;
@@ -121,7 +122,11 @@ export class ProgressCalculationEngine implements IProgressCalculationEngine {
 
   /**
    * タスクの進捗を計算する
-   * タスクは完了/未完了の2値なので、完了していれば100%、そうでなければ0%
+   * タスクの状態に応じて進捗を返す
+   * - COMPLETED: 100%
+   * - IN_PROGRESS: 50%
+   * - PENDING: 0%
+   * - CANCELLED: 0%
    */
   async calculateTaskProgress(taskId: string): Promise<number> {
     const cacheKey = `task:${taskId}`;
@@ -139,7 +144,7 @@ export class ProgressCalculationEngine implements IProgressCalculationEngine {
       throw new Error(`Task not found: ${taskId}`);
     }
 
-    const progress = task.status === 'COMPLETED' ? 100 : 0;
+    const progress = this.calculateTaskProgressByStatus(task.status);
     this.setCachedValue(cacheKey, progress, [taskId]);
 
     // 進捗データを永続化
@@ -148,6 +153,24 @@ export class ProgressCalculationEngine implements IProgressCalculationEngine {
     }
 
     return progress;
+  }
+
+  /**
+   * タスクの状態から進捗を計算する
+   * @param status タスクの状態
+   * @returns 進捗率（0-100）
+   */
+  private calculateTaskProgressByStatus(status: TaskStatus): number {
+    switch (status) {
+      case 'COMPLETED':
+        return 100;
+      case 'IN_PROGRESS':
+        return 50;
+      case 'PENDING':
+      case 'CANCELLED':
+      default:
+        return 0;
+    }
   }
 
   /**
@@ -246,9 +269,19 @@ export class ProgressCalculationEngine implements IProgressCalculationEngine {
       subGoal.actions.map(action => this.calculateActionProgress(action.id))
     );
 
-    // 平均を計算（8つのアクションの平均）
-    const progress =
-      actionProgresses.reduce((sum, progress) => sum + progress, 0) / actionProgresses.length;
+    // ProgressValidatorを使用して無効な進捗値をフィルタリング
+    const validator = new ProgressValidator();
+
+    // 無効な進捗値がある場合は警告ログを出力
+    const invalidProgresses = actionProgresses.filter(
+      progress => !validator.isValidProgress(progress)
+    );
+    if (invalidProgresses.length > 0) {
+      console.warn(`Invalid progress values detected for subgoal ${subGoalId}:`, invalidProgresses);
+    }
+
+    // 有効な進捗値のみで平均を計算
+    const progress = validator.calculateAverage(actionProgresses);
     const roundedProgress = Math.round(progress * 100) / 100; // 小数点以下2桁で丸める
 
     // 依存関係を正しく設定（サブ目標は全てのアクションに依存）
@@ -297,9 +330,19 @@ export class ProgressCalculationEngine implements IProgressCalculationEngine {
       goal.subGoals.map(subGoal => this.calculateSubGoalProgress(subGoal.id))
     );
 
-    // 平均を計算（8つのサブ目標の平均）
-    const progress =
-      subGoalProgresses.reduce((sum, progress) => sum + progress, 0) / subGoalProgresses.length;
+    // ProgressValidatorを使用して無効な進捗値をフィルタリング
+    const validator = new ProgressValidator();
+
+    // 無効な進捗値がある場合は警告ログを出力
+    const invalidProgresses = subGoalProgresses.filter(
+      progress => !validator.isValidProgress(progress)
+    );
+    if (invalidProgresses.length > 0) {
+      console.warn(`Invalid progress values detected for goal ${goalId}:`, invalidProgresses);
+    }
+
+    // 有効な進捗値のみで平均を計算
+    const progress = validator.calculateAverage(subGoalProgresses);
     const roundedProgress = Math.round(progress * 100) / 100; // 小数点以下2桁で丸める
 
     // 依存関係を正しく設定（目標は全てのサブ目標に依存）
@@ -545,19 +588,25 @@ export class ProgressCalculationEngine implements IProgressCalculationEngine {
 
   /**
    * 実行アクションの進捗を計算する
+   * 各タスクの進捗を合計して平均を計算する
    */
   private calculateExecutionActionProgress(tasks: Array<{ status: string }>): number {
     if (tasks.length === 0) {
       return 0;
     }
 
-    const completedTasks = tasks.filter(task => task.status === 'COMPLETED').length;
-    return (completedTasks / tasks.length) * 100;
+    // 各タスクの進捗を合計
+    const totalProgress = tasks.reduce((sum, task) => {
+      return sum + this.calculateTaskProgressByStatus(task.status as TaskStatus);
+    }, 0);
+
+    // 平均進捗を計算
+    return Math.round(totalProgress / tasks.length);
   }
 
   /**
    * 習慣アクションの進捗を計算する
-   * 継続日数ベース、80%継続で達成
+   * 連続日数ベース、目標期間の80%以上継続で達成（100%）
    */
   private calculateHabitActionProgress(
     tasks: Array<{
@@ -584,22 +633,75 @@ export class ProgressCalculationEngine implements IProgressCalculationEngine {
       return this.calculateExecutionActionProgress(tasks);
     }
 
-    // 最初のタスク作成日から現在までの日数を計算
-    const oldestTask = habitTasks.reduce((oldest, task) =>
-      task.createdAt < oldest.createdAt ? task : oldest
-    );
+    // 連続日数を計算
+    const continuousDays = this.calculateContinuousDays(habitTasks);
 
-    const daysSinceStart = Math.ceil(
-      (Date.now() - new Date(oldestTask.createdAt).getTime()) / (1000 * 60 * 60 * 24)
-    );
+    // 目標期間を30日と仮定（将来的にはアクションに目標期間を持たせる）
+    const targetDays = 30;
 
-    // 完了したタスクの日数
-    const completedDays = habitTasks.filter(task => task.status === 'COMPLETED').length;
+    // 80%以上継続で100%達成
+    const requiredDays = Math.ceil(targetDays * 0.8); // 24日
 
-    // 80%継続で達成とする
-    const requiredDays = Math.ceil(daysSinceStart * 0.8);
+    if (continuousDays >= requiredDays) {
+      return 100;
+    }
 
-    return Math.min((completedDays / requiredDays) * 100, 100);
+    // 80%未満の場合は進捗率を計算
+    return Math.round((continuousDays / requiredDays) * 100);
+  }
+
+  /**
+   * 連続日数を計算する
+   * 完了日時でソートし、日付の連続性をチェックして最新の連続日数を返す
+   */
+  private calculateContinuousDays(
+    tasks: Array<{
+      status: string;
+      completedAt?: Date | null;
+    }>
+  ): number {
+    // 完了日時でソート
+    const sortedTasks = [...tasks]
+      .filter(task => task.completedAt)
+      .sort((a, b) => {
+        const dateA = a.completedAt ? new Date(a.completedAt).getTime() : 0;
+        const dateB = b.completedAt ? new Date(b.completedAt).getTime() : 0;
+        return dateA - dateB;
+      });
+
+    if (sortedTasks.length === 0) {
+      return 0;
+    }
+
+    // 連続日数を計算（最新の連続日数を返す）
+    let continuousDays = 1;
+    let maxContinuousDays = 1;
+    let currentDate = new Date(sortedTasks[0].completedAt!);
+    currentDate.setHours(0, 0, 0, 0); // 時刻を0時に正規化
+
+    for (let i = 1; i < sortedTasks.length; i++) {
+      const taskDate = new Date(sortedTasks[i].completedAt!);
+      taskDate.setHours(0, 0, 0, 0); // 時刻を0時に正規化
+
+      const daysDiff = Math.floor(
+        (taskDate.getTime() - currentDate.getTime()) / (1000 * 60 * 60 * 24)
+      );
+
+      if (daysDiff === 1) {
+        // 連続している
+        continuousDays++;
+        maxContinuousDays = Math.max(maxContinuousDays, continuousDays);
+        currentDate = taskDate;
+      } else if (daysDiff > 1) {
+        // 連続が途切れた場合、最新の連続日数をリセット
+        continuousDays = 1;
+        currentDate = taskDate;
+      }
+      // daysDiff === 0 の場合は同じ日なのでカウントしない
+    }
+
+    // 最新の連続日数を返す（最後の連続が最新）
+    return continuousDays;
   }
 
   /**

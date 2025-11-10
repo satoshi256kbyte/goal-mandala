@@ -524,6 +524,7 @@ export class ProgressCalculationEngineImpl implements ProgressCalculationEngine 
 
   /**
    * エラーハンドリング付きで処理を実行する
+   * 要件5.1, 5.3: エラー時のフォールバック値を0%に統一
    */
   private async executeWithErrorHandling<T>(
     operation: () => Promise<T>,
@@ -532,6 +533,7 @@ export class ProgressCalculationEngineImpl implements ProgressCalculationEngine 
   ): Promise<T> {
     try {
       // タイムアウト設定（30秒）
+      // 要件5.5: タイムアウトが発生したとき、計算を中断し、タイムアウトエラーを返す
       const timeoutPromise = new Promise<never>((_, reject) => {
         setTimeout(() => {
           reject(new Error('Calculation timeout'));
@@ -542,14 +544,19 @@ export class ProgressCalculationEngineImpl implements ProgressCalculationEngine 
       return result;
     } catch (error) {
       // エラーハンドラーで処理
-      const handlingResult = await progressErrorHandler.handleError(
-        error as Error,
-        entityId,
-        entityType
-      );
+      // 要件5.1: エラーログを記録し、適切なエラーメッセージを返す
+      console.error(`Error calculating progress for ${entityType} ${entityId}:`, error);
 
-      // フォールバック値を返す（型安全性のため数値として返す）
-      return handlingResult.value as T;
+      // 循環依存エラーの場合は例外をスロー
+      // 要件5.4: 循環参照が検出されたとき、エラーを返し、計算を中断する
+      if (error instanceof Error && error.message.includes('Circular dependency')) {
+        throw error;
+      }
+
+      // エラー時は0%を返す（安全側に倒す）
+      // 要件5.3: 計算中に予期しないエラーが発生したとき、エラーをキャッチし、デフォルト値（0%）を返す
+      const defaultValue = progressErrorHandler.getDefaultProgressValue(entityType);
+      return defaultValue as T;
     }
   }
 

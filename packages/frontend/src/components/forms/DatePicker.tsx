@@ -39,6 +39,16 @@ export interface DatePickerProps {
   placeholder?: string;
   /** 追加のCSSクラス */
   className?: string;
+  /** ID属性 */
+  id?: string;
+  /** aria-describedby属性 */
+  'aria-describedby'?: string;
+  /** aria-invalid属性 */
+  'aria-invalid'?: 'true' | 'false';
+  /** フォーカスイベント */
+  onFocus?: () => void;
+  /** ブラーイベント */
+  onBlur?: () => void;
 }
 
 /**
@@ -60,6 +70,11 @@ export const DatePicker: React.FC<DatePickerProps> = ({
   setValue,
   placeholder = '日付を選択してください',
   className = '',
+  id,
+  'aria-describedby': ariaDescribedby,
+  'aria-invalid': ariaInvalid,
+  onFocus,
+  onBlur,
 }) => {
   // デフォルトの日付範囲を取得
   const defaultRange = getDefaultDateRange();
@@ -205,6 +220,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
   return (
     <div className="relative">
       <ReactDatePicker
+        id={id}
         selected={selectedDate}
         onChange={handleDateChange}
         onChangeRaw={handleInputChange as any}
@@ -222,6 +238,10 @@ export const DatePicker: React.FC<DatePickerProps> = ({
         showPopperArrow={false}
         popperClassName="z-50"
         calendarClassName="border border-gray-300 rounded-md shadow-lg"
+        aria-describedby={ariaDescribedby}
+        aria-invalid={ariaInvalid}
+        onFocus={onFocus}
+        onBlur={onBlur}
         dayClassName={date => {
           const baseClass = 'hover:bg-blue-100 rounded';
           if (!isDateInRange(date, dateRange)) {

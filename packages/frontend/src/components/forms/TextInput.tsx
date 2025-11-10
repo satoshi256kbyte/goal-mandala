@@ -21,6 +21,16 @@ export interface TextInputProps {
   onLimitReached?: (value: string) => void;
   /** 警告しきい値（パーセンテージ）デフォルト: 80% */
   warningThreshold?: number;
+  /** ID属性 */
+  id?: string;
+  /** aria-describedby属性 */
+  'aria-describedby'?: string;
+  /** aria-invalid属性 */
+  'aria-invalid'?: 'true' | 'false';
+  /** フォーカスイベント */
+  onFocus?: () => void;
+  /** ブラーイベント */
+  onBlur?: () => void;
 }
 
 /**
@@ -45,6 +55,11 @@ export const TextInput: React.FC<TextInputProps> = ({
   onLengthChange,
   onLimitReached,
   warningThreshold = 80,
+  id,
+  'aria-describedby': ariaDescribedby,
+  'aria-invalid': ariaInvalid,
+  onFocus,
+  onBlur,
 }) => {
   const [inputValue, setInputValue] = React.useState('');
 
@@ -100,9 +115,14 @@ export const TextInput: React.FC<TextInputProps> = ({
   return (
     <div className="relative">
       <input
+        id={id}
         type={type}
         placeholder={placeholder}
         className={getInputClassName()}
+        aria-describedby={ariaDescribedby}
+        aria-invalid={ariaInvalid}
+        onFocus={onFocus}
+        onBlur={onBlur}
         {...(register
           ? register(name, {
               onChange: handleChange,

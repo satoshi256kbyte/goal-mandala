@@ -30,7 +30,7 @@ describe('ProgressCalculationEngine', () => {
   });
 
   describe('calculateTaskProgress', () => {
-    it('完了したタスクの進捗は100%を返す', async () => {
+    it('完了したタスク（COMPLETED）の進捗は100%を返す', async () => {
       // Arrange
       const taskId = 'task-1';
       (mockPrisma.task.findUnique as jest.Mock).mockResolvedValue({
@@ -48,11 +48,39 @@ describe('ProgressCalculationEngine', () => {
       });
     });
 
-    it('未完了のタスクの進捗は0%を返す', async () => {
+    it('進行中のタスク（IN_PROGRESS）の進捗は50%を返す', async () => {
       // Arrange
-      const taskId = 'task-1';
+      const taskId = 'task-2';
+      (mockPrisma.task.findUnique as jest.Mock).mockResolvedValue({
+        status: 'IN_PROGRESS',
+      });
+
+      // Act
+      const progress = await engine.calculateTaskProgress(taskId);
+
+      // Assert
+      expect(progress).toBe(50);
+    });
+
+    it('未着手のタスク（PENDING）の進捗は0%を返す', async () => {
+      // Arrange
+      const taskId = 'task-3';
       (mockPrisma.task.findUnique as jest.Mock).mockResolvedValue({
         status: 'PENDING',
+      });
+
+      // Act
+      const progress = await engine.calculateTaskProgress(taskId);
+
+      // Assert
+      expect(progress).toBe(0);
+    });
+
+    it('スキップしたタスク（CANCELLED）の進捗は0%を返す', async () => {
+      // Arrange
+      const taskId = 'task-4';
+      (mockPrisma.task.findUnique as jest.Mock).mockResolvedValue({
+        status: 'CANCELLED',
       });
 
       // Act
@@ -71,6 +99,406 @@ describe('ProgressCalculationEngine', () => {
       await expect(engine.calculateTaskProgress(taskId)).rejects.toThrow(
         'Task not found: non-existent-task'
       );
+    });
+  });
+
+  describe('calculateActionProgress - ExecutionAction', () => {
+    it('全タスク完了（COMPLETED）の場合は100%を返す', async () => {
+      // Arrange
+      const actionId = 'action-1';
+      (mockPrisma.action.findUnique as jest.Mock).mockResolvedValue({
+        id: actionId,
+        tasks: [
+          {
+            status: 'COMPLETED',
+            type: 'ACTION',
+            title: 'タスク1',
+            description: '',
+            completedAt: null,
+            createdAt: new Date(),
+          },
+          {
+            status: 'COMPLETED',
+            type: 'ACTION',
+            title: 'タスク2',
+            description: '',
+            completedAt: null,
+            createdAt: new Date(),
+          },
+          {
+            status: 'COMPLETED',
+            type: 'ACTION',
+            title: 'タスク3',
+            description: '',
+            completedAt: null,
+            createdAt: new Date(),
+          },
+        ],
+      });
+
+      // Act
+      const progress = await engine.calculateActionProgress(actionId);
+
+      // Assert
+      expect(progress).toBe(100); // (100 + 100 + 100) / 3 = 100
+    });
+
+    it('半分完了・半分進行中の場合は75%を返す', async () => {
+      // Arrange
+      const actionId = 'action-2';
+      (mockPrisma.action.findUnique as jest.Mock).mockResolvedValue({
+        id: actionId,
+        tasks: [
+          {
+            status: 'COMPLETED',
+            type: 'ACTION',
+            title: 'タスク1',
+            description: '',
+            completedAt: null,
+            createdAt: new Date(),
+          },
+          {
+            status: 'COMPLETED',
+            type: 'ACTION',
+            title: 'タスク2',
+            description: '',
+            completedAt: null,
+            createdAt: new Date(),
+          },
+          {
+            status: 'IN_PROGRESS',
+            type: 'ACTION',
+            title: 'タスク3',
+            description: '',
+            completedAt: null,
+            createdAt: new Date(),
+          },
+          {
+            status: 'IN_PROGRESS',
+            type: 'ACTION',
+            title: 'タスク4',
+            description: '',
+            completedAt: null,
+            createdAt: new Date(),
+          },
+        ],
+      });
+
+      // Act
+      const progress = await engine.calculateActionProgress(actionId);
+
+      // Assert
+      expect(progress).toBe(75); // (100 + 100 + 50 + 50) / 4 = 75
+    });
+
+    it('全タスク未着手（PENDING）の場合は0%を返す', async () => {
+      // Arrange
+      const actionId = 'action-3';
+      (mockPrisma.action.findUnique as jest.Mock).mockResolvedValue({
+        id: actionId,
+        tasks: [
+          {
+            status: 'PENDING',
+            type: 'ACTION',
+            title: 'タスク1',
+            description: '',
+            completedAt: null,
+            createdAt: new Date(),
+          },
+          {
+            status: 'PENDING',
+            type: 'ACTION',
+            title: 'タスク2',
+            description: '',
+            completedAt: null,
+            createdAt: new Date(),
+          },
+          {
+            status: 'PENDING',
+            type: 'ACTION',
+            title: 'タスク3',
+            description: '',
+            completedAt: null,
+            createdAt: new Date(),
+          },
+        ],
+      });
+
+      // Act
+      const progress = await engine.calculateActionProgress(actionId);
+
+      // Assert
+      expect(progress).toBe(0); // (0 + 0 + 0) / 3 = 0
+    });
+
+    it('タスクが存在しない場合は0%を返す', async () => {
+      // Arrange
+      const actionId = 'action-4';
+      (mockPrisma.action.findUnique as jest.Mock).mockResolvedValue({
+        id: actionId,
+        tasks: [],
+      });
+
+      // Act
+      const progress = await engine.calculateActionProgress(actionId);
+
+      // Assert
+      expect(progress).toBe(0);
+    });
+
+    it('混合状態のタスクの場合は正しい平均を返す', async () => {
+      // Arrange
+      const actionId = 'action-5';
+      (mockPrisma.action.findUnique as jest.Mock).mockResolvedValue({
+        id: actionId,
+        tasks: [
+          {
+            status: 'COMPLETED',
+            type: 'ACTION',
+            title: 'タスク1',
+            description: '',
+            completedAt: null,
+            createdAt: new Date(),
+          }, // 100
+          {
+            status: 'IN_PROGRESS',
+            type: 'ACTION',
+            title: 'タスク2',
+            description: '',
+            completedAt: null,
+            createdAt: new Date(),
+          }, // 50
+          {
+            status: 'PENDING',
+            type: 'ACTION',
+            title: 'タスク3',
+            description: '',
+            completedAt: null,
+            createdAt: new Date(),
+          }, // 0
+          {
+            status: 'CANCELLED',
+            type: 'ACTION',
+            title: 'タスク4',
+            description: '',
+            completedAt: null,
+            createdAt: new Date(),
+          }, // 0
+        ],
+      });
+
+      // Act
+      const progress = await engine.calculateActionProgress(actionId);
+
+      // Assert
+      expect(progress).toBe(38); // (100 + 50 + 0 + 0) / 4 = 37.5 → 38 (四捨五入)
+    });
+  });
+
+  describe('calculateActionProgress - HabitAction', () => {
+    it('連続30日完了の場合は100%を返す', async () => {
+      // Arrange
+      const actionId = 'habit-action-1';
+      const baseDate = new Date('2025-01-01');
+      const tasks = Array.from({ length: 30 }, (_, i) => ({
+        status: 'COMPLETED',
+        type: 'ACTION',
+        title: '読書習慣',
+        description: '',
+        createdAt: new Date(baseDate.getTime() + i * 24 * 60 * 60 * 1000),
+        completedAt: new Date(baseDate.getTime() + i * 24 * 60 * 60 * 1000),
+      }));
+
+      (mockPrisma.action.findUnique as jest.Mock).mockResolvedValue({
+        id: actionId,
+        tasks,
+      });
+
+      // Act
+      const progress = await engine.calculateActionProgress(actionId);
+
+      // Assert
+      expect(progress).toBe(100); // 30日連続 = 100%
+    });
+
+    it('連続24日完了（80%達成）の場合は100%を返す', async () => {
+      // Arrange
+      const actionId = 'habit-action-2';
+      const baseDate = new Date('2025-01-01');
+      const tasks = Array.from({ length: 24 }, (_, i) => ({
+        status: 'COMPLETED',
+        type: 'ACTION',
+        title: '運動習慣',
+        description: '',
+        createdAt: new Date(baseDate.getTime() + i * 24 * 60 * 60 * 1000),
+        completedAt: new Date(baseDate.getTime() + i * 24 * 60 * 60 * 1000),
+      }));
+
+      (mockPrisma.action.findUnique as jest.Mock).mockResolvedValue({
+        id: actionId,
+        tasks,
+      });
+
+      // Act
+      const progress = await engine.calculateActionProgress(actionId);
+
+      // Assert
+      expect(progress).toBe(100); // 24日連続 = 80%達成 = 100%
+    });
+
+    it('連続12日完了（40%）の場合は50%進捗を返す', async () => {
+      // Arrange
+      const actionId = 'habit-action-3';
+      const baseDate = new Date('2025-01-01');
+      const tasks = Array.from({ length: 12 }, (_, i) => ({
+        status: 'COMPLETED',
+        type: 'ACTION',
+        title: '瞑想習慣',
+        description: '',
+        createdAt: new Date(baseDate.getTime() + i * 24 * 60 * 60 * 1000),
+        completedAt: new Date(baseDate.getTime() + i * 24 * 60 * 60 * 1000),
+      }));
+
+      (mockPrisma.action.findUnique as jest.Mock).mockResolvedValue({
+        id: actionId,
+        tasks,
+      });
+
+      // Act
+      const progress = await engine.calculateActionProgress(actionId);
+
+      // Assert
+      expect(progress).toBe(50); // 12日 / 24日（80%） = 50%
+    });
+
+    it('途中で途切れた場合は最新の連続日数で計算する', async () => {
+      // Arrange
+      const actionId = 'habit-action-4';
+      const baseDate = new Date('2025-01-01');
+      const tasks = [
+        // 最初の連続: 5日
+        ...Array.from({ length: 5 }, (_, i) => ({
+          status: 'COMPLETED',
+          type: 'ACTION',
+          title: '日記習慣',
+          description: '',
+          createdAt: new Date(baseDate.getTime() + i * 24 * 60 * 60 * 1000),
+          completedAt: new Date(baseDate.getTime() + i * 24 * 60 * 60 * 1000),
+        })),
+        // 途切れる（2日間空く）
+        // 最新の連続: 10日
+        ...Array.from({ length: 10 }, (_, i) => ({
+          status: 'COMPLETED',
+          type: 'ACTION',
+          title: '日記習慣',
+          description: '',
+          createdAt: new Date(baseDate.getTime() + (i + 7) * 24 * 60 * 60 * 1000),
+          completedAt: new Date(baseDate.getTime() + (i + 7) * 24 * 60 * 60 * 1000),
+        })),
+      ];
+
+      (mockPrisma.action.findUnique as jest.Mock).mockResolvedValue({
+        id: actionId,
+        tasks,
+      });
+
+      // Act
+      const progress = await engine.calculateActionProgress(actionId);
+
+      // Assert
+      expect(progress).toBe(42); // 10日 / 24日（80%） = 41.67% → 42%
+    });
+
+    it('タスクが存在しない場合は0%を返す', async () => {
+      // Arrange
+      const actionId = 'habit-action-5';
+      (mockPrisma.action.findUnique as jest.Mock).mockResolvedValue({
+        id: actionId,
+        tasks: [],
+      });
+
+      // Act
+      const progress = await engine.calculateActionProgress(actionId);
+
+      // Assert
+      expect(progress).toBe(0);
+    });
+
+    it('完了日時がないタスクのみの場合は0%を返す', async () => {
+      // Arrange
+      const actionId = 'habit-action-6';
+      const tasks = Array.from({ length: 5 }, (_, i) => ({
+        status: 'PENDING',
+        type: 'ACTION',
+        title: '習慣タスク',
+        description: '',
+        createdAt: new Date(),
+        completedAt: null,
+      }));
+
+      (mockPrisma.action.findUnique as jest.Mock).mockResolvedValue({
+        id: actionId,
+        tasks,
+      });
+
+      // Act
+      const progress = await engine.calculateActionProgress(actionId);
+
+      // Assert
+      expect(progress).toBe(0);
+    });
+
+    it('同じ日に複数回完了した場合は1日としてカウントする', async () => {
+      // Arrange
+      const actionId = 'habit-action-7';
+      const baseDate = new Date('2025-01-01');
+      const tasks = [
+        // 1日目に3回完了
+        {
+          status: 'COMPLETED',
+          type: 'ACTION',
+          title: '習慣タスク',
+          description: '',
+          createdAt: baseDate,
+          completedAt: new Date(baseDate.getTime() + 1 * 60 * 60 * 1000), // 1時間後
+        },
+        {
+          status: 'COMPLETED',
+          type: 'ACTION',
+          title: '習慣タスク',
+          description: '',
+          createdAt: baseDate,
+          completedAt: new Date(baseDate.getTime() + 2 * 60 * 60 * 1000), // 2時間後
+        },
+        {
+          status: 'COMPLETED',
+          type: 'ACTION',
+          title: '習慣タスク',
+          description: '',
+          createdAt: baseDate,
+          completedAt: new Date(baseDate.getTime() + 3 * 60 * 60 * 1000), // 3時間後
+        },
+        // 2日目に1回完了
+        {
+          status: 'COMPLETED',
+          type: 'ACTION',
+          title: '習慣タスク',
+          description: '',
+          createdAt: new Date(baseDate.getTime() + 24 * 60 * 60 * 1000),
+          completedAt: new Date(baseDate.getTime() + 24 * 60 * 60 * 1000),
+        },
+      ];
+
+      (mockPrisma.action.findUnique as jest.Mock).mockResolvedValue({
+        id: actionId,
+        tasks,
+      });
+
+      // Act
+      const progress = await engine.calculateActionProgress(actionId);
+
+      // Assert
+      expect(progress).toBe(8); // 2日連続 / 24日（80%） = 8.33% → 8%
     });
   });
 
@@ -124,10 +552,110 @@ describe('ProgressCalculationEngine', () => {
       expect(progress).toBe(expectedProgress); // (10+20+30+40+50+60+70+80)/8 = 45
       expect(engine.calculateActionProgress).toHaveBeenCalledTimes(8);
     });
+
+    it('8つのアクション全て有効な場合は正しい平均を返す', async () => {
+      // Arrange
+      const subGoalId = 'subgoal-valid-all';
+      const actionProgresses = [10, 20, 30, 40, 50, 60, 70, 80]; // 全て有効
+
+      (mockPrisma.subGoal.findUnique as jest.Mock).mockResolvedValue({
+        id: subGoalId,
+        actions: actionProgresses.map((_, index) => ({ id: `action-${index + 1}` })),
+      });
+
+      engine.calculateActionProgress = jest.fn();
+      actionProgresses.forEach(progress => {
+        (engine.calculateActionProgress as jest.Mock).mockResolvedValueOnce(progress);
+      });
+
+      // Act
+      const progress = await engine.calculateSubGoalProgress(subGoalId);
+
+      // Assert
+      expect(progress).toBe(45); // (10+20+30+40+50+60+70+80)/8 = 45
+    });
+
+    it('一部のアクションが無効な場合は有効なアクションのみで平均を計算する', async () => {
+      // Arrange
+      const subGoalId = 'subgoal-partial-invalid';
+      const actionProgresses = [10, 20, -5, 40, 150, 60, NaN, 80]; // -5, 150, NaNが無効
+
+      (mockPrisma.subGoal.findUnique as jest.Mock).mockResolvedValue({
+        id: subGoalId,
+        actions: actionProgresses.map((_, index) => ({ id: `action-${index + 1}` })),
+      });
+
+      engine.calculateActionProgress = jest.fn();
+      actionProgresses.forEach(progress => {
+        (engine.calculateActionProgress as jest.Mock).mockResolvedValueOnce(progress);
+      });
+
+      // 警告ログをモック
+      const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
+
+      // Act
+      const progress = await engine.calculateSubGoalProgress(subGoalId);
+
+      // Assert
+      // 有効な値: 10, 20, 40, 60, 80 → 平均 = (10+20+40+60+80)/5 = 42
+      expect(progress).toBe(42);
+      expect(consoleWarnSpy).toHaveBeenCalledWith(
+        `Invalid progress values detected for subgoal ${subGoalId}:`,
+        [-5, 150, NaN]
+      );
+
+      consoleWarnSpy.mockRestore();
+    });
+
+    it('全てのアクションが無効な場合は0%を返す', async () => {
+      // Arrange
+      const subGoalId = 'subgoal-all-invalid';
+      const actionProgresses = [-10, -20, 150, NaN, 200, -5, 300, NaN]; // 全て無効
+
+      (mockPrisma.subGoal.findUnique as jest.Mock).mockResolvedValue({
+        id: subGoalId,
+        actions: actionProgresses.map((_, index) => ({ id: `action-${index + 1}` })),
+      });
+
+      engine.calculateActionProgress = jest.fn();
+      actionProgresses.forEach(progress => {
+        (engine.calculateActionProgress as jest.Mock).mockResolvedValueOnce(progress);
+      });
+
+      // 警告ログをモック
+      const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
+
+      // Act
+      const progress = await engine.calculateSubGoalProgress(subGoalId);
+
+      // Assert
+      expect(progress).toBe(0); // 有効な値がないので0%
+      expect(consoleWarnSpy).toHaveBeenCalledWith(
+        `Invalid progress values detected for subgoal ${subGoalId}:`,
+        [-10, -20, 150, NaN, 200, -5, 300, NaN]
+      );
+
+      consoleWarnSpy.mockRestore();
+    });
+
+    it('アクションが存在しない場合は0%を返す', async () => {
+      // Arrange
+      const subGoalId = 'subgoal-no-actions';
+      (mockPrisma.subGoal.findUnique as jest.Mock).mockResolvedValue({
+        id: subGoalId,
+        actions: [], // アクションなし
+      });
+
+      // Act
+      const progress = await engine.calculateSubGoalProgress(subGoalId);
+
+      // Assert
+      expect(progress).toBe(0);
+    });
   });
 
   describe('calculateGoalProgress', () => {
-    it('目標の進捗が8つのサブ目標の平均として正しく計算される', async () => {
+    it('8つのサブ目標全て有効な場合、平均値を返す', async () => {
       // Arrange
       const goalId = 'goal-1';
       const subGoalProgresses = [15, 25, 35, 45, 55, 65, 75, 85]; // 8つのサブ目標
@@ -151,6 +679,100 @@ describe('ProgressCalculationEngine', () => {
         subGoalProgresses.reduce((sum, p) => sum + p, 0) / subGoalProgresses.length;
       expect(progress).toBe(expectedProgress); // (15+25+35+45+55+65+75+85)/8 = 50
       expect(engine.calculateSubGoalProgress).toHaveBeenCalledTimes(8);
+    });
+
+    it('一部のサブ目標が無効な場合、有効なサブ目標のみで平均を計算する', async () => {
+      // Arrange
+      const goalId = 'goal-2';
+      const subGoalProgresses = [20, -10, 40, NaN, 60, 150, 80, 100]; // 無効な値を含む
+
+      (mockPrisma.goal.findUnique as jest.Mock).mockResolvedValue({
+        id: goalId,
+        subGoals: subGoalProgresses.map((_, index) => ({ id: `subgoal-${index + 1}` })),
+      });
+
+      // 各サブ目標の進捗をモック
+      engine.calculateSubGoalProgress = jest.fn();
+      subGoalProgresses.forEach((progress, index) => {
+        (engine.calculateSubGoalProgress as jest.Mock).mockResolvedValueOnce(progress);
+      });
+
+      // console.warnをモック
+      const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
+
+      // Act
+      const progress = await engine.calculateGoalProgress(goalId);
+
+      // Assert
+      // 有効な値: 20, 40, 60, 80, 100 → 平均 = (20+40+60+80+100)/5 = 60
+      expect(progress).toBe(60);
+      expect(engine.calculateSubGoalProgress).toHaveBeenCalledTimes(8);
+      expect(consoleWarnSpy).toHaveBeenCalledWith(
+        `Invalid progress values detected for goal ${goalId}:`,
+        expect.arrayContaining([-10, NaN, 150])
+      );
+
+      consoleWarnSpy.mockRestore();
+    });
+
+    it('全てのサブ目標が無効な場合、0%を返す', async () => {
+      // Arrange
+      const goalId = 'goal-3';
+      const subGoalProgresses = [-10, -20, NaN, 150, 200, -5, NaN, 300]; // 全て無効
+
+      (mockPrisma.goal.findUnique as jest.Mock).mockResolvedValue({
+        id: goalId,
+        subGoals: subGoalProgresses.map((_, index) => ({ id: `subgoal-${index + 1}` })),
+      });
+
+      // 各サブ目標の進捗をモック
+      engine.calculateSubGoalProgress = jest.fn();
+      subGoalProgresses.forEach((progress, index) => {
+        (engine.calculateSubGoalProgress as jest.Mock).mockResolvedValueOnce(progress);
+      });
+
+      // console.warnをモック
+      const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
+
+      // Act
+      const progress = await engine.calculateGoalProgress(goalId);
+
+      // Assert
+      expect(progress).toBe(0);
+      expect(engine.calculateSubGoalProgress).toHaveBeenCalledTimes(8);
+      expect(consoleWarnSpy).toHaveBeenCalledWith(
+        `Invalid progress values detected for goal ${goalId}:`,
+        expect.arrayContaining([-10, -20, NaN, 150, 200, -5, NaN, 300])
+      );
+
+      consoleWarnSpy.mockRestore();
+    });
+
+    it('サブ目標が存在しない場合、0%を返す', async () => {
+      // Arrange
+      const goalId = 'goal-4';
+
+      (mockPrisma.goal.findUnique as jest.Mock).mockResolvedValue({
+        id: goalId,
+        subGoals: [], // サブ目標なし
+      });
+
+      // Act
+      const progress = await engine.calculateGoalProgress(goalId);
+
+      // Assert
+      expect(progress).toBe(0);
+    });
+
+    it('目標が存在しない場合、エラーを投げる', async () => {
+      // Arrange
+      const goalId = 'non-existent-goal';
+      (mockPrisma.goal.findUnique as jest.Mock).mockResolvedValue(null);
+
+      // Act & Assert
+      await expect(engine.calculateGoalProgress(goalId)).rejects.toThrow(
+        `Goal not found: ${goalId}`
+      );
     });
   });
 

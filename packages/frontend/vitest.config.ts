@@ -7,19 +7,22 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: ['./src/test/setup.ts'],
-    testTimeout: 30000,
-    hookTimeout: 10000,
-    // タイムアウト対策
-    pool: 'forks',
+    testTimeout: 10000,
+    hookTimeout: 5000,
+    teardownTimeout: 5000,
+    // E2Eテストを除外
+    exclude: ['**/node_modules/**', '**/dist/**', '**/e2e/**', '**/*.spec.ts', '**/*.e2e.test.ts'],
+    // 並列実行を有効化
+    pool: 'threads',
     poolOptions: {
-      forks: {
-        singleFork: true,
+      threads: {
+        singleThread: false,
       },
     },
     // メモリリーク対策
     logHeapUsage: true,
-    // 並列実行制限
-    maxConcurrency: 1,
+    // 並列実行数を制限
+    maxConcurrency: 5,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],

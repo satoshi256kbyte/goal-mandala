@@ -3,6 +3,7 @@
  * 要件: 全要件 - エラーハンドリング
  */
 
+import { vi } from 'vitest';
 import { ProgressErrorHandler } from '../progress-error-handler';
 import { ProgressCalculationError } from '../../types/progress-errors';
 
@@ -165,7 +166,7 @@ describe('ProgressErrorHandler', () => {
 
   describe('コールバック機能', () => {
     it('通知コールバックが呼び出される', async () => {
-      const notificationCallback = jest.fn();
+      const notificationCallback = vi.fn();
       errorHandler.onNotification(notificationCallback);
 
       const error = new Error('Entity not found');
@@ -181,7 +182,7 @@ describe('ProgressErrorHandler', () => {
     });
 
     it('ログコールバックが呼び出される', async () => {
-      const logCallback = jest.fn();
+      const logCallback = vi.fn();
       errorHandler.onLog(logCallback);
 
       const error = new Error('Test error');
@@ -190,7 +191,7 @@ describe('ProgressErrorHandler', () => {
       expect(logCallback).toHaveBeenCalledWith(
         expect.objectContaining({
           level: 'error',
-          message: expect.stringContaining('Progress calculation error'),
+          message: expect.stringContaining('Error calculating progress'),
           metadata: expect.objectContaining({
             errorType: ProgressCalculationError.UNKNOWN_ERROR,
           }),
@@ -199,8 +200,8 @@ describe('ProgressErrorHandler', () => {
     });
 
     it('複数のコールバックが登録できる', async () => {
-      const callback1 = jest.fn();
-      const callback2 = jest.fn();
+      const callback1 = vi.fn();
+      const callback2 = vi.fn();
 
       errorHandler.onNotification(callback1);
       errorHandler.onNotification(callback2);
@@ -243,6 +244,74 @@ describe('ProgressErrorHandler', () => {
       expect(config.calculatingProgress).toBe(-1);
       expect(config.errorProgress).toBe(-2);
       expect(config.noDataProgress).toBe(0);
+    });
+  });
+
+  describe('getDefaultProgressValue', () => {
+    it('タスクのデフォルト進捗値として0%を返す', () => {
+      const value = errorHandler.getDefaultProgressValue('task');
+      expect(value).toBe(0);
+    });
+
+    it('アクションのデフォルト進捗値として0%を返す', () => {
+      const value = errorHandler.getDefaultProgressValue('action');
+      expect(value).toBe(0);
+    });
+
+    it('サブ目標のデフォルト進捗値として0%を返す', () => {
+      const value = errorHandler.getDefaultProgressValue('subgoal');
+      expect(value).toBe(0);
+    });
+
+    it('目標のデフォルト進捗値として0%を返す', () => {
+      const value = errorHandler.getDefaultProgressValue('goal');
+      expect(value).toBe(0);
+    });
+
+    it('エンティティタイプが指定されていない場合も0%を返す', () => {
+      const value = errorHandler.getDefaultProgressValue();
+      expect(value).toBe(0);
+    });
+  });
+
+  describe('エラーハンドリング - フォールバック値', () => {
+    it('データ取得エラー時にフォールバック値を返す', async () => {
+      const error = new Error('Failed to fetch data');
+      const result = await errorHandler.handleError(error, 'test-id', 'task');
+
+      expect(result.success).toBe(false);
+      expect(result.value).toBe(-1); // DATA_FETCH_ERRORのフォールバック値
+      expect(result.isFallback).toBe(true);
+    });
+
+    it('データ検証エラー時にフォールバック値を返す', async () => {
+      const error = new Error('Data validation failed');
+      const result = await errorHandler.handleError(error, 'test-id', 'action');
+
+      expect(result.success).toBe(false);
+      expect(result.value).toBe(0); // UNKNOWN_ERRORのフォールバック値
+      expect(result.isFallback).toBe(true);
+    });
+
+    it('タイムアウトエラー時にフォールバック値を返す', async () => {
+      const error = new Error('Calculation timeout');
+      const result = await errorHandler.handleError(error, 'test-id', 'subgoal');
+
+      expect(result.success).toBe(false);
+      expect(result.value).toBe(-1); // CALCULATION_TIMEOUTのフォールバック値
+      expect(result.isFallback).toBe(true);
+      expect(result.wasNotified).toBe(false); // タイムアウトは通知しない
+    });
+
+    it('循環依存エラー時に例外をスローする準備をする', async () => {
+      const error = new Error('Circular dependency detected');
+      const result = await errorHandler.handleError(error, 'test-id', 'goal');
+
+      expect(result.success).toBe(false);
+      expect(result.value).toBe(-1); // CIRCULAR_DEPENDENCYのフォールバック値
+      expect(result.isFallback).toBe(true);
+      expect(result.wasNotified).toBe(true);
+      expect(result.error?.type).toBe(ProgressCalculationError.CIRCULAR_DEPENDENCY);
     });
   });
 });

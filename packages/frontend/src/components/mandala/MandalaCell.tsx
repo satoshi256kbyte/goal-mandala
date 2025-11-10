@@ -179,4 +179,5 @@ const MandalaCell: React.FC<MandalaCellProps> = ({
   );
 };
 
+export { MandalaCell };
 export default MandalaCell;

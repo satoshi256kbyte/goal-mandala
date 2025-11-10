@@ -173,14 +173,12 @@ export function useMandalaList(options?: UseMandalaListOptions): UseMandalaListR
     if (currentPage !== initialPage) {
       setCurrentPage(initialPage);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearchKeyword, statusFilter, sortOption]);
 
   // データ取得
   useEffect(() => {
     setIsLoading(true);
     fetchMandalas();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearchKeyword, statusFilter, sortOption, currentPage, itemsPerPage]);
 
   return {

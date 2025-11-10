@@ -11,6 +11,7 @@ import {
   type FallbackValueConfig,
   type ErrorLogConfig,
   type ErrorStatistics,
+  type ErrorHandlingResult,
 } from '../types/progress-errors';
 
 /**
@@ -138,20 +139,32 @@ export class ProgressErrorHandler {
   }
 
   /**
+   * エラー時のデフォルト進捗値を取得する
+   * 要件5.3: エラー時のフォールバック値を0%に統一
+   * @param _entityType エンティティタイプ（未使用だが将来の拡張のために保持）
+   * @returns デフォルト進捗値（常に0%）
+   */
+  getDefaultProgressValue(_entityType?: 'task' | 'action' | 'subgoal' | 'goal'): number {
+    // エラー時は0%を返す（安全側に倒す）
+    // エンティティタイプに関わらず、エラー時は常に0%
+    return 0;
+  }
+
+  /**
    * エラーを処理し、適切な対応を実行する
    */
   async handleError(
     error: any,
     entityId?: string,
     entityType?: 'task' | 'action' | 'subgoal' | 'goal'
-  ): Promise<{ value: number; wasRetried: boolean; wasNotified: boolean }> {
+  ): Promise<ErrorHandlingResult> {
     const errorDetails = this.normalizeError(error, entityId, entityType);
     const strategy = this.getErrorStrategy(errorDetails.type);
 
     // エラー統計を更新
     this.updateErrorStatistics(errorDetails.type);
 
-    // ログを記録
+    // ログを記録（改善されたフォーマット）
     this.logError(errorDetails, strategy);
 
     // リトライ処理
@@ -172,7 +185,10 @@ export class ProgressErrorHandler {
     const fallbackValue = this.getFallbackValue(errorDetails.type, strategy);
 
     return {
+      success: false,
       value: fallbackValue,
+      error: errorDetails,
+      isFallback: true,
       wasRetried,
       wasNotified,
     };
@@ -181,9 +197,11 @@ export class ProgressErrorHandler {
   /**
    * 成功結果を作成
    */
-  createSuccessResult(value: number): { value: number; wasRetried: boolean; wasNotified: boolean } {
+  createSuccessResult(value: number): ErrorHandlingResult {
     return {
+      success: true,
       value,
+      isFallback: false,
       wasRetried: false,
       wasNotified: false,
     };
@@ -278,7 +296,7 @@ export class ProgressErrorHandler {
   /**
    * エラー戦略を取得
    */
-  private getErrorStrategy(errorType: ProgressCalculationError): ErrorHandlingStrategy {
+  getErrorStrategy(errorType: ProgressCalculationError): ErrorHandlingStrategy {
     return ERROR_STRATEGIES[errorType] || ERROR_STRATEGIES[ProgressCalculationError.UNKNOWN_ERROR];
   }
 
@@ -315,11 +333,13 @@ export class ProgressErrorHandler {
 
   /**
    * エラーをログに記録
+   * 要件5.1, 5.3: エラーログを記録し、適切なエラーメッセージを返す
    */
   private logError(error: ProgressCalculationErrorDetails, strategy: ErrorHandlingStrategy): void {
+    // 改善されたログフォーマット
     const logConfig: ErrorLogConfig = {
       level: strategy.logLevel,
-      message: `Progress calculation error: ${error.message}`,
+      message: `Error calculating progress for ${error.entityType || 'unknown'} ${error.entityId || 'unknown'}: ${error.message}`,
       metadata: {
         errorType: error.type,
         entityId: error.entityId,
@@ -327,6 +347,8 @@ export class ProgressErrorHandler {
         timestamp: error.timestamp,
         retryCount: error.retryCount,
         stack: error.stack,
+        operation: 'calculateProgress',
+        fallbackValue: strategy.fallbackValue,
       },
     };
 
@@ -339,7 +361,7 @@ export class ProgressErrorHandler {
       }
     });
 
-    // デフォルトのコンソールログ
+    // デフォルトのコンソールログ（改善されたフォーマット）
     if (this.logCallbacks.length === 0) {
       const logMethod =
         strategy.logLevel === 'error'
@@ -347,7 +369,18 @@ export class ProgressErrorHandler {
           : strategy.logLevel === 'warn'
             ? console.warn
             : console.info;
-      logMethod(`[ProgressErrorHandler] ${logConfig.message}`, logConfig.metadata);
+
+      // 構造化ログフォーマット
+      logMethod(`[ProgressErrorHandler] ${logConfig.message}`, {
+        timestamp: error.timestamp.toISOString(),
+        level: strategy.logLevel,
+        entityType: error.entityType,
+        entityId: error.entityId,
+        errorType: error.type,
+        operation: 'calculateProgress',
+        fallbackValue: strategy.fallbackValue,
+        retryCount: error.retryCount,
+      });
     }
   }
 

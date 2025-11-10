@@ -9,14 +9,7 @@ import {
   FIELD_LIMITS,
   dateUtils,
 } from '../../schemas/goal-form';
-import {
-  FormField,
-  TextInput,
-  TextArea,
-  DatePicker,
-  CharacterCounter,
-  ErrorDisplay,
-} from './index';
+import { FormField, TextInput, TextArea, DatePicker, ErrorDisplay } from './index';
 import { useResponsiveLayout } from '../../hooks/useResponsiveLayout';
 import { useKeyboardNavigation } from '../../hooks/useKeyboardNavigation';
 import { /* useFocusManagement, */ useAnnouncement } from '../../hooks/useFocusManagement';
@@ -231,12 +224,6 @@ export const GoalInputForm: React.FC<GoalInputFormProps> = ({
     }
   };
 
-  // フィールドの文字数を取得
-  const getFieldLength = (fieldName: keyof GoalFormData): number => {
-    const value = watchedValues[fieldName];
-    return typeof value === 'string' ? value.length : 0;
-  };
-
   // 送信ボタンの無効化判定
   const isSubmitDisabled = !isValid || isSubmitting || disabled;
 
@@ -330,20 +317,14 @@ export const GoalInputForm: React.FC<GoalInputFormProps> = ({
           error={errors.title?.message}
           helpText="達成したい目標を簡潔に入力してください"
         >
-          <div className="space-y-2">
-            <TextInput
-              name="title"
-              register={register}
-              placeholder="例：プログラミングスキルを向上させる"
-              maxLength={FIELD_LIMITS.TITLE_MAX}
-              disabled={disabled}
-            />
-            <CharacterCounter
-              current={getFieldLength('title')}
-              max={FIELD_LIMITS.TITLE_MAX}
-              showWarning
-            />
-          </div>
+          <TextInput
+            name="title"
+            register={register}
+            placeholder="例：プログラミングスキルを向上させる"
+            maxLength={FIELD_LIMITS.TITLE_MAX}
+            disabled={disabled}
+            showCounter
+          />
         </FormField>
 
         {/* 目標説明 */}
@@ -353,21 +334,15 @@ export const GoalInputForm: React.FC<GoalInputFormProps> = ({
           error={errors.description?.message}
           helpText="目標の詳細な内容や具体的な成果物について説明してください"
         >
-          <div className="space-y-2">
-            <TextArea
-              name="description"
-              register={register}
-              placeholder="例：Webアプリケーション開発に必要なフロントエンド技術（React、TypeScript）とバックエンド技術（Node.js、データベース）を習得し、個人プロジェクトを完成させる"
-              rows={4}
-              maxLength={FIELD_LIMITS.DESCRIPTION_MAX}
-              disabled={disabled}
-            />
-            <CharacterCounter
-              current={getFieldLength('description')}
-              max={FIELD_LIMITS.DESCRIPTION_MAX}
-              showWarning
-            />
-          </div>
+          <TextArea
+            name="description"
+            register={register}
+            placeholder="例：Webアプリケーション開発に必要なフロントエンド技術（React、TypeScript）とバックエンド技術（Node.js、データベース）を習得し、個人プロジェクトを完成させる"
+            rows={4}
+            maxLength={FIELD_LIMITS.DESCRIPTION_MAX}
+            disabled={disabled}
+            showCounter
+          />
         </FormField>
 
         {/* 達成期限 */}
@@ -394,21 +369,15 @@ export const GoalInputForm: React.FC<GoalInputFormProps> = ({
           error={errors.background?.message}
           helpText="この目標を設定した理由や現在の状況について説明してください"
         >
-          <div className="space-y-2">
-            <TextArea
-              name="background"
-              register={register}
-              placeholder="例：現在の職場でWebアプリケーション開発の需要が高まっており、キャリアアップのために技術力を向上させたい。基本的なHTML/CSSは理解しているが、モダンな開発手法については学習が必要"
-              rows={3}
-              maxLength={FIELD_LIMITS.BACKGROUND_MAX}
-              disabled={disabled}
-            />
-            <CharacterCounter
-              current={getFieldLength('background')}
-              max={FIELD_LIMITS.BACKGROUND_MAX}
-              showWarning
-            />
-          </div>
+          <TextArea
+            name="background"
+            register={register}
+            placeholder="例：現在の職場でWebアプリケーション開発の需要が高まっており、キャリアアップのために技術力を向上させたい。基本的なHTML/CSSは理解しているが、モダンな開発手法については学習が必要"
+            rows={3}
+            maxLength={FIELD_LIMITS.BACKGROUND_MAX}
+            disabled={disabled}
+            showCounter
+          />
         </FormField>
 
         {/* 制約事項 */}
@@ -417,21 +386,15 @@ export const GoalInputForm: React.FC<GoalInputFormProps> = ({
           error={errors.constraints?.message}
           helpText="目標達成において制限となる要因があれば入力してください（任意）"
         >
-          <div className="space-y-2">
-            <TextArea
-              name="constraints"
-              register={register}
-              placeholder="例：平日は仕事があるため学習時間は限られる。予算の制約により有料の学習サービスは月1万円まで"
-              rows={3}
-              maxLength={FIELD_LIMITS.CONSTRAINTS_MAX}
-              disabled={disabled}
-            />
-            <CharacterCounter
-              current={getFieldLength('constraints')}
-              max={FIELD_LIMITS.CONSTRAINTS_MAX}
-              showWarning
-            />
-          </div>
+          <TextArea
+            name="constraints"
+            register={register}
+            placeholder="例：平日は仕事があるため学習時間は限られる。予算の制約により有料の学習サービスは月1万円まで"
+            rows={3}
+            maxLength={FIELD_LIMITS.CONSTRAINTS_MAX}
+            disabled={disabled}
+            showCounter
+          />
         </FormField>
 
         {/* フォームアクション */}

@@ -59,7 +59,7 @@ describe('EditModal', () => {
         />
       );
 
-      expect(screen.getByRole('dialog')).toBeInTheDocument();
+      expect(screen.getAllByRole('dialog')[0]).toBeInTheDocument();
     });
 
     it('isOpen=falseの場合、モーダルが表示されない', () => {
@@ -128,7 +128,7 @@ describe('EditModal', () => {
         />
       );
 
-      const backdrop = screen.getByRole('dialog').parentElement;
+      const backdrop = screen.getAllByRole('dialog')[0].parentElement;
       if (backdrop) {
         await user.click(backdrop);
         expect(mockOnClose).toHaveBeenCalled();
@@ -816,7 +816,7 @@ describe('EditModal', () => {
         />
       );
 
-      expect(screen.getByRole('dialog')).toBeInTheDocument();
+      expect(screen.getAllByRole('dialog')[0]).toBeInTheDocument();
     });
 
     it('aria-labelledbyが設定されている', () => {
@@ -831,7 +831,7 @@ describe('EditModal', () => {
         />
       );
 
-      const dialog = screen.getByRole('dialog');
+      const dialog = screen.getAllByRole('dialog')[0];
       expect(dialog).toHaveAttribute('aria-labelledby');
     });
 
@@ -847,7 +847,7 @@ describe('EditModal', () => {
         />
       );
 
-      const dialog = screen.getByRole('dialog');
+      const dialog = screen.getAllByRole('dialog')[0];
       expect(dialog).toHaveAttribute('aria-modal', 'true');
     });
 

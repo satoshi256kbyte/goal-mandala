@@ -320,7 +320,8 @@ export const SubGoalForm: React.FC<SubGoalFormProps> = ({
         >
           <div className="space-y-2">
             <TextInput
-              {...register('title')}
+              name="title"
+              register={register}
               placeholder="例：基礎知識の習得"
               maxLength={FIELD_LIMITS.TITLE_MAX}
               disabled={disabled}
@@ -342,7 +343,8 @@ export const SubGoalForm: React.FC<SubGoalFormProps> = ({
         >
           <div className="space-y-2">
             <TextArea
-              {...register('description')}
+              name="description"
+              register={register}
               placeholder="例：プログラミングの基礎概念、データ構造、アルゴリズムについて理解し、基本的なコードが書けるようになる"
               rows={4}
               maxLength={FIELD_LIMITS.DESCRIPTION_MAX}
@@ -365,7 +367,8 @@ export const SubGoalForm: React.FC<SubGoalFormProps> = ({
         >
           <div className="space-y-2">
             <TextArea
-              {...register('background')}
+              name="background"
+              register={register}
               placeholder="例：プログラミング未経験だが、基礎をしっかり身につけることで後の学習がスムーズになると考えている"
               rows={3}
               maxLength={FIELD_LIMITS.BACKGROUND_MAX}
@@ -387,7 +390,8 @@ export const SubGoalForm: React.FC<SubGoalFormProps> = ({
         >
           <div className="space-y-2">
             <TextArea
-              {...register('constraints')}
+              name="constraints"
+              register={register}
               placeholder="例：学習時間は平日夜と週末のみ。数学の知識が不足している"
               rows={3}
               maxLength={FIELD_LIMITS.CONSTRAINTS_MAX}

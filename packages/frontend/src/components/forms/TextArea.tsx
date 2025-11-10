@@ -22,6 +22,16 @@ export interface TextAreaProps {
   onLimitReached?: (value: string) => void;
   /** 警告しきい値（パーセンテージ）デフォルト: 80% */
   warningThreshold?: number;
+  /** ID属性 */
+  id?: string;
+  /** aria-describedby属性 */
+  'aria-describedby'?: string;
+  /** aria-invalid属性 */
+  'aria-invalid'?: 'true' | 'false';
+  /** フォーカスイベント */
+  onFocus?: () => void;
+  /** ブラーイベント */
+  onBlur?: () => void;
 }
 
 /**
@@ -47,6 +57,11 @@ export const TextArea: React.FC<TextAreaProps> = ({
   onLengthChange,
   onLimitReached,
   warningThreshold = 80,
+  id,
+  'aria-describedby': ariaDescribedby,
+  'aria-invalid': ariaInvalid,
+  onFocus,
+  onBlur,
 }) => {
   const [inputValue, setInputValue] = React.useState('');
 
@@ -102,9 +117,14 @@ export const TextArea: React.FC<TextAreaProps> = ({
   return (
     <div className="relative">
       <textarea
+        id={id}
         placeholder={placeholder}
         rows={rows}
         className={getTextAreaClassName()}
+        aria-describedby={ariaDescribedby}
+        aria-invalid={ariaInvalid}
+        onFocus={onFocus}
+        onBlur={onBlur}
         {...(register
           ? register(name, {
               onChange: handleChange,

@@ -348,7 +348,8 @@ export const ActionForm: React.FC<ActionFormProps> = ({
         >
           <div className="space-y-2">
             <TextInput
-              {...register('title')}
+              name="title"
+              register={register}
               placeholder="例：プログラミング基礎書を読む"
               maxLength={FIELD_LIMITS.TITLE_MAX}
               disabled={disabled}
@@ -370,7 +371,8 @@ export const ActionForm: React.FC<ActionFormProps> = ({
         >
           <div className="space-y-2">
             <TextArea
-              {...register('description')}
+              name="description"
+              register={register}
               placeholder="例：プログラミングの基礎概念について書かれた入門書を1冊読み通し、重要なポイントをノートにまとめる"
               rows={4}
               maxLength={FIELD_LIMITS.DESCRIPTION_MAX}
@@ -393,7 +395,8 @@ export const ActionForm: React.FC<ActionFormProps> = ({
         >
           <div className="space-y-2">
             <TextArea
-              {...register('background')}
+              name="background"
+              register={register}
               placeholder="例：プログラミング未経験のため、まずは体系的に基礎知識を身につける必要がある"
               rows={3}
               maxLength={FIELD_LIMITS.BACKGROUND_MAX}
@@ -415,7 +418,8 @@ export const ActionForm: React.FC<ActionFormProps> = ({
         >
           <div className="space-y-2">
             <TextArea
-              {...register('constraints')}
+              name="constraints"
+              register={register}
               placeholder="例：読書時間は通勤時間と就寝前の1時間のみ。技術書は高価なので図書館を活用"
               rows={3}
               maxLength={FIELD_LIMITS.CONSTRAINTS_MAX}

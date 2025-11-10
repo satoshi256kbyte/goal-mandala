@@ -70,7 +70,7 @@ describe('包括的エラーハンドリング統合テスト', () => {
 
   describe('ネットワークエラーの包括的処理', () => {
     it('接続エラー時の完全なエラーハンドリングフロー', async () => {
-      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+      const user = userEvent.setup({ delay: null });
 
       const connectionError: ApiError = {
         code: NetworkErrorType.CONNECTION_ERROR,
@@ -98,10 +98,17 @@ describe('包括的エラーハンドリング統合テスト', () => {
       );
 
       // フォームに入力
-      await user.type(screen.getByLabelText(/目標タイトル/), validFormData.title);
-      await user.type(screen.getByLabelText(/目標説明/), validFormData.description);
-      await user.type(screen.getByLabelText(/達成期限/), validFormData.deadline);
-      await user.type(screen.getByLabelText(/背景/), validFormData.background);
+      const titleInput = screen.getByRole('textbox', { name: /目標タイトル/ });
+      fireEvent.change(titleInput, { target: { value: validFormData.title } });
+
+      const descInput = screen.getByRole('textbox', { name: /目標説明/ });
+      fireEvent.change(descInput, { target: { value: validFormData.description } });
+
+      const deadlineInput = screen.getByRole('textbox', { name: /達成期限/ });
+      fireEvent.change(deadlineInput, { target: { value: validFormData.deadline } });
+
+      const backgroundInput = screen.getByRole('textbox', { name: /背景/ });
+      fireEvent.change(backgroundInput, { target: { value: validFormData.background } });
 
       // 送信
       await user.click(screen.getByRole('button', { name: /AI生成開始/ }));
@@ -130,7 +137,7 @@ describe('包括的エラーハンドリング統合テスト', () => {
     });
 
     it('タイムアウトエラー時の段階的エラー処理', async () => {
-      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+      const user = userEvent.setup({ delay: null });
 
       // タイムアウトエラーをシミュレート
       mockGoalFormApiService.createGoal.mockImplementation(
@@ -161,10 +168,14 @@ describe('包括的エラーハンドリング統合テスト', () => {
       );
 
       // フォームに入力
-      await user.type(screen.getByLabelText(/目標タイトル/), validFormData.title);
-      await user.type(screen.getByLabelText(/目標説明/), validFormData.description);
-      await user.type(screen.getByLabelText(/達成期限/), validFormData.deadline);
-      await user.type(screen.getByLabelText(/背景/), validFormData.background);
+      const titleInput = screen.getByRole('textbox', { name: /目標タイトル/ });
+      fireEvent.change(titleInput, { target: { value: validFormData.title } });
+      const descInput = screen.getByRole('textbox', { name: /目標説明/ });
+      fireEvent.change(descInput, { target: { value: validFormData.description } });
+      const deadlineInput = screen.getByRole('textbox', { name: /達成期限/ });
+      fireEvent.change(deadlineInput, { target: { value: validFormData.deadline } });
+      const backgroundInput = screen.getByRole('textbox', { name: /背景/ });
+      fireEvent.change(backgroundInput, { target: { value: validFormData.background } });
 
       // 送信
       await user.click(screen.getByRole('button', { name: /AI生成開始/ }));
@@ -198,7 +209,7 @@ describe('包括的エラーハンドリング統合テスト', () => {
     });
 
     it('レート制限エラー時の適切な待機処理', async () => {
-      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+      const user = userEvent.setup({ delay: null });
 
       const rateLimitError: ApiError = {
         code: NetworkErrorType.RATE_LIMIT,
@@ -223,10 +234,14 @@ describe('包括的エラーハンドリング統合テスト', () => {
       );
 
       // フォームに入力して送信
-      await user.type(screen.getByLabelText(/目標タイトル/), validFormData.title);
-      await user.type(screen.getByLabelText(/目標説明/), validFormData.description);
-      await user.type(screen.getByLabelText(/達成期限/), validFormData.deadline);
-      await user.type(screen.getByLabelText(/背景/), validFormData.background);
+      const titleInput = screen.getByRole('textbox', { name: /目標タイトル/ });
+      fireEvent.change(titleInput, { target: { value: validFormData.title } });
+      const descInput = screen.getByRole('textbox', { name: /目標説明/ });
+      fireEvent.change(descInput, { target: { value: validFormData.description } });
+      const deadlineInput = screen.getByRole('textbox', { name: /達成期限/ });
+      fireEvent.change(deadlineInput, { target: { value: validFormData.deadline } });
+      const backgroundInput = screen.getByRole('textbox', { name: /背景/ });
+      fireEvent.change(backgroundInput, { target: { value: validFormData.background } });
 
       await user.click(screen.getByRole('button', { name: /AI生成開始/ }));
 
@@ -262,7 +277,7 @@ describe('包括的エラーハンドリング統合テスト', () => {
 
   describe('オフライン状態の処理', () => {
     it('オフライン検出と復旧の完全フロー', async () => {
-      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+      const user = userEvent.setup({ delay: null });
 
       render(
         <TestWrapper>
@@ -276,10 +291,14 @@ describe('包括的エラーハンドリング統合テスト', () => {
       );
 
       // フォームに入力
-      await user.type(screen.getByLabelText(/目標タイトル/), validFormData.title);
-      await user.type(screen.getByLabelText(/目標説明/), validFormData.description);
-      await user.type(screen.getByLabelText(/達成期限/), validFormData.deadline);
-      await user.type(screen.getByLabelText(/背景/), validFormData.background);
+      const titleInput = screen.getByRole('textbox', { name: /目標タイトル/ });
+      fireEvent.change(titleInput, { target: { value: validFormData.title } });
+      const descInput = screen.getByRole('textbox', { name: /目標説明/ });
+      fireEvent.change(descInput, { target: { value: validFormData.description } });
+      const deadlineInput = screen.getByRole('textbox', { name: /達成期限/ });
+      fireEvent.change(deadlineInput, { target: { value: validFormData.deadline } });
+      const backgroundInput = screen.getByRole('textbox', { name: /背景/ });
+      fireEvent.change(backgroundInput, { target: { value: validFormData.background } });
 
       // オフライン状態にする
       act(() => {
@@ -337,7 +356,7 @@ describe('包括的エラーハンドリング統合テスト', () => {
     });
 
     it('オフライン時の下書き保存フォールバック', async () => {
-      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+      const user = userEvent.setup({ delay: null });
 
       // オフライン状態でAPIエラー
       mockDraftService.saveDraft.mockRejectedValue(new Error('Network error'));
@@ -360,7 +379,8 @@ describe('包括的エラーハンドリング統合テスト', () => {
       });
 
       // フォームに入力
-      await user.type(screen.getByLabelText(/目標タイトル/), validFormData.title);
+      const titleInput = screen.getByRole('textbox', { name: /目標タイトル/ });
+      fireEvent.change(titleInput, { target: { value: validFormData.title } });
 
       // 自動保存が実行される
       act(() => {
@@ -383,7 +403,7 @@ describe('包括的エラーハンドリング統合テスト', () => {
 
   describe('サーバーエラーの処理', () => {
     it('500エラー時の詳細エラー情報表示', async () => {
-      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+      const user = userEvent.setup({ delay: null });
 
       const serverError: ApiError = {
         code: NetworkErrorType.SERVER_ERROR,
@@ -410,10 +430,14 @@ describe('包括的エラーハンドリング統合テスト', () => {
       );
 
       // フォームに入力して送信
-      await user.type(screen.getByLabelText(/目標タイトル/), validFormData.title);
-      await user.type(screen.getByLabelText(/目標説明/), validFormData.description);
-      await user.type(screen.getByLabelText(/達成期限/), validFormData.deadline);
-      await user.type(screen.getByLabelText(/背景/), validFormData.background);
+      const titleInput = screen.getByRole('textbox', { name: /目標タイトル/ });
+      fireEvent.change(titleInput, { target: { value: validFormData.title } });
+      const descInput = screen.getByRole('textbox', { name: /目標説明/ });
+      fireEvent.change(descInput, { target: { value: validFormData.description } });
+      const deadlineInput = screen.getByRole('textbox', { name: /達成期限/ });
+      fireEvent.change(deadlineInput, { target: { value: validFormData.deadline } });
+      const backgroundInput = screen.getByRole('textbox', { name: /背景/ });
+      fireEvent.change(backgroundInput, { target: { value: validFormData.background } });
 
       await user.click(screen.getByRole('button', { name: /AI生成開始/ }));
 
@@ -436,7 +460,7 @@ describe('包括的エラーハンドリング統合テスト', () => {
     });
 
     it('400エラー時のバリデーションエラー統合処理', async () => {
-      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+      const user = userEvent.setup({ delay: null });
 
       const validationError: ApiError = {
         code: NetworkErrorType.CLIENT_ERROR,
@@ -465,10 +489,14 @@ describe('包括的エラーハンドリング統合テスト', () => {
       );
 
       // フォームに入力して送信
-      await user.type(screen.getByLabelText(/目標タイトル/), validFormData.title);
-      await user.type(screen.getByLabelText(/目標説明/), validFormData.description);
-      await user.type(screen.getByLabelText(/達成期限/), validFormData.deadline);
-      await user.type(screen.getByLabelText(/背景/), validFormData.background);
+      const titleInput = screen.getByRole('textbox', { name: /目標タイトル/ });
+      fireEvent.change(titleInput, { target: { value: validFormData.title } });
+      const descInput = screen.getByRole('textbox', { name: /目標説明/ });
+      fireEvent.change(descInput, { target: { value: validFormData.description } });
+      const deadlineInput = screen.getByRole('textbox', { name: /達成期限/ });
+      fireEvent.change(deadlineInput, { target: { value: validFormData.deadline } });
+      const backgroundInput = screen.getByRole('textbox', { name: /背景/ });
+      fireEvent.change(backgroundInput, { target: { value: validFormData.background } });
 
       await user.click(screen.getByRole('button', { name: /AI生成開始/ }));
 
@@ -479,8 +507,8 @@ describe('包括的エラーハンドリング統合テスト', () => {
       });
 
       // 該当フィールドがエラー状態になる
-      const titleInput = screen.getByLabelText(/目標タイトル/);
-      const deadlineInput = screen.getByLabelText(/達成期限/);
+      const titleInput = screen.getByRole('textbox', { name: /目標タイトル/ });
+      const deadlineInput = screen.getByRole('textbox', { name: /達成期限/ });
 
       expect(titleInput).toHaveAttribute('aria-invalid', 'true');
       expect(deadlineInput).toHaveAttribute('aria-invalid', 'true');
@@ -492,7 +520,7 @@ describe('包括的エラーハンドリング統合テスト', () => {
 
   describe('エラー回復機能', () => {
     it('段階的エラー回復戦略', async () => {
-      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+      const user = userEvent.setup({ delay: null });
 
       let attemptCount = 0;
       mockGoalFormApiService.createGoal.mockImplementation(() => {
@@ -531,10 +559,14 @@ describe('包括的エラーハンドリング統合テスト', () => {
       );
 
       // フォームに入力して送信
-      await user.type(screen.getByLabelText(/目標タイトル/), validFormData.title);
-      await user.type(screen.getByLabelText(/目標説明/), validFormData.description);
-      await user.type(screen.getByLabelText(/達成期限/), validFormData.deadline);
-      await user.type(screen.getByLabelText(/背景/), validFormData.background);
+      const titleInput = screen.getByRole('textbox', { name: /目標タイトル/ });
+      fireEvent.change(titleInput, { target: { value: validFormData.title } });
+      const descInput = screen.getByRole('textbox', { name: /目標説明/ });
+      fireEvent.change(descInput, { target: { value: validFormData.description } });
+      const deadlineInput = screen.getByRole('textbox', { name: /達成期限/ });
+      fireEvent.change(deadlineInput, { target: { value: validFormData.deadline } });
+      const backgroundInput = screen.getByRole('textbox', { name: /背景/ });
+      fireEvent.change(backgroundInput, { target: { value: validFormData.background } });
 
       await user.click(screen.getByRole('button', { name: /AI生成開始/ }));
 
@@ -568,7 +600,7 @@ describe('包括的エラーハンドリング統合テスト', () => {
     });
 
     it('手動回復アクションの提供', async () => {
-      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+      const user = userEvent.setup({ delay: null });
 
       const persistentError: ApiError = {
         code: NetworkErrorType.SERVER_ERROR,
@@ -597,10 +629,14 @@ describe('包括的エラーハンドリング統合テスト', () => {
       );
 
       // フォームに入力して送信
-      await user.type(screen.getByLabelText(/目標タイトル/), validFormData.title);
-      await user.type(screen.getByLabelText(/目標説明/), validFormData.description);
-      await user.type(screen.getByLabelText(/達成期限/), validFormData.deadline);
-      await user.type(screen.getByLabelText(/背景/), validFormData.background);
+      const titleInput = screen.getByRole('textbox', { name: /目標タイトル/ });
+      fireEvent.change(titleInput, { target: { value: validFormData.title } });
+      const descInput = screen.getByRole('textbox', { name: /目標説明/ });
+      fireEvent.change(descInput, { target: { value: validFormData.description } });
+      const deadlineInput = screen.getByRole('textbox', { name: /達成期限/ });
+      fireEvent.change(deadlineInput, { target: { value: validFormData.deadline } });
+      const backgroundInput = screen.getByRole('textbox', { name: /背景/ });
+      fireEvent.change(backgroundInput, { target: { value: validFormData.background } });
 
       await user.click(screen.getByRole('button', { name: /AI生成開始/ }));
 
@@ -621,7 +657,7 @@ describe('包括的エラーハンドリング統合テスト', () => {
 
   describe('エラーログとレポート', () => {
     it('エラーログの自動収集と送信', async () => {
-      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+      const user = userEvent.setup({ delay: null });
 
       const mockErrorReporting = vi.fn();
       (window as any).errorReporting = { report: mockErrorReporting };
@@ -651,10 +687,14 @@ describe('包括的エラーハンドリング統合テスト', () => {
       );
 
       // フォームに入力して送信
-      await user.type(screen.getByLabelText(/目標タイトル/), validFormData.title);
-      await user.type(screen.getByLabelText(/目標説明/), validFormData.description);
-      await user.type(screen.getByLabelText(/達成期限/), validFormData.deadline);
-      await user.type(screen.getByLabelText(/背景/), validFormData.background);
+      const titleInput = screen.getByRole('textbox', { name: /目標タイトル/ });
+      fireEvent.change(titleInput, { target: { value: validFormData.title } });
+      const descInput = screen.getByRole('textbox', { name: /目標説明/ });
+      fireEvent.change(descInput, { target: { value: validFormData.description } });
+      const deadlineInput = screen.getByRole('textbox', { name: /達成期限/ });
+      fireEvent.change(deadlineInput, { target: { value: validFormData.deadline } });
+      const backgroundInput = screen.getByRole('textbox', { name: /背景/ });
+      fireEvent.change(backgroundInput, { target: { value: validFormData.background } });
 
       await user.click(screen.getByRole('button', { name: /AI生成開始/ }));
 
@@ -675,7 +715,7 @@ describe('包括的エラーハンドリング統合テスト', () => {
     });
 
     it('ユーザー主導のエラー報告', async () => {
-      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+      const user = userEvent.setup({ delay: null });
 
       const mockErrorReporting = vi.fn();
       (window as any).errorReporting = { report: mockErrorReporting };
@@ -701,10 +741,14 @@ describe('包括的エラーハンドリング統合テスト', () => {
       );
 
       // フォームに入力して送信
-      await user.type(screen.getByLabelText(/目標タイトル/), validFormData.title);
-      await user.type(screen.getByLabelText(/目標説明/), validFormData.description);
-      await user.type(screen.getByLabelText(/達成期限/), validFormData.deadline);
-      await user.type(screen.getByLabelText(/背景/), validFormData.background);
+      const titleInput = screen.getByRole('textbox', { name: /目標タイトル/ });
+      fireEvent.change(titleInput, { target: { value: validFormData.title } });
+      const descInput = screen.getByRole('textbox', { name: /目標説明/ });
+      fireEvent.change(descInput, { target: { value: validFormData.description } });
+      const deadlineInput = screen.getByRole('textbox', { name: /達成期限/ });
+      fireEvent.change(deadlineInput, { target: { value: validFormData.deadline } });
+      const backgroundInput = screen.getByRole('textbox', { name: /背景/ });
+      fireEvent.change(backgroundInput, { target: { value: validFormData.background } });
 
       await user.click(screen.getByRole('button', { name: /AI生成開始/ }));
 

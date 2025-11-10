@@ -14,6 +14,8 @@ export interface ProfileSetupFormProps {
   onSuccess?: () => void;
   /** フォーム送信エラー時のコールバック */
   onError?: (error: string) => void;
+  /** 外部エラーメッセージ */
+  error?: string;
   /** 追加のCSSクラス名 */
   className?: string;
 }
@@ -37,7 +39,7 @@ export interface ProfileSetupFormProps {
  * 要件: 11.2 - コンポーネントのメモ化
  */
 export const ProfileSetupForm = memo<ProfileSetupFormProps>(
-  ({ onSuccess, onError, className = '' }) => {
+  ({ onSuccess, onError, error, className = '' }) => {
     // useProfileFormフックを使用してフォーム状態を管理
     const {
       formData,
@@ -111,8 +113,19 @@ export const ProfileSetupForm = memo<ProfileSetupFormProps>(
         noValidate
         aria-label="プロフィール設定フォーム"
         aria-busy={isLoading}
-        aria-describedby={formError ? 'form-error' : undefined}
+        aria-describedby={formError || error ? 'form-error' : undefined}
       >
+        {/* エラーメッセージ表示 */}
+        {(error || formError) && (
+          <div
+            id="form-error"
+            role="alert"
+            className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md"
+          >
+            <p className="text-sm text-red-800">{error || formError}</p>
+          </div>
+        )}
+
         {/* 所属組織情報セクション - 要件: 10.1 */}
         <section
           className="mb-8 p-6 bg-white rounded-lg shadow-sm"
