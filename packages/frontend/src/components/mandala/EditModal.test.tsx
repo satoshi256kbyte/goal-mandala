@@ -12,7 +12,7 @@ describe('EditModal', () => {
     id: 'goal-1',
     title: 'テスト目標',
     description: 'テスト目標の説明',
-    deadline: new Date('2024-12-31'),
+    deadline: new Date('2025-12-31'),
     progress: 50,
     status: GoalStatus.ACTIVE,
     background: 'テスト背景',
@@ -243,7 +243,8 @@ describe('EditModal', () => {
       expect(screen.getByLabelText(/説明/i)).toBeInTheDocument();
       expect(screen.getByLabelText(/背景/i)).toBeInTheDocument();
       expect(screen.getByLabelText(/制約事項/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/種別/i)).toBeInTheDocument();
+      // 種別はfieldset/legendなので、テキストで検索
+      expect(screen.getByText(/種別/i)).toBeInTheDocument();
     });
 
     it('アクション種別の選択肢が表示される', () => {
@@ -299,9 +300,11 @@ describe('EditModal', () => {
         />
       );
 
-      const titleInput = screen.getByLabelText(/タイトル/i);
+      const titleInput = screen.getByLabelText(/タイトル/i) as HTMLInputElement;
       await user.clear(titleInput);
-      await user.type(titleInput, 'a'.repeat(101));
+      // 長いテキストは直接設定してchangeイベントを発火
+      fireEvent.change(titleInput, { target: { value: 'a'.repeat(101) } });
+      await user.tab(); // フォーカスを外してバリデーションをトリガー
 
       await waitFor(() => {
         expect(screen.getByText(/100文字以内で入力してください/i)).toBeInTheDocument();
@@ -343,12 +346,14 @@ describe('EditModal', () => {
         />
       );
 
-      const descriptionInput = screen.getByLabelText(/説明/i);
+      const descriptionInput = screen.getByLabelText(/説明/i) as HTMLTextAreaElement;
       await user.clear(descriptionInput);
-      await user.type(descriptionInput, 'a'.repeat(501));
+      // 長いテキストは直接設定してchangeイベントを発火
+      fireEvent.change(descriptionInput, { target: { value: 'a'.repeat(501) } });
+      await user.tab(); // フォーカスを外してバリデーションをトリガー
 
       await waitFor(() => {
-        expect(screen.getByText(/500文字以内で入力してください/i)).toBeInTheDocument();
+        expect(screen.getByText(/説明は500文字以内で入力してください/i)).toBeInTheDocument();
       });
     });
 
@@ -387,12 +392,14 @@ describe('EditModal', () => {
         />
       );
 
-      const backgroundInput = screen.getByLabelText(/背景/i);
+      const backgroundInput = screen.getByLabelText(/背景/i) as HTMLTextAreaElement;
       await user.clear(backgroundInput);
-      await user.type(backgroundInput, 'a'.repeat(1001));
+      // 長いテキストは直接設定してchangeイベントを発火
+      fireEvent.change(backgroundInput, { target: { value: 'a'.repeat(1001) } });
+      await user.tab(); // フォーカスを外してバリデーションをトリガー
 
       await waitFor(() => {
-        expect(screen.getByText(/1000文字以内で入力してください/i)).toBeInTheDocument();
+        expect(screen.getByText(/背景は1000文字以内で入力してください/i)).toBeInTheDocument();
       });
     });
 
@@ -409,12 +416,14 @@ describe('EditModal', () => {
         />
       );
 
-      const constraintsInput = screen.getByLabelText(/制約事項/i);
+      const constraintsInput = screen.getByLabelText(/制約事項/i) as HTMLTextAreaElement;
       await user.clear(constraintsInput);
-      await user.type(constraintsInput, 'a'.repeat(1001));
+      // 長いテキストは直接設定してchangeイベントを発火
+      fireEvent.change(constraintsInput, { target: { value: 'a'.repeat(1001) } });
+      await user.tab(); // フォーカスを外してバリデーションをトリガー
 
       await waitFor(() => {
-        expect(screen.getByText(/1000文字以内で入力してください/i)).toBeInTheDocument();
+        expect(screen.getByText(/制約事項は1000文字以内で入力してください/i)).toBeInTheDocument();
       });
     });
 
@@ -463,7 +472,6 @@ describe('EditModal', () => {
     });
 
     it('全てのフィールドが有効な場合、保存ボタンが有効化される', async () => {
-      const user = userEvent.setup();
       render(
         <EditModal
           isOpen={true}
@@ -475,8 +483,11 @@ describe('EditModal', () => {
         />
       );
 
-      const saveButton = screen.getByRole('button', { name: /保存/i });
-      expect(saveButton).not.toBeDisabled();
+      // フォームの初期化を待つ
+      await waitFor(() => {
+        const saveButton = screen.getByRole('button', { name: /保存/i });
+        expect(saveButton).not.toBeDisabled();
+      });
     });
   });
 
@@ -498,6 +509,12 @@ describe('EditModal', () => {
       const titleInput = screen.getByLabelText(/タイトル/i);
       await user.clear(titleInput);
       await user.type(titleInput, '新しいタイトル');
+
+      // 保存ボタンが有効になるまで待つ
+      await waitFor(() => {
+        const saveButton = screen.getByRole('button', { name: /保存/i });
+        expect(saveButton).not.toBeDisabled();
+      });
 
       const saveButton = screen.getByRole('button', { name: /保存/i });
       await user.click(saveButton);
@@ -524,6 +541,12 @@ describe('EditModal', () => {
       const titleInput = screen.getByLabelText(/タイトル/i);
       await user.clear(titleInput);
       await user.type(titleInput, '新しいタイトル');
+
+      // 保存ボタンが有効になるまで待つ
+      await waitFor(() => {
+        const saveButton = screen.getByRole('button', { name: /保存/i });
+        expect(saveButton).not.toBeDisabled();
+      });
 
       const saveButton = screen.getByRole('button', { name: /保存/i });
       await user.click(saveButton);
@@ -585,6 +608,12 @@ describe('EditModal', () => {
         />
       );
 
+      // 保存ボタンが有効になるまで待つ
+      await waitFor(() => {
+        const saveButton = screen.getByRole('button', { name: /保存/i });
+        expect(saveButton).not.toBeDisabled();
+      });
+
       const saveButton = screen.getByRole('button', { name: /保存/i });
       await user.click(saveButton);
 
@@ -609,6 +638,12 @@ describe('EditModal', () => {
         />
       );
 
+      // 保存ボタンが有効になるまで待つ
+      await waitFor(() => {
+        const saveButton = screen.getByRole('button', { name: /保存/i });
+        expect(saveButton).not.toBeDisabled();
+      });
+
       const saveButton = screen.getByRole('button', { name: /保存/i });
       await user.click(saveButton);
 
@@ -631,6 +666,12 @@ describe('EditModal', () => {
         />
       );
 
+      // 保存ボタンが有効になるまで待つ
+      await waitFor(() => {
+        const saveButton = screen.getByRole('button', { name: /保存/i });
+        expect(saveButton).not.toBeDisabled();
+      });
+
       const saveButton = screen.getByRole('button', { name: /保存/i });
       await user.click(saveButton);
 
@@ -652,6 +693,12 @@ describe('EditModal', () => {
           onClose={mockOnClose}
         />
       );
+
+      // 保存ボタンが有効になるまで待つ
+      await waitFor(() => {
+        const saveButton = screen.getByRole('button', { name: /保存/i });
+        expect(saveButton).not.toBeDisabled();
+      });
 
       const saveButton = screen.getByRole('button', { name: /保存/i });
       await user.click(saveButton);

@@ -133,7 +133,7 @@ export const EnhancedErrorDisplay: React.FC<EnhancedErrorDisplayProps> = ({
 
       return () => clearTimeout(timer);
     }
-  }, [hasAnyError, autoHideMs, onErrorHide]);
+  }, [hasAnyError, autoHideMs]);
 
   // エラーが変更されたら表示状態をリセット
   React.useEffect(() => {

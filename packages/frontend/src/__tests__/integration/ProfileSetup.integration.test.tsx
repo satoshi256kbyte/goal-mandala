@@ -1,11 +1,20 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { BrowserRouter } from 'react-router-dom';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import ProfileSetupPage from '../../pages/ProfileSetupPage';
 import { useAuth } from '../../hooks/useAuth';
 import { updateProfile } from '../../services/profileService';
+import {
+  setupIntegrationTest,
+  cleanupIntegrationTest,
+  renderWithProviders,
+  waitForLoadingToFinish,
+  waitForSuccessMessage,
+  waitForErrorMessage,
+} from '../../test/utils/integration-test-utils';
+import { testDataGenerator } from '../../test/utils/TestDataGenerator';
+import { mockManager } from '../../test/utils/MockManager';
 
 // Mock dependencies
 vi.mock('../../hooks/useAuth');
@@ -24,19 +33,30 @@ vi.mock('react-router-dom', async () => {
   };
 });
 
-const renderWithRouter = (component: React.ReactElement) => {
-  return render(<BrowserRouter>{component}</BrowserRouter>);
-};
-
 describe('ProfileSetup Integration Tests', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
+  let testData: Awaited<ReturnType<typeof setupIntegrationTest>>;
+
+  beforeEach(async () => {
+    // テストデータのセットアップ
+    testData = await setupIntegrationTest();
+
+    // モックのセットアップ
     mockNavigate.mockClear();
     mockUseAuth.mockReturnValue({
-      user: { id: '1', email: 'test@example.com', profileSetup: false },
+      user: {
+        id: testData.user.id,
+        email: testData.user.email,
+        name: testData.user.name,
+        profileSetup: false,
+      },
       isAuthenticated: true,
       isLoading: false,
     });
+  });
+
+  afterEach(async () => {
+    // テストデータのクリーンアップ
+    await cleanupIntegrationTest();
   });
 
   describe('正常系フロー', () => {
@@ -44,32 +64,41 @@ describe('ProfileSetup Integration Tests', () => {
       const user = userEvent.setup();
       mockUpdateProfile.mockResolvedValueOnce({ success: true, message: 'Success' });
 
-      renderWithRouter(<ProfileSetupPage />);
+      renderWithProviders(<ProfileSetupPage />);
+
+      // ページが表示されるまで待機
+      await waitForLoadingToFinish();
 
       // Check page is rendered
       expect(screen.getByText('プロフィール設定')).toBeInTheDocument();
 
       // Fill in all required fields
-      await user.selectOptions(screen.getByLabelText('業種'), 'technology');
-      await user.selectOptions(screen.getByLabelText('組織規模'), 'medium');
-      await user.type(screen.getByLabelText('職種'), 'Software Engineer');
+      const industrySelect = await screen.findByLabelText('業種');
+      await user.selectOptions(industrySelect, 'technology');
+
+      const companySizeSelect = await screen.findByLabelText('組織規模');
+      await user.selectOptions(companySizeSelect, 'medium');
+
+      const jobTitleInput = await screen.findByLabelText('職種');
+      await user.type(jobTitleInput, 'Software Engineer');
 
       // Fill in optional field
-      await user.type(screen.getByLabelText('役職'), 'Senior Engineer');
+      const positionInput = await screen.findByLabelText('役職');
+      await user.type(positionInput, 'Senior Engineer');
 
       // Submit form
-      const submitButton = screen.getByRole('button', { name: '保存して次へ' });
+      const submitButton = await screen.findByRole('button', { name: '保存して次へ' });
       expect(submitButton).not.toBeDisabled();
 
       await user.click(submitButton);
 
       // Check loading state
-      expect(screen.getByText('保存中...')).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByText('保存中...')).toBeInTheDocument();
+      });
 
       // Wait for success
-      await waitFor(() => {
-        expect(screen.getByText('プロフィールが正常に保存されました')).toBeInTheDocument();
-      });
+      await waitForSuccessMessage('プロフィールが正常に保存されました');
 
       // Check API was called with correct data
       expect(mockUpdateProfile).toHaveBeenCalledWith({
@@ -92,15 +121,24 @@ describe('ProfileSetup Integration Tests', () => {
       const user = userEvent.setup();
       mockUpdateProfile.mockResolvedValueOnce({ success: true, message: 'Success' });
 
-      renderWithRouter(<ProfileSetupPage />);
+      renderWithProviders(<ProfileSetupPage />);
+
+      // ページが表示されるまで待機
+      await waitForLoadingToFinish();
 
       // Fill in only required fields
-      await user.selectOptions(screen.getByLabelText('業種'), 'healthcare');
-      await user.selectOptions(screen.getByLabelText('組織規模'), 'large');
-      await user.type(screen.getByLabelText('職種'), 'Doctor');
+      const industrySelect = await screen.findByLabelText('業種');
+      await user.selectOptions(industrySelect, 'healthcare');
+
+      const companySizeSelect = await screen.findByLabelText('組織規模');
+      await user.selectOptions(companySizeSelect, 'large');
+
+      const jobTitleInput = await screen.findByLabelText('職種');
+      await user.type(jobTitleInput, 'Doctor');
 
       // Submit form
-      await user.click(screen.getByRole('button', { name: '保存して次へ' }));
+      const submitButton = await screen.findByRole('button', { name: '保存して次へ' });
+      await user.click(submitButton);
 
       await waitFor(() => {
         expect(mockUpdateProfile).toHaveBeenCalledWith({
@@ -116,18 +154,26 @@ describe('ProfileSetup Integration Tests', () => {
   describe('異常系フロー', () => {
     it('should show validation errors for empty form', async () => {
       const user = userEvent.setup();
-      renderWithRouter(<ProfileSetupPage />);
+      renderWithProviders(<ProfileSetupPage />);
+
+      // ページが表示されるまで待機
+      await waitForLoadingToFinish();
 
       // Try to submit empty form
-      const submitButton = screen.getByRole('button', { name: '保存して次へ' });
+      const submitButton = await screen.findByRole('button', { name: '保存して次へ' });
       expect(submitButton).toBeDisabled();
 
       // Focus and blur fields to trigger validation
-      await user.click(screen.getByLabelText('業種'));
+      const industrySelect = await screen.findByLabelText('業種');
+      await user.click(industrySelect);
       await user.tab();
-      await user.click(screen.getByLabelText('組織規模'));
+
+      const companySizeSelect = await screen.findByLabelText('組織規模');
+      await user.click(companySizeSelect);
       await user.tab();
-      await user.click(screen.getByLabelText('職種'));
+
+      const jobTitleInput = await screen.findByLabelText('職種');
+      await user.click(jobTitleInput);
       await user.tab();
 
       // Check validation errors
@@ -146,21 +192,28 @@ describe('ProfileSetup Integration Tests', () => {
       const errorMessage = 'サーバーエラーが発生しました';
       mockUpdateProfile.mockRejectedValueOnce(new Error(errorMessage));
 
-      renderWithRouter(<ProfileSetupPage />);
+      renderWithProviders(<ProfileSetupPage />);
+
+      // ページが表示されるまで待機
+      await waitForLoadingToFinish();
 
       // Fill in form
-      await user.selectOptions(screen.getByLabelText('業種'), 'technology');
-      await user.selectOptions(screen.getByLabelText('組織規模'), 'medium');
-      await user.type(screen.getByLabelText('職種'), 'Engineer');
+      const industrySelect = await screen.findByLabelText('業種');
+      await user.selectOptions(industrySelect, 'technology');
+
+      const companySizeSelect = await screen.findByLabelText('組織規模');
+      await user.selectOptions(companySizeSelect, 'medium');
+
+      const jobTitleInput = await screen.findByLabelText('職種');
+      await user.type(jobTitleInput, 'Engineer');
 
       // Submit form
-      await user.click(screen.getByRole('button', { name: '保存して次へ' }));
+      const submitButton = await screen.findByRole('button', { name: '保存して次へ' });
+      await user.click(submitButton);
 
       // Check error message
-      await waitFor(() => {
-        expect(screen.getByText('エラーが発生しました')).toBeInTheDocument();
-        expect(screen.getByText(errorMessage)).toBeInTheDocument();
-      });
+      await waitForErrorMessage('エラーが発生しました');
+      await waitForErrorMessage(errorMessage);
 
       // Should not redirect
       expect(mockNavigate).not.toHaveBeenCalled();
@@ -170,20 +223,27 @@ describe('ProfileSetup Integration Tests', () => {
       const user = userEvent.setup();
       mockUpdateProfile.mockRejectedValueOnce(new Error('Network Error'));
 
-      renderWithRouter(<ProfileSetupPage />);
+      renderWithProviders(<ProfileSetupPage />);
+
+      // ページが表示されるまで待機
+      await waitForLoadingToFinish();
 
       // Fill in form
-      await user.selectOptions(screen.getByLabelText('業種'), 'technology');
-      await user.selectOptions(screen.getByLabelText('組織規模'), 'medium');
-      await user.type(screen.getByLabelText('職種'), 'Engineer');
+      const industrySelect = await screen.findByLabelText('業種');
+      await user.selectOptions(industrySelect, 'technology');
+
+      const companySizeSelect = await screen.findByLabelText('組織規模');
+      await user.selectOptions(companySizeSelect, 'medium');
+
+      const jobTitleInput = await screen.findByLabelText('職種');
+      await user.type(jobTitleInput, 'Engineer');
 
       // Submit form
-      await user.click(screen.getByRole('button', { name: '保存して次へ' }));
+      const submitButton = await screen.findByRole('button', { name: '保存して次へ' });
+      await user.click(submitButton);
 
       // Check error message
-      await waitFor(() => {
-        expect(screen.getByText('Network Error')).toBeInTheDocument();
-      });
+      await waitForErrorMessage('Network Error');
     });
 
     it('should clear error message after timeout', async () => {

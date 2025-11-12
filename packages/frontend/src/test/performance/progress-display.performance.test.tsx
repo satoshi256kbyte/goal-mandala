@@ -36,9 +36,9 @@ const generateLargeProgressData = (count: number) => {
   }));
 };
 
-// アニメーション完了を待機するヘルパー
-const waitForAnimationComplete = (duration: number = 1000): Promise<void> => {
-  return new Promise(resolve => setTimeout(resolve, duration));
+// アニメーション完了を待機するヘルパー（最小限の待機時間）
+const waitForAnimationComplete = (duration: number = 50): Promise<void> => {
+  return new Promise(resolve => setTimeout(resolve, Math.min(duration, 50)));
 };
 
 // テスト用のProgressBarWrapper

@@ -1,61 +1,73 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import {
+  setupIntegrationTest,
+  cleanupIntegrationTest,
+  renderWithProviders,
+  waitForLoadingToFinish,
+} from '../utils/integration-test-utils';
+import { testDataGenerator } from '../utils/TestDataGenerator';
 
-// モックデータ
-const mockHistoryEntries = [
-  {
-    id: 'history-1',
-    entityType: 'goal',
-    entityId: 'goal-123',
-    userId: 'user-456',
-    userName: '山田太郎',
-    changedAt: '2024-01-15T10:30:00Z',
-    changes: [
-      {
-        field: 'title',
-        oldValue: '古いタイトル',
-        newValue: '新しいタイトル',
-      },
-    ],
-  },
-  {
-    id: 'history-2',
-    entityType: 'goal',
-    entityId: 'goal-123',
-    userId: 'user-456',
-    userName: '山田太郎',
-    changedAt: '2024-01-14T15:20:00Z',
-    changes: [
-      {
-        field: 'description',
-        oldValue: '古い説明',
-        newValue: '新しい説明',
-      },
-      {
-        field: 'background',
-        oldValue: '古い背景',
-        newValue: '新しい背景',
-      },
-    ],
-  },
-  {
-    id: 'history-3',
-    entityType: 'goal',
-    entityId: 'goal-123',
-    userId: 'user-789',
-    userName: '佐藤花子',
-    changedAt: '2024-01-13T09:15:00Z',
-    changes: [
-      {
-        field: 'deadline',
-        oldValue: '2024-12-31',
-        newValue: '2025-03-31',
-      },
-    ],
-  },
-];
+// モックデータ生成関数
+function generateMockHistoryEntries() {
+  const user1 = testDataGenerator.generateUser({ name: '山田太郎' });
+  const user2 = testDataGenerator.generateUser({ name: '佐藤花子' });
+  const goal = testDataGenerator.generateGoal(user1.id);
+
+  return [
+    {
+      id: 'history-1',
+      entityType: 'goal' as const,
+      entityId: goal.id,
+      userId: user1.id,
+      userName: user1.name,
+      changedAt: '2024-01-15T10:30:00Z',
+      changes: [
+        {
+          field: 'title',
+          oldValue: '古いタイトル',
+          newValue: '新しいタイトル',
+        },
+      ],
+    },
+    {
+      id: 'history-2',
+      entityType: 'goal' as const,
+      entityId: goal.id,
+      userId: user1.id,
+      userName: user1.name,
+      changedAt: '2024-01-14T15:20:00Z',
+      changes: [
+        {
+          field: 'description',
+          oldValue: '古い説明',
+          newValue: '新しい説明',
+        },
+        {
+          field: 'background',
+          oldValue: '古い背景',
+          newValue: '新しい背景',
+        },
+      ],
+    },
+    {
+      id: 'history-3',
+      entityType: 'goal' as const,
+      entityId: goal.id,
+      userId: user2.id,
+      userName: user2.name,
+      changedAt: '2024-01-13T09:15:00Z',
+      changes: [
+        {
+          field: 'deadline',
+          oldValue: '2024-12-31',
+          newValue: '2025-03-31',
+        },
+      ],
+    },
+  ];
+}
 
 // HistoryPanelコンポーネントのモック実装
 const MockHistoryPanel = ({
@@ -188,40 +200,43 @@ const MockHistoryPanel = ({
 };
 
 describe('変更履歴フロー統合テスト', () => {
-  let queryClient: QueryClient;
+  let testData: Awaited<ReturnType<typeof setupIntegrationTest>>;
+  let mockHistoryEntries: ReturnType<typeof generateMockHistoryEntries>;
   let mockOnFetchHistory: ReturnType<typeof vi.fn>;
   let mockOnRollback: ReturnType<typeof vi.fn>;
 
-  beforeEach(() => {
-    queryClient = new QueryClient({
-      defaultOptions: {
-        queries: { retry: false },
-        mutations: { retry: false },
-      },
-    });
+  beforeEach(async () => {
+    // テストデータのセットアップ
+    testData = await setupIntegrationTest();
 
+    // モック履歴データの生成
+    mockHistoryEntries = generateMockHistoryEntries();
+
+    // モック関数のセットアップ
     mockOnFetchHistory = vi.fn().mockResolvedValue(mockHistoryEntries);
     mockOnRollback = vi.fn().mockResolvedValue(undefined);
   });
 
-  afterEach(() => {
-    vi.clearAllMocks();
+  afterEach(async () => {
+    // テストデータのクリーンアップ
+    await cleanupIntegrationTest();
   });
 
   describe('履歴表示フロー', () => {
     it('履歴ボタン → 履歴表示 → 差分確認', async () => {
       const user = userEvent.setup();
 
-      render(
-        <QueryClientProvider client={queryClient}>
-          <MockHistoryPanel
-            entityType="goal"
-            entityId="goal-123"
-            isAdmin={false}
-            onFetchHistory={mockOnFetchHistory}
-          />
-        </QueryClientProvider>
+      renderWithProviders(
+        <MockHistoryPanel
+          entityType="goal"
+          entityId={testData.goal.id}
+          isAdmin={false}
+          onFetchHistory={mockOnFetchHistory}
+        />
       );
+
+      // ページが表示されるまで待機
+      await waitForLoadingToFinish();
 
       // 1. 履歴が読み込まれることを確認
       await waitFor(() => {
@@ -229,9 +244,10 @@ describe('変更履歴フロー統合テスト', () => {
       });
 
       // 2. 履歴一覧が表示されることを確認
-      expect(screen.getByRole('list', { name: '変更履歴一覧' })).toBeInTheDocument();
+      const historyList = await screen.findByRole('list', { name: '変更履歴一覧' });
+      expect(historyList).toBeInTheDocument();
 
-      const historyItems = screen.getAllByRole('listitem');
+      const historyItems = await screen.findAllByRole('listitem');
       expect(historyItems).toHaveLength(3);
 
       // 3. 最初の履歴エントリをクリック
@@ -240,16 +256,15 @@ describe('変更履歴フロー統合テスト', () => {
       await user.click(firstButton);
 
       // 4. 詳細ダイアログが表示されることを確認
-      await waitFor(() => {
-        expect(screen.getByRole('dialog', { name: '履歴詳細' })).toBeInTheDocument();
-      });
+      const detailDialog = await screen.findByRole('dialog', { name: '履歴詳細' });
+      expect(detailDialog).toBeInTheDocument();
 
       // 5. 変更内容が表示されることを確認
-      expect(screen.getByText('変更詳細')).toBeInTheDocument();
-      expect(screen.getByText('山田太郎')).toBeInTheDocument();
-      expect(screen.getByText('title:')).toBeInTheDocument();
-      expect(screen.getByText('- 古いタイトル')).toBeInTheDocument();
-      expect(screen.getByText('+ 新しいタイトル')).toBeInTheDocument();
+      expect(await screen.findByText('変更詳細')).toBeInTheDocument();
+      expect(await screen.findByText('山田太郎')).toBeInTheDocument();
+      expect(await screen.findByText('title:')).toBeInTheDocument();
+      expect(await screen.findByText('- 古いタイトル')).toBeInTheDocument();
+      expect(await screen.findByText('+ 新しいタイトル')).toBeInTheDocument();
     });
 
     it('複数の変更を含む履歴の表示', async () => {

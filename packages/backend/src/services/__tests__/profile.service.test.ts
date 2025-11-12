@@ -130,5 +130,84 @@ describe('ProfileService', () => {
         where: { id: mockUserId },
       });
     });
+
+    it('異常系: レコードが見つからない場合はNotFoundErrorをスローする', async () => {
+      // Arrange
+      const error = new Error('Record not found');
+      (error as any).code = 'P2025';
+      (mockPrisma.$transaction as jest.Mock).mockRejectedValue(error);
+
+      // Act & Assert
+      await expect(profileService.deleteProfile(mockUserId)).rejects.toThrow(NotFoundError);
+    });
+
+    it('異常系: データベースエラーの場合はDatabaseErrorをスローする', async () => {
+      // Arrange
+      (mockPrisma.$transaction as jest.Mock).mockRejectedValue(
+        new Error('Database connection failed')
+      );
+
+      // Act & Assert
+      await expect(profileService.deleteProfile(mockUserId)).rejects.toThrow(
+        'データベース削除に失敗しました'
+      );
+    });
+  });
+
+  describe('getProfile - エラーハンドリング', () => {
+    const mockUserId = 'test-user-id';
+
+    it('異常系: データベースエラーの場合はDatabaseErrorをスローする', async () => {
+      // Arrange
+      (mockPrisma.user.findUnique as jest.Mock).mockRejectedValue(
+        new Error('Database connection failed')
+      );
+
+      // Act & Assert
+      await expect(profileService.getProfile(mockUserId)).rejects.toThrow(
+        'データベース接続に失敗しました'
+      );
+    });
+  });
+
+  describe('updateProfile - エラーハンドリング', () => {
+    const mockUserId = 'test-user-id';
+    const mockUpdateData = { name: '更新後ユーザー' };
+
+    it('異常系: レコードが見つからない場合はNotFoundErrorをスローする', async () => {
+      // Arrange
+      const error = new Error('Record not found');
+      (error as any).code = 'P2025';
+      (mockPrisma.user.update as jest.Mock).mockRejectedValue(error);
+
+      // Act & Assert
+      await expect(profileService.updateProfile(mockUserId, mockUpdateData)).rejects.toThrow(
+        NotFoundError
+      );
+    });
+
+    it('異常系: バリデーションエラーの場合はそのまま再スローする', async () => {
+      // Arrange
+      const validationError = new Error('Validation failed');
+      validationError.name = 'ValidationError';
+      (mockPrisma.user.update as jest.Mock).mockRejectedValue(validationError);
+
+      // Act & Assert
+      await expect(profileService.updateProfile(mockUserId, mockUpdateData)).rejects.toThrow(
+        validationError
+      );
+    });
+
+    it('異常系: その他のデータベースエラーの場合はDatabaseErrorをスローする', async () => {
+      // Arrange
+      (mockPrisma.user.update as jest.Mock).mockRejectedValue(
+        new Error('Database connection failed')
+      );
+
+      // Act & Assert
+      await expect(profileService.updateProfile(mockUserId, mockUpdateData)).rejects.toThrow(
+        'データベース更新に失敗しました'
+      );
+    });
   });
 });

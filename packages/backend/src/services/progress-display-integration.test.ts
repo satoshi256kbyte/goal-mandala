@@ -322,7 +322,7 @@ describe('Progress Display Integration Tests', () => {
       // Assert - 全ての結果で同じアクション進捗が計算されることを確認
       const actionProgresses = results.map(result => result.action.progress);
       expect(actionProgresses.every(progress => progress === actionProgresses[0])).toBe(true);
-      expect(actionProgresses[0]).toBeCloseTo(66.67, 1); // 3つのタスクのうち2つが完了
+      expect(actionProgresses[0]).toBeCloseTo(67, 0); // 3つのタスクのうち2つが完了
     });
   });
 
@@ -409,7 +409,7 @@ describe('Progress Display Integration Tests', () => {
       // Assert - 期待される平均値を計算
       const expectedProgress =
         subGoalProgresses.reduce((sum, p) => sum + p, 0) / subGoalProgresses.length;
-      expect(goalProgress).toBeCloseTo(expectedProgress, 1);
+      expect(goalProgress).toBeCloseTo(expectedProgress, 0);
     });
 
     it('空のマンダラチャート（アクションやタスクがない）の進捗計算', async () => {

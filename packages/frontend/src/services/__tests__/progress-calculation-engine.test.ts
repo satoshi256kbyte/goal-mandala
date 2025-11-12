@@ -1,151 +1,498 @@
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ProgressCalculationEngineImpl } from '../progress-calculation-engine';
 import { TaskStatus } from '../../types/progress';
 import { ActionType } from '../../types/mandala';
+import { TestDataGenerator } from '../../test/utils/TestDataGenerator';
 
 describe('ProgressCalculationEngine', () => {
   let engine: ProgressCalculationEngineImpl;
+  let testDataGenerator: TestDataGenerator;
 
   beforeEach(() => {
     engine = new ProgressCalculationEngineImpl();
+    testDataGenerator = new TestDataGenerator();
     // 各テスト前にキャッシュをクリア
     (engine as any).cache.clear();
   });
 
-  describe('calculateTaskProgress', () => {
+  describe('calculateTaskProgress (TaskProgressCalculator)', () => {
     it('完了したタスクの進捗は100%を返す', async () => {
+      // TestDataGeneratorを使用してテストデータを生成
+      const user = testDataGenerator.generateUser();
+      const goal = testDataGenerator.generateGoal(user.id);
+      const subGoals = testDataGenerator.generateSubGoals(goal.id, 1);
+      const actions = testDataGenerator.generateActions(subGoals);
+      const tasks = testDataGenerator.generateTasks(actions[0].id, 1);
+
       // モックデータを設定するため、プライベートメソッドをモック
-      const mockFetchTaskData = jest.spyOn(engine as any, 'fetchTaskData');
+      const mockFetchTaskData = vi.spyOn(engine as any, 'fetchTaskData');
       mockFetchTaskData.mockResolvedValue({
-        id: 'task-1',
-        actionId: 'action-1',
+        id: tasks[0].id,
+        actionId: actions[0].id,
         status: TaskStatus.COMPLETED,
         completedAt: new Date(),
       });
 
-      const progress = await engine.calculateTaskProgress('task-1');
+      const progress = await engine.calculateTaskProgress(tasks[0].id);
       expect(progress).toBe(100);
     });
 
     it('未完了のタスクの進捗は0%を返す', async () => {
-      const mockFetchTaskData = jest.spyOn(engine as any, 'fetchTaskData');
+      const user = testDataGenerator.generateUser();
+      const goal = testDataGenerator.generateGoal(user.id);
+      const subGoals = testDataGenerator.generateSubGoals(goal.id, 1);
+      const actions = testDataGenerator.generateActions(subGoals);
+      const tasks = testDataGenerator.generateTasks(actions[0].id, 1);
+
+      const mockFetchTaskData = vi.spyOn(engine as any, 'fetchTaskData');
       mockFetchTaskData.mockResolvedValue({
-        id: 'task-1',
-        actionId: 'action-1',
+        id: tasks[0].id,
+        actionId: actions[0].id,
         status: TaskStatus.PENDING,
         completedAt: null,
       });
 
-      const progress = await engine.calculateTaskProgress('task-1');
+      const progress = await engine.calculateTaskProgress(tasks[0].id);
       expect(progress).toBe(0);
+    });
+
+    it('進行中のタスクの進捗は0%を返す', async () => {
+      const user = testDataGenerator.generateUser();
+      const goal = testDataGenerator.generateGoal(user.id);
+      const subGoals = testDataGenerator.generateSubGoals(goal.id, 1);
+      const actions = testDataGenerator.generateActions(subGoals);
+      const tasks = testDataGenerator.generateTasks(actions[0].id, 1);
+
+      const mockFetchTaskData = vi.spyOn(engine as any, 'fetchTaskData');
+      mockFetchTaskData.mockResolvedValue({
+        id: tasks[0].id,
+        actionId: actions[0].id,
+        status: TaskStatus.IN_PROGRESS,
+        completedAt: null,
+      });
+
+      const progress = await engine.calculateTaskProgress(tasks[0].id);
+      expect(progress).toBe(0);
+    });
+
+    it('スキップされたタスクの進捗は0%を返す', async () => {
+      const user = testDataGenerator.generateUser();
+      const goal = testDataGenerator.generateGoal(user.id);
+      const subGoals = testDataGenerator.generateSubGoals(goal.id, 1);
+      const actions = testDataGenerator.generateActions(subGoals);
+      const tasks = testDataGenerator.generateTasks(actions[0].id, 1);
+
+      const mockFetchTaskData = vi.spyOn(engine as any, 'fetchTaskData');
+      mockFetchTaskData.mockResolvedValue({
+        id: tasks[0].id,
+        actionId: actions[0].id,
+        status: TaskStatus.SKIPPED,
+        completedAt: null,
+      });
+
+      const progress = await engine.calculateTaskProgress(tasks[0].id);
+      expect(progress).toBe(0);
+    });
+
+    describe('エッジケース', () => {
+      it('空文字列のタスクIDでエラーをスローする', async () => {
+        await expect(engine.calculateTaskProgress('')).rejects.toThrow('Invalid task ID provided');
+      });
+
+      it('nullのタスクIDでエラーをスローする', async () => {
+        await expect(engine.calculateTaskProgress(null as any)).rejects.toThrow(
+          'Invalid task ID provided'
+        );
+      });
+
+      it('undefinedのタスクIDでエラーをスローする', async () => {
+        await expect(engine.calculateTaskProgress(undefined as any)).rejects.toThrow(
+          'Invalid task ID provided'
+        );
+      });
+
+      it('数値のタスクIDでエラーをスローする', async () => {
+        await expect(engine.calculateTaskProgress(123 as any)).rejects.toThrow(
+          'Invalid task ID provided'
+        );
+      });
+
+      it('存在しないタスクでエラーをスローする', async () => {
+        const mockFetchTaskData = vi.spyOn(engine as any, 'fetchTaskData');
+        mockFetchTaskData.mockResolvedValue(null);
+
+        await expect(engine.calculateTaskProgress('non-existent-task')).rejects.toThrow(
+          'Task not found'
+        );
+      });
+
+      it('空配列のタスクデータでエラーをスローする', async () => {
+        const mockFetchTaskData = vi.spyOn(engine as any, 'fetchTaskData');
+        mockFetchTaskData.mockResolvedValue([]);
+
+        await expect(engine.calculateTaskProgress('task-with-empty-array')).rejects.toThrow();
+      });
     });
   });
 
-  describe('calculateActionProgress', () => {
-    it('実行アクションの進捗を正しく計算する', async () => {
-      const mockFetchActionData = jest.spyOn(engine as any, 'fetchActionData');
-      const mockFetchTasksByActionId = jest.spyOn(engine as any, 'fetchTasksByActionId');
+  describe('calculateActionProgress (ExecutionActionCalculator & HabitActionCalculator)', () => {
+    describe('実行アクション (ExecutionActionCalculator)', () => {
+      it('実行アクションの進捗を正しく計算する', async () => {
+        const user = testDataGenerator.generateUser();
+        const goal = testDataGenerator.generateGoal(user.id);
+        const subGoals = testDataGenerator.generateSubGoals(goal.id, 1);
+        const actions = testDataGenerator.generateActions(subGoals);
+        const tasks = testDataGenerator.generateTasks(actions[0].id, 4);
 
-      mockFetchActionData.mockResolvedValue({
-        id: 'action-1',
-        subGoalId: 'subgoal-1',
-        type: ActionType.EXECUTION,
-        targetDays: 30,
+        const mockFetchActionData = vi.spyOn(engine as any, 'fetchActionData');
+        const mockFetchTasksByActionId = vi.spyOn(engine as any, 'fetchTasksByActionId');
+
+        mockFetchActionData.mockResolvedValue({
+          id: actions[0].id,
+          subGoalId: subGoals[0].id,
+          type: ActionType.EXECUTION,
+          targetDays: 30,
+        });
+
+        mockFetchTasksByActionId.mockResolvedValue([
+          {
+            id: tasks[0].id,
+            progress: 100,
+            status: TaskStatus.COMPLETED,
+          },
+          {
+            id: tasks[1].id,
+            progress: 0,
+            status: TaskStatus.PENDING,
+          },
+          {
+            id: tasks[2].id,
+            progress: 100,
+            status: TaskStatus.COMPLETED,
+          },
+          {
+            id: tasks[3].id,
+            progress: 0,
+            status: TaskStatus.PENDING,
+          },
+        ]);
+
+        const progress = await engine.calculateActionProgress(actions[0].id);
+        expect(progress).toBe(50); // 4つのうち2つ完了 = 50%
       });
 
-      mockFetchTasksByActionId.mockResolvedValue([
-        {
-          id: 'task-1',
+      it('タスク完了率に基づく進捗計算（25%完了）', async () => {
+        const user = testDataGenerator.generateUser();
+        const goal = testDataGenerator.generateGoal(user.id);
+        const subGoals = testDataGenerator.generateSubGoals(goal.id, 1);
+        const actions = testDataGenerator.generateActions(subGoals);
+        const tasks = testDataGenerator.generateTasks(actions[0].id, 4);
+
+        const mockFetchActionData = vi.spyOn(engine as any, 'fetchActionData');
+        const mockFetchTasksByActionId = vi.spyOn(engine as any, 'fetchTasksByActionId');
+
+        mockFetchActionData.mockResolvedValue({
+          id: actions[0].id,
+          subGoalId: subGoals[0].id,
+          type: ActionType.EXECUTION,
+          targetDays: 30,
+        });
+
+        mockFetchTasksByActionId.mockResolvedValue([
+          { id: tasks[0].id, progress: 100, status: TaskStatus.COMPLETED },
+          { id: tasks[1].id, progress: 0, status: TaskStatus.PENDING },
+          { id: tasks[2].id, progress: 0, status: TaskStatus.PENDING },
+          { id: tasks[3].id, progress: 0, status: TaskStatus.PENDING },
+        ]);
+
+        const progress = await engine.calculateActionProgress(actions[0].id);
+        expect(progress).toBe(25); // 4つのうち1つ完了 = 25%
+      });
+
+      it('タスク完了率に基づく進捗計算（75%完了）', async () => {
+        const user = testDataGenerator.generateUser();
+        const goal = testDataGenerator.generateGoal(user.id);
+        const subGoals = testDataGenerator.generateSubGoals(goal.id, 1);
+        const actions = testDataGenerator.generateActions(subGoals);
+        const tasks = testDataGenerator.generateTasks(actions[0].id, 4);
+
+        const mockFetchActionData = vi.spyOn(engine as any, 'fetchActionData');
+        const mockFetchTasksByActionId = vi.spyOn(engine as any, 'fetchTasksByActionId');
+
+        mockFetchActionData.mockResolvedValue({
+          id: actions[0].id,
+          subGoalId: subGoals[0].id,
+          type: ActionType.EXECUTION,
+          targetDays: 30,
+        });
+
+        mockFetchTasksByActionId.mockResolvedValue([
+          { id: tasks[0].id, progress: 100, status: TaskStatus.COMPLETED },
+          { id: tasks[1].id, progress: 100, status: TaskStatus.COMPLETED },
+          { id: tasks[2].id, progress: 100, status: TaskStatus.COMPLETED },
+          { id: tasks[3].id, progress: 0, status: TaskStatus.PENDING },
+        ]);
+
+        const progress = await engine.calculateActionProgress(actions[0].id);
+        expect(progress).toBe(75); // 4つのうち3つ完了 = 75%
+      });
+
+      it('全タスク完了時の進捗100%', async () => {
+        const user = testDataGenerator.generateUser();
+        const goal = testDataGenerator.generateGoal(user.id);
+        const subGoals = testDataGenerator.generateSubGoals(goal.id, 1);
+        const actions = testDataGenerator.generateActions(subGoals);
+        const tasks = testDataGenerator.generateTasks(actions[0].id, 3);
+
+        const mockFetchActionData = vi.spyOn(engine as any, 'fetchActionData');
+        const mockFetchTasksByActionId = vi.spyOn(engine as any, 'fetchTasksByActionId');
+
+        mockFetchActionData.mockResolvedValue({
+          id: actions[0].id,
+          subGoalId: subGoals[0].id,
+          type: ActionType.EXECUTION,
+          targetDays: 30,
+        });
+
+        mockFetchTasksByActionId.mockResolvedValue([
+          { id: tasks[0].id, progress: 100, status: TaskStatus.COMPLETED },
+          { id: tasks[1].id, progress: 100, status: TaskStatus.COMPLETED },
+          { id: tasks[2].id, progress: 100, status: TaskStatus.COMPLETED },
+        ]);
+
+        const progress = await engine.calculateActionProgress(actions[0].id);
+        expect(progress).toBe(100); // 全タスク完了 = 100%
+      });
+
+      it('タスクが存在しない場合は0%を返す', async () => {
+        const user = testDataGenerator.generateUser();
+        const goal = testDataGenerator.generateGoal(user.id);
+        const subGoals = testDataGenerator.generateSubGoals(goal.id, 1);
+        const actions = testDataGenerator.generateActions(subGoals);
+
+        const mockFetchActionData = vi.spyOn(engine as any, 'fetchActionData');
+        const mockFetchTasksByActionId = vi.spyOn(engine as any, 'fetchTasksByActionId');
+
+        mockFetchActionData.mockResolvedValue({
+          id: actions[0].id,
+          subGoalId: subGoals[0].id,
+          type: ActionType.EXECUTION,
+          targetDays: 30,
+        });
+
+        mockFetchTasksByActionId.mockResolvedValue([]);
+
+        const progress = await engine.calculateActionProgress(actions[0].id);
+        expect(progress).toBe(0);
+      });
+
+      describe('エッジケース', () => {
+        it('空文字列のアクションIDでエラーをスローする', async () => {
+          await expect(engine.calculateActionProgress('')).rejects.toThrow(
+            'Invalid action ID provided'
+          );
+        });
+
+        it('nullのアクションIDでエラーをスローする', async () => {
+          await expect(engine.calculateActionProgress(null as any)).rejects.toThrow(
+            'Invalid action ID provided'
+          );
+        });
+
+        it('undefinedのアクションIDでエラーをスローする', async () => {
+          await expect(engine.calculateActionProgress(undefined as any)).rejects.toThrow(
+            'Invalid action ID provided'
+          );
+        });
+
+        it('存在しないアクションでエラーをスローする', async () => {
+          const mockFetchActionData = jest.spyOn(engine as any, 'fetchActionData');
+          mockFetchActionData.mockResolvedValue(null);
+
+          await expect(engine.calculateActionProgress('non-existent-action')).rejects.toThrow(
+            'Action not found'
+          );
+        });
+
+        it('タスクデータが配列でない場合エラーをスローする', async () => {
+          const mockFetchActionData = jest.spyOn(engine as any, 'fetchActionData');
+          const mockFetchTasksByActionId = jest.spyOn(engine as any, 'fetchTasksByActionId');
+
+          mockFetchActionData.mockResolvedValue({
+            id: 'action-1',
+            subGoalId: 'subgoal-1',
+            type: ActionType.EXECUTION,
+            targetDays: 30,
+          });
+
+          mockFetchTasksByActionId.mockResolvedValue(null as any);
+
+          await expect(engine.calculateActionProgress('action-1')).rejects.toThrow(
+            'Invalid tasks data for action'
+          );
+        });
+      });
+    });
+
+    describe('習慣アクション (HabitActionCalculator)', () => {
+      it('習慣アクションの進捗を正しく計算する', async () => {
+        const mockFetchActionData = jest.spyOn(engine as any, 'fetchActionData');
+        const mockFetchTasksByActionId = jest.spyOn(engine as any, 'fetchTasksByActionId');
+
+        mockFetchActionData.mockResolvedValue({
+          id: 'action-1',
+          subGoalId: 'subgoal-1',
+          type: ActionType.HABIT,
+          targetDays: 30,
+        });
+
+        // 24日継続（30日の80%）
+        const tasks = Array.from({ length: 24 }, (_, i) => ({
+          id: `task-${i + 1}`,
           progress: 100,
           status: TaskStatus.COMPLETED,
-        },
-        {
-          id: 'task-2',
-          progress: 0,
-          status: TaskStatus.PENDING,
-        },
-        {
-          id: 'task-3',
+        }));
+
+        mockFetchTasksByActionId.mockResolvedValue(tasks);
+
+        const progress = await engine.calculateActionProgress('action-1');
+        expect(progress).toBe(100); // 24日継続 = 30日の80% = 100%
+      });
+
+      it('継続率に基づく進捗計算（50%継続）', async () => {
+        const mockFetchActionData = jest.spyOn(engine as any, 'fetchActionData');
+        const mockFetchTasksByActionId = jest.spyOn(engine as any, 'fetchTasksByActionId');
+
+        mockFetchActionData.mockResolvedValue({
+          id: 'action-1',
+          subGoalId: 'subgoal-1',
+          type: ActionType.HABIT,
+          targetDays: 30,
+        });
+
+        // 12日継続（30日の40%）
+        const tasks = Array.from({ length: 12 }, (_, i) => ({
+          id: `task-${i + 1}`,
           progress: 100,
           status: TaskStatus.COMPLETED,
-        },
-        {
-          id: 'task-4',
-          progress: 0,
-          status: TaskStatus.PENDING,
-        },
-      ]);
+        }));
 
-      const progress = await engine.calculateActionProgress('action-1');
-      expect(progress).toBe(50); // 4つのうち2つ完了 = 50%
-    });
+        mockFetchTasksByActionId.mockResolvedValue(tasks);
 
-    it('習慣アクションの進捗を正しく計算する', async () => {
-      const mockFetchActionData = jest.spyOn(engine as any, 'fetchActionData');
-      const mockFetchTasksByActionId = jest.spyOn(engine as any, 'fetchTasksByActionId');
-
-      mockFetchActionData.mockResolvedValue({
-        id: 'action-1',
-        subGoalId: 'subgoal-1',
-        type: ActionType.HABIT,
-        targetDays: 30,
+        const progress = await engine.calculateActionProgress('action-1');
+        expect(progress).toBe(50); // 12日継続 = 必要日数24日の50%
       });
 
-      // 24日継続（30日の80%）
-      const tasks = Array.from({ length: 24 }, (_, i) => ({
-        id: `task-${i + 1}`,
-        progress: 100,
-        status: TaskStatus.COMPLETED,
-      }));
+      it('80%継続で達成とみなす', async () => {
+        const mockFetchActionData = jest.spyOn(engine as any, 'fetchActionData');
+        const mockFetchTasksByActionId = jest.spyOn(engine as any, 'fetchTasksByActionId');
 
-      mockFetchTasksByActionId.mockResolvedValue(tasks);
+        mockFetchActionData.mockResolvedValue({
+          id: 'action-1',
+          subGoalId: 'subgoal-1',
+          type: ActionType.HABIT,
+          targetDays: 30,
+        });
 
-      const progress = await engine.calculateActionProgress('action-1');
-      expect(progress).toBe(100); // 24日継続 = 30日の80% = 100%
-    });
+        // 24日継続（30日の80%）
+        const tasks = Array.from({ length: 24 }, (_, i) => ({
+          id: `task-${i + 1}`,
+          progress: 100,
+          status: TaskStatus.COMPLETED,
+        }));
 
-    it('習慣アクションで継続日数が不足している場合の進捗計算', async () => {
-      const mockFetchActionData = jest.spyOn(engine as any, 'fetchActionData');
-      const mockFetchTasksByActionId = jest.spyOn(engine as any, 'fetchTasksByActionId');
+        mockFetchTasksByActionId.mockResolvedValue(tasks);
 
-      mockFetchActionData.mockResolvedValue({
-        id: 'action-1',
-        subGoalId: 'subgoal-1',
-        type: ActionType.HABIT,
-        targetDays: 30,
+        const progress = await engine.calculateActionProgress('action-1');
+        expect(progress).toBe(100); // 80%継続で100%達成
       });
 
-      // 12日継続（30日の40%）
-      const tasks = Array.from({ length: 12 }, (_, i) => ({
-        id: `task-${i + 1}`,
-        progress: 100,
-        status: TaskStatus.COMPLETED,
-      }));
+      it('80%を超える継続でも100%を超えない', async () => {
+        const mockFetchActionData = jest.spyOn(engine as any, 'fetchActionData');
+        const mockFetchTasksByActionId = jest.spyOn(engine as any, 'fetchTasksByActionId');
 
-      mockFetchTasksByActionId.mockResolvedValue(tasks);
+        mockFetchActionData.mockResolvedValue({
+          id: 'action-1',
+          subGoalId: 'subgoal-1',
+          type: ActionType.HABIT,
+          targetDays: 30,
+        });
 
-      const progress = await engine.calculateActionProgress('action-1');
-      expect(progress).toBe(50); // 12日継続 = 必要日数24日の50%
-    });
+        // 30日継続（100%）
+        const tasks = Array.from({ length: 30 }, (_, i) => ({
+          id: `task-${i + 1}`,
+          progress: 100,
+          status: TaskStatus.COMPLETED,
+        }));
 
-    it('タスクが存在しない場合は0%を返す', async () => {
-      const mockFetchActionData = jest.spyOn(engine as any, 'fetchActionData');
-      const mockFetchTasksByActionId = jest.spyOn(engine as any, 'fetchTasksByActionId');
+        mockFetchTasksByActionId.mockResolvedValue(tasks);
 
-      mockFetchActionData.mockResolvedValue({
-        id: 'action-1',
-        subGoalId: 'subgoal-1',
-        type: ActionType.EXECUTION,
-        targetDays: 30,
+        const progress = await engine.calculateActionProgress('action-1');
+        expect(progress).toBe(100); // 100%を超えない
       });
 
-      mockFetchTasksByActionId.mockResolvedValue([]);
+      it('タスクが存在しない場合は0%を返す', async () => {
+        const mockFetchActionData = jest.spyOn(engine as any, 'fetchActionData');
+        const mockFetchTasksByActionId = jest.spyOn(engine as any, 'fetchTasksByActionId');
 
-      const progress = await engine.calculateActionProgress('action-1');
-      expect(progress).toBe(0);
+        mockFetchActionData.mockResolvedValue({
+          id: 'action-1',
+          subGoalId: 'subgoal-1',
+          type: ActionType.HABIT,
+          targetDays: 30,
+        });
+
+        mockFetchTasksByActionId.mockResolvedValue([]);
+
+        const progress = await engine.calculateActionProgress('action-1');
+        expect(progress).toBe(0);
+      });
+
+      describe('エッジケース', () => {
+        it('targetDaysが0の場合でもエラーにならない', async () => {
+          const mockFetchActionData = jest.spyOn(engine as any, 'fetchActionData');
+          const mockFetchTasksByActionId = jest.spyOn(engine as any, 'fetchTasksByActionId');
+
+          mockFetchActionData.mockResolvedValue({
+            id: 'action-1',
+            subGoalId: 'subgoal-1',
+            type: ActionType.HABIT,
+            targetDays: 0,
+          });
+
+          mockFetchTasksByActionId.mockResolvedValue([
+            { id: 'task-1', progress: 100, status: TaskStatus.COMPLETED },
+          ]);
+
+          const progress = await engine.calculateActionProgress('action-1');
+          expect(progress).toBeGreaterThanOrEqual(0);
+          expect(progress).toBeLessThanOrEqual(100);
+        });
+
+        it('targetDaysが未定義の場合デフォルト値を使用', async () => {
+          const mockFetchActionData = jest.spyOn(engine as any, 'fetchActionData');
+          const mockFetchTasksByActionId = jest.spyOn(engine as any, 'fetchTasksByActionId');
+
+          mockFetchActionData.mockResolvedValue({
+            id: 'action-1',
+            subGoalId: 'subgoal-1',
+            type: ActionType.HABIT,
+            // targetDaysが未定義
+          });
+
+          mockFetchTasksByActionId.mockResolvedValue([
+            { id: 'task-1', progress: 100, status: TaskStatus.COMPLETED },
+          ]);
+
+          const progress = await engine.calculateActionProgress('action-1');
+          expect(progress).toBeGreaterThanOrEqual(0);
+          expect(progress).toBeLessThanOrEqual(100);
+        });
+      });
     });
   });
 
-  describe('calculateSubGoalProgress', () => {
+  describe('calculateSubGoalProgress (SubGoalProgressCalculator)', () => {
     it('サブ目標の進捗を正しく計算する（8つのアクションの平均）', async () => {
       const mockFetchActionsBySubGoalId = jest.spyOn(engine as any, 'fetchActionsBySubGoalId');
       const mockCalculateActionProgress = jest.spyOn(engine, 'calculateActionProgress');
@@ -176,6 +523,56 @@ describe('ProgressCalculationEngine', () => {
       expect(progress).toBe(50); // (100+75+50+25+0+100+50+0) / 8 = 50%
     });
 
+    it('アクション進捗の平均計算（全て同じ進捗）', async () => {
+      const mockFetchActionsBySubGoalId = jest.spyOn(engine as any, 'fetchActionsBySubGoalId');
+      const mockCalculateActionProgress = jest.spyOn(engine, 'calculateActionProgress');
+
+      mockFetchActionsBySubGoalId.mockResolvedValue([
+        { id: 'action-1' },
+        { id: 'action-2' },
+        { id: 'action-3' },
+        { id: 'action-4' },
+      ]);
+
+      mockCalculateActionProgress
+        .mockResolvedValueOnce(60)
+        .mockResolvedValueOnce(60)
+        .mockResolvedValueOnce(60)
+        .mockResolvedValueOnce(60);
+
+      const progress = await engine.calculateSubGoalProgress('subgoal-1');
+      expect(progress).toBe(60); // 全て60% = 平均60%
+    });
+
+    it('全アクション完了時の進捗100%', async () => {
+      const mockFetchActionsBySubGoalId = jest.spyOn(engine as any, 'fetchActionsBySubGoalId');
+      const mockCalculateActionProgress = jest.spyOn(engine, 'calculateActionProgress');
+
+      mockFetchActionsBySubGoalId.mockResolvedValue([
+        { id: 'action-1' },
+        { id: 'action-2' },
+        { id: 'action-3' },
+        { id: 'action-4' },
+        { id: 'action-5' },
+        { id: 'action-6' },
+        { id: 'action-7' },
+        { id: 'action-8' },
+      ]);
+
+      mockCalculateActionProgress
+        .mockResolvedValueOnce(100)
+        .mockResolvedValueOnce(100)
+        .mockResolvedValueOnce(100)
+        .mockResolvedValueOnce(100)
+        .mockResolvedValueOnce(100)
+        .mockResolvedValueOnce(100)
+        .mockResolvedValueOnce(100)
+        .mockResolvedValueOnce(100);
+
+      const progress = await engine.calculateSubGoalProgress('subgoal-1');
+      expect(progress).toBe(100); // 全アクション100% = 100%
+    });
+
     it('アクションが存在しない場合は0%を返す', async () => {
       const mockFetchActionsBySubGoalId = jest.spyOn(engine as any, 'fetchActionsBySubGoalId');
       mockFetchActionsBySubGoalId.mockResolvedValue([]);
@@ -183,9 +580,95 @@ describe('ProgressCalculationEngine', () => {
       const progress = await engine.calculateSubGoalProgress('subgoal-1');
       expect(progress).toBe(0);
     });
+
+    it('アクション数が8つでない場合でも計算できる', async () => {
+      const mockFetchActionsBySubGoalId = jest.spyOn(engine as any, 'fetchActionsBySubGoalId');
+      const mockCalculateActionProgress = jest.spyOn(engine, 'calculateActionProgress');
+
+      // 4つのアクションのみ
+      mockFetchActionsBySubGoalId.mockResolvedValue([
+        { id: 'action-1' },
+        { id: 'action-2' },
+        { id: 'action-3' },
+        { id: 'action-4' },
+      ]);
+
+      mockCalculateActionProgress
+        .mockResolvedValueOnce(100)
+        .mockResolvedValueOnce(50)
+        .mockResolvedValueOnce(50)
+        .mockResolvedValueOnce(0);
+
+      const progress = await engine.calculateSubGoalProgress('subgoal-1');
+      expect(progress).toBe(50); // (100+50+50+0) / 4 = 50%
+    });
+
+    describe('エッジケース', () => {
+      it('空文字列のサブ目標IDでエラーをスローする', async () => {
+        await expect(engine.calculateSubGoalProgress('')).rejects.toThrow(
+          'Invalid subgoal ID provided'
+        );
+      });
+
+      it('nullのサブ目標IDでエラーをスローする', async () => {
+        await expect(engine.calculateSubGoalProgress(null as any)).rejects.toThrow(
+          'Invalid subgoal ID provided'
+        );
+      });
+
+      it('undefinedのサブ目標IDでエラーをスローする', async () => {
+        await expect(engine.calculateSubGoalProgress(undefined as any)).rejects.toThrow(
+          'Invalid subgoal ID provided'
+        );
+      });
+
+      it('アクションデータが配列でない場合エラーをスローする', async () => {
+        const mockFetchActionsBySubGoalId = jest.spyOn(engine as any, 'fetchActionsBySubGoalId');
+        mockFetchActionsBySubGoalId.mockResolvedValue(null as any);
+
+        await expect(engine.calculateSubGoalProgress('subgoal-1')).rejects.toThrow(
+          'Invalid actions data for subgoal'
+        );
+      });
+
+      it('無効な進捗値を含む場合でも計算できる', async () => {
+        const mockFetchActionsBySubGoalId = jest.spyOn(engine as any, 'fetchActionsBySubGoalId');
+        const mockCalculateActionProgress = jest.spyOn(engine, 'calculateActionProgress');
+
+        mockFetchActionsBySubGoalId.mockResolvedValue([
+          { id: 'action-1' },
+          { id: 'action-2' },
+          { id: 'action-3' },
+        ]);
+
+        // 一部無効な進捗値を含む
+        mockCalculateActionProgress
+          .mockResolvedValueOnce(50)
+          .mockResolvedValueOnce(-10) // 無効な値（フィルタリングされる）
+          .mockResolvedValueOnce(100);
+
+        const progress = await engine.calculateSubGoalProgress('subgoal-1');
+        expect(progress).toBeGreaterThanOrEqual(0);
+        expect(progress).toBeLessThanOrEqual(100);
+      });
+
+      it('全てのアクション進捗が無効な場合エラーをスローする', async () => {
+        const mockFetchActionsBySubGoalId = jest.spyOn(engine as any, 'fetchActionsBySubGoalId');
+        const mockCalculateActionProgress = jest.spyOn(engine, 'calculateActionProgress');
+
+        mockFetchActionsBySubGoalId.mockResolvedValue([{ id: 'action-1' }, { id: 'action-2' }]);
+
+        // 全て無効な進捗値
+        mockCalculateActionProgress.mockResolvedValueOnce(-10).mockResolvedValueOnce(-20);
+
+        await expect(engine.calculateSubGoalProgress('subgoal-1')).rejects.toThrow(
+          'No valid action progress values for subgoal'
+        );
+      });
+    });
   });
 
-  describe('calculateGoalProgress', () => {
+  describe('calculateGoalProgress (GoalProgressCalculator)', () => {
     it('目標の進捗を正しく計算する（8つのサブ目標の平均）', async () => {
       const mockFetchSubGoalsByGoalId = jest.spyOn(engine as any, 'fetchSubGoalsByGoalId');
       const mockCalculateSubGoalProgress = jest.spyOn(engine, 'calculateSubGoalProgress');
@@ -216,12 +699,146 @@ describe('ProgressCalculationEngine', () => {
       expect(progress).toBe(50); // (80+60+40+20+100+0+70+30) / 8 = 50%
     });
 
+    it('サブ目標進捗の平均計算（全て同じ進捗）', async () => {
+      const mockFetchSubGoalsByGoalId = jest.spyOn(engine as any, 'fetchSubGoalsByGoalId');
+      const mockCalculateSubGoalProgress = jest.spyOn(engine, 'calculateSubGoalProgress');
+
+      mockFetchSubGoalsByGoalId.mockResolvedValue([
+        { id: 'subgoal-1' },
+        { id: 'subgoal-2' },
+        { id: 'subgoal-3' },
+        { id: 'subgoal-4' },
+      ]);
+
+      mockCalculateSubGoalProgress
+        .mockResolvedValueOnce(75)
+        .mockResolvedValueOnce(75)
+        .mockResolvedValueOnce(75)
+        .mockResolvedValueOnce(75);
+
+      const progress = await engine.calculateGoalProgress('goal-1');
+      expect(progress).toBe(75); // 全て75% = 平均75%
+    });
+
+    it('全サブ目標完了時の進捗100%', async () => {
+      const mockFetchSubGoalsByGoalId = jest.spyOn(engine as any, 'fetchSubGoalsByGoalId');
+      const mockCalculateSubGoalProgress = jest.spyOn(engine, 'calculateSubGoalProgress');
+
+      mockFetchSubGoalsByGoalId.mockResolvedValue([
+        { id: 'subgoal-1' },
+        { id: 'subgoal-2' },
+        { id: 'subgoal-3' },
+        { id: 'subgoal-4' },
+        { id: 'subgoal-5' },
+        { id: 'subgoal-6' },
+        { id: 'subgoal-7' },
+        { id: 'subgoal-8' },
+      ]);
+
+      mockCalculateSubGoalProgress
+        .mockResolvedValueOnce(100)
+        .mockResolvedValueOnce(100)
+        .mockResolvedValueOnce(100)
+        .mockResolvedValueOnce(100)
+        .mockResolvedValueOnce(100)
+        .mockResolvedValueOnce(100)
+        .mockResolvedValueOnce(100)
+        .mockResolvedValueOnce(100);
+
+      const progress = await engine.calculateGoalProgress('goal-1');
+      expect(progress).toBe(100); // 全サブ目標100% = 100%
+    });
+
     it('サブ目標が存在しない場合は0%を返す', async () => {
       const mockFetchSubGoalsByGoalId = jest.spyOn(engine as any, 'fetchSubGoalsByGoalId');
       mockFetchSubGoalsByGoalId.mockResolvedValue([]);
 
       const progress = await engine.calculateGoalProgress('goal-1');
       expect(progress).toBe(0);
+    });
+
+    it('サブ目標数が8つでない場合でも計算できる', async () => {
+      const mockFetchSubGoalsByGoalId = jest.spyOn(engine as any, 'fetchSubGoalsByGoalId');
+      const mockCalculateSubGoalProgress = jest.spyOn(engine, 'calculateSubGoalProgress');
+
+      // 4つのサブ目標のみ
+      mockFetchSubGoalsByGoalId.mockResolvedValue([
+        { id: 'subgoal-1' },
+        { id: 'subgoal-2' },
+        { id: 'subgoal-3' },
+        { id: 'subgoal-4' },
+      ]);
+
+      mockCalculateSubGoalProgress
+        .mockResolvedValueOnce(100)
+        .mockResolvedValueOnce(60)
+        .mockResolvedValueOnce(40)
+        .mockResolvedValueOnce(0);
+
+      const progress = await engine.calculateGoalProgress('goal-1');
+      expect(progress).toBe(50); // (100+60+40+0) / 4 = 50%
+    });
+
+    describe('エッジケース', () => {
+      it('空文字列の目標IDでエラーをスローする', async () => {
+        await expect(engine.calculateGoalProgress('')).rejects.toThrow('Invalid goal ID provided');
+      });
+
+      it('nullの目標IDでエラーをスローする', async () => {
+        await expect(engine.calculateGoalProgress(null as any)).rejects.toThrow(
+          'Invalid goal ID provided'
+        );
+      });
+
+      it('undefinedの目標IDでエラーをスローする', async () => {
+        await expect(engine.calculateGoalProgress(undefined as any)).rejects.toThrow(
+          'Invalid goal ID provided'
+        );
+      });
+
+      it('サブ目標データが配列でない場合エラーをスローする', async () => {
+        const mockFetchSubGoalsByGoalId = jest.spyOn(engine as any, 'fetchSubGoalsByGoalId');
+        mockFetchSubGoalsByGoalId.mockResolvedValue(null as any);
+
+        await expect(engine.calculateGoalProgress('goal-1')).rejects.toThrow(
+          'Invalid subgoals data for goal'
+        );
+      });
+
+      it('無効な進捗値を含む場合でも計算できる', async () => {
+        const mockFetchSubGoalsByGoalId = jest.spyOn(engine as any, 'fetchSubGoalsByGoalId');
+        const mockCalculateSubGoalProgress = jest.spyOn(engine, 'calculateSubGoalProgress');
+
+        mockFetchSubGoalsByGoalId.mockResolvedValue([
+          { id: 'subgoal-1' },
+          { id: 'subgoal-2' },
+          { id: 'subgoal-3' },
+        ]);
+
+        // 一部無効な進捗値を含む
+        mockCalculateSubGoalProgress
+          .mockResolvedValueOnce(50)
+          .mockResolvedValueOnce(-10) // 無効な値（フィルタリングされる）
+          .mockResolvedValueOnce(100);
+
+        const progress = await engine.calculateGoalProgress('goal-1');
+        expect(progress).toBeGreaterThanOrEqual(0);
+        expect(progress).toBeLessThanOrEqual(100);
+      });
+
+      it('全てのサブ目標進捗が無効な場合エラーをスローする', async () => {
+        const mockFetchSubGoalsByGoalId = jest.spyOn(engine as any, 'fetchSubGoalsByGoalId');
+        const mockCalculateSubGoalProgress = jest.spyOn(engine, 'calculateSubGoalProgress');
+
+        mockFetchSubGoalsByGoalId.mockResolvedValue([{ id: 'subgoal-1' }, { id: 'subgoal-2' }]);
+
+        // 全て無効な進捗値
+        mockCalculateSubGoalProgress.mockResolvedValueOnce(-10).mockResolvedValueOnce(-20);
+
+        await expect(engine.calculateGoalProgress('goal-1')).rejects.toThrow(
+          'No valid subgoal progress values for goal'
+        );
+      });
     });
   });
 

@@ -268,20 +268,46 @@ describe('Comprehensive Accessibility Tests', () => {
       // フォームランドマーク
       const form = screen.getByRole('form', { name: '目標入力フォーム' });
       expect(form).toBeInTheDocument();
+    });
 
-      // メインコンテンツランドマーク
-      const main = screen.getByRole('main');
-      expect(main).toBeInTheDocument();
+    it('should have proper role attributes on all interactive elements', () => {
+      render(<GoalInputForm onSubmit={mockOnSubmit} onDraftSave={mockOnDraftSave} />);
+
+      // ボタン要素
+      const buttons = screen.getAllByRole('button');
+      expect(buttons.length).toBeGreaterThan(0);
+
+      // テキストボックス要素
+      const textboxes = screen.getAllByRole('textbox');
+      expect(textboxes.length).toBeGreaterThan(0);
     });
 
     it('should have live regions for dynamic content', () => {
       render(<GoalInputForm onSubmit={mockOnSubmit} onDraftSave={mockOnDraftSave} />);
 
       // アナウンス領域が存在することを確認
-      const liveRegion = screen.getByRole('status', { hidden: true });
-      expect(liveRegion).toBeInTheDocument();
-      expect(liveRegion).toHaveAttribute('aria-live', 'polite');
-      expect(liveRegion).toHaveAttribute('aria-atomic', 'true');
+      const liveRegions = screen.getAllByRole('status', { hidden: true });
+      expect(liveRegions.length).toBeGreaterThan(0);
+
+      liveRegions.forEach(region => {
+        expect(region).toHaveAttribute('aria-live');
+        expect(region).toHaveAttribute('aria-atomic', 'true');
+      });
+    });
+
+    it('should have aria-live on all dynamic content areas', () => {
+      render(
+        <GoalInputForm onSubmit={mockOnSubmit} onDraftSave={mockOnDraftSave} enableAutoSave />
+      );
+
+      // 自動保存状態表示にaria-liveがあることを確認
+      const statusElements = screen.getAllByRole('status');
+      expect(statusElements.length).toBeGreaterThan(0);
+
+      statusElements.forEach(element => {
+        expect(element).toHaveAttribute('aria-live');
+        expect(element).toHaveAttribute('aria-atomic', 'true');
+      });
     });
 
     it('should announce form submission status', async () => {

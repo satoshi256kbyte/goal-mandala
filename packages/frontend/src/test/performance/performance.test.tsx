@@ -265,14 +265,12 @@ describe('パフォーマンステスト', () => {
       // メモ化なしの場合
       const endNonMemo = measurer.start('render_without_memo');
       const { unmount: unmountNonMemo } = render(<TestContainer useMemo={false} />);
-      await waitFor(() => {}, { timeout: 150 });
       unmountNonMemo();
       endNonMemo();
 
       // メモ化ありの場合
       const endMemo = measurer.start('render_with_memo');
       const { unmount: unmountMemo } = render(<TestContainer useMemo={true} />);
-      await waitFor(() => {}, { timeout: 150 });
       unmountMemo();
       endMemo();
 
@@ -495,8 +493,8 @@ describe('パフォーマンステスト', () => {
       fireEvent.change(input, { target: { value: 'abcd' } });
       fireEvent.change(input, { target: { value: 'abcde' } });
 
-      // デバウンス期間を待つ
-      await waitFor(() => {}, { timeout: 200 });
+      // デバウンス期間を短時間待つ
+      await waitFor(() => {}, { timeout: 50 });
 
       end();
 

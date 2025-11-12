@@ -84,7 +84,8 @@ export const GoalInputForm: React.FC<GoalInputFormProps> = ({
       background: initialData?.background || '',
       constraints: initialData?.constraints || '',
     },
-    mode: 'onBlur', // ブラー時にバリデーション
+    mode: 'onSubmit', // 送信時とブラー時にバリデーション
+    reValidateMode: 'onBlur',
   });
 
   // 内部状態
@@ -123,7 +124,7 @@ export const GoalInputForm: React.FC<GoalInputFormProps> = ({
         currentData[key as keyof GoalFormData] !== lastSavedData[key as keyof PartialGoalFormData]
     );
     setHasUnsavedChanges(hasChanges);
-  }, [watchedValues, lastSavedData, isDirty, getValues]);
+  }, [watchedValues, lastSavedData, isDirty]);
 
   // 自動保存の実装
   const performAutoSave = useCallback(async () => {
@@ -143,7 +144,7 @@ export const GoalInputForm: React.FC<GoalInputFormProps> = ({
     } catch (error) {
       console.warn('自動保存に失敗しました:', error);
     }
-  }, [onDraftSave, hasUnsavedChanges, isDraftSaving, getValues]);
+  }, [onDraftSave, hasUnsavedChanges, isDraftSaving]);
 
   // 自動保存タイマーの設定
   useEffect(() => {
@@ -167,14 +168,7 @@ export const GoalInputForm: React.FC<GoalInputFormProps> = ({
         clearTimeout(autoSaveTimer);
       }
     };
-  }, [
-    hasUnsavedChanges,
-    enableAutoSave,
-    onDraftSave,
-    autoSaveInterval,
-    performAutoSave,
-    autoSaveTimer,
-  ]);
+  }, [hasUnsavedChanges, enableAutoSave, autoSaveInterval]);
 
   // フォーム送信ハンドラー
   const handleFormSubmit: SubmitHandler<GoalFormData> = async data => {
@@ -225,7 +219,7 @@ export const GoalInputForm: React.FC<GoalInputFormProps> = ({
   };
 
   // 送信ボタンの無効化判定
-  const isSubmitDisabled = !isValid || isSubmitting || disabled;
+  const isSubmitDisabled = isSubmitting || disabled;
 
   // レスポンシブクラス名の生成
   const getContainerClasses = () => {
@@ -296,7 +290,7 @@ export const GoalInputForm: React.FC<GoalInputFormProps> = ({
       >
         {/* エラーサマリー */}
         {showErrorSummary && Object.keys(errors).length > 0 && (
-          <div role="alert" aria-live="polite">
+          <div role="alert" aria-live="assertive" aria-atomic="true">
             <ErrorDisplay
               errors={Object.entries(errors).reduce(
                 (acc, [key, error]) => {
@@ -461,10 +455,20 @@ export const GoalInputForm: React.FC<GoalInputFormProps> = ({
 
         {/* 自動保存状態表示 */}
         {enableAutoSave && onDraftSave && (
-          <div className="text-sm text-gray-500 flex items-center gap-2">
+          <div
+            className="text-sm text-gray-500 flex items-center gap-2"
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+          >
             {isDraftSaving ? (
               <>
-                <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
+                <svg
+                  className="w-3 h-3 animate-spin"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
                   <circle
                     className="opacity-25"
                     cx="12"
@@ -483,7 +487,12 @@ export const GoalInputForm: React.FC<GoalInputFormProps> = ({
               </>
             ) : hasUnsavedChanges ? (
               <>
-                <svg className="w-3 h-3 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                <svg
+                  className="w-3 h-3 text-yellow-500"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                  aria-hidden="true"
+                >
                   <path
                     fillRule="evenodd"
                     d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.236 4.53L8.53 10.53a.75.75 0 00-1.06 1.061l2.03 2.03a.75.75 0 001.137-.089l3.857-5.401z"
@@ -494,7 +503,12 @@ export const GoalInputForm: React.FC<GoalInputFormProps> = ({
               </>
             ) : (
               <>
-                <svg className="w-3 h-3 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                <svg
+                  className="w-3 h-3 text-green-500"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                  aria-hidden="true"
+                >
                   <path
                     fillRule="evenodd"
                     d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.236 4.53L8.53 10.53a.75.75 0 00-1.06 1.061l2.03 2.03a.75.75 0 001.137-.089l3.857-5.401z"

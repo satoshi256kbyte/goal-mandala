@@ -52,6 +52,7 @@ export const TextInput: React.FC<TextInputProps> = ({
   error,
   type = 'text',
   className = '',
+  disabled = false,
   onLengthChange,
   onLimitReached,
   warningThreshold = 80,
@@ -123,6 +124,7 @@ export const TextInput: React.FC<TextInputProps> = ({
         aria-invalid={ariaInvalid}
         onFocus={onFocus}
         onBlur={onBlur}
+        disabled={disabled}
         {...(register
           ? register(name, {
               onChange: handleChange,

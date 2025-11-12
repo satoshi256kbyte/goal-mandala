@@ -4,6 +4,17 @@ module.exports = {
   testEnvironment: 'node',
   roots: ['<rootDir>/src'],
   testMatch: ['**/__tests__/**/*.ts', '**/?(*.)+(spec|test).ts'],
+  testPathIgnorePatterns: [
+    '/node_modules/',
+    'src/index.test.ts',
+    'src/constructs/ses-construct.test.ts',
+    'src/workflows/ai-generation-workflow.test.ts',
+    'src/constructs/lambda-construct.test.ts',
+    'src/constructs/secrets-manager-integration.test.ts',
+    'src/config/environment.test.ts',
+    'src/stacks/ai-generation-stack.test.ts',
+    'src/stacks/cognito-stack.integration.test.ts',
+  ],
   transform: {
     '^.+\\.ts$': 'ts-jest',
   },

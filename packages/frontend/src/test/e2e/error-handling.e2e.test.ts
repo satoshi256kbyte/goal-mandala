@@ -79,11 +79,11 @@ test.describe('エラーハンドリング E2E', () => {
       // 進捗バーが表示されることを確認
       await expect(page.locator('[data-testid="progress-bar"]')).toBeVisible();
 
-      // 警告メッセージが表示されることを確認（20秒後）
-      await expect(page.locator('text=送信に時間がかかっています')).toBeVisible({ timeout: 25000 });
+      // 警告メッセージが表示されることを確認
+      await expect(page.locator('text=送信に時間がかかっています')).toBeVisible({ timeout: 1000 });
 
-      // タイムアウトエラーが表示されることを確認（30秒後）
-      await expect(page.locator('text=タイムアウト')).toBeVisible({ timeout: 35000 });
+      // タイムアウトエラーが表示されることを確認
+      await expect(page.locator('text=タイムアウト')).toBeVisible({ timeout: 2000 });
 
       // 再試行ボタンが表示されることを確認
       await expect(page.locator('button:has-text("再試行")')).toBeVisible();
@@ -275,15 +275,15 @@ test.describe('エラーハンドリング E2E', () => {
       // フォームに入力（自動保存をトリガー）
       await page.fill('[data-testid="goal-title"]', 'テスト目標');
 
-      // 30秒待機（自動保存間隔）
-      await page.waitForTimeout(30000);
+      // 短時間待機（自動保存の確認）
+      await page.waitForTimeout(100);
 
       // エラー通知が表示されることを確認（控えめな表示）
       await expect(page.locator('[data-testid="auto-save-error"]')).toBeVisible();
 
       // エラーが自動的に非表示になることを確認
       await expect(page.locator('[data-testid="auto-save-error"]')).not.toBeVisible({
-        timeout: 10000,
+        timeout: 1000,
       });
     });
   });

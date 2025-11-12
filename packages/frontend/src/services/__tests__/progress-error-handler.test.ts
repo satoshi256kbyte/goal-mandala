@@ -314,4 +314,130 @@ describe('ProgressErrorHandler', () => {
       expect(result.error?.type).toBe(ProgressCalculationError.CIRCULAR_DEPENDENCY);
     });
   });
+
+  describe('エラーメッセージの検証', () => {
+    it('無効なエンティティエラーのメッセージを正しく生成する', async () => {
+      const error = new Error('Entity not found');
+      const result = await errorHandler.handleError(error, 'test-id', 'task');
+
+      expect(result.error?.message).toContain('無効なデータが検出されました');
+    });
+
+    it('ネットワークエラーのメッセージを正しく生成する', async () => {
+      const error = new Error('Network error');
+      const result = await errorHandler.handleError(error, 'test-id', 'action');
+
+      expect(result.error?.message).toBeDefined();
+      expect(result.error?.type).toBe(ProgressCalculationError.NETWORK_ERROR);
+    });
+
+    it('タイムアウトエラーのメッセージを正しく生成する', async () => {
+      const error = new Error('Timeout');
+      const result = await errorHandler.handleError(error, 'test-id', 'subgoal');
+
+      expect(result.error?.message).toBeDefined();
+      expect(result.error?.type).toBe(ProgressCalculationError.CALCULATION_TIMEOUT);
+    });
+  });
+
+  describe('エラーログの記録', () => {
+    it('エラーログが正しく記録される', async () => {
+      const logCallback = vi.fn();
+      errorHandler.onLog(logCallback);
+
+      const error = new Error('Test error');
+      await errorHandler.handleError(error, 'test-id', 'task');
+
+      expect(logCallback).toHaveBeenCalledWith(
+        expect.objectContaining({
+          level: 'error',
+          message: expect.any(String),
+          metadata: expect.objectContaining({
+            errorType: expect.any(String),
+            entityId: 'test-id',
+            entityType: 'task',
+          }),
+        })
+      );
+    });
+
+    it('警告レベルのログが正しく記録される', async () => {
+      const logCallback = vi.fn();
+      errorHandler.onLog(logCallback);
+
+      const error = new Error('Timeout');
+      await errorHandler.handleError(error, 'test-id', 'action');
+
+      expect(logCallback).toHaveBeenCalledWith(
+        expect.objectContaining({
+          level: 'warn',
+          message: expect.any(String),
+        })
+      );
+    });
+
+    it('エラーログにスタックトレースが含まれる', async () => {
+      const logCallback = vi.fn();
+      errorHandler.onLog(logCallback);
+
+      const error = new Error('Test error with stack');
+      await errorHandler.handleError(error, 'test-id', 'task');
+
+      expect(logCallback).toHaveBeenCalledWith(
+        expect.objectContaining({
+          metadata: expect.objectContaining({
+            stack: expect.any(String),
+          }),
+        })
+      );
+    });
+  });
+
+  describe('リトライロジック', () => {
+    it('リトライ可能なエラーでリトライフラグが設定される', async () => {
+      const error = new Error('Timeout');
+      const result = await errorHandler.handleError(error, 'test-id', 'task');
+
+      const strategy = errorHandler.getErrorStrategy(ProgressCalculationError.CALCULATION_TIMEOUT);
+      expect(strategy.retryCount).toBeGreaterThan(0);
+      expect(strategy.autoRecover).toBe(true);
+    });
+
+    it('リトライ不可能なエラーでリトライフラグが設定されない', async () => {
+      const error = new Error('Entity not found');
+      const result = await errorHandler.handleError(error, 'test-id', 'task');
+
+      const strategy = errorHandler.getErrorStrategy(ProgressCalculationError.INVALID_ENTITY);
+      expect(strategy.retryCount).toBe(0);
+      expect(strategy.autoRecover).toBe(false);
+    });
+
+    it('ネットワークエラーでリトライが推奨される', async () => {
+      const error = new Error('Network error');
+      const result = await errorHandler.handleError(error, 'test-id', 'action');
+
+      const strategy = errorHandler.getErrorStrategy(ProgressCalculationError.NETWORK_ERROR);
+      expect(strategy.retryCount).toBeGreaterThan(0);
+      expect(strategy.autoRecover).toBe(true);
+    });
+
+    it('認証エラーでリトライが推奨されない', async () => {
+      const error = new Error('Unauthorized');
+      const result = await errorHandler.handleError(error, 'test-id', 'goal');
+
+      const strategy = errorHandler.getErrorStrategy(ProgressCalculationError.AUTHENTICATION_ERROR);
+      expect(strategy.retryCount).toBe(0);
+      expect(strategy.autoRecover).toBe(false);
+    });
+
+    it('リトライ回数が戦略に従って設定される', () => {
+      const timeoutStrategy = errorHandler.getErrorStrategy(
+        ProgressCalculationError.CALCULATION_TIMEOUT
+      );
+      const networkStrategy = errorHandler.getErrorStrategy(ProgressCalculationError.NETWORK_ERROR);
+
+      expect(timeoutStrategy.retryCount).toBeGreaterThanOrEqual(1);
+      expect(networkStrategy.retryCount).toBeGreaterThanOrEqual(1);
+    });
+  });
 });

@@ -172,7 +172,7 @@ export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
       modal: 'bg-white rounded-lg shadow-xl max-w-md mx-auto',
     };
 
-    return `${baseClasses} ${severityClasses[error.severity]} ${displayClasses[displayType]} ${className}`;
+    return `${baseClasses} ${error?.severity ? severityClasses[error.severity] : severityClasses[FormErrorSeverity.MEDIUM]} ${displayClasses[displayType]} ${className}`;
   };
 
   const getTextClasses = () => {
@@ -183,19 +183,23 @@ export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
       [FormErrorSeverity.LOW]: 'text-blue-800',
     };
 
-    return severityClasses[error.severity];
+    return error?.severity
+      ? severityClasses[error.severity]
+      : severityClasses[FormErrorSeverity.MEDIUM];
   };
 
   return (
     <div className={getContainerClasses()} role="alert" aria-live="polite" aria-atomic="true">
       <div className="flex">
         <div className="flex-shrink-0">
-          <ErrorIcon severity={error.severity} />
+          <ErrorIcon severity={error?.severity || FormErrorSeverity.MEDIUM} />
         </div>
         <div className="ml-3 flex-1">
-          <div className={`text-sm font-medium ${getTextClasses()}`}>{error.message}</div>
+          <div className={`text-sm font-medium ${getTextClasses()}`}>
+            {error?.message || 'エラーが発生しました'}
+          </div>
 
-          {error.code && displayType !== 'inline' && (
+          {error?.code && displayType !== 'inline' && (
             <div className={`mt-1 text-xs ${getTextClasses()} opacity-75`}>
               エラーコード: {error.code}
             </div>

@@ -233,5 +233,29 @@ describe('Retry Logic', () => {
       expect(result).toEqual(complexObject);
       expect(fn).toHaveBeenCalledTimes(1);
     });
+
+    it('非Errorオブジェクトがthrowされた場合', async () => {
+      const fn = jest.fn().mockRejectedValue('string error');
+
+      await expect(retryWithBackoff(fn)).rejects.toThrow('string error');
+      expect(fn).toHaveBeenCalledTimes(1);
+    });
+
+    it('最大遅延時間を超える場合の遅延計算', async () => {
+      const error = new Error('ThrottlingException');
+      error.name = 'ThrottlingException';
+
+      const fn = jest.fn().mockRejectedValue(error);
+
+      const config: RetryConfig = {
+        maxRetries: 1,
+        baseDelay: 1000,
+        maxDelay: 500, // baseDelayより小さい値
+        backoffMultiplier: 2,
+      };
+
+      await expect(retryWithBackoff(fn, config)).rejects.toThrow('ThrottlingException');
+      expect(fn).toHaveBeenCalledTimes(2);
+    });
   });
 });

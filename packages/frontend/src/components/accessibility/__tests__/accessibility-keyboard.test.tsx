@@ -1,10 +1,11 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { SubGoalEditPage } from '../../pages/SubGoalEditPage';
-import { ActionEditPage } from '../../pages/ActionEditPage';
-import { DynamicFormField, FieldPresets } from '../forms/DynamicFormField';
-import { BulkEditModal } from '../forms/BulkEditModal';
+import { vi } from 'vitest';
+import { SubGoalEditPage } from '../../../pages/SubGoalEditPage';
+import { ActionEditPage } from '../../../pages/ActionEditPage';
+import { DynamicFormField, FieldPresets } from '../../forms/DynamicFormField';
+import { BulkEditModal } from '../../forms/BulkEditModal';
 import { MemoryRouter } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 
@@ -162,7 +163,7 @@ describe('キーボード操作のアクセシビリティテスト', () => {
   describe('DynamicFormField', () => {
     test('Tabキーで次のフィールドにフォーカス移動できる', async () => {
       const user = userEvent.setup();
-      const mockOnChange = jest.fn();
+      const mockOnChange = vi.fn();
 
       render(
         <FormWrapper>
@@ -182,10 +183,10 @@ describe('キーボード操作のアクセシビリティテスト', () => {
 
     test('Enterキーでフォーム送信イベントが発生する', async () => {
       const user = userEvent.setup();
-      const mockOnChange = jest.fn();
+      const mockOnChange = vi.fn();
 
       // カスタムイベントリスナーを設定
-      const mockEventListener = jest.fn();
+      const mockEventListener = vi.fn();
       document.addEventListener('dynamicFormSave', mockEventListener);
 
       render(
@@ -205,7 +206,7 @@ describe('キーボード操作のアクセシビリティテスト', () => {
 
     test('ラジオボタンで矢印キーナビゲーションができる', async () => {
       const user = userEvent.setup();
-      const mockOnChange = jest.fn();
+      const mockOnChange = vi.fn();
 
       render(
         <FormWrapper>
@@ -238,8 +239,8 @@ describe('キーボード操作のアクセシビリティテスト', () => {
           position: 0,
         },
       ],
-      onClose: jest.fn(),
-      onSave: jest.fn(),
+      onClose: vi.fn(),
+      onSave: vi.fn(),
       itemType: 'subgoal' as const,
     };
 
@@ -262,7 +263,7 @@ describe('キーボード操作のアクセシビリティテスト', () => {
 
     test('Escapeキーでモーダルを閉じることができる', async () => {
       const user = userEvent.setup();
-      const mockOnClose = jest.fn();
+      const mockOnClose = vi.fn();
 
       render(<BulkEditModal {...mockProps} onClose={mockOnClose} />);
 

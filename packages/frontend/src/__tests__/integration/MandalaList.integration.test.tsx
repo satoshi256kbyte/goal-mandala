@@ -1,12 +1,18 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { BrowserRouter } from 'react-router-dom';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import MandalaListPage from '../../pages/MandalaListPage';
 import { useAuth } from '../../hooks/useAuth';
 import { GoalsService } from '../../services/mandala-list/goals-api';
 import { GoalStatus } from '../../types/mandala-list';
+import {
+  setupIntegrationTest,
+  cleanupIntegrationTest,
+  renderWithProviders,
+  waitForLoadingToFinish,
+} from '../../test/utils/integration-test-utils';
+import { testDataGenerator } from '../../test/utils/TestDataGenerator';
 
 // Mock dependencies
 vi.mock('../../hooks/useAuth');
@@ -24,49 +30,61 @@ vi.mock('react-router-dom', async () => {
   };
 });
 
-const renderWithRouter = (component: React.ReactElement) => {
-  return render(<BrowserRouter>{component}</BrowserRouter>);
-};
-
-// Mock data
-const mockMandalas = [
-  {
-    id: '1',
-    title: 'プロジェクトマネージャーになる',
-    description: 'チームをリードし、プロジェクトを成功に導く',
-    deadline: new Date('2025-12-31'),
-    status: GoalStatus.ACTIVE,
-    progress: 45,
-    createdAt: new Date('2025-01-01'),
-    updatedAt: new Date('2025-01-15'),
-  },
-  {
-    id: '2',
-    title: 'TOEIC 800点を取得する',
-    description: '英語力を向上させてグローバルに活躍する',
-    deadline: new Date('2025-06-30'),
-    status: GoalStatus.ACTIVE,
-    progress: 60,
-    createdAt: new Date('2025-01-05'),
-    updatedAt: new Date('2025-01-20'),
-  },
-];
+// Mock data generation function
+function generateMockMandalas(userId: string) {
+  return [
+    {
+      id: '1',
+      title: 'プロジェクトマネージャーになる',
+      description: 'チームをリードし、プロジェクトを成功に導く',
+      deadline: new Date('2025-12-31'),
+      status: GoalStatus.ACTIVE,
+      progress: 45,
+      createdAt: new Date('2025-01-01'),
+      updatedAt: new Date('2025-01-15'),
+    },
+    {
+      id: '2',
+      title: 'TOEIC 800点を取得する',
+      description: '英語力を向上させてグローバルに活躍する',
+      deadline: new Date('2025-06-30'),
+      status: GoalStatus.ACTIVE,
+      progress: 60,
+      createdAt: new Date('2025-01-05'),
+      updatedAt: new Date('2025-01-20'),
+    },
+  ];
+}
 
 describe('MandalaList Integration Tests', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
+  let testData: Awaited<ReturnType<typeof setupIntegrationTest>>;
+  let mockMandalas: ReturnType<typeof generateMockMandalas>;
+
+  beforeEach(async () => {
+    // テストデータのセットアップ
+    testData = await setupIntegrationTest();
+
+    // モックマンダラデータの生成
+    mockMandalas = generateMockMandalas(testData.user.id);
+
+    // モックのセットアップ
     mockNavigate.mockClear();
     mockUseAuth.mockReturnValue({
       user: {
-        id: '1',
-        email: 'test@example.com',
-        name: 'Test User',
+        id: testData.user.id,
+        email: testData.user.email,
+        name: testData.user.name,
         profileSetup: true,
       },
       isAuthenticated: true,
       isLoading: false,
       signOut: vi.fn(),
     });
+  });
+
+  afterEach(async () => {
+    // テストデータのクリーンアップ
+    await cleanupIntegrationTest();
   });
 
   describe('データ取得フロー', () => {
@@ -80,10 +98,13 @@ describe('MandalaList Integration Tests', () => {
         totalPages: 1,
       });
 
-      renderWithRouter(<MandalaListPage />);
+      renderWithProviders(<MandalaListPage />);
 
       // Check loading state
       expect(screen.getByText('読み込み中...')).toBeInTheDocument();
+
+      // Wait for loading to finish
+      await waitForLoadingToFinish();
 
       // Wait for data to load
       await waitFor(() => {
@@ -111,7 +132,10 @@ describe('MandalaList Integration Tests', () => {
         totalPages: 0,
       });
 
-      renderWithRouter(<MandalaListPage />);
+      renderWithProviders(<MandalaListPage />);
+
+      // Wait for loading to finish
+      await waitForLoadingToFinish();
 
       await waitFor(() => {
         expect(screen.getByText('まだマンダラチャートがありません')).toBeInTheDocument();
@@ -126,7 +150,10 @@ describe('MandalaList Integration Tests', () => {
         new Error('データの取得に失敗しました')
       );
 
-      renderWithRouter(<MandalaListPage />);
+      renderWithProviders(<MandalaListPage />);
+
+      // Wait for loading to finish
+      await waitForLoadingToFinish();
 
       await waitFor(() => {
         expect(screen.getByText('データの取得に失敗しました')).toBeInTheDocument();

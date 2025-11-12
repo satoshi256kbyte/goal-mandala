@@ -254,6 +254,91 @@ describe('ProgressDataValidator', () => {
       expect(result2.isValid).toBe(true);
       expect(result2.warnings).toContain('Progress value indicates error state for task task-123');
     });
+
+    describe('境界値テスト', () => {
+      it('進捗値0%を正しく検証する', () => {
+        const result = validator.validateProgressValue(0, 'task', 'task-123');
+        expect(result.isValid).toBe(true);
+        expect(result.errors).toHaveLength(0);
+      });
+
+      it('進捗値100%を正しく検証する', () => {
+        const result = validator.validateProgressValue(100, 'task', 'task-123');
+        expect(result.isValid).toBe(true);
+        expect(result.errors).toHaveLength(0);
+      });
+
+      it('進捗値-1%でエラーを返す（特別な値以外）', () => {
+        const result = validator.validateProgressValue(-3, 'task', 'task-123');
+        expect(result.isValid).toBe(false);
+        expect(result.errors.some(error => error.includes('must be between'))).toBe(true);
+      });
+
+      it('進捗値101%でエラーを返す', () => {
+        const result = validator.validateProgressValue(101, 'task', 'task-123');
+        expect(result.isValid).toBe(false);
+        expect(result.errors).toContain(
+          'Progress value must be between 0 and 100 for task task-123, got 101'
+        );
+      });
+
+      it('進捗値-1（特別な値）を正しく処理する', () => {
+        const result = validator.validateProgressValue(-1, 'task', 'task-123');
+        expect(result.isValid).toBe(true);
+        expect(result.errors).toHaveLength(0);
+      });
+
+      it('進捗値-2（エラー状態）を正しく処理する', () => {
+        const result = validator.validateProgressValue(-2, 'task', 'task-123');
+        expect(result.isValid).toBe(true);
+        expect(result.warnings).toContain('Progress value indicates error state for task task-123');
+      });
+
+      it('小数点を含む進捗値を正しく検証する', () => {
+        const result = validator.validateProgressValue(50.5, 'task', 'task-123');
+        expect(result.isValid).toBe(true);
+        expect(result.errors).toHaveLength(0);
+      });
+
+      it('非常に小さい正の値を正しく検証する', () => {
+        const result = validator.validateProgressValue(0.1, 'task', 'task-123');
+        expect(result.isValid).toBe(true);
+        expect(result.errors).toHaveLength(0);
+      });
+
+      it('100に非常に近い値を正しく検証する', () => {
+        const result = validator.validateProgressValue(99.9, 'task', 'task-123');
+        expect(result.isValid).toBe(true);
+        expect(result.errors).toHaveLength(0);
+      });
+    });
+
+    describe('無効な進捗値のエラーハンドリング', () => {
+      it('文字列の進捗値でエラーを返す', () => {
+        const result = validator.validateProgressValue('50' as any, 'task', 'task-123');
+        expect(result.isValid).toBe(false);
+      });
+
+      it('nullの進捗値でエラーを返す', () => {
+        const result = validator.validateProgressValue(null as any, 'task', 'task-123');
+        expect(result.isValid).toBe(false);
+      });
+
+      it('undefinedの進捗値でエラーを返す', () => {
+        const result = validator.validateProgressValue(undefined as any, 'task', 'task-123');
+        expect(result.isValid).toBe(false);
+      });
+
+      it('Infinityの進捗値でエラーを返す', () => {
+        const result = validator.validateProgressValue(Infinity, 'task', 'task-123');
+        expect(result.isValid).toBe(false);
+      });
+
+      it('-Infinityの進捗値でエラーを返す', () => {
+        const result = validator.validateProgressValue(-Infinity, 'task', 'task-123');
+        expect(result.isValid).toBe(false);
+      });
+    });
   });
 
   describe('循環依存のチェック', () => {

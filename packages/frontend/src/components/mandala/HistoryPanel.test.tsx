@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { render, screen, waitFor, within, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { HistoryPanel } from './HistoryPanel';
 
@@ -258,7 +258,9 @@ describe('HistoryPanel', () => {
       // 履歴エントリをクリック
       const historyEntry = screen.getByText('山田太郎').closest('button');
       if (historyEntry) {
-        await user.click(historyEntry);
+        await act(async () => {
+          await user.click(historyEntry);
+        });
       }
 
       // 差分が表示されることを確認
@@ -285,7 +287,9 @@ describe('HistoryPanel', () => {
       // 履歴エントリをクリック
       const historyEntry = screen.getByText('山田太郎').closest('button');
       if (historyEntry) {
-        await user.click(historyEntry);
+        await act(async () => {
+          await user.click(historyEntry);
+        });
       }
 
       // フィールド名が日本語で表示されることを確認
@@ -313,13 +317,15 @@ describe('HistoryPanel', () => {
       // 履歴エントリをクリック
       const historyEntry = screen.getByText('山田太郎').closest('button');
       if (historyEntry) {
-        await user.click(historyEntry);
+        await act(async () => {
+          await user.click(historyEntry);
+        });
       }
 
-      // 古い値が赤色でハイライトされることを確認
+      // 古い値が赤色でハイライトされることを確認（カスタムCSSクラスを使用）
       await waitFor(() => {
         const oldValue = screen.getByText('古いタイトル');
-        expect(oldValue.className).toMatch(/text-red/);
+        expect(oldValue.className).toMatch(/history-diff-old-value/);
       });
     });
 
@@ -340,13 +346,15 @@ describe('HistoryPanel', () => {
       // 履歴エントリをクリック
       const historyEntry = screen.getByText('山田太郎').closest('button');
       if (historyEntry) {
-        await user.click(historyEntry);
+        await act(async () => {
+          await user.click(historyEntry);
+        });
       }
 
-      // 新しい値が緑色でハイライトされることを確認
+      // 新しい値が緑色でハイライトされることを確認（カスタムCSSクラスを使用）
       await waitFor(() => {
         const newValue = screen.getByText('新しいタイトル');
-        expect(newValue.className).toMatch(/text-green/);
+        expect(newValue.className).toMatch(/history-diff-new-value/);
       });
     });
   });
@@ -369,7 +377,9 @@ describe('HistoryPanel', () => {
       // 履歴エントリをクリック
       const historyEntry = screen.getByText('山田太郎').closest('button');
       if (historyEntry) {
-        await user.click(historyEntry);
+        await act(async () => {
+          await user.click(historyEntry);
+        });
       }
 
       // 詳細モーダルが表示されることを確認
@@ -395,7 +405,9 @@ describe('HistoryPanel', () => {
       // 履歴エントリをクリック
       const historyEntry = screen.getByText('山田太郎').closest('button');
       if (historyEntry) {
-        await user.click(historyEntry);
+        await act(async () => {
+          await user.click(historyEntry);
+        });
       }
 
       // 変更者情報が表示されることを確認
@@ -422,7 +434,9 @@ describe('HistoryPanel', () => {
       // 履歴エントリをクリック
       const historyEntry = screen.getByText('山田太郎').closest('button');
       if (historyEntry) {
-        await user.click(historyEntry);
+        await act(async () => {
+          await user.click(historyEntry);
+        });
       }
 
       // モーダルが表示されることを確認
@@ -433,7 +447,9 @@ describe('HistoryPanel', () => {
       // モーダル内の閉じるボタンをクリック
       const modal = screen.getByRole('dialog');
       const closeButton = within(modal).getByRole('button', { name: '閉じる' });
-      await user.click(closeButton);
+      await act(async () => {
+        await user.click(closeButton);
+      });
 
       // モーダルが閉じられることを確認
       await waitFor(() => {
@@ -461,7 +477,9 @@ describe('HistoryPanel', () => {
       // 履歴エントリをクリック
       const historyEntry = screen.getByText('山田太郎').closest('button');
       if (historyEntry) {
-        await user.click(historyEntry);
+        await act(async () => {
+          await user.click(historyEntry);
+        });
       }
 
       // ロールバックボタンが表示されることを確認
@@ -487,7 +505,9 @@ describe('HistoryPanel', () => {
       // 履歴エントリをクリック
       const historyEntry = screen.getByText('山田太郎').closest('button');
       if (historyEntry) {
-        await user.click(historyEntry);
+        await act(async () => {
+          await user.click(historyEntry);
+        });
       }
 
       // ロールバックボタンが表示されないことを確認
@@ -514,13 +534,17 @@ describe('HistoryPanel', () => {
       // 履歴エントリをクリック
       const historyEntry = screen.getByText('山田太郎').closest('button');
       if (historyEntry) {
-        await user.click(historyEntry);
+        await act(async () => {
+          await user.click(historyEntry);
+        });
       }
 
       // ロールバックボタンをクリック
-      await waitFor(() => {
+      await waitFor(async () => {
         const rollbackButton = screen.getByRole('button', { name: /ロールバック/ });
-        return user.click(rollbackButton);
+        await act(async () => {
+          await user.click(rollbackButton);
+        });
       });
 
       // 確認ダイアログが表示されることを確認
@@ -547,19 +571,25 @@ describe('HistoryPanel', () => {
       // 履歴エントリをクリック
       const historyEntry = screen.getByText('山田太郎').closest('button');
       if (historyEntry) {
-        await user.click(historyEntry);
+        await act(async () => {
+          await user.click(historyEntry);
+        });
       }
 
       // ロールバックボタンをクリック
-      await waitFor(() => {
+      await waitFor(async () => {
         const rollbackButton = screen.getByRole('button', { name: /ロールバック/ });
-        return user.click(rollbackButton);
+        await act(async () => {
+          await user.click(rollbackButton);
+        });
       });
 
       // 確認ダイアログで「はい」をクリック
-      await waitFor(() => {
+      await waitFor(async () => {
         const confirmButton = screen.getByRole('button', { name: /はい/ });
-        return user.click(confirmButton);
+        await act(async () => {
+          await user.click(confirmButton);
+        });
       });
 
       // ロールバック関数が呼ばれることを確認
@@ -586,19 +616,25 @@ describe('HistoryPanel', () => {
       // 履歴エントリをクリック
       const historyEntry = screen.getByText('山田太郎').closest('button');
       if (historyEntry) {
-        await user.click(historyEntry);
+        await act(async () => {
+          await user.click(historyEntry);
+        });
       }
 
       // ロールバックボタンをクリック
-      await waitFor(() => {
+      await waitFor(async () => {
         const rollbackButton = screen.getByRole('button', { name: /ロールバック/ });
-        return user.click(rollbackButton);
+        await act(async () => {
+          await user.click(rollbackButton);
+        });
       });
 
       // 確認ダイアログで「キャンセル」をクリック
-      await waitFor(() => {
+      await waitFor(async () => {
         const cancelButton = screen.getByRole('button', { name: /キャンセル/ });
-        return user.click(cancelButton);
+        await act(async () => {
+          await user.click(cancelButton);
+        });
       });
 
       // ロールバック関数が呼ばれないことを確認
@@ -629,19 +665,25 @@ describe('HistoryPanel', () => {
       // 履歴エントリをクリック
       const historyEntry = screen.getByText('山田太郎').closest('button');
       if (historyEntry) {
-        await user.click(historyEntry);
+        await act(async () => {
+          await user.click(historyEntry);
+        });
       }
 
       // ロールバックボタンをクリック
-      await waitFor(() => {
+      await waitFor(async () => {
         const rollbackButton = screen.getByRole('button', { name: /ロールバック/ });
-        return user.click(rollbackButton);
+        await act(async () => {
+          await user.click(rollbackButton);
+        });
       });
 
       // 確認ダイアログで「はい」をクリック
-      await waitFor(() => {
+      await waitFor(async () => {
         const confirmButton = screen.getByRole('button', { name: /はい/ });
-        return user.click(confirmButton);
+        await act(async () => {
+          await user.click(confirmButton);
+        });
       });
 
       // ローディング状態が表示されることを確認
@@ -689,7 +731,9 @@ describe('HistoryPanel', () => {
       const firstEntry = screen.getByText('山田太郎').closest('button');
       if (firstEntry) {
         firstEntry.focus();
-        await user.keyboard('{Enter}');
+        await act(async () => {
+          await user.keyboard('{Enter}');
+        });
       }
 
       // 詳細モーダルが表示されることを確認

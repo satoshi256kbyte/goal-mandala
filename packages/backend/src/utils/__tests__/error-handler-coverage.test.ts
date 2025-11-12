@@ -12,6 +12,7 @@ import {
   sanitizeError,
   formatErrorForUser,
   classifyError,
+  ErrorHandler,
 } from '../error-handler';
 
 describe('Error Handler Coverage Tests', () => {
@@ -108,5 +109,88 @@ describe('Error Handler Coverage Tests', () => {
     const errorObj = { message: 'Object error', code: 'OBJ_ERROR' };
     const result = handleError(errorObj as any);
     expect(result.error.message).toBe('Object error');
+  });
+
+  it('handleError - null/undefinedエラー', () => {
+    const nullResult = handleError(null);
+    expect(nullResult.error.message).toBe('Unknown error occurred');
+
+    const undefinedResult = handleError(undefined);
+    expect(undefinedResult.error.message).toBe('Unknown error occurred');
+  });
+
+  it('handleError - messageプロパティなしのオブジェクト', () => {
+    const objWithoutMessage = { code: 'TEST' };
+    const result = handleError(objWithoutMessage);
+    expect(result.error.message).toBe('Unknown error occurred');
+  });
+
+  it('formatErrorForUser - 各種エラーメッセージパターン', () => {
+    expect(formatErrorForUser(new Error('validation failed'))).toContain('入力内容');
+    expect(formatErrorForUser(new Error('invalid input'))).toContain('入力内容');
+    expect(formatErrorForUser(new Error('resource not found'))).toContain('見つかりません');
+    expect(formatErrorForUser(new Error('unauthorized access'))).toContain('認証が必要');
+    expect(formatErrorForUser(new Error('authentication failed'))).toContain('認証が必要');
+    expect(formatErrorForUser(new Error('forbidden operation'))).toContain('権限がありません');
+    expect(formatErrorForUser(new Error('permission denied'))).toContain('権限がありません');
+    expect(formatErrorForUser(new Error('unknown error'))).toContain('システムエラー');
+  });
+
+  it('getErrorCode - 各種エラー名パターン', () => {
+    const testCases = [
+      { name: 'NotFoundError', expected: 'NOT_FOUND_ERROR' },
+      { name: 'AuthenticationError', expected: 'AUTHENTICATION_ERROR' },
+      { name: 'ForbiddenError', expected: 'FORBIDDEN_ERROR' },
+      { name: 'DatabaseError', expected: 'DATABASE_ERROR' },
+      { name: 'CustomError', expected: 'UNKNOWN_ERROR' },
+    ];
+
+    testCases.forEach(({ name, expected }) => {
+      const error = new Error('test');
+      error.name = name;
+      expect(getErrorCode(error)).toBe(expected);
+    });
+  });
+
+  it('ErrorHandler - handleError with various error types', () => {
+    const handler = new ErrorHandler();
+
+    // null/undefined
+    expect(handler.handleError(null).type).toBe('UNKNOWN');
+    expect(handler.handleError(undefined).type).toBe('UNKNOWN');
+
+    // string
+    expect(handler.handleError('string error').type).toBe('UNKNOWN');
+
+    // object
+    expect(handler.handleError({ message: 'object error' }).type).toBe('UNKNOWN');
+
+    // Error instance with ValidationException name
+    const error = new Error('test error');
+    error.name = 'ValidationException';
+    expect(handler.handleError(error).type).toBe('VALIDATION');
+  });
+
+  it('ErrorHandler - isRetryable', () => {
+    const handler = new ErrorHandler();
+
+    const retryableError = new Error('timeout');
+    retryableError.name = 'TimeoutError';
+    expect(handler.isRetryable(retryableError)).toBe(true);
+
+    const nonRetryableError = new Error('validation');
+    nonRetryableError.name = 'ValidationError';
+    expect(handler.isRetryable(nonRetryableError)).toBe(false);
+  });
+
+  it('ErrorHandler - createResponse', () => {
+    const handler = new ErrorHandler();
+    const error = new Error('test');
+    error.name = 'ThrottlingException';
+    const bedrockError = handler.handleError(error);
+
+    const response = handler.createResponse(bedrockError);
+    expect(response.success).toBe(false);
+    expect(response.error.retryable).toBe(true);
   });
 });

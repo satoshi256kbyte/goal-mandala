@@ -94,12 +94,14 @@ const MandalaCardComponent: React.FC<MandalaCardProps> = ({ mandala, onClick, cl
       `}
     >
       {/* カードヘッダー */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-100">
+      <div className="flex items-center justify-between p-4 border-b border-gray-100" role="banner">
         <StatusBadge status={mandala.status} />
         {isOverdue && (
           <div
             className="flex items-center text-red-600"
             role="alert"
+            aria-live="polite"
+            aria-atomic="true"
             aria-label="期限切れ"
             title="期限切れ"
           >
@@ -121,7 +123,7 @@ const MandalaCardComponent: React.FC<MandalaCardProps> = ({ mandala, onClick, cl
       </div>
 
       {/* カードボディ */}
-      <div className="p-4">
+      <div className="p-4" role="article">
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1 min-w-0 mr-4">
             {/* タイトル（最大2行、省略記号） */}
@@ -132,14 +134,17 @@ const MandalaCardComponent: React.FC<MandalaCardProps> = ({ mandala, onClick, cl
             <p className="text-sm text-gray-600 line-clamp-3">{mandala.description}</p>
           </div>
           {/* 進捗円グラフ */}
-          <div className="flex-shrink-0">
+          <div className="flex-shrink-0" role="img" aria-label={`進捗率 ${mandala.progress}%`}>
             <ProgressCircle progress={mandala.progress} size="md" showLabel={true} />
           </div>
         </div>
       </div>
 
       {/* カードフッター */}
-      <div className="px-4 py-3 bg-gray-50 border-t border-gray-100 rounded-b-lg">
+      <div
+        className="px-4 py-3 bg-gray-50 border-t border-gray-100 rounded-b-lg"
+        role="contentinfo"
+      >
         <div className="flex items-center justify-between text-xs text-gray-500">
           <div className="flex items-center space-x-4">
             {/* 達成期限 */}

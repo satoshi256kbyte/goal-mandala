@@ -396,7 +396,7 @@ describe('バリデーションフロー統合テスト', () => {
         () => {
           expect(screen.getByText(/同じ目標が既に存在します/)).toBeInTheDocument();
         },
-        { timeout: 1000 }
+        { timeout: 100 }
       );
 
       // バリデーションスピナーが消える
@@ -438,7 +438,7 @@ describe('バリデーションフロー統合テスト', () => {
         () => {
           expect(mockValidationFunction).toHaveBeenCalledWith('テスト');
         },
-        { timeout: 500 }
+        { timeout: 100 }
       );
 
       // 1回だけ実行される（デバウンスが効いている）

@@ -42,8 +42,8 @@ test.describe('下書き保存機能 E2E テスト', () => {
     await page.fill('[data-testid="goal-title-input"]', '自動保存テスト');
     await page.fill('[data-testid="goal-description-textarea"]', '自動保存の説明');
 
-    // 30秒待機（自動保存の間隔）
-    await page.waitForTimeout(31000);
+    // 短時間待機（自動保存の確認）
+    await page.waitForTimeout(100);
 
     // LocalStorageに自動保存されていることを確認
     const draftData = await page.evaluate(() => {

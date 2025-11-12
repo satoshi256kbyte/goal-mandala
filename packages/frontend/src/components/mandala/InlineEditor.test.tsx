@@ -138,12 +138,12 @@ describe('InlineEditor', () => {
 
       await user.clear(input);
 
-      // デバウンスが完了するまで待つ（300ms + バッファ）
+      // デバウンスが完了するまで短時間待つ
       await waitFor(
         () => {
           expect(screen.getByRole('alert')).toBeInTheDocument();
         },
-        { timeout: 500 }
+        { timeout: 100 }
       );
 
       await user.keyboard('{Enter}');

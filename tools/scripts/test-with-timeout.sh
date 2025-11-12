@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # テスト実行タイムアウト管理スクリプト
-# Usage: ./test-with-timeout.sh [package] [timeout_seconds]
+# Usage: ./test-with-timeout.sh [package] [timeout_seconds] [--quiet]
 
 # set -e を削除してエラーハンドリングを改善
 
@@ -9,6 +9,17 @@
 DEFAULT_TIMEOUT=120  # 2分
 PACKAGE=${1:-"all"}
 TIMEOUT=${2:-$DEFAULT_TIMEOUT}
+QUIET_MODE=false
+
+# 引数解析
+for arg in "$@"; do
+    case $arg in
+        --quiet)
+            QUIET_MODE=true
+            shift
+            ;;
+    esac
+done
 
 # カラー出力
 RED='\033[0;31m'
@@ -19,7 +30,9 @@ NC='\033[0m' # No Color
 
 # ログ関数
 log_info() {
-    echo -e "${BLUE}[INFO]${NC} $1"
+    if [ "$QUIET_MODE" = false ]; then
+        echo -e "${BLUE}[INFO]${NC} $1"
+    fi
 }
 
 log_success() {
@@ -27,11 +40,17 @@ log_success() {
 }
 
 log_warning() {
-    echo -e "${YELLOW}[WARNING]${NC} $1"
+    if [ "$QUIET_MODE" = false ]; then
+        echo -e "${YELLOW}[WARNING]${NC} $1"
+    fi
 }
 
 log_error() {
     echo -e "${RED}[ERROR]${NC} $1"
+}
+
+log_progress() {
+    echo -e "${BLUE}▶${NC} $1"
 }
 
 # タイムアウト付きコマンド実行（macOS対応）
@@ -40,10 +59,15 @@ run_with_timeout() {
     local timeout="$2"
     local description="$3"
     
-    log_info "Running: $description (timeout: ${timeout}s)"
+    if [ "$QUIET_MODE" = true ]; then
+        log_progress "Testing $description..."
+        # quietモードでは出力を抑制
+        eval "$cmd" >/dev/null 2>&1 &
+    else
+        log_info "Running: $description (timeout: ${timeout}s)"
+        eval "$cmd" &
+    fi
     
-    # バックグラウンドでコマンド実行
-    eval "$cmd" &
     local pid=$!
     
     # タイムアウト監視
@@ -65,9 +89,17 @@ run_with_timeout() {
     local exit_code=$?
     
     if [ $exit_code -eq 0 ]; then
-        log_success "Completed: $description"
+        if [ "$QUIET_MODE" = true ]; then
+            echo -e "${GREEN}✓${NC} $description"
+        else
+            log_success "Completed: $description"
+        fi
     else
-        log_error "Failed: $description (exit code: $exit_code)"
+        if [ "$QUIET_MODE" = true ]; then
+            echo -e "${RED}✗${NC} $description (exit code: $exit_code)"
+        else
+            log_error "Failed: $description (exit code: $exit_code)"
+        fi
     fi
     
     return $exit_code
@@ -83,23 +115,27 @@ run_package_tests() {
         return 1
     fi
     
-    log_info "Testing package: $package_name"
+    if [ "$QUIET_MODE" = false ]; then
+        log_info "Testing package: $package_name"
+    fi
     
     case "$package_name" in
         "backend")
-            run_with_timeout "cd $package_path && npx jest --passWithNoTests --maxWorkers=1 --forceExit --detectOpenHandles --testTimeout=30000 --verbose" $TIMEOUT "Backend Jest tests"
+            run_with_timeout "cd $package_path && npx jest --passWithNoTests --maxWorkers=1 --forceExit --detectOpenHandles --testTimeout=30000 --silent" $TIMEOUT "backend"
             ;;
         "frontend")
-            run_with_timeout "cd $package_path && npx vitest run --reporter=verbose --config=vitest.config.ts" $TIMEOUT "Frontend Vitest tests"
+            run_with_timeout "cd $package_path && npx vitest run --reporter=basic --config=vitest.config.ts" $TIMEOUT "frontend"
             ;;
         "shared")
-            run_with_timeout "cd $package_path && npx jest --passWithNoTests --maxWorkers=1 --forceExit --testTimeout=30000 --verbose" $TIMEOUT "Shared Jest tests"
+            run_with_timeout "cd $package_path && npx jest --passWithNoTests --maxWorkers=1 --forceExit --testTimeout=30000 --silent" $TIMEOUT "shared"
             ;;
         "infrastructure")
             if [ -f "$package_path/package.json" ] && grep -q '"test"' "$package_path/package.json"; then
-                run_with_timeout "cd $package_path && npm test" $TIMEOUT "Infrastructure tests"
+                run_with_timeout "cd $package_path && npm test" $TIMEOUT "infrastructure"
             else
-                log_warning "No test script found for infrastructure package"
+                if [ "$QUIET_MODE" = false ]; then
+                    log_warning "No test script found for infrastructure package"
+                fi
                 return 0
             fi
             ;;
@@ -115,13 +151,18 @@ run_all_tests() {
     local failed_packages=()
     local packages=("shared" "backend" "frontend" "infrastructure")
     
-    log_info "Running tests for all packages with timeout: ${TIMEOUT}s each"
+    if [ "$QUIET_MODE" = true ]; then
+        echo "Running tests (timeout: ${TIMEOUT}s each)..."
+    else
+        log_info "Running tests for all packages with timeout: ${TIMEOUT}s each"
+    fi
     
     for package in "${packages[@]}"; do
         if [ -d "packages/$package" ]; then
-            log_info "Starting tests for: $package"
             if run_package_tests "$package"; then
-                log_success "Tests passed for: $package"
+                if [ "$QUIET_MODE" = false ]; then
+                    log_success "Tests passed for: $package"
+                fi
             else
                 local exit_code=$?
                 if [ $exit_code -eq 124 ]; then
@@ -131,15 +172,22 @@ run_all_tests() {
                 fi
                 failed_packages+=("$package")
             fi
-            echo "----------------------------------------"
+            if [ "$QUIET_MODE" = false ]; then
+                echo "----------------------------------------"
+            fi
         else
-            log_warning "Package directory not found: $package"
+            if [ "$QUIET_MODE" = false ]; then
+                log_warning "Package directory not found: $package"
+            fi
         fi
     done
     
     # 結果サマリー
-    echo ""
-    log_info "Test Summary:"
+    if [ "$QUIET_MODE" = false ]; then
+        echo ""
+        log_info "Test Summary:"
+    fi
+    
     if [ ${#failed_packages[@]} -eq 0 ]; then
         log_success "All tests passed!"
         return 0
@@ -154,8 +202,10 @@ main() {
     # プロジェクトルートに移動
     cd "$(dirname "$0")/../.."
     
-    log_info "Test execution with timeout management"
-    log_info "Package: $PACKAGE, Timeout: ${TIMEOUT}s"
+    if [ "$QUIET_MODE" = false ]; then
+        log_info "Test execution with timeout management"
+        log_info "Package: $PACKAGE, Timeout: ${TIMEOUT}s"
+    fi
     
     if [ "$PACKAGE" = "all" ]; then
         run_all_tests
@@ -166,17 +216,18 @@ main() {
 
 # ヘルプ表示
 show_help() {
-    echo "Usage: $0 [package] [timeout_seconds]"
+    echo "Usage: $0 [package] [timeout_seconds] [--quiet]"
     echo ""
     echo "Arguments:"
     echo "  package         Package to test (all|backend|frontend|shared|infrastructure)"
     echo "  timeout_seconds Timeout in seconds (default: $DEFAULT_TIMEOUT)"
+    echo "  --quiet         Minimal output mode"
     echo ""
     echo "Examples:"
     echo "  $0                    # Test all packages with default timeout"
     echo "  $0 backend           # Test backend package with default timeout"
     echo "  $0 frontend 60       # Test frontend package with 60s timeout"
-    echo "  $0 all 180           # Test all packages with 180s timeout each"
+    echo "  $0 all 180 --quiet   # Test all packages quietly with 180s timeout each"
 }
 
 # 引数チェック

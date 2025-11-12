@@ -68,6 +68,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
   register,
   error,
   setValue,
+  disabled = false,
   placeholder = '日付を選択してください',
   className = '',
   id,
@@ -240,6 +241,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
         calendarClassName="border border-gray-300 rounded-md shadow-lg"
         aria-describedby={ariaDescribedby}
         aria-invalid={ariaInvalid}
+        disabled={disabled}
         onFocus={onFocus}
         onBlur={onBlur}
         dayClassName={date => {

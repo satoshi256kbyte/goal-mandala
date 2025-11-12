@@ -124,8 +124,11 @@ const MandalaListPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* ヘッダー - 要件: 1.2, 10.1-10.7 */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+      <header className="bg-white shadow-sm border-b border-gray-200" role="banner">
+        <nav
+          className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between"
+          aria-label="メインナビゲーション"
+        >
           {/* ロゴ・タイトル */}
           <div className="flex items-center">
             <h1 className="text-2xl font-bold text-gray-900">マンダラチャート一覧</h1>
@@ -140,7 +143,7 @@ const MandalaListPage: React.FC = () => {
               onLogoutClick={handleLogoutClick}
             />
           )}
-        </div>
+        </nav>
       </header>
 
       {/* エラーメッセージ表示 - 要件: 16.1-16.6 */}

@@ -7,25 +7,32 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: ['./src/test/setup.ts'],
-    testTimeout: 10000,
-    hookTimeout: 5000,
-    teardownTimeout: 5000,
+    // タイムアウト設定を短縮して高速化
+    testTimeout: 5000,
+    hookTimeout: 3000,
+    teardownTimeout: 2000,
     // E2Eテストを除外
     exclude: ['**/node_modules/**', '**/dist/**', '**/e2e/**', '**/*.spec.ts', '**/*.e2e.test.ts'],
-    // 並列実行を有効化
+    // 並列実行設定の最適化
     pool: 'threads',
     poolOptions: {
       threads: {
         singleThread: false,
+        maxThreads: 4,
+        minThreads: 1,
       },
     },
     // メモリリーク対策
     logHeapUsage: true,
     // 並列実行数を制限
     maxConcurrency: 5,
+    // レポーター設定を追加
+    reporters: ['default'],
+    // カバレッジ設定
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'json', 'html'],
+      reporter: ['text', 'html', 'lcov', 'json'],
+      reportsDirectory: './coverage',
       exclude: [
         'node_modules/',
         'src/test/',
@@ -39,13 +46,12 @@ export default defineConfig({
         'src/main.tsx',
         'src/vite-env.d.ts',
       ],
+      // カバレッジ閾値を80%に設定
       thresholds: {
-        global: {
-          branches: 80,
-          functions: 80,
-          lines: 80,
-          statements: 80,
-        },
+        lines: 80,
+        functions: 80,
+        branches: 80,
+        statements: 80,
       },
     },
   },

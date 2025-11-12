@@ -120,6 +120,8 @@ export const ProfileSetupForm = memo<ProfileSetupFormProps>(
           <div
             id="form-error"
             role="alert"
+            aria-live="assertive"
+            aria-atomic="true"
             className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md"
           >
             <p className="text-sm text-red-800">{error || formError}</p>
@@ -197,18 +199,7 @@ export const ProfileSetupForm = memo<ProfileSetupFormProps>(
           </div>
         </section>
 
-        {/* エラーメッセージ表示 */}
-        {formError && (
-          <div
-            id="form-error"
-            role="alert"
-            aria-live="assertive"
-            aria-atomic="true"
-            className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md"
-          >
-            <p className="text-sm text-red-600">{formError}</p>
-          </div>
-        )}
+        {/* エラーメッセージ表示（重複削除） */}
 
         {/* 送信ボタン */}
         <div className="flex justify-end pt-6 border-t border-gray-200">
@@ -261,7 +252,13 @@ export const ProfileSetupForm = memo<ProfileSetupFormProps>(
 
         {/* スクリーンリーダー用のローディング状態通知 */}
         {isLoading && (
-          <div id="submit-loading" className="sr-only" aria-live="polite" aria-atomic="true">
+          <div
+            id="submit-loading"
+            className="sr-only"
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+          >
             プロフィール情報を保存しています
           </div>
         )}

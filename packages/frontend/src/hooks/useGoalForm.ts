@@ -242,14 +242,7 @@ export const useGoalForm = (options: UseGoalFormOptions = {}): UseGoalFormReturn
         clearTimeout(autoSaveTimer);
       }
     };
-  }, [
-    formState.hasUnsavedChanges,
-    enableAutoSave,
-    onDraftSave,
-    autoSaveInterval,
-    performAutoSave,
-    autoSaveTimer,
-  ]);
+  }, [formState.hasUnsavedChanges, enableAutoSave, autoSaveInterval]);
 
   // フォームのリセット
   const resetForm = useCallback(

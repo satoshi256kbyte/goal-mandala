@@ -54,6 +54,7 @@ export const TextArea: React.FC<TextAreaProps> = ({
   error,
   className = '',
   resize = 'vertical',
+  disabled = false,
   onLengthChange,
   onLimitReached,
   warningThreshold = 80,
@@ -125,6 +126,7 @@ export const TextArea: React.FC<TextAreaProps> = ({
         aria-invalid={ariaInvalid}
         onFocus={onFocus}
         onBlur={onBlur}
+        disabled={disabled}
         {...(register
           ? register(name, {
               onChange: handleChange,

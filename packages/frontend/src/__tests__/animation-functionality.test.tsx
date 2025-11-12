@@ -19,9 +19,6 @@ import { AchievementAnimation } from '../components/common/AchievementAnimation'
 import { AnimationSettingsProvider } from '../contexts/AnimationSettingsContext';
 import {
   globalAnimationController,
-  globalPerformanceMonitor,
-  globalInterruptController,
-  globalAccessibilityManager,
   ANIMATION_CONFIGS,
   createProgressTransition,
   createColorTransition,
@@ -31,17 +28,16 @@ import {
   FADE_IN_KEYFRAMES,
   SCALE_KEYFRAMES,
 } from '../utils/animation-utils';
-import {
-  AnimationPerformanceMonitor,
-  AnimationInterruptController,
-  AdaptiveAnimationQuality,
-  AnimationAccessibilityManager,
-} from '../utils/animation-performance';
 import type { CellData, Position } from '../types';
 
 // Web Animations API のモック
-const mockAnimation = {
-  addEventListener: vi.fn(),
+const createMockAnimation = () => ({
+  addEventListener: vi.fn((event: string, callback: () => void) => {
+    // 'finish' イベントは即座に実行
+    if (event === 'finish') {
+      setTimeout(callback, 0);
+    }
+  }),
   removeEventListener: vi.fn(),
   cancel: vi.fn(),
   finish: vi.fn(),
@@ -50,10 +46,10 @@ const mockAnimation = {
   currentTime: 0,
   playbackRate: 1,
   playState: 'running' as AnimationPlayState,
-};
+});
 
 // HTMLElement.animate のモック
-HTMLElement.prototype.animate = vi.fn().mockReturnValue(mockAnimation);
+HTMLElement.prototype.animate = vi.fn().mockImplementation(() => createMockAnimation());
 
 // performance のモック
 const mockPerformanceNow = vi.fn();
@@ -91,6 +87,44 @@ const mockMatchMedia = (matches: boolean) => {
       removeEventListener: vi.fn(),
     })),
   });
+};
+
+// グローバルインスタンスのモック
+const globalPerformanceMonitor = {
+  startMonitoring: vi.fn(),
+  stopMonitoring: vi.fn(),
+  getMetrics: vi.fn(() => ({
+    fps: 60,
+    duration: 0,
+    memoryUsage: 50,
+    cpuUsage: 30,
+    activeAnimations: 0,
+    droppedFrames: 0,
+  })),
+  checkPerformanceWarnings: vi.fn(() => []),
+  setActiveAnimationCount: vi.fn(),
+  setQualitySettings: vi.fn(),
+};
+
+const globalInterruptController = {
+  interruptAnimation: vi.fn(),
+  interruptAnimationsByType: vi.fn(),
+  interruptAllAnimations: vi.fn(),
+  getActiveAnimationCount: vi.fn(() => 0),
+};
+
+const globalAccessibilityManager = {
+  shouldReduceMotion: vi.fn(() => false),
+  getAnimationSettings: vi.fn(() => ({ enabled: true })),
+  setDisabled: vi.fn(),
+  addCallback: vi.fn(),
+  removeCallback: vi.fn(),
+};
+
+const globalAdaptiveQuality = {
+  startAdaptiveAdjustment: vi.fn(),
+  stopAdaptiveAdjustment: vi.fn(),
+  getCurrentLevel: vi.fn(() => 'high'),
 };
 
 // navigator のモック

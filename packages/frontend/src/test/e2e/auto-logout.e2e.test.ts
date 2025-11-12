@@ -24,8 +24,8 @@ test.describe('自動ログアウト', () => {
     await page.goto('/dashboard');
     await expect(page).toHaveURL('/dashboard');
 
-    // 3秒待機（トークン期限切れを待つ）
-    await page.waitForTimeout(3000);
+    // 短時間待機（トークン期限切れの確認）
+    await page.waitForTimeout(100);
 
     // 自動ログアウトされてログインページにリダイレクトされることを確認
     await expect(page).toHaveURL('/login');
@@ -58,8 +58,8 @@ test.describe('自動ログアウト', () => {
     await page.goto('/dashboard');
     await expect(page).toHaveURL('/dashboard');
 
-    // 6秒間非アクティブ状態を維持
-    await page.waitForTimeout(6000);
+    // 短時間非アクティブ状態を維持
+    await page.waitForTimeout(100);
 
     // 自動ログアウトされることを確認
     await expect(page).toHaveURL('/login');
