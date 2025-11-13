@@ -58,7 +58,7 @@ run_with_timeout() {
     local cmd="$1"
     local timeout="$2"
     local description="$3"
-    
+
     if [ "$QUIET_MODE" = true ]; then
         log_progress "Testing $description..."
         # quietモードでは出力を抑制
@@ -67,9 +67,9 @@ run_with_timeout() {
         log_info "Running: $description (timeout: ${timeout}s)"
         eval "$cmd" &
     fi
-    
+
     local pid=$!
-    
+
     # タイムアウト監視
     local count=0
     while kill -0 $pid 2>/dev/null; do
@@ -83,11 +83,11 @@ run_with_timeout() {
         sleep 1
         ((count++))
     done
-    
+
     # プロセス終了を待機
     wait $pid
     local exit_code=$?
-    
+
     if [ $exit_code -eq 0 ]; then
         if [ "$QUIET_MODE" = true ]; then
             echo -e "${GREEN}✓${NC} $description"
@@ -101,7 +101,7 @@ run_with_timeout() {
             log_error "Failed: $description (exit code: $exit_code)"
         fi
     fi
-    
+
     return $exit_code
 }
 
@@ -109,29 +109,35 @@ run_with_timeout() {
 run_package_tests() {
     local package_name="$1"
     local package_path="packages/$package_name"
-    
+    local package_timeout=$TIMEOUT
+
     if [ ! -d "$package_path" ]; then
         log_error "Package not found: $package_name"
         return 1
     fi
-    
+
+    # フロントエンドテストのデフォルトタイムアウトを60秒に設定
+    if [ "$package_name" = "frontend" ] && [ "$TIMEOUT" -eq "$DEFAULT_TIMEOUT" ]; then
+        package_timeout=60
+    fi
+
     if [ "$QUIET_MODE" = false ]; then
         log_info "Testing package: $package_name"
     fi
-    
+
     case "$package_name" in
         "backend")
-            run_with_timeout "cd $package_path && npx jest --passWithNoTests --maxWorkers=1 --forceExit --detectOpenHandles --testTimeout=30000 --silent" $TIMEOUT "backend"
+            run_with_timeout "cd $package_path && npx jest --passWithNoTests --maxWorkers=1 --forceExit --detectOpenHandles --testTimeout=30000 --silent" $package_timeout "backend"
             ;;
         "frontend")
-            run_with_timeout "cd $package_path && npx vitest run --reporter=basic --config=vitest.config.ts" $TIMEOUT "frontend"
+            run_with_timeout "cd $package_path && npx vitest run --reporter=basic --no-coverage --isolate=false --config=vitest.config.ts" $package_timeout "frontend"
             ;;
         "shared")
-            run_with_timeout "cd $package_path && npx jest --passWithNoTests --maxWorkers=1 --forceExit --testTimeout=30000 --silent" $TIMEOUT "shared"
+            run_with_timeout "cd $package_path && npx jest --passWithNoTests --maxWorkers=1 --forceExit --testTimeout=30000 --silent" $package_timeout "shared"
             ;;
         "infrastructure")
             if [ -f "$package_path/package.json" ] && grep -q '"test"' "$package_path/package.json"; then
-                run_with_timeout "cd $package_path && npm test" $TIMEOUT "infrastructure"
+                run_with_timeout "cd $package_path && npm test" $package_timeout "infrastructure"
             else
                 if [ "$QUIET_MODE" = false ]; then
                     log_warning "No test script found for infrastructure package"
@@ -150,13 +156,13 @@ run_package_tests() {
 run_all_tests() {
     local failed_packages=()
     local packages=("shared" "backend" "frontend" "infrastructure")
-    
+
     if [ "$QUIET_MODE" = true ]; then
         echo "Running tests (timeout: ${TIMEOUT}s each)..."
     else
         log_info "Running tests for all packages with timeout: ${TIMEOUT}s each"
     fi
-    
+
     for package in "${packages[@]}"; do
         if [ -d "packages/$package" ]; then
             if run_package_tests "$package"; then
@@ -181,13 +187,13 @@ run_all_tests() {
             fi
         fi
     done
-    
+
     # 結果サマリー
     if [ "$QUIET_MODE" = false ]; then
         echo ""
         log_info "Test Summary:"
     fi
-    
+
     if [ ${#failed_packages[@]} -eq 0 ]; then
         log_success "All tests passed!"
         return 0
@@ -201,12 +207,12 @@ run_all_tests() {
 main() {
     # プロジェクトルートに移動
     cd "$(dirname "$0")/../.."
-    
+
     if [ "$QUIET_MODE" = false ]; then
         log_info "Test execution with timeout management"
         log_info "Package: $PACKAGE, Timeout: ${TIMEOUT}s"
     fi
-    
+
     if [ "$PACKAGE" = "all" ]; then
         run_all_tests
     else

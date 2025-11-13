@@ -349,6 +349,8 @@ Closes #123
 
 ### テスト実行
 
+#### 基本的なテスト実行
+
 ```bash
 # 全パッケージのテスト実行
 pnpm test
@@ -362,6 +364,81 @@ pnpm test:integration
 # E2Eテスト (Playwright)
 pnpm --filter @goal-mandala/frontend test:e2e
 ```
+
+#### フロントエンドテストの使い分け
+
+フロントエンドでは、開発フローに応じて最適なテストコマンドを選択できます：
+
+```bash
+# 1. 開発中の高速フィードバック（最速）
+pnpm --filter @goal-mandala/frontend test:fast
+# - 実行時間: 約15秒
+# - カバレッジ: なし
+# - 分離: なし（最速実行）
+# - 用途: コード変更後の即座の確認
+
+# 2. コミット前の品質確認（推奨）
+pnpm --filter @goal-mandala/frontend test:unit
+# - 実行時間: 約30秒
+# - カバレッジ: なし
+# - 分離: あり
+# - 用途: コミット前の最終確認
+
+# 3. 統合テストの実行
+pnpm --filter @goal-mandala/frontend test:integration
+# - 実行時間: 約45秒
+# - カバレッジ: なし
+# - 対象: 統合テストのみ
+# - 用途: API統合の確認
+
+# 4. 完全なテスト（カバレッジ付き）
+pnpm --filter @goal-mandala/frontend test:coverage
+# - 実行時間: 約60秒
+# - カバレッジ: あり
+# - 分離: あり
+# - 用途: PR作成前、CI/CD
+```
+
+#### テスト実行のベストプラクティス
+
+**開発フロー別の推奨コマンド**:
+
+1. **開発中（頻繁な実行）**:
+   ```bash
+   pnpm --filter @goal-mandala/frontend test:fast
+   ```
+   - 最速でフィードバックを得られる
+   - コード変更のたびに実行しても負担が少ない
+
+2. **コミット前（品質確認）**:
+   ```bash
+   pnpm --filter @goal-mandala/frontend test:unit
+   ```
+   - ユニットテストを確実に実行
+   - 適度な実行時間で品質を担保
+
+3. **プルリクエスト作成前（完全チェック）**:
+   ```bash
+   pnpm --filter @goal-mandala/frontend test:coverage
+   pnpm --filter @goal-mandala/frontend test:integration
+   ```
+   - カバレッジレポートを生成
+   - 統合テストも含めて完全チェック
+
+4. **CI/CD環境**:
+   ```bash
+   pnpm test  # 全パッケージのテスト
+   pnpm test:coverage  # カバレッジ付き
+   ```
+   - タイムアウト設定で安全に実行
+   - カバレッジレポートを生成
+
+**パフォーマンス最適化のポイント**:
+
+- **カバレッジ計算の無効化**: 開発中はカバレッジ計算をスキップして高速化
+- **並列実行の最適化**: CPU数に応じた並列実行数の調整
+- **テスト分離の制御**: 高速実行時は分離を無効化
+- **統合テストの分離**: ユニットテストと統合テストを分けて実行
 
 ### テスト作成ガイドライン
 

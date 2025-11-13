@@ -53,26 +53,31 @@ pnpm run act:dry-run
 
 バックエンドでは3層のテスト戦略を採用しています：
 
-**1. ユニットテスト（推奨・常時実行可能）**
+##### 1. ユニットテスト（推奨・常時実行可能）
+
 ```bash
 cd packages/backend
 pnpm test
 ```
+
 - モックを使用してデータベース接続なしで実行
 - 高速で安定した実行
 - CI/CDで常時実行
 
-**2. 統合テスト（将来実装予定）**
+##### 2. 統合テスト（将来実装予定）
+
 ```bash
 # 統合テスト実行
 cd packages/backend
 pnpm test -- --testPathPattern="integration.*test.ts"
 ```
+
 - 実際のデータベースを使用した結合テスト
 - エンドツーエンドのデータフロー検証
 - 現在はユニットテストで代替
 
-**3. E2Eテスト（将来実装予定）**
+##### 3. E2Eテスト（将来実装予定）
+
 ```bash
 # SAM Local環境でのテスト
 cd packages/backend
@@ -80,20 +85,54 @@ pnpm dev &
 pnpm test:e2e
 ```
 
-**テスト実行のベストプラクティス**:
+##### テスト実行のベストプラクティス
+
 高速で安定したテスト実行のため、タイムアウト付きテストを使用してください：
+
 ```bash
 # 全パッケージのテスト（推奨）
-pnpm run test:timeout
+pnpm run test
 
 # 個別パッケージのテスト
-pnpm run test:timeout:backend
-pnpm run test:timeout:frontend
-pnpm run test:timeout:shared
+pnpm run test:backend
+pnpm run test:frontend
+pnpm run test:shared
 
 # 安全モード（長めのタイムアウト）
 pnpm run test:safe
 ```
+
+##### フロントエンドテストコマンド
+
+フロントエンドでは、用途に応じて複数のテストコマンドを用意しています：
+
+```bash
+# 高速ユニットテスト（カバレッジなし、推奨）
+pnpm --filter @goal-mandala/frontend test
+
+# ユニットテストのみ実行
+pnpm --filter @goal-mandala/frontend test:unit
+
+# 統合テストのみ実行
+pnpm --filter @goal-mandala/frontend test:integration
+
+# 最速テスト（分離なし、開発中の確認用）
+pnpm --filter @goal-mandala/frontend test:fast
+
+# カバレッジ付きテスト（CI/CD用）
+pnpm --filter @goal-mandala/frontend test:coverage
+```
+
+**テスト実行時間の目安**:
+- `test:fast`: 約15秒（開発中の高速フィードバック用）
+- `test:unit`: 約30秒（コミット前の確認用）
+- `test:integration`: 約45秒（統合テスト実行用）
+- `test:coverage`: 約60秒（カバレッジレポート生成用）
+
+**開発フローでの使い分け**:
+- **開発中**: `test:fast` で高速フィードバック
+- **コミット前**: `test:unit` で品質確認
+- **PR作成前**: `test:coverage` で完全チェック
 
 詳細は [テスト実行ルール](./docs/test-execution-rules.md) を参照してください。
 
