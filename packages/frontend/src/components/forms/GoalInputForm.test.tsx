@@ -484,5 +484,33 @@ describe('GoalInputForm', () => {
       const container = screen.getByRole('form').parentElement;
       expect(container).toHaveClass('max-w-4xl', 'mx-auto', 'custom-class');
     });
+
+    it('デスクトップ用のレイアウトクラスが適用される', () => {
+      // window.innerWidthをモック
+      Object.defineProperty(window, 'innerWidth', {
+        writable: true,
+        configurable: true,
+        value: 1200,
+      });
+
+      render(<GoalInputForm {...defaultProps} />);
+
+      const container = screen.getByRole('form').parentElement;
+      expect(container).toHaveClass('lg:max-w-6xl');
+    });
+
+    it('モバイルでタッチ操作に適したサイズが適用される', () => {
+      // window.innerWidthをモック
+      Object.defineProperty(window, 'innerWidth', {
+        writable: true,
+        configurable: true,
+        value: 400,
+      });
+
+      render(<GoalInputForm {...defaultProps} />);
+
+      const titleInput = screen.getByLabelText(/目標タイトル/);
+      expect(titleInput).toHaveClass('min-h-[44px]');
+    });
   });
 });

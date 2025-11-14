@@ -1,4 +1,5 @@
 /**
+import { vi } from 'vitest';
  * アニメーションユーティリティ関数の単体テスト
  * 要件4.1, 4.2, 4.3, 4.4, 4.5に対応
  */
@@ -26,28 +27,28 @@ import {
 
 // Web Animations API のモック
 const mockAnimation = {
-  addEventListener: jest.fn(),
-  removeEventListener: jest.fn(),
-  cancel: jest.fn(),
-  finish: jest.fn(),
-  play: jest.fn(),
-  pause: jest.fn(),
+  addEventListener: vi.fn(),
+  removeEventListener: vi.fn(),
+  cancel: vi.fn(),
+  finish: vi.fn(),
+  play: vi.fn(),
+  pause: vi.fn(),
   currentTime: 0,
   playbackRate: 1,
   playState: 'running' as AnimationPlayState,
 };
 
 // HTMLElement.animate のモック
-HTMLElement.prototype.animate = jest.fn().mockReturnValue(mockAnimation);
+HTMLElement.prototype.animate = vi.fn().mockReturnValue(mockAnimation);
 
 // matchMedia のモック
 const mockMatchMedia = (matches: boolean) => {
   Object.defineProperty(window, 'matchMedia', {
     writable: true,
-    value: jest.fn().mockImplementation(() => ({
+    value: vi.fn().mockImplementation(() => ({
       matches,
-      addEventListener: jest.fn(),
-      removeEventListener: jest.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
     })),
   });
 };
@@ -64,7 +65,7 @@ Object.defineProperty(navigator, 'hardwareConcurrency', {
 
 describe('アニメーションユーティリティ関数', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     mockMatchMedia(false);
   });
 
@@ -187,7 +188,7 @@ describe('アニメーションユーティリティ関数', () => {
     beforeEach(() => {
       controller = new AnimationController();
       mockElement = document.createElement('div');
-      mockElement.animate = jest.fn().mockReturnValue(mockAnimation);
+      mockElement.animate = vi.fn().mockReturnValue(mockAnimation);
     });
 
     afterEach(() => {
@@ -266,7 +267,7 @@ describe('アニメーションユーティリティ関数', () => {
     it('中断コールバックが正しく呼ばれる', () => {
       const keyframes = [{ opacity: 0 }, { opacity: 1 }];
       const options = { duration: 300 };
-      const onInterrupt = jest.fn();
+      const onInterrupt = vi.fn();
 
       controller.startAnimation(mockElement, keyframes, options, 'test-animation', onInterrupt);
 
@@ -283,7 +284,7 @@ describe('アニメーションユーティリティ関数', () => {
     beforeEach(() => {
       controller = new IntegratedAnimationController();
       mockElement = document.createElement('div');
-      mockElement.animate = jest.fn().mockReturnValue(mockAnimation);
+      mockElement.animate = vi.fn().mockReturnValue(mockAnimation);
     });
 
     afterEach(() => {
@@ -381,7 +382,7 @@ describe('アニメーションユーティリティ関数', () => {
       ];
 
       elements.forEach(el => {
-        el.animate = jest.fn().mockReturnValue(mockAnimation);
+        el.animate = vi.fn().mockReturnValue(mockAnimation);
       });
 
       const keyframes = [{ opacity: 0 }, { opacity: 1 }];
@@ -506,7 +507,7 @@ describe('アニメーションユーティリティ関数', () => {
 
     it('グローバルインスタンスのメソッドが正しく動作する', () => {
       const mockElement = document.createElement('div');
-      mockElement.animate = jest.fn().mockReturnValue(mockAnimation);
+      mockElement.animate = vi.fn().mockReturnValue(mockAnimation);
 
       const keyframes = [{ opacity: 0 }, { opacity: 1 }];
       const options = { duration: 300 };
@@ -527,7 +528,7 @@ describe('アニメーションユーティリティ関数', () => {
 
     it('グローバルインスタンスの最適化されたアニメーションが正しく動作する', () => {
       const mockElement = document.createElement('div');
-      mockElement.animate = jest.fn().mockReturnValue(mockAnimation);
+      mockElement.animate = vi.fn().mockReturnValue(mockAnimation);
 
       const keyframes = [{ opacity: 0 }, { opacity: 1 }];
       const options = { duration: 300 };

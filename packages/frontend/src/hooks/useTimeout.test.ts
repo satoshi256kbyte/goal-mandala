@@ -1,18 +1,19 @@
 import { renderHook, act } from '@testing-library/react';
+import { vi } from 'vitest';
 import { useTimeout, useMultipleTimeouts, useFormTimeout } from './useTimeout';
 
 describe('useTimeout', () => {
   beforeEach(() => {
-    jest.useFakeTimers();
+    vi.useFakeTimers();
   });
 
   afterEach(() => {
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   describe('基本機能', () => {
     it('指定時間後にコールバックが実行される', () => {
-      const mockCallback = jest.fn();
+      const mockCallback = vi.fn();
       const { result } = renderHook(() => useTimeout());
 
       act(() => {
@@ -24,7 +25,7 @@ describe('useTimeout', () => {
 
       // 1秒経過
       act(() => {
-        jest.advanceTimersByTime(1000);
+        vi.advanceTimersByTime(1000);
       });
 
       expect(mockCallback).toHaveBeenCalledTimes(1);
@@ -32,7 +33,7 @@ describe('useTimeout', () => {
     });
 
     it('タイムアウトをクリアできる', () => {
-      const mockCallback = jest.fn();
+      const mockCallback = vi.fn();
       const { result } = renderHook(() => useTimeout());
 
       act(() => {
@@ -49,14 +50,14 @@ describe('useTimeout', () => {
 
       // 1秒経過してもコールバックは実行されない
       act(() => {
-        jest.advanceTimersByTime(1000);
+        vi.advanceTimersByTime(1000);
       });
 
       expect(mockCallback).not.toHaveBeenCalled();
     });
 
     it('残り時間が正しく計算される', () => {
-      const mockCallback = jest.fn();
+      const mockCallback = vi.fn();
       const { result } = renderHook(() => useTimeout({ progressInterval: 100 }));
 
       act(() => {
@@ -67,7 +68,7 @@ describe('useTimeout', () => {
 
       // 500ms経過
       act(() => {
-        jest.advanceTimersByTime(500);
+        vi.advanceTimersByTime(500);
       });
 
       expect(result.current.remainingTime).toBeLessThanOrEqual(500);
@@ -77,8 +78,8 @@ describe('useTimeout', () => {
 
   describe('コールバック', () => {
     it('開始時のコールバックが実行される', () => {
-      const mockOnStart = jest.fn();
-      const mockCallback = jest.fn();
+      const mockOnStart = vi.fn();
+      const mockCallback = vi.fn();
       const { result } = renderHook(() => useTimeout({ onStart: mockOnStart }));
 
       act(() => {
@@ -89,8 +90,8 @@ describe('useTimeout', () => {
     });
 
     it('タイムアウト時のコールバックが実行される', () => {
-      const mockOnTimeout = jest.fn();
-      const mockCallback = jest.fn();
+      const mockOnTimeout = vi.fn();
+      const mockCallback = vi.fn();
       const { result } = renderHook(() => useTimeout({ onTimeout: mockOnTimeout }));
 
       act(() => {
@@ -98,7 +99,7 @@ describe('useTimeout', () => {
       });
 
       act(() => {
-        jest.advanceTimersByTime(1000);
+        vi.advanceTimersByTime(1000);
       });
 
       expect(mockOnTimeout).toHaveBeenCalledTimes(1);
@@ -106,8 +107,8 @@ describe('useTimeout', () => {
     });
 
     it('キャンセル時のコールバックが実行される', () => {
-      const mockOnCancel = jest.fn();
-      const mockCallback = jest.fn();
+      const mockOnCancel = vi.fn();
+      const mockCallback = vi.fn();
       const { result } = renderHook(() => useTimeout({ onCancel: mockOnCancel }));
 
       act(() => {
@@ -124,7 +125,7 @@ describe('useTimeout', () => {
 
   describe('自動クリーンアップ', () => {
     it('アンマウント時に自動でクリーンアップされる', () => {
-      const mockCallback = jest.fn();
+      const mockCallback = vi.fn();
       const { result, unmount } = renderHook(() => useTimeout({ autoCleanup: true }));
 
       act(() => {
@@ -137,14 +138,14 @@ describe('useTimeout', () => {
 
       // アンマウント後にタイマーが進んでもコールバックは実行されない
       act(() => {
-        jest.advanceTimersByTime(1000);
+        vi.advanceTimersByTime(1000);
       });
 
       expect(mockCallback).not.toHaveBeenCalled();
     });
 
     it('自動クリーンアップを無効にできる', () => {
-      const mockCallback = jest.fn();
+      const mockCallback = vi.fn();
       const { result, unmount } = renderHook(() => useTimeout({ autoCleanup: false }));
 
       act(() => {
@@ -155,7 +156,7 @@ describe('useTimeout', () => {
 
       // アンマウント後でもタイマーは動作する
       act(() => {
-        jest.advanceTimersByTime(1000);
+        vi.advanceTimersByTime(1000);
       });
 
       expect(mockCallback).toHaveBeenCalledTimes(1);
@@ -165,17 +166,17 @@ describe('useTimeout', () => {
 
 describe('useMultipleTimeouts', () => {
   beforeEach(() => {
-    jest.useFakeTimers();
+    vi.useFakeTimers();
   });
 
   afterEach(() => {
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   describe('基本機能', () => {
     it('複数のタイムアウトを同時に管理できる', () => {
-      const mockCallback1 = jest.fn();
-      const mockCallback2 = jest.fn();
+      const mockCallback1 = vi.fn();
+      const mockCallback2 = vi.fn();
       const { result } = renderHook(() => useMultipleTimeouts());
 
       act(() => {
@@ -189,7 +190,7 @@ describe('useMultipleTimeouts', () => {
 
       // 1秒経過
       act(() => {
-        jest.advanceTimersByTime(1000);
+        vi.advanceTimersByTime(1000);
       });
 
       expect(mockCallback1).toHaveBeenCalledTimes(1);
@@ -199,7 +200,7 @@ describe('useMultipleTimeouts', () => {
 
       // さらに1秒経過
       act(() => {
-        jest.advanceTimersByTime(1000);
+        vi.advanceTimersByTime(1000);
       });
 
       expect(mockCallback2).toHaveBeenCalledTimes(1);
@@ -207,8 +208,8 @@ describe('useMultipleTimeouts', () => {
     });
 
     it('特定のタイムアウトをクリアできる', () => {
-      const mockCallback1 = jest.fn();
-      const mockCallback2 = jest.fn();
+      const mockCallback1 = vi.fn();
+      const mockCallback2 = vi.fn();
       const { result } = renderHook(() => useMultipleTimeouts());
 
       act(() => {
@@ -225,7 +226,7 @@ describe('useMultipleTimeouts', () => {
 
       // 2秒経過
       act(() => {
-        jest.advanceTimersByTime(2000);
+        vi.advanceTimersByTime(2000);
       });
 
       expect(mockCallback1).not.toHaveBeenCalled();
@@ -233,8 +234,8 @@ describe('useMultipleTimeouts', () => {
     });
 
     it('全てのタイムアウトをクリアできる', () => {
-      const mockCallback1 = jest.fn();
-      const mockCallback2 = jest.fn();
+      const mockCallback1 = vi.fn();
+      const mockCallback2 = vi.fn();
       const { result } = renderHook(() => useMultipleTimeouts());
 
       act(() => {
@@ -250,7 +251,7 @@ describe('useMultipleTimeouts', () => {
 
       // 2秒経過してもコールバックは実行されない
       act(() => {
-        jest.advanceTimersByTime(2000);
+        vi.advanceTimersByTime(2000);
       });
 
       expect(mockCallback1).not.toHaveBeenCalled();
@@ -258,7 +259,7 @@ describe('useMultipleTimeouts', () => {
     });
 
     it('残り時間を取得できる', () => {
-      const mockCallback = jest.fn();
+      const mockCallback = vi.fn();
       const { result } = renderHook(() => useMultipleTimeouts({ progressInterval: 100 }));
 
       act(() => {
@@ -269,7 +270,7 @@ describe('useMultipleTimeouts', () => {
 
       // 500ms経過
       act(() => {
-        jest.advanceTimersByTime(500);
+        vi.advanceTimersByTime(500);
       });
 
       expect(result.current.getRemainingTime('timeout1')).toBeLessThanOrEqual(500);
@@ -279,8 +280,8 @@ describe('useMultipleTimeouts', () => {
 
   describe('同じIDでの上書き', () => {
     it('同じIDで新しいタイムアウトを設定すると前のものがキャンセルされる', () => {
-      const mockCallback1 = jest.fn();
-      const mockCallback2 = jest.fn();
+      const mockCallback1 = vi.fn();
+      const mockCallback2 = vi.fn();
       const { result } = renderHook(() => useMultipleTimeouts());
 
       act(() => {
@@ -289,7 +290,7 @@ describe('useMultipleTimeouts', () => {
 
       // 500ms経過
       act(() => {
-        jest.advanceTimersByTime(500);
+        vi.advanceTimersByTime(500);
       });
 
       // 同じIDで新しいタイムアウトを設定
@@ -299,7 +300,7 @@ describe('useMultipleTimeouts', () => {
 
       // さらに1秒経過
       act(() => {
-        jest.advanceTimersByTime(1000);
+        vi.advanceTimersByTime(1000);
       });
 
       expect(mockCallback1).not.toHaveBeenCalled();
@@ -310,16 +311,16 @@ describe('useMultipleTimeouts', () => {
 
 describe('useFormTimeout', () => {
   beforeEach(() => {
-    jest.useFakeTimers();
+    vi.useFakeTimers();
   });
 
   afterEach(() => {
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   describe('基本機能', () => {
     it('フォーム送信タイムアウトが機能する', () => {
-      const mockCallback = jest.fn();
+      const mockCallback = vi.fn();
       const { result } = renderHook(() => useFormTimeout({ defaultTimeout: 1000 }));
 
       act(() => {
@@ -329,7 +330,7 @@ describe('useFormTimeout', () => {
       expect(result.current.isActive).toBe(true);
 
       act(() => {
-        jest.advanceTimersByTime(1000);
+        vi.advanceTimersByTime(1000);
       });
 
       expect(mockCallback).toHaveBeenCalledTimes(1);
@@ -337,7 +338,7 @@ describe('useFormTimeout', () => {
     });
 
     it('デフォルトコールバックが機能する', () => {
-      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation();
       const { result } = renderHook(() => useFormTimeout({ defaultTimeout: 1000 }));
 
       act(() => {
@@ -345,7 +346,7 @@ describe('useFormTimeout', () => {
       });
 
       act(() => {
-        jest.advanceTimersByTime(1000);
+        vi.advanceTimersByTime(1000);
       });
 
       expect(consoleSpy).toHaveBeenCalledWith('フォーム送信がタイムアウトしました');
@@ -368,14 +369,14 @@ describe('useFormTimeout', () => {
 
       // 500ms経過
       act(() => {
-        jest.advanceTimersByTime(500);
+        vi.advanceTimersByTime(500);
       });
 
       expect(result.current.progress).toBeCloseTo(0.5, 1);
 
       // 1000ms経過
       act(() => {
-        jest.advanceTimersByTime(500);
+        vi.advanceTimersByTime(500);
       });
 
       expect(result.current.progress).toBe(1);
@@ -384,7 +385,7 @@ describe('useFormTimeout', () => {
 
   describe('警告機能', () => {
     it('警告タイムアウトが機能する', () => {
-      const mockOnWarning = jest.fn();
+      const mockOnWarning = vi.fn();
       const { result } = renderHook(() =>
         useFormTimeout({
           defaultTimeout: 1000,
@@ -401,7 +402,7 @@ describe('useFormTimeout', () => {
 
       // 500ms経過（警告時間）
       act(() => {
-        jest.advanceTimersByTime(500);
+        vi.advanceTimersByTime(500);
       });
 
       expect(mockOnWarning).toHaveBeenCalledTimes(1);
@@ -409,14 +410,14 @@ describe('useFormTimeout', () => {
 
       // さらに500ms経過（タイムアウト）
       act(() => {
-        jest.advanceTimersByTime(500);
+        vi.advanceTimersByTime(500);
       });
 
       expect(result.current.isWarning).toBe(false);
     });
 
     it('警告時間がタイムアウト時間以上の場合は警告が発生しない', () => {
-      const mockOnWarning = jest.fn();
+      const mockOnWarning = vi.fn();
       const { result } = renderHook(() =>
         useFormTimeout({
           defaultTimeout: 1000,
@@ -430,7 +431,7 @@ describe('useFormTimeout', () => {
       });
 
       act(() => {
-        jest.advanceTimersByTime(1000);
+        vi.advanceTimersByTime(1000);
       });
 
       expect(mockOnWarning).not.toHaveBeenCalled();
@@ -440,7 +441,7 @@ describe('useFormTimeout', () => {
 
   describe('キャンセル処理', () => {
     it('タイムアウトをキャンセルすると警告もクリアされる', () => {
-      const mockOnWarning = jest.fn();
+      const mockOnWarning = vi.fn();
       const { result } = renderHook(() =>
         useFormTimeout({
           defaultTimeout: 1000,
@@ -455,7 +456,7 @@ describe('useFormTimeout', () => {
 
       // 500ms経過（警告発生）
       act(() => {
-        jest.advanceTimersByTime(500);
+        vi.advanceTimersByTime(500);
       });
 
       expect(result.current.isWarning).toBe(true);

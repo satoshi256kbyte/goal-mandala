@@ -1,4 +1,5 @@
 import { renderHook, act } from '@testing-library/react';
+import { vi } from 'vitest';
 import {
   useRealtimeValidation,
   useFieldValidation,
@@ -6,7 +7,7 @@ import {
 } from './useRealtimeValidation';
 
 // タイマーをモック化
-jest.useFakeTimers();
+vi.useFakeTimers();
 
 describe('useRealtimeValidation', () => {
   afterEach(() => {
@@ -64,7 +65,7 @@ describe('useRealtimeValidation', () => {
 
       // タイマーを進める
       act(() => {
-        jest.advanceTimersByTime(300);
+        vi.advanceTimersByTime(300);
       });
 
       // バリデーション完了
@@ -82,7 +83,7 @@ describe('useRealtimeValidation', () => {
       });
 
       act(() => {
-        jest.advanceTimersByTime(100);
+        vi.advanceTimersByTime(100);
       });
 
       act(() => {
@@ -90,7 +91,7 @@ describe('useRealtimeValidation', () => {
       });
 
       act(() => {
-        jest.advanceTimersByTime(100);
+        vi.advanceTimersByTime(100);
       });
 
       act(() => {
@@ -99,7 +100,7 @@ describe('useRealtimeValidation', () => {
 
       // 最初の2つの入力はキャンセルされ、最後の入力のみ処理される
       act(() => {
-        jest.advanceTimersByTime(300);
+        vi.advanceTimersByTime(300);
       });
 
       const validation = result.current.getFieldValidation('title');

@@ -107,7 +107,7 @@ pnpm run test:safe
 フロントエンドでは、用途に応じて複数のテストコマンドを用意しています：
 
 ```bash
-# 高速ユニットテスト（カバレッジなし、推奨）
+# 基本テスト（高速・カバレッジなし、推奨）
 pnpm --filter @goal-mandala/frontend test
 
 # ユニットテストのみ実行
@@ -116,21 +116,27 @@ pnpm --filter @goal-mandala/frontend test:unit
 # 統合テストのみ実行
 pnpm --filter @goal-mandala/frontend test:integration
 
-# 最速テスト（分離なし、開発中の確認用）
-pnpm --filter @goal-mandala/frontend test:fast
-
 # カバレッジ付きテスト（CI/CD用）
 pnpm --filter @goal-mandala/frontend test:coverage
+
+# E2Eテスト（重要フローのみ）
+pnpm --filter @goal-mandala/frontend test:e2e
+
+# 開発用ウォッチモード
+pnpm --filter @goal-mandala/frontend test:watch
 ```
 
 **テスト実行時間の目安**:
-- `test:fast`: 約15秒（開発中の高速フィードバック用）
-- `test:unit`: 約30秒（コミット前の確認用）
-- `test:integration`: 約45秒（統合テスト実行用）
-- `test:coverage`: 約60秒（カバレッジレポート生成用）
+
+- `test`: 約60秒（基本テスト、カバレッジなし）
+- `test:unit`: 約60秒（ユニットテストのみ）
+- `test:integration`: 約30秒（統合テストのみ）
+- `test:e2e`: 約120秒（E2Eテスト）
+- `test:coverage`: JSON形式のみ（カバレッジレポート生成）
 
 **開発フローでの使い分け**:
-- **開発中**: `test:fast` で高速フィードバック
+
+- **開発中**: `test` または `test:watch` で高速フィードバック
 - **コミット前**: `test:unit` で品質確認
 - **PR作成前**: `test:coverage` で完全チェック
 

@@ -1,11 +1,12 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
+import { vi } from 'vitest';
 import { TabletLayout, TabletHeader, TabletSplitView, TabletCardGrid } from '../TabletLayout';
 import { useResponsive } from '../../../hooks/useResponsive';
 
 // useResponsiveフックのモック
-jest.mock('../../../hooks/useResponsive');
-const mockUseResponsive = useResponsive as jest.MockedFunction<typeof useResponsive>;
+vi.mock('../../../hooks/useResponsive');
+const mockUseResponsive = useResponsive as ReturnType<typeof vi.fn>;
 
 describe('TabletLayout', () => {
   beforeEach(() => {

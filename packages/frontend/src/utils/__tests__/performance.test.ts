@@ -1,4 +1,5 @@
 import { renderHook, act } from '@testing-library/react';
+import { vi } from 'vitest';
 import {
   useDebounce,
   useThrottle,
@@ -8,20 +9,20 @@ import {
 
 describe('performance utilities', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('useDebounce', () => {
     beforeEach(() => {
-      jest.useFakeTimers();
+      vi.useFakeTimers();
     });
 
     afterEach(() => {
-      jest.useRealTimers();
+      vi.useRealTimers();
     });
 
     it('should debounce function calls', () => {
-      const mockFn = jest.fn();
+      const mockFn = vi.fn();
       const { result } = renderHook(() => useDebounce(mockFn, 500));
 
       // Call multiple times quickly
@@ -36,7 +37,7 @@ describe('performance utilities', () => {
 
       // Fast-forward time
       act(() => {
-        jest.advanceTimersByTime(500);
+        vi.advanceTimersByTime(500);
       });
 
       // Should be called once with last arguments
@@ -45,7 +46,7 @@ describe('performance utilities', () => {
     });
 
     it('should reset timer on new calls', () => {
-      const mockFn = jest.fn();
+      const mockFn = vi.fn();
       const { result } = renderHook(() => useDebounce(mockFn, 500));
 
       act(() => {
@@ -54,7 +55,7 @@ describe('performance utilities', () => {
 
       // Advance time partially
       act(() => {
-        jest.advanceTimersByTime(300);
+        vi.advanceTimersByTime(300);
       });
 
       // Call again (should reset timer)
@@ -64,7 +65,7 @@ describe('performance utilities', () => {
 
       // Advance time partially again
       act(() => {
-        jest.advanceTimersByTime(300);
+        vi.advanceTimersByTime(300);
       });
 
       // Should not be called yet
@@ -72,7 +73,7 @@ describe('performance utilities', () => {
 
       // Complete the delay
       act(() => {
-        jest.advanceTimersByTime(200);
+        vi.advanceTimersByTime(200);
       });
 
       // Should be called with last argument
@@ -83,15 +84,15 @@ describe('performance utilities', () => {
 
   describe('useThrottle', () => {
     beforeEach(() => {
-      jest.useFakeTimers();
+      vi.useFakeTimers();
     });
 
     afterEach(() => {
-      jest.useRealTimers();
+      vi.useRealTimers();
     });
 
     it('should throttle function calls', () => {
-      const mockFn = jest.fn();
+      const mockFn = vi.fn();
       const { result } = renderHook(() => useThrottle(mockFn, 500));
 
       // First call should execute immediately
@@ -112,7 +113,7 @@ describe('performance utilities', () => {
 
       // After delay, next call should execute
       act(() => {
-        jest.advanceTimersByTime(500);
+        vi.advanceTimersByTime(500);
         result.current('arg4');
       });
 
@@ -123,7 +124,7 @@ describe('performance utilities', () => {
 
   describe('useMemoizedValidation', () => {
     it('should memoize validation result', () => {
-      const mockValidation = jest.fn(data => ({ isValid: data.length > 0 }));
+      const mockValidation = vi.fn(data => ({ isValid: data.length > 0 }));
       const { result, rerender } = renderHook(
         ({ data }) => useMemoizedValidation(data, mockValidation),
         { initialProps: { data: 'test' } }
@@ -149,7 +150,7 @@ describe('performance utilities', () => {
       it('should measure and log render time in development', () => {
         const originalEnv = process.env.NODE_ENV;
         process.env.NODE_ENV = 'development';
-        const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+        const consoleSpy = vi.spyOn(console, 'log').mockImplementation();
 
         const endMeasurement = performanceMonitor.measureRenderTime('TestComponent');
         const renderTime = endMeasurement();
@@ -167,7 +168,7 @@ describe('performance utilities', () => {
       it('should not log in production', () => {
         const originalEnv = process.env.NODE_ENV;
         process.env.NODE_ENV = 'production';
-        const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+        const consoleSpy = vi.spyOn(console, 'log').mockImplementation();
 
         const endMeasurement = performanceMonitor.measureRenderTime('TestComponent');
         endMeasurement();
@@ -183,9 +184,9 @@ describe('performance utilities', () => {
       it('should measure successful API call time', async () => {
         const originalEnv = process.env.NODE_ENV;
         process.env.NODE_ENV = 'development';
-        const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+        const consoleSpy = vi.spyOn(console, 'log').mockImplementation();
 
-        const mockApiCall = jest.fn().mockResolvedValue('success');
+        const mockApiCall = vi.fn().mockResolvedValue('success');
 
         const result = await performanceMonitor.measureApiCall(mockApiCall, 'TestAPI');
 
@@ -200,9 +201,9 @@ describe('performance utilities', () => {
       it('should measure failed API call time', async () => {
         const originalEnv = process.env.NODE_ENV;
         process.env.NODE_ENV = 'development';
-        const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+        const consoleSpy = vi.spyOn(console, 'log').mockImplementation();
 
-        const mockApiCall = jest.fn().mockRejectedValue(new Error('API Error'));
+        const mockApiCall = vi.fn().mockRejectedValue(new Error('API Error'));
 
         await expect(performanceMonitor.measureApiCall(mockApiCall, 'TestAPI')).rejects.toThrow(
           'API Error'

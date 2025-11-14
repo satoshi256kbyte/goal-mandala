@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 import {
   AnimationPerformanceMonitor,
   AnimationInterruptController,
@@ -17,13 +18,13 @@ import {
 
 // Web Animations API のモック
 const mockAnimation = {
-  addEventListener: jest.fn(),
-  cancel: jest.fn(),
-  finish: jest.fn(),
+  addEventListener: vi.fn(),
+  cancel: vi.fn(),
+  finish: vi.fn(),
 };
 
 // performance.now のモック
-const mockPerformanceNow = jest.fn();
+const mockPerformanceNow = vi.fn();
 Object.defineProperty(global, 'performance', {
   value: {
     now: mockPerformanceNow,
@@ -35,8 +36,8 @@ Object.defineProperty(global, 'performance', {
 });
 
 // requestAnimationFrame のモック
-const mockRequestAnimationFrame = jest.fn();
-const mockCancelAnimationFrame = jest.fn();
+const mockRequestAnimationFrame = vi.fn();
+const mockCancelAnimationFrame = vi.fn();
 Object.defineProperty(global, 'requestAnimationFrame', {
   value: mockRequestAnimationFrame,
   writable: true,
@@ -50,10 +51,10 @@ Object.defineProperty(global, 'cancelAnimationFrame', {
 const mockMatchMedia = (matches: boolean) => {
   Object.defineProperty(window, 'matchMedia', {
     writable: true,
-    value: jest.fn().mockImplementation(() => ({
+    value: vi.fn().mockImplementation(() => ({
       matches,
-      addEventListener: jest.fn(),
-      removeEventListener: jest.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
     })),
   });
 };
@@ -62,7 +63,7 @@ describe('AnimationPerformanceMonitor', () => {
   let monitor: AnimationPerformanceMonitor;
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     monitor = new AnimationPerformanceMonitor();
     mockPerformanceNow.mockReturnValue(1000);
   });
@@ -165,7 +166,7 @@ describe('AnimationInterruptController', () => {
 
     it('特定のアニメーションを中断できる', () => {
       const animation = mockAnimation as any;
-      const onInterrupt = jest.fn();
+      const onInterrupt = vi.fn();
 
       controller.registerAnimation('test-1', animation, onInterrupt);
       controller.interruptAnimation('test-1');
@@ -266,7 +267,7 @@ describe('AnimationAccessibilityManager', () => {
     });
 
     it('コールバックを登録・削除できる', () => {
-      const callback = jest.fn();
+      const callback = vi.fn();
 
       manager.addCallback(callback);
       manager.setDisabled(true);
@@ -286,7 +287,7 @@ describe('IntegratedAnimationController', () => {
   beforeEach(() => {
     controller = new IntegratedAnimationController();
     mockElement = document.createElement('div');
-    mockElement.animate = jest.fn().mockReturnValue(mockAnimation);
+    mockElement.animate = vi.fn().mockReturnValue(mockAnimation);
   });
 
   afterEach(() => {

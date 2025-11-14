@@ -1,10 +1,11 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { vi } from 'vitest';
 import { ErrorDisplay, InlineError, ErrorSummary } from './ErrorDisplay';
 import { SubmissionErrorType } from '../../hooks/useFormSubmission';
 
 // タイマーをモック化
-jest.useFakeTimers();
+vi.useFakeTimers();
 
 describe('ErrorDisplay', () => {
   afterEach(() => {
@@ -120,7 +121,7 @@ describe('ErrorDisplay', () => {
 
   describe('自動非表示機能', () => {
     it('指定時間後に自動で非表示になる', async () => {
-      const onErrorHide = jest.fn();
+      const onErrorHide = vi.fn();
       const validationErrors = {
         title: 'エラーメッセージ',
       };
@@ -136,7 +137,7 @@ describe('ErrorDisplay', () => {
       expect(screen.getByText('エラーメッセージ')).toBeInTheDocument();
 
       // 時間を進める
-      jest.advanceTimersByTime(3000);
+      vi.advanceTimersByTime(3000);
 
       await waitFor(() => {
         expect(screen.queryByText('エラーメッセージ')).not.toBeInTheDocument();
@@ -153,7 +154,7 @@ describe('ErrorDisplay', () => {
       expect(screen.getByText('エラー1')).toBeInTheDocument();
 
       // 時間を少し進める
-      jest.advanceTimersByTime(1000);
+      vi.advanceTimersByTime(1000);
 
       // エラーを変更
       rerender(<ErrorDisplay validationErrors={{ title: 'エラー2' }} autoHideMs={3000} />);
@@ -161,7 +162,7 @@ describe('ErrorDisplay', () => {
       expect(screen.getByText('エラー2')).toBeInTheDocument();
 
       // 残りの時間を進めても表示されたまま
-      jest.advanceTimersByTime(2000);
+      vi.advanceTimersByTime(2000);
       expect(screen.getByText('エラー2')).toBeInTheDocument();
     });
   });
@@ -285,7 +286,7 @@ describe('ErrorSummary', () => {
   });
 
   it('フィールドフォーカス機能が動作する', () => {
-    const onFieldFocus = jest.fn();
+    const onFieldFocus = vi.fn();
     const validationErrors = {
       title: 'タイトルエラー',
     };

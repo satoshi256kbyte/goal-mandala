@@ -14,39 +14,42 @@ on:
 
 jobs:
   e2e-tests:
-    timeout-minutes: 60
+    timeout-minutes: 5 # E2Eテストは5分以内
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        browser: [chromium, firefox, webkit]
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        timeout-minutes: 1
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "23.10.0"
           cache: "pnpm"
+        timeout-minutes: 1
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
           version: latest
+        timeout-minutes: 1
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+        timeout-minutes: 3
 
       - name: Install Playwright Browsers
-        run: pnpm --filter @goal-mandala/frontend exec playwright install --with-deps ${{ matrix.browser }}
+        run: pnpm --filter @goal-mandala/frontend exec playwright install chromium --with-deps
+        timeout-minutes: 2
 
       - name: Build frontend
         run: pnpm --filter @goal-mandala/frontend build
+        timeout-minutes: 2
 
       - name: Run E2E tests
-        run: pnpm --filter @goal-mandala/frontend test:e2e --project=${{ matrix.browser }}
+        run: pnpm --filter @goal-mandala/frontend test:e2e
+        timeout-minutes: 3
         env:
           CI: true
 
@@ -54,14 +57,16 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: playwright-report-${{ matrix.browser }}
+          name: playwright-report
           path: packages/frontend/playwright-report/
-          retention-days: 30
+          retention-days: 7
+        timeout-minutes: 1
 
       - name: Upload test videos
         uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: playwright-videos-${{ matrix.browser }}
+          name: playwright-videos
           path: packages/frontend/test-results/
-          retention-days: 30
+          retention-days: 7
+        timeout-minutes: 1

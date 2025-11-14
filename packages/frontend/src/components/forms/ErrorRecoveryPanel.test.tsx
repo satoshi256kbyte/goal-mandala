@@ -1,11 +1,12 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { vi } from 'vitest';
 import { ErrorRecoveryPanel } from './ErrorRecoveryPanel';
 import { ApiError, NetworkErrorType } from '../../services/api';
 
 // useErrorRecoveryをモック
-jest.mock('../../hooks/useErrorRecovery', () => ({
-  useErrorRecovery: jest.fn(),
+vi.mock('../../hooks/useErrorRecovery', () => ({
+  useErrorRecovery: vi.fn(),
   RecoveryStrategy: {
     AUTO_RETRY: 'auto_retry',
     MANUAL_RETRY: 'manual_retry',
@@ -27,10 +28,10 @@ jest.mock('../../hooks/useErrorRecovery', () => ({
 const mockUseErrorRecovery = require('../../hooks/useErrorRecovery').useErrorRecovery;
 
 describe('ErrorRecoveryPanel', () => {
-  const mockStartRecovery = jest.fn();
-  const mockExecuteRecoveryAction = jest.fn();
-  const mockIsRecoverable = jest.fn();
-  const mockResetRecovery = jest.fn();
+  const mockStartRecovery = vi.fn();
+  const mockExecuteRecoveryAction = vi.fn();
+  const mockIsRecoverable = vi.fn();
+  const mockResetRecovery = vi.fn();
 
   const defaultMockReturn = {
     recoveryState: {
@@ -46,11 +47,11 @@ describe('ErrorRecoveryPanel', () => {
     executeRecoveryAction: mockExecuteRecoveryAction,
     isRecoverable: mockIsRecoverable,
     resetRecovery: mockResetRecovery,
-    getRecoveryStrategy: jest.fn(),
+    getRecoveryStrategy: vi.fn(),
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     mockUseErrorRecovery.mockReturnValue(defaultMockReturn);
     mockIsRecoverable.mockReturnValue(true);
   });
@@ -174,7 +175,7 @@ describe('ErrorRecoveryPanel', () => {
         },
       });
 
-      const mockOnRecoverySuccess = jest.fn();
+      const mockOnRecoverySuccess = vi.fn();
       const error: ApiError = {
         code: NetworkErrorType.TIMEOUT,
         message: 'タイムアウト',
@@ -260,7 +261,7 @@ describe('ErrorRecoveryPanel', () => {
 
   describe('閉じるボタン', () => {
     it('閉じるボタンが表示される', () => {
-      const mockOnClose = jest.fn();
+      const mockOnClose = vi.fn();
       const error: ApiError = {
         code: NetworkErrorType.TIMEOUT,
         message: 'タイムアウト',
@@ -275,7 +276,7 @@ describe('ErrorRecoveryPanel', () => {
     });
 
     it('閉じるボタンをクリックするとコールバックが実行される', () => {
-      const mockOnClose = jest.fn();
+      const mockOnClose = vi.fn();
       const error: ApiError = {
         code: NetworkErrorType.TIMEOUT,
         message: 'タイムアウト',
@@ -315,7 +316,7 @@ describe('ErrorRecoveryPanel', () => {
       };
 
       const context = {
-        retryFunction: jest.fn(),
+        retryFunction: vi.fn(),
         operation: 'form_submit',
       };
 
@@ -347,7 +348,7 @@ describe('ErrorRecoveryPanel', () => {
     it('回復失敗時のコールバックが実行される', async () => {
       const mockError = new Error('回復失敗');
       mockExecuteRecoveryAction.mockRejectedValue(mockError);
-      const mockOnRecoveryFailure = jest.fn();
+      const mockOnRecoveryFailure = vi.fn();
 
       mockUseErrorRecovery.mockReturnValue({
         ...defaultMockReturn,

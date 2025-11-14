@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { vi } from 'vitest';
 import userEvent from '@testing-library/user-event';
 import { FormField } from './FormField';
 import { TextInput } from './TextInput';
@@ -9,7 +10,7 @@ import { ErrorDisplay, ErrorSummary } from './ErrorDisplay';
 import { useRealtimeValidation, useFormSubmission } from '../../hooks';
 
 // タイマーをモック化
-jest.useFakeTimers();
+vi.useFakeTimers();
 
 // テスト用のフォームコンポーネント
 const TestGoalForm: React.FC = () => {
@@ -180,7 +181,7 @@ describe('Validation Integration Tests', () => {
       await user.clear(titleInput);
 
       // デバウンス時間を進める
-      jest.advanceTimersByTime(300);
+      vi.advanceTimersByTime(300);
 
       await waitFor(() => {
         expect(screen.getByText('目標タイトルは必須です')).toBeInTheDocument();
@@ -190,7 +191,7 @@ describe('Validation Integration Tests', () => {
       await user.type(titleInput, 'テスト目標');
 
       // デバウンス時間を進める
-      jest.advanceTimersByTime(300);
+      vi.advanceTimersByTime(300);
 
       await waitFor(() => {
         expect(screen.queryByText('目標タイトルは必須です')).not.toBeInTheDocument();
@@ -227,7 +228,7 @@ describe('Validation Integration Tests', () => {
       expect(screen.getByText('確認中...')).toBeInTheDocument();
 
       // デバウンス完了後
-      jest.advanceTimersByTime(300);
+      vi.advanceTimersByTime(300);
 
       await waitFor(() => {
         expect(screen.queryByText('確認中...')).not.toBeInTheDocument();
@@ -254,7 +255,7 @@ describe('Validation Integration Tests', () => {
     });
 
     it('有効なデータで送信が成功する', async () => {
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+      const consoleSpy = vi.spyOn(console, 'log').mockImplementation();
 
       render(<TestGoalForm />);
 
@@ -274,7 +275,7 @@ describe('Validation Integration Tests', () => {
       );
 
       // デバウンス時間を進める
-      jest.advanceTimersByTime(300);
+      vi.advanceTimersByTime(300);
 
       const submitButton = screen.getByText('AI生成開始');
       await user.click(submitButton);
@@ -318,7 +319,7 @@ describe('Validation Integration Tests', () => {
       );
 
       // デバウンス時間を進める
-      jest.advanceTimersByTime(300);
+      vi.advanceTimersByTime(300);
 
       await waitFor(() => {
         expect(submitButton).not.toBeDisabled();
@@ -398,7 +399,7 @@ describe('Validation Integration Tests', () => {
       await user.type(titleInput, 'テスト目標');
 
       // デバウンス時間を進める
-      jest.advanceTimersByTime(300);
+      vi.advanceTimersByTime(300);
 
       await waitFor(() => {
         expect(titleInput).toHaveAttribute('aria-invalid', 'false');
@@ -421,11 +422,11 @@ describe('Validation Integration Tests', () => {
 
   describe('パフォーマンス統合', () => {
     it('デバウンス機能により不要なバリデーションが抑制される', async () => {
-      const validateSpy = jest.fn();
+      const validateSpy = vi.fn();
 
       // バリデーション関数をモック化
       const OriginalFormField = FormField;
-      jest.spyOn(React, 'cloneElement').mockImplementation((element, props) => {
+      vi.spyOn(React, 'cloneElement').mockImplementation((element, props) => {
         if (props?.onChange) {
           const originalOnChange = props.onChange;
           props.onChange = (...args: any[]) => {
@@ -447,7 +448,7 @@ describe('Validation Integration Tests', () => {
       expect(validateSpy).toHaveBeenCalledTimes(4); // 't', 'e', 's', 't'
 
       // デバウンス時間を進める
-      jest.advanceTimersByTime(300);
+      vi.advanceTimersByTime(300);
 
       // デバウンス後に最終的なバリデーションが実行される
       await waitFor(() => {
@@ -455,7 +456,7 @@ describe('Validation Integration Tests', () => {
         expect(validateSpy).toHaveBeenCalledTimes(4);
       });
 
-      jest.restoreAllMocks();
+      vi.restoreAllMocks();
     });
   });
 });

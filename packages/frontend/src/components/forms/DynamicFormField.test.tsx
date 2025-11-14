@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { vi } from 'vitest';
 import userEvent from '@testing-library/user-event';
 import { useForm } from 'react-hook-form';
 import {
@@ -14,7 +15,7 @@ const TestWrapper: React.FC<{
   field: FormFieldConfig;
   defaultValue?: any;
   onSubmit?: (data: any) => void;
-}> = ({ field, defaultValue = '', onSubmit = jest.fn() }) => {
+}> = ({ field, defaultValue = '', onSubmit = vi.fn() }) => {
   const {
     register,
     watch,
@@ -161,7 +162,7 @@ describe('DynamicFormField', () => {
     });
 
     test('Enterキーでの改行（保存処理は実行されない）', async () => {
-      const onSubmit = jest.fn();
+      const onSubmit = vi.fn();
       render(<TestWrapper field={textareaField} onSubmit={onSubmit} />);
 
       const textarea = screen.getByLabelText('説明 *');
@@ -256,7 +257,7 @@ describe('DynamicFormField', () => {
     };
 
     test('Enterキーでの保存イベント発火', async () => {
-      const saveEventListener = jest.fn();
+      const saveEventListener = vi.fn();
       document.addEventListener('dynamicFormSave', saveEventListener);
 
       render(<TestWrapper field={textField} defaultValue="test value" />);
@@ -442,6 +443,55 @@ describe('DynamicFormField', () => {
       await waitFor(() => {
         expect(screen.getByText('エラーメッセージ')).toBeInTheDocument();
       });
+    });
+  });
+
+  describe('レスポンシブ対応', () => {
+    test('テキストフィールドがモバイル用スタイルを適用する', () => {
+      // window.innerWidthをモック
+      Object.defineProperty(window, 'innerWidth', {
+        writable: true,
+        configurable: true,
+        value: 375,
+      });
+
+      const textField: FormFieldConfig = {
+        name: 'title',
+        type: 'text',
+        label: 'タイトル',
+        placeholder: 'タイトルを入力してください',
+        required: true,
+        maxLength: 100,
+      };
+
+      render(<TestWrapper field={textField} />);
+
+      const input = screen.getByPlaceholderText('タイトルを入力してください');
+      expect(input).toHaveClass('text-base', 'px-4', 'py-3');
+    });
+
+    test('デスクトップでフォーカス表示が適切に動作する', async () => {
+      // window.innerWidthをモック
+      Object.defineProperty(window, 'innerWidth', {
+        writable: true,
+        configurable: true,
+        value: 1024,
+      });
+
+      const textField: FormFieldConfig = {
+        name: 'title',
+        type: 'text',
+        label: 'タイトル',
+        placeholder: 'タイトルを入力してください',
+        required: true,
+      };
+
+      render(<TestWrapper field={textField} />);
+
+      const input = screen.getByPlaceholderText('タイトルを入力してください');
+
+      await user.click(input);
+      expect(input).toHaveClass('focus:ring-2', 'focus:ring-blue-500');
     });
   });
 });

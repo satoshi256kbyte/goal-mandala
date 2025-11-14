@@ -341,11 +341,38 @@ Closes #123
 
 ## テスト戦略
 
-### テストピラミッド
+### テストピラミッド（簡素化版）
 
-1. **ユニットテスト** (多数): 個別関数・コンポーネントのテスト
-2. **統合テスト** (中程度): API + データベースの結合テスト
-3. **E2Eテスト** (少数): ユーザーフローのテスト
+このプロジェクトでは、軽量で高速なテスト実行を優先し、以下の簡素化されたテストピラミッドを採用しています：
+
+```
+        E2E (3)
+       /       \
+  統合テスト (3)
+     /           \
+ユニットテスト (30)
+```
+
+1. **ユニットテスト** (約30ファイル): コア機能、エラーハンドリング、セキュリティに集中
+2. **統合テスト** (3ファイル): 認証、目標作成、プロフィール設定の重要フローのみ
+3. **E2Eテスト** (3ファイル): 認証、目標作成、マンダラ編集の主要ユーザーフローのみ
+
+### テスト実行タイミング
+
+| テストタイプ | 開発中 | コミット前 | PR作成時 | マージ前 |
+|------------|--------|-----------|---------|---------|
+| ユニットテスト | ✓ | ✓ | ✓ | ✓ |
+| 統合テスト | - | ✓ | ✓ | ✓ |
+| E2Eテスト | - | - | ✓ | ✓ |
+| カバレッジ | - | - | ✓ | ✓ |
+
+### 削除されたテスト
+
+テストアーキテクチャ刷新により、以下のテストは削除されました：
+
+- **パフォーマンステスト**: 別途パフォーマンス監視ツールで実施
+- **アクセシビリティテスト**: 開発時のマニュアルチェックとE2Eテストで代替
+- **重複テストファイル**: 1コンポーネント=1テストファイルに統合（約82%削減）
 
 ### テスト実行
 
@@ -370,33 +397,43 @@ pnpm --filter @goal-mandala/frontend test:e2e
 フロントエンドでは、開発フローに応じて最適なテストコマンドを選択できます：
 
 ```bash
-# 1. 開発中の高速フィードバック（最速）
-pnpm --filter @goal-mandala/frontend test:fast
-# - 実行時間: 約15秒
+# 1. 基本テスト（高速・カバレッジなし、推奨）
+pnpm --filter @goal-mandala/frontend test
+# - 実行時間: 約60秒
 # - カバレッジ: なし
-# - 分離: なし（最速実行）
-# - 用途: コード変更後の即座の確認
+# - 分離: なし（高速実行）
+# - 用途: 開発中の高速フィードバック
 
-# 2. コミット前の品質確認（推奨）
+# 2. ユニットテストのみ実行
 pnpm --filter @goal-mandala/frontend test:unit
-# - 実行時間: 約30秒
+# - 実行時間: 約60秒
 # - カバレッジ: なし
-# - 分離: あり
-# - 用途: コミット前の最終確認
+# - 対象: ユニットテストのみ（統合テスト除外）
+# - 用途: コミット前の品質確認
 
-# 3. 統合テストの実行
+# 3. 統合テストのみ実行
 pnpm --filter @goal-mandala/frontend test:integration
-# - 実行時間: 約45秒
+# - 実行時間: 約30秒
 # - カバレッジ: なし
 # - 対象: 統合テストのみ
 # - 用途: API統合の確認
 
-# 4. 完全なテスト（カバレッジ付き）
+# 4. カバレッジ付きテスト
 pnpm --filter @goal-mandala/frontend test:coverage
-# - 実行時間: 約60秒
-# - カバレッジ: あり
-# - 分離: あり
+# - 実行時間: JSON形式のみ
+# - カバレッジ: あり（JSON形式のみ）
 # - 用途: PR作成前、CI/CD
+
+# 5. E2Eテスト（重要フローのみ）
+pnpm --filter @goal-mandala/frontend test:e2e
+# - 実行時間: 約120秒
+# - 対象: 認証、目標作成、マンダラ編集
+# - 用途: PR作成前、マージ前
+
+# 6. 開発用ウォッチモード
+pnpm --filter @goal-mandala/frontend test:watch
+# - カバレッジ: なし
+# - 用途: 開発中の継続的なテスト実行
 ```
 
 #### テスト実行のベストプラクティス
@@ -405,25 +442,28 @@ pnpm --filter @goal-mandala/frontend test:coverage
 
 1. **開発中（頻繁な実行）**:
    ```bash
-   pnpm --filter @goal-mandala/frontend test:fast
+   pnpm --filter @goal-mandala/frontend test
+   # または
+   pnpm --filter @goal-mandala/frontend test:watch
    ```
-   - 最速でフィードバックを得られる
+   - カバレッジ計算なしで高速フィードバック
    - コード変更のたびに実行しても負担が少ない
 
 2. **コミット前（品質確認）**:
    ```bash
    pnpm --filter @goal-mandala/frontend test:unit
    ```
-   - ユニットテストを確実に実行
-   - 適度な実行時間で品質を担保
+   - ユニットテストのみを確実に実行
+   - 統合テストを除外して実行時間を短縮
 
 3. **プルリクエスト作成前（完全チェック）**:
    ```bash
    pnpm --filter @goal-mandala/frontend test:coverage
    pnpm --filter @goal-mandala/frontend test:integration
+   pnpm --filter @goal-mandala/frontend test:e2e
    ```
-   - カバレッジレポートを生成
-   - 統合テストも含めて完全チェック
+   - カバレッジレポートを生成（JSON形式のみ）
+   - 統合テストとE2Eテストも実行
 
 4. **CI/CD環境**:
    ```bash
@@ -431,34 +471,60 @@ pnpm --filter @goal-mandala/frontend test:coverage
    pnpm test:coverage  # カバレッジ付き
    ```
    - タイムアウト設定で安全に実行
-   - カバレッジレポートを生成
+   - 全体で10分以内に完了
 
 **パフォーマンス最適化のポイント**:
 
-- **カバレッジ計算の無効化**: 開発中はカバレッジ計算をスキップして高速化
-- **並列実行の最適化**: CPU数に応じた並列実行数の調整
-- **テスト分離の制御**: 高速実行時は分離を無効化
-- **統合テストの分離**: ユニットテストと統合テストを分けて実行
+- **カバレッジ計算の制御**: デフォルトで無効化、必要時のみ `test:coverage` で実行
+- **並列実行の最適化**: maxConcurrency: 4, maxForks: 2 でメモリ効率優先
+- **テスト分離の無効化**: `isolate: false` で高速実行
+- **タイムアウトの短縮**: testTimeout: 3000ms で遅いテストを早期検出
+- **統合テストの分離**: ユニットテストと統合テストを分けて実行可能
 
 ### テスト作成ガイドライン
+
+#### 基本方針
+
+1. **1コンポーネント = 1テストファイル**: 重複テストファイルは作成しない
+2. **コア機能に集中**: UI詳細、アニメーション、レスポンシブテストは不要
+3. **最小限のテストケース**: エッジケースの過剰なテストは避ける
+4. **統合テストは最小限**: 重要なユーザーフローのみ
+
+#### テストケースの優先順位
+
+- **高**: コア機能、エラーハンドリング、セキュリティ
+- **中**: バリデーション、状態管理
+- **低**: UI詳細、アニメーション、レスポンシブ（テスト不要）
 
 #### フロントエンド (React Testing Library)
 
 ```typescript
-// コンポーネントテストの例
+// コンポーネントテストの例（コア機能のみ）
 import { render, screen } from '@testing-library/react';
 import { MandalaChart } from './MandalaChart';
 
 describe('MandalaChart', () => {
-  it('should render mandala chart with 9x9 grid', () => {
-    render(<MandalaChart />);
-    
-    const grid = screen.getByRole('grid');
-    expect(grid).toBeInTheDocument();
-    
-    const cells = screen.getAllByRole('gridcell');
-    expect(cells).toHaveLength(81);
+  // コア機能のみテスト
+  describe('基本機能', () => {
+    it('should render mandala chart with 9x9 grid', () => {
+      render(<MandalaChart />);
+      
+      const grid = screen.getByRole('grid');
+      expect(grid).toBeInTheDocument();
+      
+      const cells = screen.getAllByRole('gridcell');
+      expect(cells).toHaveLength(81);
+    });
   });
+  
+  // エラーハンドリング
+  describe('エラーハンドリング', () => {
+    it('should display error message when data loading fails', () => {
+      // エラーケースのテスト
+    });
+  });
+  
+  // レスポンシブ、アニメーション、UI詳細のテストは不要
 });
 ```
 
@@ -485,6 +551,13 @@ describe('Goals API', () => {
   });
 });
 ```
+
+#### カバレッジ目標
+
+- **コア機能**: 80%以上
+- **エラーハンドリング**: 80%以上
+- **セキュリティ機能**: 100%
+- **UI詳細**: カバレッジ不要（テスト対象外）
 
 ## デプロイメント
 

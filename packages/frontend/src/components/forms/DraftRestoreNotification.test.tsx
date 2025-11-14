@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
+import { vi } from 'vitest';
 import { DraftRestoreNotification } from './DraftRestoreNotification';
 import { DraftData } from '../../services/draftService';
 
@@ -18,12 +19,12 @@ describe('DraftRestoreNotification', () => {
 
   const defaultProps = {
     draftData: mockDraftData,
-    onRestore: jest.fn(),
-    onReject: jest.fn(),
+    onRestore: vi.fn(),
+    onReject: vi.fn(),
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('基本表示', () => {
@@ -54,7 +55,7 @@ describe('DraftRestoreNotification', () => {
 
   describe('ボタンの動作', () => {
     it('復元ボタンクリックでonRestoreが呼ばれる', () => {
-      const onRestore = jest.fn();
+      const onRestore = vi.fn();
       render(<DraftRestoreNotification {...defaultProps} onRestore={onRestore} />);
 
       fireEvent.click(screen.getByRole('button', { name: '復元する' }));
@@ -63,7 +64,7 @@ describe('DraftRestoreNotification', () => {
     });
 
     it('新規作成ボタンクリックでonRejectが呼ばれる', () => {
-      const onReject = jest.fn();
+      const onReject = vi.fn();
       render(<DraftRestoreNotification {...defaultProps} onReject={onReject} />);
 
       fireEvent.click(screen.getByRole('button', { name: '新規作成' }));
@@ -72,7 +73,7 @@ describe('DraftRestoreNotification', () => {
     });
 
     it('削除ボタンが提供された場合は表示される', () => {
-      const onDelete = jest.fn();
+      const onDelete = vi.fn();
       render(<DraftRestoreNotification {...defaultProps} onDelete={onDelete} />);
 
       const deleteButton = screen.getByRole('button', { name: '削除' });
@@ -83,7 +84,7 @@ describe('DraftRestoreNotification', () => {
     });
 
     it('閉じるボタンが提供された場合は表示される', () => {
-      const onClose = jest.fn();
+      const onClose = vi.fn();
       render(<DraftRestoreNotification {...defaultProps} onClose={onClose} />);
 
       const closeButton = screen.getByRole('button', { name: '通知を閉じる' });
@@ -172,7 +173,7 @@ describe('DraftRestoreNotification', () => {
 
   describe('アクセシビリティ', () => {
     it('適切なaria-labelが設定されている', () => {
-      render(<DraftRestoreNotification {...defaultProps} onClose={jest.fn()} />);
+      render(<DraftRestoreNotification {...defaultProps} onClose={vi.fn()} />);
 
       expect(screen.getByRole('button', { name: '通知を閉じる' })).toBeInTheDocument();
     });

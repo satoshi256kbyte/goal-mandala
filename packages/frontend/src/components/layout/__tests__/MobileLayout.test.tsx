@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
+import { vi } from 'vitest';
 import {
   MobileLayout,
   MobileHeader,
@@ -11,8 +12,8 @@ import {
 import { useResponsive } from '../../../hooks/useResponsive';
 
 // useResponsiveフックのモック
-jest.mock('../../../hooks/useResponsive');
-const mockUseResponsive = useResponsive as jest.MockedFunction<typeof useResponsive>;
+vi.mock('../../../hooks/useResponsive');
+const mockUseResponsive = useResponsive as ReturnType<typeof vi.fn>;
 
 describe('MobileLayout', () => {
   beforeEach(() => {
@@ -129,7 +130,7 @@ describe('MobileHeader', () => {
 
 describe('MobileButton', () => {
   it('ボタンがクリックできる', () => {
-    const handleClick = jest.fn();
+    const handleClick = vi.fn();
     render(<MobileButton onClick={handleClick}>テストボタン</MobileButton>);
 
     fireEvent.click(screen.getByText('テストボタン'));
@@ -137,7 +138,7 @@ describe('MobileButton', () => {
   });
 
   it('無効化されたボタンはクリックできない', () => {
-    const handleClick = jest.fn();
+    const handleClick = vi.fn();
     render(
       <MobileButton onClick={handleClick} disabled>
         無効ボタン
@@ -170,7 +171,7 @@ describe('MobileButton', () => {
 
 describe('MobileCard', () => {
   it('カードがクリックできる', () => {
-    const handleClick = jest.fn();
+    const handleClick = vi.fn();
     render(
       <MobileCard onClick={handleClick}>
         <div>カードコンテンツ</div>
@@ -215,7 +216,7 @@ describe('MobileCard', () => {
 
 describe('MobileListItem', () => {
   it('リストアイテムがクリックできる', () => {
-    const handleClick = jest.fn();
+    const handleClick = vi.fn();
     render(<MobileListItem onClick={handleClick}>リストアイテム</MobileListItem>);
 
     fireEvent.click(screen.getByText('リストアイテム'));

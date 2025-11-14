@@ -205,13 +205,13 @@ export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
             </div>
           )}
 
-          {error.field && displayType === 'summary' && (
+          {error?.field && displayType === 'summary' && (
             <div className={`mt-1 text-xs ${getTextClasses()} opacity-75`}>
               フィールド: {error.field}
             </div>
           )}
 
-          {showRecoveryOptions && (
+          {showRecoveryOptions && error && (
             <RecoveryOptions
               error={error}
               onRetry={onRetry}

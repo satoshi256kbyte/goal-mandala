@@ -4,20 +4,21 @@
 
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { vi } from 'vitest';
 import { ProgressHistoryContainer } from '../ProgressHistoryContainer';
 import { progressHistoryService } from '../../../services/progress-history-service';
 
 // サービスのモック
-jest.mock('../../../services/progress-history-service', () => ({
+vi.mock('../../../services/progress-history-service', () => ({
   progressHistoryService: {
-    getProgressHistory: jest.fn(),
-    getProgressTrend: jest.fn(),
-    getSignificantChanges: jest.fn(),
+    getProgressHistory: vi.fn(),
+    getProgressTrend: vi.fn(),
+    getSignificantChanges: vi.fn(),
   },
 }));
 
 // 子コンポーネントのモック
-jest.mock('../ProgressHistoryChart', () => ({
+vi.mock('../ProgressHistoryChart', () => ({
   ProgressHistoryChart: ({ onDateClick, data }: any) => (
     <div
       data-testid="progress-history-chart"
@@ -28,7 +29,7 @@ jest.mock('../ProgressHistoryChart', () => ({
   ),
 }));
 
-jest.mock('../ProgressHistoryDetail', () => ({
+vi.mock('../ProgressHistoryDetail', () => ({
   ProgressHistoryDetail: ({ isVisible, onClose }: any) =>
     isVisible ? (
       <div data-testid="progress-history-detail">
@@ -37,7 +38,7 @@ jest.mock('../ProgressHistoryDetail', () => ({
     ) : null,
 }));
 
-jest.mock('../ProgressHistoryAnalysis', () => ({
+vi.mock('../ProgressHistoryAnalysis', () => ({
   ProgressHistoryAnalysis: ({ historyData }: any) => (
     <div data-testid="progress-history-analysis">
       Analysis with {historyData.length} data points
@@ -45,17 +46,15 @@ jest.mock('../ProgressHistoryAnalysis', () => ({
   ),
 }));
 
-jest.mock('../LoadingSpinner', () => ({
+vi.mock('../LoadingSpinner', () => ({
   LoadingSpinner: () => <div data-testid="loading-spinner">Loading...</div>,
 }));
 
-jest.mock('../ErrorMessage', () => ({
+vi.mock('../ErrorMessage', () => ({
   ErrorMessage: ({ message }: any) => <div data-testid="error-message">{message}</div>,
 }));
 
-const mockProgressHistoryService = progressHistoryService as jest.Mocked<
-  typeof progressHistoryService
->;
+const mockProgressHistoryService = progressHistoryService as ReturnType<typeof vi.fn>;
 
 describe('ProgressHistoryContainer', () => {
   const mockHistoryData = [
@@ -96,7 +95,7 @@ describe('ProgressHistoryContainer', () => {
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
 
     // デフォルトのモック実装
     mockProgressHistoryService.getProgressHistory.mockResolvedValue(mockHistoryData);
@@ -231,7 +230,7 @@ describe('ProgressHistoryContainer', () => {
       });
 
       // 初回の呼び出しをクリア
-      jest.clearAllMocks();
+      vi.clearAllMocks();
 
       const refreshButton = screen.getByTitle('データを更新');
       fireEvent.click(refreshButton);
@@ -272,7 +271,7 @@ describe('ProgressHistoryContainer', () => {
     });
 
     it('エラー時にコールバックが呼ばれる', async () => {
-      const onError = jest.fn();
+      const onError = vi.fn();
       const error = new Error('テストエラー');
       mockProgressHistoryService.getProgressHistory.mockRejectedValue(error);
 

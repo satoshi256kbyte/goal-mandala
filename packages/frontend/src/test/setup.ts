@@ -4,10 +4,10 @@ import { vi } from 'vitest';
 
 // Testing Libraryの設定を最適化
 configure({
-  // デフォルトのwaitForタイムアウトを短縮
-  asyncUtilTimeout: 1000,
-  // DOM要素の検索タイムアウトを短縮
-  getByTimeout: 1000,
+  // デフォルトのwaitForタイムアウトを大幅に短縮
+  asyncUtilTimeout: 500, // 1000ms→500msに短縮
+  // DOM要素の検索タイムアウトを大幅に短縮
+  getByTimeout: 500, // 1000ms→500msに短縮
   // React Strict Modeを無効化して警告を抑制
   reactStrictMode: false,
 });
@@ -179,28 +179,8 @@ beforeEach(() => {
 afterEach(() => {
   // テスト後のクリーンアップ
   vi.clearAllTimers();
-  vi.restoreAllMocks();
 
-  // メモリリーク対策: グローバル変数のリセット
-  // DOMのクリーンアップ
-  document.body.innerHTML = '';
-  document.head.innerHTML = '';
-
-  // イベントリスナーのクリーンアップ
-  const events = ['resize', 'scroll', 'click', 'keydown', 'keyup', 'focus', 'blur'];
-  events.forEach(event => {
-    const listeners = (window as any)._eventListeners?.[event];
-    if (listeners) {
-      listeners.forEach((listener: EventListener) => {
-        window.removeEventListener(event, listener);
-      });
-    }
-  });
-
-  // タイマーのクリーンアップ
-  vi.clearAllTimers();
-
-  // ストレージの完全クリア
+  // ストレージのクリア
   localStorageMock.clear();
   sessionStorageMock.clear();
 });

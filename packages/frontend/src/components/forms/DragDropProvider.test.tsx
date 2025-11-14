@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { vi } from 'vitest';
 import userEvent from '@testing-library/user-event';
 import {
   DragDropProvider,
@@ -70,7 +71,7 @@ describe('DragDropProvider', () => {
 
   describe('基本機能', () => {
     test('プロバイダーが正常にレンダリングされる', () => {
-      const onReorder = jest.fn();
+      const onReorder = vi.fn();
 
       render(<TestDragDropComponent items={mockItems} onReorder={onReorder} />);
 
@@ -81,7 +82,7 @@ describe('DragDropProvider', () => {
     });
 
     test('useDragDropフックが正常に動作する', () => {
-      const onReorder = jest.fn();
+      const onReorder = vi.fn();
 
       render(<TestWithHook items={mockItems} onReorder={onReorder} />);
 
@@ -91,7 +92,7 @@ describe('DragDropProvider', () => {
 
     test('プロバイダー外でuseDragDropを使用するとエラーが発生する', () => {
       // エラーログを抑制
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
       expect(() => {
         render(<TestHookComponent />);
@@ -103,7 +104,7 @@ describe('DragDropProvider', () => {
 
   describe('ドラッグ&ドロップ操作', () => {
     test('ドラッグ開始時の状態変更', async () => {
-      const onReorder = jest.fn();
+      const onReorder = vi.fn();
 
       render(<TestDragDropComponent items={mockItems} onReorder={onReorder} />);
 
@@ -113,8 +114,8 @@ describe('DragDropProvider', () => {
       fireEvent.dragStart(dragItem, {
         dataTransfer: {
           effectAllowed: '',
-          setData: jest.fn(),
-          setDragImage: jest.fn(),
+          setData: vi.fn(),
+          setDragImage: vi.fn(),
         },
       });
 
@@ -123,7 +124,7 @@ describe('DragDropProvider', () => {
     });
 
     test('ドロップ時の並び替え実行', async () => {
-      const onReorder = jest.fn();
+      const onReorder = vi.fn();
 
       render(<TestDragDropComponent items={mockItems} onReorder={onReorder} />);
 
@@ -134,10 +135,10 @@ describe('DragDropProvider', () => {
       fireEvent.dragStart(dragItem, {
         dataTransfer: {
           effectAllowed: '',
-          setData: jest.fn((format, data) => {
+          setData: vi.fn((format, data) => {
             // setDataの動作をモック
           }),
-          setDragImage: jest.fn(),
+          setDragImage: vi.fn(),
         },
       });
 
@@ -151,7 +152,7 @@ describe('DragDropProvider', () => {
       // ドロップ
       fireEvent.drop(dropTarget, {
         dataTransfer: {
-          getData: jest.fn(() => JSON.stringify(mockItems[0])),
+          getData: vi.fn(() => JSON.stringify(mockItems[0])),
         },
       });
 
@@ -161,8 +162,8 @@ describe('DragDropProvider', () => {
     });
 
     test('無効なドロップ時の処理', async () => {
-      const onReorder = jest.fn();
-      const onInvalidDrop = jest.fn();
+      const onReorder = vi.fn();
+      const onInvalidDrop = vi.fn();
 
       render(
         <DragDropProvider
@@ -187,14 +188,14 @@ describe('DragDropProvider', () => {
       fireEvent.dragStart(item!, {
         dataTransfer: {
           effectAllowed: '',
-          setData: jest.fn(),
-          setDragImage: jest.fn(),
+          setData: vi.fn(),
+          setDragImage: vi.fn(),
         },
       });
 
       fireEvent.drop(item!, {
         dataTransfer: {
-          getData: jest.fn(() => JSON.stringify(mockItems[0])),
+          getData: vi.fn(() => JSON.stringify(mockItems[0])),
         },
       });
 
@@ -207,7 +208,7 @@ describe('DragDropProvider', () => {
 
   describe('制約チェック', () => {
     test('グループ間移動制約（allowCrossGroup: false）', () => {
-      const onReorder = jest.fn();
+      const onReorder = vi.fn();
       const constraints: DragConstraints = {
         allowCrossGroup: false,
       };
@@ -226,13 +227,13 @@ describe('DragDropProvider', () => {
     });
 
     test('カスタム制約チェック', () => {
-      const customConstraint = jest.fn(() => false);
+      const customConstraint = vi.fn(() => false);
       const constraints: DragConstraints = {
         allowCrossGroup: true,
         customConstraint,
       };
 
-      const onReorder = jest.fn();
+      const onReorder = vi.fn();
 
       render(
         <TestDragDropComponent items={mockItems} onReorder={onReorder} constraints={constraints} />
@@ -248,7 +249,7 @@ describe('DragDropProvider', () => {
         allowedDropTypes: ['subgoal'],
       };
 
-      const onReorder = jest.fn();
+      const onReorder = vi.fn();
 
       render(
         <TestDragDropComponent items={mockItems} onReorder={onReorder} constraints={constraints} />
@@ -260,7 +261,7 @@ describe('DragDropProvider', () => {
 
   describe('視覚的フィードバック', () => {
     test('ドラッグ中のスタイル適用', async () => {
-      const onReorder = jest.fn();
+      const onReorder = vi.fn();
 
       render(<TestDragDropComponent items={mockItems} onReorder={onReorder} />);
 
@@ -270,8 +271,8 @@ describe('DragDropProvider', () => {
       fireEvent.dragStart(dragItem, {
         dataTransfer: {
           effectAllowed: '',
-          setData: jest.fn(),
-          setDragImage: jest.fn(),
+          setData: vi.fn(),
+          setDragImage: vi.fn(),
         },
       });
 
@@ -280,7 +281,7 @@ describe('DragDropProvider', () => {
     });
 
     test('ドロップゾーンのハイライト', async () => {
-      const onReorder = jest.fn();
+      const onReorder = vi.fn();
 
       render(<TestDragDropComponent items={mockItems} onReorder={onReorder} />);
 
@@ -291,8 +292,8 @@ describe('DragDropProvider', () => {
       fireEvent.dragStart(dragItem, {
         dataTransfer: {
           effectAllowed: '',
-          setData: jest.fn(),
-          setDragImage: jest.fn(),
+          setData: vi.fn(),
+          setDragImage: vi.fn(),
         },
       });
 
@@ -310,7 +311,7 @@ describe('DragDropProvider', () => {
 
   describe('アクセシビリティ', () => {
     test('適切なARIA属性の設定', () => {
-      const onReorder = jest.fn();
+      const onReorder = vi.fn();
 
       render(<TestDragDropComponent items={mockItems} onReorder={onReorder} />);
 
@@ -323,7 +324,7 @@ describe('DragDropProvider', () => {
     });
 
     test('キーボード操作のサポート', async () => {
-      const onReorder = jest.fn();
+      const onReorder = vi.fn();
 
       render(<TestDragDropComponent items={mockItems} onReorder={onReorder} />);
 
@@ -335,7 +336,7 @@ describe('DragDropProvider', () => {
     });
 
     test('無効化状態の処理', () => {
-      const onReorder = jest.fn();
+      const onReorder = vi.fn();
 
       render(
         <DragDropProvider items={mockItems} onReorder={onReorder}>
@@ -354,8 +355,8 @@ describe('DragDropProvider', () => {
 
   describe('エラーハンドリング', () => {
     test('不正なデータでのドロップ処理', async () => {
-      const onReorder = jest.fn();
-      const onInvalidDrop = jest.fn();
+      const onReorder = vi.fn();
+      const onInvalidDrop = vi.fn();
 
       render(
         <DragDropProvider items={mockItems} onReorder={onReorder} onInvalidDrop={onInvalidDrop}>
@@ -374,7 +375,7 @@ describe('DragDropProvider', () => {
       // 不正なデータでドロップ
       fireEvent.drop(dropTarget!, {
         dataTransfer: {
-          getData: jest.fn(() => 'invalid-json'),
+          getData: vi.fn(() => 'invalid-json'),
         },
       });
 
@@ -383,7 +384,7 @@ describe('DragDropProvider', () => {
     });
 
     test('存在しないアイテムでのドロップ処理', async () => {
-      const onReorder = jest.fn();
+      const onReorder = vi.fn();
 
       render(<TestDragDropComponent items={mockItems} onReorder={onReorder} />);
 
@@ -392,7 +393,7 @@ describe('DragDropProvider', () => {
       // 存在しないアイテムのデータでドロップ
       fireEvent.drop(dropTarget, {
         dataTransfer: {
-          getData: jest.fn(() =>
+          getData: vi.fn(() =>
             JSON.stringify({
               id: 'non-existent',
               position: 999,
@@ -415,7 +416,7 @@ describe('DragDropProvider', () => {
         type: 'subgoal',
       }));
 
-      const onReorder = jest.fn();
+      const onReorder = vi.fn();
 
       const { container } = render(
         <TestDragDropComponent items={largeItemList} onReorder={onReorder} />
@@ -426,7 +427,7 @@ describe('DragDropProvider', () => {
     });
 
     test('頻繁な状態更新での安定性', async () => {
-      const onReorder = jest.fn();
+      const onReorder = vi.fn();
 
       render(<TestDragDropComponent items={mockItems} onReorder={onReorder} />);
 
@@ -437,8 +438,8 @@ describe('DragDropProvider', () => {
       fireEvent.dragStart(dragItem, {
         dataTransfer: {
           effectAllowed: '',
-          setData: jest.fn(),
-          setDragImage: jest.fn(),
+          setData: vi.fn(),
+          setDragImage: vi.fn(),
         },
       });
 

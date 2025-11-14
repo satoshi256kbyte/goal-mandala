@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, screen, act, waitFor } from '@testing-library/react';
+import { vi } from 'vitest';
 import userEvent from '@testing-library/user-event';
 import {
   AnimationSettingsProvider,
@@ -64,15 +65,15 @@ const TestComponentWithHook: React.FC = () => {
 const mockMatchMedia = (matches: boolean) => {
   Object.defineProperty(window, 'matchMedia', {
     writable: true,
-    value: jest.fn().mockImplementation(query => ({
+    value: vi.fn().mockImplementation(query => ({
       matches,
       media: query,
       onchange: null,
-      addListener: jest.fn(),
-      removeListener: jest.fn(),
-      addEventListener: jest.fn(),
-      removeEventListener: jest.fn(),
-      dispatchEvent: jest.fn(),
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
     })),
   });
 };
@@ -84,7 +85,7 @@ describe('AnimationSettingsContext', () => {
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('基本機能', () => {
@@ -172,14 +173,14 @@ describe('AnimationSettingsContext', () => {
 
       Object.defineProperty(window, 'matchMedia', {
         writable: true,
-        value: jest.fn().mockImplementation(() => ({
+        value: vi.fn().mockImplementation(() => ({
           matches: false,
-          addEventListener: jest.fn().mockImplementation((event, callback) => {
+          addEventListener: vi.fn().mockImplementation((event, callback) => {
             if (event === 'change') {
               mediaQueryCallback = callback;
             }
           }),
-          removeEventListener: jest.fn(),
+          removeEventListener: vi.fn(),
         })),
       });
 
@@ -272,7 +273,7 @@ describe('AnimationSettingsContext', () => {
   describe('エラーハンドリング', () => {
     it('プロバイダー外でフックを使用するとエラーが発生する', () => {
       // コンソールエラーを抑制
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
       expect(() => {
         render(<TestComponent />);

@@ -1,12 +1,13 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { vi } from 'vitest';
 import { DraftSaveButton } from './DraftSaveButton';
 import { DraftService } from '../../services/draftService';
 import { PartialGoalFormData } from '../../schemas/goal-form';
 
 // DraftServiceのモック
-jest.mock('../../services/draftService');
-const mockDraftService = DraftService as jest.Mocked<typeof DraftService>;
+vi.mock('../../services/draftService');
+const mockDraftService = DraftService as Mock<typeof DraftService>;
 
 describe('DraftSaveButton', () => {
   const mockFormData: PartialGoalFormData = {
@@ -26,7 +27,7 @@ describe('DraftSaveButton', () => {
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     mockDraftService.saveDraft.mockResolvedValue();
   });
 
@@ -76,7 +77,7 @@ describe('DraftSaveButton', () => {
 
   describe('保存機能', () => {
     it('ボタンクリックで保存が実行される', async () => {
-      const onSaveSuccess = jest.fn();
+      const onSaveSuccess = vi.fn();
 
       render(<DraftSaveButton formData={mockFormData} onSaveSuccess={onSaveSuccess} />);
 
@@ -102,7 +103,7 @@ describe('DraftSaveButton', () => {
       const saveError = new Error('保存エラー');
       mockDraftService.saveDraft.mockRejectedValue(saveError);
 
-      const onSaveError = jest.fn();
+      const onSaveError = vi.fn();
 
       render(<DraftSaveButton formData={mockFormData} onSaveError={onSaveError} />);
 
@@ -115,7 +116,7 @@ describe('DraftSaveButton', () => {
     });
 
     it('空のデータで保存を試行するとエラーメッセージが表示される', async () => {
-      const onSaveError = jest.fn();
+      const onSaveError = vi.fn();
 
       render(
         <DraftSaveButton formData={emptyFormData} onSaveError={onSaveError} disabled={false} />
@@ -138,9 +139,9 @@ describe('DraftSaveButton', () => {
 
   describe('コールバック', () => {
     it('保存の各段階でコールバックが呼ばれる', async () => {
-      const onSaveStart = jest.fn();
-      const onSaveSuccess = jest.fn();
-      const onSaveComplete = jest.fn();
+      const onSaveStart = vi.fn();
+      const onSaveSuccess = vi.fn();
+      const onSaveComplete = vi.fn();
 
       render(
         <DraftSaveButton

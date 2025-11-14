@@ -4,6 +4,7 @@
 
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
+import { vi } from 'vitest';
 import { ProgressHistoryChart } from '../ProgressHistoryChart';
 import {
   ProgressHistoryEntry,
@@ -11,7 +12,7 @@ import {
 } from '../../../services/progress-history-service';
 
 // Recharts のモック
-jest.mock('recharts', () => ({
+vi.mock('recharts', () => ({
   LineChart: ({ children, onClick }: any) => (
     <div data-testid="line-chart" onClick={onClick}>
       {children}
@@ -32,17 +33,17 @@ jest.mock('recharts', () => ({
 }));
 
 // date-fns のモック
-jest.mock('date-fns', () => ({
-  format: jest.fn((date, formatStr) => {
+vi.mock('date-fns', () => ({
+  format: vi.fn((date, formatStr) => {
     if (formatStr === 'MM/dd') return '01/15';
     if (formatStr === 'yyyy年MM月dd日') return '2024年01月15日';
     if (formatStr === 'yyyy-MM-dd') return '2024-01-15';
     return '2024-01-15';
   }),
-  parseISO: jest.fn(dateStr => new Date(dateStr)),
+  parseISO: vi.fn(dateStr => new Date(dateStr)),
 }));
 
-jest.mock('date-fns/locale', () => ({
+vi.mock('date-fns/locale', () => ({
   ja: {},
 }));
 
@@ -81,7 +82,7 @@ describe('ProgressHistoryChart', () => {
   ];
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('基本的な表示', () => {
@@ -220,7 +221,7 @@ describe('ProgressHistoryChart', () => {
 
   describe('インタラクション', () => {
     it('日付クリック時にコールバックが呼ばれる', () => {
-      const onDateClick = jest.fn();
+      const onDateClick = vi.fn();
 
       render(<ProgressHistoryChart data={mockData} onDateClick={onDateClick} />);
 

@@ -1,4 +1,5 @@
 import { renderHook, act, waitFor } from '@testing-library/react';
+import { vi } from 'vitest';
 import { useNetworkErrorHandler } from './useNetworkErrorHandler';
 import { ApiError, NetworkErrorType } from '../services/api';
 
@@ -9,8 +10,8 @@ Object.defineProperty(navigator, 'onLine', {
 });
 
 // window.addEventListener/removeEventListenerをモック
-const mockAddEventListener = jest.fn();
-const mockRemoveEventListener = jest.fn();
+const mockAddEventListener = vi.fn();
+const mockRemoveEventListener = vi.fn();
 Object.defineProperty(window, 'addEventListener', {
   value: mockAddEventListener,
 });
@@ -20,13 +21,13 @@ Object.defineProperty(window, 'removeEventListener', {
 
 describe('useNetworkErrorHandler', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
-    jest.useFakeTimers();
+    vi.clearAllMocks();
+    vi.useFakeTimers();
     (navigator as any).onLine = true;
   });
 
   afterEach(() => {
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   describe('基本機能', () => {
@@ -163,7 +164,7 @@ describe('useNetworkErrorHandler', () => {
 
   describe('再試行機能', () => {
     it('再試行可能なエラーで再試行できる', async () => {
-      const mockOnRetry = jest.fn().mockResolvedValue(undefined);
+      const mockOnRetry = vi.fn().mockResolvedValue(undefined);
       const { result } = renderHook(() => useNetworkErrorHandler({ onRetry: mockOnRetry }));
 
       const testError: ApiError = {
@@ -187,7 +188,7 @@ describe('useNetworkErrorHandler', () => {
 
       // タイマーを進める
       act(() => {
-        jest.advanceTimersByTime(1000);
+        vi.advanceTimersByTime(1000);
       });
 
       await waitFor(() => {
@@ -196,7 +197,7 @@ describe('useNetworkErrorHandler', () => {
     });
 
     it('最大再試行回数に達すると再試行しない', () => {
-      const mockOnRetry = jest.fn();
+      const mockOnRetry = vi.fn();
       const { result } = renderHook(() =>
         useNetworkErrorHandler({ maxRetries: 2, onRetry: mockOnRetry })
       );
@@ -232,7 +233,7 @@ describe('useNetworkErrorHandler', () => {
     });
 
     it('再試行不可能なエラーでは再試行しない', () => {
-      const mockOnRetry = jest.fn();
+      const mockOnRetry = vi.fn();
       const { result } = renderHook(() => useNetworkErrorHandler({ onRetry: mockOnRetry }));
 
       const testError: ApiError = {
@@ -323,7 +324,7 @@ describe('useNetworkErrorHandler', () => {
 
   describe('エラー回復', () => {
     it('オフラインエラーからの回復', async () => {
-      const mockOnRecovery = jest.fn().mockResolvedValue(undefined);
+      const mockOnRecovery = vi.fn().mockResolvedValue(undefined);
       const { result } = renderHook(() => useNetworkErrorHandler({ onRecovery: mockOnRecovery }));
 
       const offlineError: ApiError = {
@@ -349,7 +350,7 @@ describe('useNetworkErrorHandler', () => {
     });
 
     it('タイムアウトエラーからの回復', async () => {
-      const mockOnRetry = jest.fn().mockResolvedValue(undefined);
+      const mockOnRetry = vi.fn().mockResolvedValue(undefined);
       const { result } = renderHook(() => useNetworkErrorHandler({ onRetry: mockOnRetry }));
 
       const timeoutError: ApiError = {
@@ -369,7 +370,7 @@ describe('useNetworkErrorHandler', () => {
 
       // タイマーを進める
       act(() => {
-        jest.advanceTimersByTime(1000);
+        vi.advanceTimersByTime(1000);
       });
 
       await waitFor(() => {
@@ -402,7 +403,7 @@ describe('useNetworkErrorHandler', () => {
 
   describe('コールバック', () => {
     it('エラー発生時にコールバックが呼ばれる', () => {
-      const mockOnError = jest.fn();
+      const mockOnError = vi.fn();
       const { result } = renderHook(() => useNetworkErrorHandler({ onError: mockOnError }));
 
       const testError: ApiError = {

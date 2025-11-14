@@ -5,6 +5,7 @@
 
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
+import { vi } from 'vitest';
 import { ProgressDetailModal } from '../ProgressDetailModal';
 import {
   ProgressHistoryEntry,
@@ -12,8 +13,8 @@ import {
 } from '../../../services/progress-history-service';
 
 // date-fns のモック
-jest.mock('date-fns', () => ({
-  format: jest.fn((date, formatStr) => {
+vi.mock('date-fns', () => ({
+  format: vi.fn((date, formatStr) => {
     if (formatStr === 'yyyy年MM月dd日（E）') return '2024年01月15日（月）';
     if (formatStr === 'yyyy年MM月dd日') return '2024年01月15日';
     if (formatStr === 'yyyy-MM-dd') return '2024-01-15';
@@ -22,21 +23,21 @@ jest.mock('date-fns', () => ({
   }),
 }));
 
-jest.mock('date-fns/locale', () => ({
+vi.mock('date-fns/locale', () => ({
   ja: {},
 }));
 
 // アクセシビリティフックのモック
-jest.mock('../../../hooks/useAccessibility', () => ({
-  useFocusTrap: jest.fn(() => ({ current: null })),
-  useLiveRegion: jest.fn(() => ({
-    announce: jest.fn(),
+vi.mock('../../../hooks/useAccessibility', () => ({
+  useFocusTrap: vi.fn(() => ({ current: null })),
+  useLiveRegion: vi.fn(() => ({
+    announce: vi.fn(),
   })),
 }));
 
 // スクリーンリーダーユーティリティのモック
-jest.mock('../../../utils/screen-reader', () => ({
-  getDialogAria: jest.fn(() => ({
+vi.mock('../../../utils/screen-reader', () => ({
+  getDialogAria: vi.fn(() => ({
     role: 'dialog',
     'aria-modal': true,
     'aria-labelledby': 'title-id',
@@ -79,11 +80,11 @@ describe('ProgressDetailModal', () => {
     selectedProgress: 50,
     progressHistory: mockProgressHistory,
     significantChanges: mockSignificantChanges,
-    onClose: jest.fn(),
+    onClose: vi.fn(),
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('基本的な表示', () => {
@@ -261,7 +262,7 @@ describe('ProgressDetailModal', () => {
 
   describe('インタラクション', () => {
     it('閉じるボタンをクリックするとonCloseが呼ばれる', () => {
-      const onClose = jest.fn();
+      const onClose = vi.fn();
       render(<ProgressDetailModal {...defaultProps} onClose={onClose} />);
 
       const closeButton = screen.getByLabelText('モーダルを閉じる');
@@ -271,7 +272,7 @@ describe('ProgressDetailModal', () => {
     });
 
     it('フッターの閉じるボタンをクリックするとonCloseが呼ばれる', () => {
-      const onClose = jest.fn();
+      const onClose = vi.fn();
       render(<ProgressDetailModal {...defaultProps} onClose={onClose} />);
 
       const footerCloseButton = screen.getByRole('button', { name: '閉じる' });
@@ -281,7 +282,7 @@ describe('ProgressDetailModal', () => {
     });
 
     it('背景をクリックするとonCloseが呼ばれる', () => {
-      const onClose = jest.fn();
+      const onClose = vi.fn();
       render(<ProgressDetailModal {...defaultProps} onClose={onClose} />);
 
       const backdrop = screen.getByRole('presentation');
@@ -291,7 +292,7 @@ describe('ProgressDetailModal', () => {
     });
 
     it('モーダル内部をクリックしてもonCloseが呼ばれない', () => {
-      const onClose = jest.fn();
+      const onClose = vi.fn();
       render(<ProgressDetailModal {...defaultProps} onClose={onClose} />);
 
       const modal = screen.getByRole('dialog');
