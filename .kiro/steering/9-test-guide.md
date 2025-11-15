@@ -21,6 +21,284 @@
 **どちらかが欠けるとループや何らかの入力待ちが発生した時に、無限にテストが動き続けてしまいます。**
 **また、テスト実行は、極力テスト実行の進捗をリアルタイム表示する形で実行してください。どこかで止まる場合にリアルタイム表示がある方が特定しやすいです。**
 
+### 重要な用語解説
+
+#### カスタムマッチャー（Custom Matcher）
+
+カスタムマッチャーは、テストフレームワークの標準的なアサーション（`expect`）を拡張して、独自の検証ロジックを追加する機能です。
+
+**目的**:
+
+- テストコードの可読性向上
+- 複雑な検証ロジックの再利用
+- ドメイン固有の検証を簡潔に記述
+
+**実装例**:
+
+```typescript
+// packages/frontend/src/test/utils/matchers.ts
+import { expect } from 'vitest';
+
+expect.extend({
+  toBeValidGoal(received: unknown) {
+    const isValid =
+      typeof received === 'object' &&
+      received !== null &&
+      'id' in received &&
+      'title' in received &&
+      'status' in received &&
+      'progress' in received;
+
+    return {
+      pass: isValid,
+      message: () =>
+        isValid
+          ? `Expected ${JSON.stringify(received)} not to be a valid goal`
+          : `Expected ${JSON.stringify(received)} to be a valid goal`,
+    };
+  },
+});
+
+// 使用例
+it('should return valid goal', () => {
+  const goal = createGoal();
+  expect(goal).toBeValidGoal(); // カスタムマッチャーを使用
+});
+```
+
+**メリット**:
+
+- `expect(goal.id).toBeDefined()` + `expect(goal.title).toBeDefined()` + ... を1行で記述可能
+- ビジネスロジックに沿った検証が可能
+- テストコードの保守性が向上
+
+#### テスト分離（isolate）
+
+テスト分離は、各テストを独立した環境で実行する機能です。Vitestでは`isolate`オプションで制御します。
+
+**isolate: true（デフォルト）**:
+
+- 各テストファイルが独立したプロセスで実行される
+- テスト間の副作用が完全に分離される
+- メモリ使用量が増加し、実行時間が長くなる
+
+**isolate: false（高速モード）**:
+
+- 複数のテストファイルが同じプロセスで実行される
+- テスト実行時間が大幅に短縮される（本プロジェクトでは75%短縮）
+- グローバル状態の管理に注意が必要
+
+**設定例**:
+
+```typescript
+// vitest.config.ts
+export default defineConfig({
+  test: {
+    isolate: false, // テスト分離を無効化（高速化）
+  },
+});
+```
+
+**isolate: false を使用する場合の注意点**:
+
+1. **グローバル状態のクリーンアップが必須**
+
+   ```typescript
+   afterEach(() => {
+     cleanup();
+     vi.clearAllMocks();
+     localStorage.clear();
+     sessionStorage.clear();
+   });
+   ```
+
+2. **テストの独立性を保つ**
+   - 各テストで必要なデータを準備
+   - 他のテストに依存しない設計
+   - 実行順序に依存しない
+
+3. **副作用の管理**
+   - グローバル変数の変更に注意
+   - DOMの状態をクリア
+   - タイマーやイベントリスナーの解除
+
+**本プロジェクトでの選択**:
+
+- 開発中の高速フィードバックを優先し、`isolate: false`を採用
+- 適切なクリーンアップ処理により、テストの独立性を確保
+- CI/CD環境でも同じ設定を使用し、一貫性を保つ
+
+### テスト作成のベストプラクティス
+
+#### テストの独立性を保つ
+
+- 各テストは独立して実行可能にする
+- テストデータは各テストで準備する
+- グローバル状態（localStorage等）は各テスト後にクリアする
+
+#### 適切な待機処理
+
+- 非同期処理には`waitFor`または`findBy*`を使用
+- タイムアウトは3000ms程度に設定
+- `act()`警告が出た場合は適切にラップする
+
+#### DOM要素クエリの優先順位
+
+1. `getByRole` - アクセシビリティを考慮した最優先の方法
+2. `getByLabelText` - フォーム要素に適している
+3. `getByTestId` - 上記で特定できない場合の最終手段
+
+#### 4. モックの適切な管理
+
+- モックの型定義を実際のAPIと一致させる
+- 各テスト前に`vi.clearAllMocks()`でリセット
+- モックファクトリーを作成して再利用する
+
+#### 5. テストの構造
+
+```typescript
+describe('Component', () => {
+  beforeEach(() => {
+    // セットアップ
+  });
+
+  afterEach(() => {
+    // クリーンアップ
+  });
+
+  describe('rendering', () => {
+    it('should render correctly', () => {});
+  });
+
+  describe('user interactions', () => {
+    it('should handle click', async () => {});
+  });
+
+  describe('error handling', () => {
+    it('should display error message', async () => {});
+  });
+});
+```
+
+#### 6. テストの命名規則
+
+- `should + 動詞 + 期待される結果` の形式を使用
+- 具体的で分かりやすい名前をつける
+- 例: `should display error message when form is invalid`
+
+#### 7. アサーションの順序（AAA パターン）
+
+```typescript
+it('should update goal', async () => {
+  // Arrange（準備）
+  const mockGoal = generateMockGoal();
+  render(<GoalForm goal={mockGoal} />);
+
+  // Act（実行）
+  const titleInput = screen.getByLabelText('タイトル');
+  fireEvent.change(titleInput, { target: { value: 'Updated Title' } });
+  
+  // Assert（検証）
+  await waitFor(() => {
+    expect(mockUpdateGoal).toHaveBeenCalledWith(
+      expect.objectContaining({ title: 'Updated Title' })
+    );
+  });
+});
+```
+
+### テスト作成時の注意事項
+
+#### 避けるべきパターン
+
+##### 実装の詳細をテストしない
+
+```typescript
+// Bad - 内部状態をテスト
+expect(component.state.isLoading).toBe(true);
+
+// Good - ユーザーが見る結果をテスト
+expect(screen.getByText('Loading...')).toBeInTheDocument();
+```
+
+##### 複数の関心事を1つのテストに含めない
+
+```typescript
+// Bad
+it('should handle form submission and navigation', async () => {
+  // フォーム送信のテスト
+  // ナビゲーションのテスト
+});
+
+// Good
+it('should submit form successfully', async () => {});
+it('should navigate after successful submission', async () => {});
+```
+
+##### 過度なモックを避ける
+
+```typescript
+// Bad - すべてをモック
+vi.mock('@/components/Button');
+vi.mock('@/components/Input');
+vi.mock('@/components/Form');
+
+// Good - 必要最小限のモック
+vi.mock('@/api/goals');
+```
+
+#### 推奨パターン
+
+1. **テストユーティリティの活用**
+
+```typescript
+// renderWithProviders を使用
+import { renderWithProviders } from '@/test/utils/render';
+
+it('should render with context', () => {
+  renderWithProviders(<Component />, {
+    initialRoute: '/goals',
+    authToken: 'mock-token',
+  });
+});
+```
+
+##### テストデータジェネレーターの使用
+
+```typescript
+import { generateMockGoal } from '@/test/utils/generators';
+
+it('should display goal', () => {
+  const goal = generateMockGoal({ title: 'Custom Title' });
+  render(<GoalCard goal={goal} />);
+});
+```
+
+##### カスタムマッチャーの活用
+
+```typescript
+expect(goal).toBeValidGoal();
+expect(response).toMatchApiSchema();
+```
+
+### トラブルシューティング
+
+#### よくある問題と解決方法
+
+1. **テストがタイムアウトする**
+   - タイムアウトを延長: `it('test', async () => {}, 10000)`
+   - `waitFor`のタイムアウトを延長: `{ timeout: 5000 }`
+
+2. **act()警告が出る**
+   - `act()`でラップする
+   - `waitFor`を使用する
+
+3. **メモリリークが発生する**
+   - `afterEach`でクリーンアップを追加
+   - タイマーをクリアする
+
+詳細なトラブルシューティングガイドは、`.kiro/specs/2.4.9-test-architecture-overhaul/test-fix-guide.md`を参照してください。
+
 ## ユニットテスト
 
 ### バックエンドテスト（Jest）
@@ -172,7 +450,7 @@ React コンポーネントのテストでは以下を検証します：
 
 **高速フィードバックループ**:
 
-```
+```text
 開発中 → test (60秒以内)
   ↓
 コミット前 → test:unit (60秒以内)

@@ -448,6 +448,170 @@ jobs:
           files: ./packages/frontend/coverage/coverage-final.json
 ```
 
+## テストエラー解消戦略
+
+### エラー分類と対応方針
+
+#### 1. モック・スタブ関連エラー
+
+**問題**: モックが適切に設定されていない、または期待値が間違っている
+
+**対応方針**:
+- すべてのモックを見直し、実際のAPIレスポンスと一致させる
+- `vi.mock()` の使用を統一し、適切なモックファクトリーを作成
+- モックのリセット・クリーンアップを各テスト後に実行
+
+```typescript
+// 統一されたモックパターン
+beforeEach(() => {
+  vi.clearAllMocks();
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
+```
+
+#### 2. 非同期処理関連エラー
+
+**問題**: `waitFor`, `findBy*` などの非同期待機が不適切
+
+**対応方針**:
+- すべての非同期処理に適切な待機を追加
+- `waitFor` のタイムアウトを適切に設定
+- `act()` 警告を解消
+
+```typescript
+// 適切な非同期待機
+await waitFor(() => {
+  expect(screen.getByText('Expected Text')).toBeInTheDocument();
+}, { timeout: 3000 });
+```
+
+#### 3. DOM要素クエリエラー
+
+**問題**: 要素が見つからない、または複数の要素が見つかる
+
+**対応方針**:
+- `getBy*` → `queryBy*` または `findBy*` に変更（要素が存在しない場合）
+- `data-testid` を適切に設定
+- `screen.debug()` でDOM構造を確認
+
+```typescript
+// 要素が存在しない場合のテスト
+expect(screen.queryByText('Not Exists')).not.toBeInTheDocument();
+
+// 非同期で表示される要素
+const element = await screen.findByText('Async Text');
+expect(element).toBeInTheDocument();
+```
+
+#### 4. テストセットアップエラー
+
+**問題**: テスト環境が適切に初期化されていない
+
+**対応方針**:
+- `src/test/setup.ts` を見直し、必要なグローバル設定を追加
+- React Testing Library の設定を最適化
+- テストユーティリティを統一
+
+```typescript
+// src/test/setup.ts
+import '@testing-library/jest-dom';
+import { cleanup } from '@testing-library/react';
+import { afterEach, vi } from 'vitest';
+
+// 各テスト後にクリーンアップ
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+});
+
+// グローバルモック
+global.ResizeObserver = vi.fn().mockImplementation(() => ({
+  observe: vi.fn(),
+  unobserve: vi.fn(),
+  disconnect: vi.fn(),
+}));
+```
+
+#### 5. 型エラー
+
+**問題**: TypeScriptの型が一致しない
+
+**対応方針**:
+- モックの型を適切に定義
+- `as` キャストを最小限に使用
+- 型定義ファイルを確認
+
+```typescript
+// 適切な型定義
+const mockFunction = vi.fn<[string], Promise<void>>();
+mockFunction.mockResolvedValue(undefined);
+```
+
+### エラー修正の優先順位
+
+1. **高優先度**: テストセットアップエラー（全テストに影響）
+2. **中優先度**: モック・スタブエラー（複数テストに影響）
+3. **低優先度**: 個別のテストケースエラー
+
+### エラー修正のワークフロー
+
+```mermaid
+flowchart TD
+    A[テスト実行] --> B{エラー発生?}
+    B -->|Yes| C[エラー分類]
+    B -->|No| Z[完了]
+    
+    C --> D{セットアップエラー?}
+    D -->|Yes| E[setup.ts修正]
+    D -->|No| F{モックエラー?}
+    
+    F -->|Yes| G[モック修正]
+    F -->|No| H{非同期エラー?}
+    
+    H -->|Yes| I[waitFor追加]
+    H -->|No| J{DOM要素エラー?}
+    
+    J -->|Yes| K[クエリ修正]
+    J -->|No| L[個別修正]
+    
+    E --> M[テスト再実行]
+    G --> M
+    I --> M
+    K --> M
+    L --> M
+    
+    M --> A
+```
+
+### テストエラー修正の段階的アプローチ
+
+#### フェーズ1: セットアップとモックの修正（優先度: 最高）
+
+1. `src/test/setup.ts` の見直し
+2. グローバルモックの統一
+3. テストユーティリティの作成
+
+#### フェーズ2: 非同期処理の修正（優先度: 高）
+
+1. すべての `waitFor` を見直し
+2. `act()` 警告の解消
+3. タイムアウト設定の最適化
+
+#### フェーズ3: DOM要素クエリの修正（優先度: 中）
+
+1. `getBy*` → `queryBy*` / `findBy*` の変更
+2. `data-testid` の追加
+3. セレクタの最適化
+
+#### フェーズ4: 個別テストケースの修正（優先度: 低）
+
+1. 失敗しているテストケースを1つずつ修正
+2. テストの期待値を見直し
+3. 不要なテストケースを削除
+
 ## セキュリティ考慮事項
 
 ### テストデータの管理

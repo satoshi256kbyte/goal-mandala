@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom';
-import { configure } from '@testing-library/react';
-import { vi } from 'vitest';
+import { cleanup, configure } from '@testing-library/react';
+import { afterEach, beforeEach, afterAll, vi } from 'vitest';
 
 // Testing Libraryの設定を最適化
 configure({
@@ -79,14 +79,86 @@ global.ResizeObserver = class ResizeObserver {
   disconnect() {}
 };
 
-// requestAnimationFrameのモック
-global.requestAnimationFrame = (callback: FrameRequestCallback) => {
-  return setTimeout(callback, 0) as unknown as number;
-};
+// IntersectionObserverのモック
+global.IntersectionObserver = class IntersectionObserver {
+  constructor() {}
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+  takeRecords() {
+    return [];
+  }
+  get root() {
+    return null;
+  }
+  get rootMargin() {
+    return '';
+  }
+  get thresholds() {
+    return [];
+  }
+} as any;
 
-global.cancelAnimationFrame = (id: number) => {
-  clearTimeout(id);
-};
+// requestAnimationFrameのモック（タイマーIDを追跡）
+const animationFrameIds = new Set<number>();
+let animationFrameIdCounter = 0;
+
+global.requestAnimationFrame = vi.fn((callback: FrameRequestCallback) => {
+  const id = ++animationFrameIdCounter;
+  animationFrameIds.add(id);
+  const timerId = setTimeout(() => {
+    animationFrameIds.delete(id);
+    callback(performance.now());
+  }, 16); // 約60fps
+  return id;
+});
+
+global.cancelAnimationFrame = vi.fn((id: number) => {
+  animationFrameIds.delete(id);
+});
+
+// Web Animations APIのモック
+if (typeof Element !== 'undefined') {
+  Element.prototype.animate = vi.fn(function (
+    this: Element,
+    keyframes: Keyframe[] | PropertyIndexedKeyframes | null,
+    options?: number | KeyframeAnimationOptions
+  ) {
+    // アニメーションオブジェクトのモックを返す
+    const animation = {
+      id: '',
+      effect: null,
+      timeline: null,
+      startTime: null,
+      currentTime: 0,
+      playbackRate: 1,
+      playState: 'running' as AnimationPlayState,
+      ready: Promise.resolve(animation as Animation),
+      finished: Promise.resolve(animation as Animation),
+      pending: false,
+      replaceState: 'active' as AnimationReplaceState,
+      cancel: vi.fn(),
+      finish: vi.fn(),
+      pause: vi.fn(),
+      play: vi.fn(),
+      reverse: vi.fn(),
+      updatePlaybackRate: vi.fn(),
+      persist: vi.fn(),
+      commitStyles: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(() => true),
+      oncancel: null,
+      onfinish: null,
+      onremove: null,
+    };
+    return animation as Animation;
+  });
+
+  Element.prototype.getAnimations = vi.fn(function (this: Element) {
+    return [];
+  });
+}
 
 // matchMediaのモック
 Object.defineProperty(window, 'matchMedia', {
@@ -172,17 +244,36 @@ beforeEach(() => {
   localStorageMock.clear();
   sessionStorageMock.clear();
 
+  // デフォルトの認証トークンを設定（APIテスト用）
+  localStorageMock.setItem('auth_token', 'mock-auth-token');
+
   // fetchモックをリセット
   vi.clearAllMocks();
+
+  // animationFrameカウンターをリセット
+  animationFrameIdCounter = 0;
+  animationFrameIds.clear();
 });
 
 afterEach(() => {
-  // テスト後のクリーンアップ
+  // React Testing Libraryのクリーンアップ
+  cleanup();
+
+  // すべてのタイマーをクリア
   vi.clearAllTimers();
+
+  // すべてのanimationFrameをキャンセル
+  animationFrameIds.forEach(id => {
+    cancelAnimationFrame(id);
+  });
+  animationFrameIds.clear();
 
   // ストレージのクリア
   localStorageMock.clear();
   sessionStorageMock.clear();
+
+  // すべてのモックをクリア
+  vi.clearAllMocks();
 });
 
 // テストスイート終了時のクリーンアップ

@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, screen, act, waitFor } from '@testing-library/react';
 import { vi } from 'vitest';
+import { renderWithProviders } from '../test/test-utils';
 import {
   ActionProvider,
   useActionContext,
@@ -145,7 +146,7 @@ describe('ActionContext', () => {
       autoSaveEnabled?: boolean;
     } = {}
   ) => {
-    return render(<ActionProvider {...props}>{component}</ActionProvider>);
+    return renderWithProviders(<ActionProvider {...props}>{component}</ActionProvider>);
   };
 
   describe('初期化', () => {

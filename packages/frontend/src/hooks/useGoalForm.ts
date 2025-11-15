@@ -207,22 +207,18 @@ export const useGoalForm = (options: UseGoalFormOptions = {}): UseGoalFormReturn
     }
   }, [onDraftSave, getValues]);
 
-  // 自動保存の実装
-  const performAutoSave = useCallback(async () => {
-    if (!enableAutoSave || !onDraftSave || !formState.hasUnsavedChanges) {
-      return;
-    }
-
-    try {
-      await saveDraft();
-    } catch (error) {
-      console.warn('自動保存に失敗しました:', error);
-    }
-  }, [enableAutoSave, onDraftSave, formState.hasUnsavedChanges, saveDraft]);
-
   // 自動保存タイマーの設定
   useEffect(() => {
     if (!enableAutoSave || !onDraftSave) {
+      return;
+    }
+
+    // 変更がない場合はタイマーをクリア
+    if (!isDirty) {
+      if (autoSaveTimer) {
+        clearTimeout(autoSaveTimer);
+        setAutoSaveTimer(null);
+      }
       return;
     }
 
@@ -231,18 +227,24 @@ export const useGoalForm = (options: UseGoalFormOptions = {}): UseGoalFormReturn
       clearTimeout(autoSaveTimer);
     }
 
-    // 変更がある場合のみ新しいタイマーを設定
-    if (formState.hasUnsavedChanges) {
-      const timer = setTimeout(performAutoSave, autoSaveInterval);
-      setAutoSaveTimer(timer);
-    }
+    // 新しいタイマーを設定
+    const timer = setTimeout(async () => {
+      try {
+        await saveDraft();
+      } catch (error) {
+        console.warn('自動保存に失敗しました:', error);
+      }
+    }, autoSaveInterval);
 
+    setAutoSaveTimer(timer);
+
+    // クリーンアップ
     return () => {
-      if (autoSaveTimer) {
-        clearTimeout(autoSaveTimer);
+      if (timer) {
+        clearTimeout(timer);
       }
     };
-  }, [formState.hasUnsavedChanges, enableAutoSave, autoSaveInterval]);
+  }, [isDirty, enableAutoSave, onDraftSave, autoSaveInterval, saveDraft]);
 
   // フォームのリセット
   const resetForm = useCallback(
