@@ -317,3 +317,19 @@ cdk.out/
 .vscode/settings.json
 
 *storybook.log
+
+# Temporary reports and summaries
+*SUMMARY.md
+*-results.md
+*-report.json
+*-report.md
+coverage-output.log
+integration-test-report.json
+
+# Temporary documentation
+MIGRATION_INSTRUCTIONS.md
+QUICK_START_MIGRATION.md
+PERFORMANCE_IMPROVEMENTS.md
+SECURITY_REPORT.md
+IMPLEMENTATION_SUMMARY.md
+E2E_TEST_MINIMIZATION_SUMMARY.md
