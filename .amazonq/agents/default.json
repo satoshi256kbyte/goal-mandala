@@ -28,8 +28,7 @@
     "file://README.md",
     "file://CONTRIBUTING.md.md",
     "file://.kiro/steering/**/*.md",
-    "file://.kiro/specs/**/*.md",
-    "file://docs/**/*.md"
+    "file://.kiro/specs/**/*.md"
   ],
   "prompt": "",
   "toolAliases": {},

@@ -47,7 +47,7 @@ pnpm run act:debug
 pnpm run act:dry-run
 ```
 
-詳細は [act使用ガイド](./docs/act-usage-guide.md) を参照してください。
+詳細は [実装ガイド](./.kiro/steering/7-implementation-guide.md) を参照してください。
 
 #### バックエンドテスト戦略
 
@@ -140,7 +140,7 @@ pnpm --filter @goal-mandala/frontend test:watch
 - **コミット前**: `test:unit` で品質確認
 - **PR作成前**: `test:coverage` で完全チェック
 
-詳細は [テスト実行ルール](./docs/test-execution-rules.md) を参照してください。
+詳細は [テストガイド](./.kiro/steering/9-test-guide.md) を参照してください。
 
 ## クイックスタート
 
@@ -161,7 +161,7 @@ cp .env.example .env
 pnpm run env:check
 ```
 
-詳細な環境変数設定については [環境変数設定ガイド](./docs/environment-variables.md) を参照してください。
+詳細な環境変数設定については [実装ガイド](./.kiro/steering/7-implementation-guide.md#環境変数管理) を参照してください。
 
 ### 3. ローカル開発環境の起動
 
@@ -190,13 +190,12 @@ curl http://localhost:3001/health
 ### 開発者向けドキュメント
 
 - [CONTRIBUTING.md](./CONTRIBUTING.md) - 開発者向け詳細ガイド（SAM CLI環境の使用方法を含む）
-- [環境変数設定ガイド](./docs/environment-variables.md) - 環境変数の詳細設定
 - [AWS SAM CLI公式ドキュメント](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/) - SAM CLIの詳細な使用方法
 
 ### アーキテクチャドキュメント
 
-- [モノレポアーキテクチャ](./docs/monorepo-architecture.md) - パッケージ構成と依存関係
-- [統合テストガイド](./docs/integration-testing.md) - テスト実行方法
+- [技術スタック](./.kiro/steering/2-technology-stack.md) - モノレポ構成とパッケージ依存関係
+- [テストガイド](./.kiro/steering/9-test-guide.md) - テスト戦略と実行方法
 
 ## インフラストラクチャ（AWS CDK）
 

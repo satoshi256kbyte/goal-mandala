@@ -92,7 +92,7 @@ cp .env.example .env
 # - JWT_SECRET: JWT署名用秘密鍵
 ```
 
-詳細な環境変数設定については [環境変数設定ガイド](./docs/environment-variables.md) を参照してください。
+詳細な環境変数設定については [実装ガイド](./.kiro/steering/7-implementation-guide.md#環境変数管理) を参照してください。
 
 ### 5. Docker環境のセットアップ
 
@@ -112,7 +112,7 @@ make -C tools/docker health
 ./tools/scripts/setup.sh
 ```
 
-Docker環境の詳細については [Docker環境セットアップガイド](./docs/docker-setup-guide.md) を参照してください。
+Docker環境の詳細については [実装ガイド](./.kiro/steering/7-implementation-guide.md#docker環境) を参照してください。
 
 ### 6. 開発環境の起動確認
 
@@ -838,7 +838,7 @@ docker-compose exec postgres psql -U goal_mandala_user -d goal_mandala_dev
 ./tools/scripts/health-check.sh
 ```
 
-Docker環境の詳細なトラブルシューティングについては [Docker環境トラブルシューティングガイド](./docs/docker-troubleshooting.md) を参照してください。
+Docker環境の詳細なトラブルシューティングについては [実装ガイド](./.kiro/steering/7-implementation-guide.md#トラブルシューティング) を参照してください。
 
 #### 5. AWS SAM CLI関連問題
 
@@ -1005,16 +1005,14 @@ pnpm audit --fix
 
 #### 開発環境・セットアップ
 
-- [Docker環境セットアップガイド](./docs/docker-setup-guide.md) - Docker環境の詳細セットアップ手順
-- [Docker環境トラブルシューティングガイド](./docs/docker-troubleshooting.md) - Docker関連問題の解決方法
-- [環境変数設定ガイド](./docs/environment-variables.md) - 環境変数の詳細設定
+- [実装ガイド](./.kiro/steering/7-implementation-guide.md) - Docker環境、GitHub設定、CI/CD設定、環境変数管理
 - [AWS SAM CLI公式ドキュメント](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/) - SAM CLIの詳細な使用方法
 
 #### アーキテクチャ・設計
 
-- [モノレポアーキテクチャ](./docs/monorepo-architecture.md) - パッケージ構成と依存関係
-- [統合テストガイド](./docs/integration-testing.md) - テスト実行方法
-- [CI用バージョン設定](./docs/ci-version-settings.md) - 環境設定詳細
+- [技術スタック](./.kiro/steering/2-technology-stack.md) - モノレポ構成とパッケージ依存関係
+- [テストガイド](./.kiro/steering/9-test-guide.md) - テスト戦略と実行方法
+- [データベース設計](./.kiro/steering/6-database-design.md) - ER図とマイグレーション管理
 
 #### プロダクト仕様
 

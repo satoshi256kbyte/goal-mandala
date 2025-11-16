@@ -21,6 +21,92 @@
 **どちらかが欠けるとループや何らかの入力待ちが発生した時に、無限にテストが動き続けてしまいます。**
 **また、テスト実行は、極力テスト実行の進捗をリアルタイム表示する形で実行してください。どこかで止まる場合にリアルタイム表示がある方が特定しやすいです。**
 
+### タイムアウト設定
+
+#### 基本タイムアウト
+
+| パッケージ | テストタイムアウト | 全体タイムアウト | 理由 |
+|------------|-------------------|------------------|------|
+| shared | 30秒 | 30秒 | 軽量なユーティリティ関数のみ |
+| backend | 30秒 | 60秒 | データベースモック、AWS SDK モック |
+| frontend | 30秒 | 60秒 | DOM操作、非同期レンダリング |
+| infrastructure | 30秒 | 120秒 | CDK構文チェック、設定検証（重い処理） |
+
+#### 拡張タイムアウト（CI/CD環境）
+
+| 環境 | 全体タイムアウト | 個別テストタイムアウト |
+|------|------------------|------------------------|
+| ローカル開発 | 120秒 | 30秒 |
+| CI/CD | 180秒 | 45秒 |
+| 統合テスト | 300秒 | 60秒 |
+
+### テスト実行ルール
+
+#### 必須ルール
+
+- **全テストは30秒以内に完了する必要がある**
+- **テストが指定時間を超える場合は強制終了される**
+- **メモリリークを防ぐため、テスト後はプロセスを強制終了する**
+- **並列実行は最大1プロセスに制限する**
+
+#### 推奨ルール
+
+- **テストは独立して実行可能である必要がある**
+- **外部依存関係はモックを使用する**
+- **テストデータは各テスト内で完結させる**
+- **非同期処理は適切にawaitする**
+
+#### 禁止事項
+
+- **実際のAWSリソースへの接続**
+- **実際のデータベースへの接続（統合テスト除く）**
+- **ネットワーク通信を伴うテスト**
+- **ファイルシステムへの永続的な書き込み**
+
+### テスト実行コマンド
+
+#### 基本コマンド
+
+```bash
+# 全パッケージのテスト（タイムアウト付き）
+pnpm run test:timeout
+
+# 個別パッケージのテスト
+pnpm run test:timeout:backend
+pnpm run test:timeout:frontend
+pnpm run test:timeout:shared
+
+# 安全モード（長めのタイムアウト）
+pnpm run test:safe
+```
+
+#### 直接実行
+
+```bash
+# タイムアウト管理スクリプトを直接実行
+./tools/scripts/test-with-timeout.sh all 120
+./tools/scripts/test-with-timeout.sh backend 60
+./tools/scripts/test-with-timeout.sh frontend 60
+```
+
+### パフォーマンス監視
+
+#### メトリクス
+
+- **テスト実行時間**: 各パッケージ60秒以内
+- **メモリ使用量**: 500MB以内
+- **成功率**: 95%以上
+
+#### 監視コマンド
+
+```bash
+# ヒープ使用量の監視
+pnpm run test:timeout 2>&1 | grep "heap"
+
+# 実行時間の測定
+time pnpm run test:timeout
+```
+
 ### 重要な用語解説
 
 #### カスタムマッチャー（Custom Matcher）
@@ -404,6 +490,145 @@ React コンポーネントのテストでは以下を検証します：
 
 ## 統合テスト
 
+### モノレポ統合テスト
+
+モノレポ設定の動作確認を行う統合テストを実施します。
+
+#### テストスクリプト
+
+**Node.js版統合テスト（推奨）**:
+
+```bash
+pnpm run test:integration
+```
+
+または直接実行:
+
+```bash
+node tools/scripts/integration-test.js
+```
+
+**Shell版統合テスト**:
+
+```bash
+pnpm run test:integration:shell
+```
+
+または直接実行:
+
+```bash
+bash tools/scripts/integration-test.sh
+```
+
+#### テスト内容
+
+**前提条件チェック**:
+
+- Node.js バージョン確認（23.10.0以上）
+- pnpm インストール確認
+- 必要な設定ファイルの存在確認
+
+**基本機能テスト**:
+
+1. **依存関係インストール**: `pnpm install --frozen-lockfile` の実行、lockfile の整合性確認
+2. **ワークスペース構成確認**: 全パッケージの認識確認、パッケージ名の正確性確認
+3. **型チェック**: 全パッケージの TypeScript 型チェック、型定義の整合性確認
+4. **リント**: ESLint による静的解析、コーディング規約の遵守確認
+5. **ビルド**: 全パッケージのビルド実行、依存関係順序の確認
+6. **ユニットテスト**: 各パッケージのテスト実行、テスト結果の集約
+
+**高度なテスト**:
+
+7. **パッケージ間依存関係**: shared パッケージの参照確認、workspace: プロトコルの動作確認
+8. **Turbo設定**: turbo.json の設定確認、パイプライン実行の確認
+9. **設定ファイル整合性**: 必要な設定ファイルの存在確認、バージョン設定の整合性確認
+10. **パフォーマンス**: ビルド時間の測定、パフォーマンス警告の表示
+
+#### テスト結果の解釈
+
+**成功時**:
+
+```
+[SUCCESS] 全てのテストが成功しました！
+[SUCCESS] モノレポ設定は正常に動作しています。
+```
+
+**失敗時**:
+
+```
+[ERROR] 失敗: 2
+[ERROR] 失敗したテスト:
+[ERROR]   - パッケージ間依存関係
+[ERROR]   - Turbo設定
+```
+
+#### トラブルシューティング
+
+**よくある問題**:
+
+1. **Node.js バージョン不一致**
+   - 症状: Node.js バージョンが要件を満たしていない
+   - 解決方法: `asdf install nodejs 23.10.0` と `asdf local nodejs 23.10.0`
+
+2. **pnpm がインストールされていない**
+   - 症状: `pnpm: command not found`
+   - 解決方法: `npm install -g pnpm` または `corepack enable`
+
+3. **依存関係インストールエラー**
+   - 症状: `pnpm install` が失敗する
+   - 解決方法: `pnpm store prune` でキャッシュをクリア、`rm -rf node_modules packages/*/node_modules` で再インストール
+
+4. **パッケージ間依存関係エラー**
+   - 症状: shared パッケージを参照できない
+   - 解決方法: `pnpm --filter @goal-mandala/shared run build` で shared パッケージをビルド
+
+5. **型チェックエラー**
+   - 症状: TypeScript の型エラー
+   - 解決方法: `pnpm run build` で型定義を再生成
+
+#### CI/CD での使用
+
+**GitHub Actions での統合**:
+
+```yaml
+name: Integration Test
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  integration-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '23.10.0'
+          
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+          
+      - name: Run Integration Tests
+        run: pnpm run test:integration
+```
+
+**ローカル開発での使用**:
+
+開発中は以下のタイミングで統合テストを実行することを推奨します：
+
+1. 新しい依存関係を追加した後
+2. パッケージ構成を変更した後
+3. 設定ファイルを更新した後
+4. プルリクエスト作成前
+
 ### APIテスト
 
 - エンドポイントの正常動作
@@ -417,6 +642,125 @@ React コンポーネントのテストでは以下を検証します：
 - カスケード削除の動作
 - 制約違反の検証
 - パフォーマンスの確認
+
+### SAM CLI統合テスト
+
+AWS SAM CLI環境の統合テストを実施し、Lambda関数とAPI Gatewayの動作を検証します。
+
+#### テスト概要
+
+SAM CLI統合テストでは以下の項目を検証します：
+
+- SAMテンプレートファイルの作成と検証
+- SAM設定ファイルの作成
+- Lambda関数テンプレートの実装
+- 環境設定とユーティリティの実装
+- ローカルAPI起動スクリプトの作成
+- SAMビルドスクリプトの作成
+- package.json設定の更新
+- 環境変数設定ファイルの更新
+
+#### 実行方法
+
+**簡略版統合テスト**:
+
+```bash
+# プロジェクトルートから
+pnpm run test:integration:sam:simple
+
+# バックエンドディレクトリから
+pnpm run test:integration:simple
+```
+
+**完全版統合テスト（Docker問題解決後）**:
+
+```bash
+# プロジェクトルートから
+pnpm run test:integration:sam
+
+# バックエンドディレクトリから
+pnpm run test:integration
+```
+
+**手動テスト**:
+
+```bash
+# SAMビルド
+cd packages/backend
+sam build
+
+# SAM Local API起動（Docker問題解決後）
+sam local start-api --port 3001 --host 127.0.0.1
+
+# ヘルスチェック
+curl http://127.0.0.1:3001/health
+```
+
+#### 実装された機能
+
+1. **SAMテンプレートファイル（template.yaml）**
+   - AWS Serverless Application Model形式のテンプレート
+   - Lambda関数（ApiFunction）の定義
+   - API Gateway（ApiGateway）の設定
+   - CORS設定の実装
+   - 環境変数パラメータの定義
+   - ビルド設定（nodejs22.x）
+
+2. **SAM設定ファイル（samconfig.toml）**
+   - デフォルト設定の定義
+   - ローカル開発用設定
+   - デプロイ用設定
+   - 環境別パラメータオーバーライド
+
+3. **Lambda関数テンプレート（src/index.ts）**
+   - Honoフレームワークベースの実装
+   - CORS設定
+   - ログ設定
+   - エラーハンドリング
+   - ヘルスチェックエンドポイント
+   - API v1ルート
+   - AWS Lambda ハンドラーのエクスポート
+
+4. **環境設定とユーティリティ**
+   - 環境変数管理（src/config/environment.ts）
+   - ログユーティリティ（src/utils/logger.ts）
+
+5. **スクリプトファイル**
+   - sam-local-start.sh: SAM Local API起動スクリプト
+   - sam-build.sh: SAMビルドスクリプト
+
+#### 制限事項と既知の問題
+
+**Docker認証問題**:
+
+SAM Local APIの起動時にDocker認証の問題が発生する場合があります：
+
+```
+Error: Lambda functions containers initialization failed because of docker-credential-desktop not installed or not available in PATH
+```
+
+**回避策**:
+
+- Docker Desktopの再インストール
+- Docker認証設定の確認
+- `sam build --use-container`の代わりに`sam build`を使用
+
+**対応済み項目**:
+
+1. SAMテンプレートのビルド設定: esbuildからnodejs22.xに変更
+2. CodeUriパス: `./`から`dist/`に変更
+3. 統合テストスクリプト: Docker問題を回避する簡略版を作成
+
+#### テスト結果
+
+**簡略版統合テスト（integration-test-sam-simple.js）**:
+
+- テスト結果: ✅ 全て成功（22/22テスト）
+- 設定ファイル確認: 6/6テスト成功
+- 環境変数設定確認: 4/4テスト成功
+- スクリプトファイル確認: 2/2テスト成功
+- プロジェクトビルド: 4/4テスト成功
+- SAMビルド: 6/6テスト成功
 
 ## E2Eテスト（Playwright）
 
