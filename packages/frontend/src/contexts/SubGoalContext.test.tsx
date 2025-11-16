@@ -123,52 +123,72 @@ describe('SubGoalContext', () => {
   describe('useSubGoalActions', () => {
     it('サブ目標を選択できる', () => {
       const wrapper = createWrapper('goal-1', sampleSubGoals);
-      const { result } = renderHook(() => useSubGoalActions(), { wrapper });
-      const { result: stateResult } = renderHook(() => useSubGoalState(), { wrapper });
+      const { result } = renderHook(
+        () => ({
+          actions: useSubGoalActions(),
+          state: useSubGoalState(),
+        }),
+        { wrapper }
+      );
 
       act(() => {
-        result.current.selectSubGoal(sampleSubGoals[0]);
+        result.current.actions.selectSubGoal(sampleSubGoals[0]);
       });
 
-      expect(stateResult.current.selectedSubGoal).toEqual(sampleSubGoals[0]);
+      expect(result.current.state.selectedSubGoal).toEqual(sampleSubGoals[0]);
     });
 
     it('サブ目標を更新できる', () => {
       const wrapper = createWrapper('goal-1', sampleSubGoals);
-      const { result } = renderHook(() => useSubGoalActions(), { wrapper });
-      const { result: stateResult } = renderHook(() => useSubGoalState(), { wrapper });
+      const { result } = renderHook(
+        () => ({
+          actions: useSubGoalActions(),
+          state: useSubGoalState(),
+        }),
+        { wrapper }
+      );
 
       const updateData = { title: '更新されたタイトル', progress: 75 };
 
       act(() => {
-        result.current.updateSubGoal('subgoal-1', updateData);
+        result.current.actions.updateSubGoal('subgoal-1', updateData);
       });
 
-      const updatedSubGoal = stateResult.current.subGoals.find(sg => sg.id === 'subgoal-1');
+      const updatedSubGoal = result.current.state.subGoals.find(sg => sg.id === 'subgoal-1');
       expect(updatedSubGoal?.title).toBe('更新されたタイトル');
       expect(updatedSubGoal?.progress).toBe(75);
-      expect(stateResult.current.isDirty).toBe(true);
+      expect(result.current.state.isDirty).toBe(true);
     });
 
     it('サブ目標を並び替えできる', () => {
       const wrapper = createWrapper('goal-1', sampleSubGoals);
-      const { result } = renderHook(() => useSubGoalActions(), { wrapper });
-      const { result: stateResult } = renderHook(() => useSubGoalState(), { wrapper });
+      const { result } = renderHook(
+        () => ({
+          actions: useSubGoalActions(),
+          state: useSubGoalState(),
+        }),
+        { wrapper }
+      );
 
       const reorderedSubGoals = [sampleSubGoals[1], sampleSubGoals[0]];
 
       act(() => {
-        result.current.reorderSubGoals(reorderedSubGoals);
+        result.current.actions.reorderSubGoals(reorderedSubGoals);
       });
 
-      expect(stateResult.current.subGoals).toEqual(reorderedSubGoals);
-      expect(stateResult.current.isDirty).toBe(true);
+      expect(result.current.state.subGoals).toEqual(reorderedSubGoals);
+      expect(result.current.state.isDirty).toBe(true);
     });
 
     it('サブ目標を一括更新できる', () => {
       const wrapper = createWrapper('goal-1', sampleSubGoals);
-      const { result } = renderHook(() => useSubGoalActions(), { wrapper });
-      const { result: stateResult } = renderHook(() => useSubGoalState(), { wrapper });
+      const { result } = renderHook(
+        () => ({
+          actions: useSubGoalActions(),
+          state: useSubGoalState(),
+        }),
+        { wrapper }
+      );
 
       const updates = [
         { id: 'subgoal-1', changes: { title: '一括更新1' } },
@@ -177,152 +197,187 @@ describe('SubGoalContext', () => {
       const deletes: string[] = [];
 
       act(() => {
-        result.current.bulkUpdateSubGoals(updates, deletes);
+        result.current.actions.bulkUpdateSubGoals(updates, deletes);
       });
 
-      const updatedSubGoal1 = stateResult.current.subGoals.find(sg => sg.id === 'subgoal-1');
-      const updatedSubGoal2 = stateResult.current.subGoals.find(sg => sg.id === 'subgoal-2');
+      const updatedSubGoal1 = result.current.state.subGoals.find(sg => sg.id === 'subgoal-1');
+      const updatedSubGoal2 = result.current.state.subGoals.find(sg => sg.id === 'subgoal-2');
 
       expect(updatedSubGoal1?.title).toBe('一括更新1');
       expect(updatedSubGoal2?.title).toBe('一括更新2');
-      expect(stateResult.current.isDirty).toBe(true);
+      expect(result.current.state.isDirty).toBe(true);
     });
 
     it('サブ目標を一括削除できる', () => {
       const wrapper = createWrapper('goal-1', sampleSubGoals);
-      const { result } = renderHook(() => useSubGoalActions(), { wrapper });
-      const { result: stateResult } = renderHook(() => useSubGoalState(), { wrapper });
+      const { result } = renderHook(
+        () => ({
+          actions: useSubGoalActions(),
+          state: useSubGoalState(),
+        }),
+        { wrapper }
+      );
 
       const updates: Array<{ id: string; changes: Partial<SubGoal> }> = [];
       const deletes = ['subgoal-1'];
 
       act(() => {
-        result.current.bulkUpdateSubGoals(updates, deletes);
+        result.current.actions.bulkUpdateSubGoals(updates, deletes);
       });
 
-      expect(stateResult.current.subGoals).toHaveLength(1);
-      expect(stateResult.current.subGoals[0].id).toBe('subgoal-2');
-      expect(stateResult.current.isDirty).toBe(true);
+      expect(result.current.state.subGoals).toHaveLength(1);
+      expect(result.current.state.subGoals[0].id).toBe('subgoal-2');
+      expect(result.current.state.isDirty).toBe(true);
     });
 
     it('選択されたサブ目標が削除された場合、選択が解除される', () => {
       const wrapper = createWrapper('goal-1', sampleSubGoals);
-      const { result } = renderHook(() => useSubGoalActions(), { wrapper });
-      const { result: stateResult } = renderHook(() => useSubGoalState(), { wrapper });
+      const { result } = renderHook(
+        () => ({
+          actions: useSubGoalActions(),
+          state: useSubGoalState(),
+        }),
+        { wrapper }
+      );
 
       // まずサブ目標を選択
       act(() => {
-        result.current.selectSubGoal(sampleSubGoals[0]);
+        result.current.actions.selectSubGoal(sampleSubGoals[0]);
       });
 
-      expect(stateResult.current.selectedSubGoal?.id).toBe('subgoal-1');
+      expect(result.current.state.selectedSubGoal?.id).toBe('subgoal-1');
 
       // 選択されたサブ目標を削除
       const updates: Array<{ id: string; changes: Partial<SubGoal> }> = [];
       const deletes = ['subgoal-1'];
 
       act(() => {
-        result.current.bulkUpdateSubGoals(updates, deletes);
+        result.current.actions.bulkUpdateSubGoals(updates, deletes);
       });
 
-      expect(stateResult.current.selectedSubGoal).toBeNull();
+      expect(result.current.state.selectedSubGoal).toBeNull();
     });
 
     it('バリデーションエラーを設定・クリアできる', () => {
       const wrapper = createWrapper();
-      const { result } = renderHook(() => useSubGoalActions(), { wrapper });
-      const { result: stateResult } = renderHook(() => useSubGoalState(), { wrapper });
+      const { result } = renderHook(
+        () => ({
+          actions: useSubGoalActions(),
+          state: useSubGoalState(),
+        }),
+        { wrapper }
+      );
 
       const errors = { title: 'タイトルは必須です', description: '説明が短すぎます' };
 
       act(() => {
-        result.current.setValidationErrors(errors);
+        result.current.actions.setValidationErrors(errors);
       });
 
-      expect(stateResult.current.validationErrors).toEqual(errors);
+      expect(result.current.state.validationErrors).toEqual(errors);
 
       act(() => {
-        result.current.clearValidationErrors();
+        result.current.actions.clearValidationErrors();
       });
 
-      expect(stateResult.current.validationErrors).toEqual({});
+      expect(result.current.state.validationErrors).toEqual({});
     });
 
     it('エラーを設定・クリアできる', () => {
       const wrapper = createWrapper();
-      const { result } = renderHook(() => useSubGoalActions(), { wrapper });
-      const { result: stateResult } = renderHook(() => useSubGoalState(), { wrapper });
+      const { result } = renderHook(
+        () => ({
+          actions: useSubGoalActions(),
+          state: useSubGoalState(),
+        }),
+        { wrapper }
+      );
 
       const errors = { load: 'データの読み込みに失敗しました' };
 
       act(() => {
-        result.current.setErrors(errors);
+        result.current.actions.setErrors(errors);
       });
 
-      expect(stateResult.current.errors).toEqual(errors);
-      expect(stateResult.current.success).toBe(false);
+      expect(result.current.state.errors).toEqual(errors);
+      expect(result.current.state.success).toBe(false);
 
       act(() => {
-        result.current.clearErrors();
+        result.current.actions.clearErrors();
       });
 
-      expect(stateResult.current.errors).toEqual({});
+      expect(result.current.state.errors).toEqual({});
     });
 
     it('成功状態を設定できる', () => {
       const wrapper = createWrapper();
-      const { result } = renderHook(() => useSubGoalActions(), { wrapper });
-      const { result: stateResult } = renderHook(() => useSubGoalState(), { wrapper });
+      const { result } = renderHook(
+        () => ({
+          actions: useSubGoalActions(),
+          state: useSubGoalState(),
+        }),
+        { wrapper }
+      );
 
       act(() => {
-        result.current.setSuccess(true);
+        result.current.actions.setSuccess(true);
       });
 
-      expect(stateResult.current.success).toBe(true);
-      expect(stateResult.current.errors).toEqual({});
-      expect(stateResult.current.isDirty).toBe(false);
+      expect(result.current.state.success).toBe(true);
+      expect(result.current.state.errors).toEqual({});
+      expect(result.current.state.isDirty).toBe(false);
 
       act(() => {
-        result.current.setSuccess(false);
+        result.current.actions.setSuccess(false);
       });
 
-      expect(stateResult.current.success).toBe(false);
+      expect(result.current.state.success).toBe(false);
     });
 
     it('ダーティ状態を設定できる', () => {
       const wrapper = createWrapper();
-      const { result } = renderHook(() => useSubGoalActions(), { wrapper });
-      const { result: stateResult } = renderHook(() => useSubGoalState(), { wrapper });
+      const { result } = renderHook(
+        () => ({
+          actions: useSubGoalActions(),
+          state: useSubGoalState(),
+        }),
+        { wrapper }
+      );
 
       act(() => {
-        result.current.setDirty(true);
+        result.current.actions.setDirty(true);
       });
 
-      expect(stateResult.current.isDirty).toBe(true);
+      expect(result.current.state.isDirty).toBe(true);
 
       act(() => {
-        result.current.setDirty(false);
+        result.current.actions.setDirty(false);
       });
 
-      expect(stateResult.current.isDirty).toBe(false);
+      expect(result.current.state.isDirty).toBe(false);
     });
 
     it('自動保存の有効/無効を設定できる', () => {
       const wrapper = createWrapper();
-      const { result } = renderHook(() => useSubGoalActions(), { wrapper });
-      const { result: stateResult } = renderHook(() => useSubGoalState(), { wrapper });
+      const { result } = renderHook(
+        () => ({
+          actions: useSubGoalActions(),
+          state: useSubGoalState(),
+        }),
+        { wrapper }
+      );
 
       act(() => {
-        result.current.setAutoSaveEnabled(false);
+        result.current.actions.setAutoSaveEnabled(false);
       });
 
-      expect(stateResult.current.autoSaveEnabled).toBe(false);
+      expect(result.current.state.autoSaveEnabled).toBe(false);
 
       act(() => {
-        result.current.setAutoSaveEnabled(true);
+        result.current.actions.setAutoSaveEnabled(true);
       });
 
-      expect(stateResult.current.autoSaveEnabled).toBe(true);
+      expect(result.current.state.autoSaveEnabled).toBe(true);
     });
   });
 
@@ -390,35 +445,48 @@ describe('SubGoalContext', () => {
   });
 
   describe('状態の整合性', () => {
-    it('lastActionTimestamp が更新される', () => {
+    it('lastActionTimestamp が更新される', async () => {
       const wrapper = createWrapper();
-      const { result } = renderHook(() => useSubGoalState(), { wrapper });
-      const { result: actionsResult } = renderHook(() => useSubGoalActions(), { wrapper });
+      const { result } = renderHook(
+        () => ({
+          actions: useSubGoalActions(),
+          state: useSubGoalState(),
+        }),
+        { wrapper }
+      );
 
-      const initialTimestamp = result.current.lastActionTimestamp;
+      const initialTimestamp = result.current.state.lastActionTimestamp;
+
+      // 少し待ってからアクションを実行
+      await new Promise(resolve => setTimeout(resolve, 10));
 
       act(() => {
-        actionsResult.current.setDirty(true);
+        result.current.actions.setDirty(true);
       });
 
-      expect(result.current.lastActionTimestamp).toBeGreaterThan(initialTimestamp);
+      expect(result.current.state.lastActionTimestamp).toBeGreaterThan(initialTimestamp);
     });
 
     it('複数の状態変更が正しく反映される', () => {
       const wrapper = createWrapper('goal-1', sampleSubGoals);
-      const { result } = renderHook(() => useSubGoalActions(), { wrapper });
-      const { result: stateResult } = renderHook(() => useSubGoalState(), { wrapper });
+      const { result } = renderHook(
+        () => ({
+          actions: useSubGoalActions(),
+          state: useSubGoalState(),
+        }),
+        { wrapper }
+      );
 
       act(() => {
-        result.current.selectSubGoal(sampleSubGoals[0]);
-        result.current.updateSubGoal('subgoal-1', { title: '新しいタイトル' });
-        result.current.setValidationErrors({ title: 'エラーメッセージ' });
+        result.current.actions.selectSubGoal(sampleSubGoals[0]);
+        result.current.actions.updateSubGoal('subgoal-1', { title: '新しいタイトル' });
+        result.current.actions.setValidationErrors({ title: 'エラーメッセージ' });
       });
 
-      expect(stateResult.current.selectedSubGoal?.id).toBe('subgoal-1');
-      expect(stateResult.current.subGoals[0].title).toBe('新しいタイトル');
-      expect(stateResult.current.validationErrors.title).toBe('エラーメッセージ');
-      expect(stateResult.current.isDirty).toBe(true);
+      expect(result.current.state.selectedSubGoal?.id).toBe('subgoal-1');
+      expect(result.current.state.subGoals[0].title).toBe('新しいタイトル');
+      expect(result.current.state.validationErrors.title).toBe('エラーメッセージ');
+      expect(result.current.state.isDirty).toBe(true);
     });
   });
 });

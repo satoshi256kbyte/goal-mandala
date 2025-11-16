@@ -128,6 +128,9 @@ if (typeof Element !== 'undefined') {
     keyframes: Keyframe[] | PropertyIndexedKeyframes | null,
     options?: number | KeyframeAnimationOptions
   ) {
+    // イベントリスナーを管理するMap
+    const eventListeners = new Map<string, Set<EventListener>>();
+
     // アニメーションオブジェクトのモックを返す
     const animation = {
       id: '',
@@ -141,21 +144,81 @@ if (typeof Element !== 'undefined') {
       finished: Promise.resolve(animation as Animation),
       pending: false,
       replaceState: 'active' as AnimationReplaceState,
-      cancel: vi.fn(),
-      finish: vi.fn(),
-      pause: vi.fn(),
-      play: vi.fn(),
+      cancel: vi.fn(function (this: Animation) {
+        this.playState = 'idle';
+        // cancelイベントを発火
+        const listeners = eventListeners.get('cancel');
+        if (listeners) {
+          listeners.forEach(listener => {
+            try {
+              listener(new Event('cancel'));
+            } catch (error) {
+              console.error('Error in cancel listener:', error);
+            }
+          });
+        }
+      }),
+      finish: vi.fn(function (this: Animation) {
+        this.playState = 'finished';
+        // finishイベントを発火
+        const listeners = eventListeners.get('finish');
+        if (listeners) {
+          listeners.forEach(listener => {
+            try {
+              listener(new Event('finish'));
+            } catch (error) {
+              console.error('Error in finish listener:', error);
+            }
+          });
+        }
+      }),
+      pause: vi.fn(function (this: Animation) {
+        this.playState = 'paused';
+      }),
+      play: vi.fn(function (this: Animation) {
+        this.playState = 'running';
+      }),
       reverse: vi.fn(),
       updatePlaybackRate: vi.fn(),
       persist: vi.fn(),
       commitStyles: vi.fn(),
-      addEventListener: vi.fn(),
-      removeEventListener: vi.fn(),
-      dispatchEvent: vi.fn(() => true),
+      addEventListener: vi.fn((type: string, listener: EventListener) => {
+        if (!eventListeners.has(type)) {
+          eventListeners.set(type, new Set());
+        }
+        eventListeners.get(type)!.add(listener);
+      }),
+      removeEventListener: vi.fn((type: string, listener: EventListener) => {
+        const listeners = eventListeners.get(type);
+        if (listeners) {
+          listeners.delete(listener);
+        }
+      }),
+      dispatchEvent: vi.fn((event: Event) => {
+        const listeners = eventListeners.get(event.type);
+        if (listeners) {
+          listeners.forEach(listener => {
+            try {
+              listener(event);
+            } catch (error) {
+              console.error(`Error in ${event.type} listener:`, error);
+            }
+          });
+        }
+        return true;
+      }),
       oncancel: null,
       onfinish: null,
       onremove: null,
     };
+
+    // アニメーションを自動的に完了させる（テスト環境）
+    setTimeout(() => {
+      if (animation.playState === 'running') {
+        animation.finish();
+      }
+    }, 0);
+
     return animation as Animation;
   });
 
@@ -244,46 +307,78 @@ Object.defineProperty(window, 'sessionStorage', {
 
 // タイムアウトハンドラーの設定
 beforeEach(() => {
-  // 各テスト前にストレージをクリア
+  // 1. すべてのモックをリセット
+  vi.clearAllMocks();
+  vi.resetAllMocks();
+
+  // 2. タイマーをリセット
+  vi.clearAllTimers();
+
+  // 3. ストレージをクリア
   localStorageMock.clear();
   sessionStorageMock.clear();
 
-  // デフォルトの認証トークンを設定（APIテスト用）
+  // 4. デフォルトの認証トークンを設定（APIテスト用）
   localStorageMock.setItem('auth_token', 'mock-auth-token');
 
-  // fetchモックをリセット
-  vi.clearAllMocks();
+  // 5. fetchモックをリセット
+  if (global.fetch && typeof global.fetch === 'function') {
+    (global.fetch as any).mockClear?.();
+    (global.fetch as any).mockReset?.();
+  }
 
-  // animationFrameカウンターをリセット
+  // 6. animationFrameカウンターをリセット
   rafIdCounter = 0;
   rafTimers.clear();
+
+  // 7. DOMをクリーンアップ
+  if (typeof document !== 'undefined' && document.body) {
+    while (document.body.firstChild) {
+      document.body.removeChild(document.body.firstChild);
+    }
+  }
+
+  // 8. グローバル変数をクリーンアップ
+  if (typeof window !== 'undefined') {
+    if ((window as any).achievementManager) {
+      delete (window as any).achievementManager;
+    }
+  }
 });
 
-afterEach(() => {
+afterEach(async () => {
   try {
-    // React Testing Libraryのクリーンアップ
+    // 1. 非同期処理の完了を待機
+    await new Promise(resolve => setTimeout(resolve, 0));
+  } catch (error) {
+    console.error('async wait failed:', error);
+  }
+
+  try {
+    // 2. React Testing Libraryのクリーンアップ
     cleanup();
   } catch (error) {
     console.error('cleanup() failed:', error);
   }
 
   try {
-    // すべてのタイマーをクリア
+    // 3. すべてのタイマーをクリア
     vi.clearAllTimers();
   } catch (error) {
     console.error('vi.clearAllTimers() failed:', error);
   }
 
   try {
-    // すべてのrequestAnimationFrameタイマーをクリア
+    // 4. すべてのrequestAnimationFrameタイマーをクリア
     rafTimers.forEach(timer => clearTimeout(timer));
     rafTimers.clear();
+    rafIdCounter = 0;
   } catch (error) {
     console.error('rafTimers cleanup failed:', error);
   }
 
   try {
-    // ストレージのクリア
+    // 5. ストレージのクリア
     localStorageMock.clear();
     sessionStorageMock.clear();
   } catch (error) {
@@ -291,10 +386,77 @@ afterEach(() => {
   }
 
   try {
-    // すべてのモックをクリア
+    // 6. すべてのモックをクリア
     vi.clearAllMocks();
+    vi.resetAllMocks();
   } catch (error) {
     console.error('vi.clearAllMocks() failed:', error);
+  }
+
+  try {
+    // 7. fetchモックのリセット
+    if (global.fetch && typeof global.fetch === 'function') {
+      (global.fetch as any).mockClear?.();
+    }
+  } catch (error) {
+    console.error('fetch mock cleanup failed:', error);
+  }
+
+  try {
+    // 8. DOMイベントリスナーのクリーンアップ
+    if (typeof document !== 'undefined') {
+      // すべてのイベントリスナーを削除
+      const events = ['click', 'change', 'input', 'submit', 'keydown', 'keyup', 'focus', 'blur'];
+      events.forEach(event => {
+        document.removeEventListener(event, () => {});
+      });
+    }
+  } catch (error) {
+    console.error('DOM event cleanup failed:', error);
+  }
+
+  try {
+    // 9. グローバル変数のクリーンアップ
+    if (typeof window !== 'undefined') {
+      // AchievementManagerのクリーンアップ
+      if ((window as any).achievementManager) {
+        (window as any).achievementManager.cleanup();
+        delete (window as any).achievementManager;
+      }
+
+      // その他のグローバル変数をクリーンアップ
+      const globalKeys = ['__REACT_DEVTOOLS_GLOBAL_HOOK__', '__REDUX_DEVTOOLS_EXTENSION__'];
+      globalKeys.forEach(key => {
+        if ((window as any)[key]) {
+          delete (window as any)[key];
+        }
+      });
+    }
+  } catch (error) {
+    console.error('global variables cleanup failed:', error);
+  }
+
+  try {
+    // 10. DOMの完全クリーンアップ
+    if (typeof document !== 'undefined' && document.body) {
+      // すべての子要素を削除
+      while (document.body.firstChild) {
+        document.body.removeChild(document.body.firstChild);
+      }
+      // bodyの属性をクリア
+      Array.from(document.body.attributes).forEach(attr => {
+        document.body.removeAttribute(attr.name);
+      });
+    }
+  } catch (error) {
+    console.error('DOM cleanup failed:', error);
+  }
+
+  try {
+    // 11. 非同期処理の完了を再度待機
+    await new Promise(resolve => setTimeout(resolve, 0));
+  } catch (error) {
+    console.error('final async wait failed:', error);
   }
 });
 

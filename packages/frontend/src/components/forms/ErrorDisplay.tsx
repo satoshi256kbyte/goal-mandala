@@ -149,6 +149,8 @@ const RecoveryOptions: React.FC<{
  */
 export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
   error,
+  errors,
+  title,
   displayType = 'inline',
   showRecoveryOptions = true,
   onRetry,
@@ -187,6 +189,27 @@ export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
       ? severityClasses[error.severity]
       : severityClasses[FormErrorSeverity.MEDIUM];
   };
+
+  // errorsプロパティが提供された場合のレンダリング
+  if (errors && Object.keys(errors).length > 0) {
+    return (
+      <div className={getContainerClasses()} role="alert" aria-live="polite" aria-atomic="true">
+        <div className="flex">
+          <div className="flex-shrink-0">
+            <ErrorIcon severity={FormErrorSeverity.MEDIUM} />
+          </div>
+          <div className="ml-3 flex-1">
+            {title && <div className={`text-sm font-medium ${getTextClasses()} mb-2`}>{title}</div>}
+            <ul className={`text-sm ${getTextClasses()} space-y-1`}>
+              {Object.entries(errors).map(([key, message]) => (
+                <li key={key}>• {message}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={getContainerClasses()} role="alert" aria-live="polite" aria-atomic="true">

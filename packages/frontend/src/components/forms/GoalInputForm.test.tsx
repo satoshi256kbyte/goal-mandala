@@ -5,6 +5,8 @@ import { vi } from 'vitest';
 import { GoalInputForm, GoalInputFormProps } from './GoalInputForm';
 import { GoalFormData, PartialGoalFormData } from '../../schemas/goal-form';
 import { fastWaitFor, quickCheck } from '../../test/utils/test-helpers';
+import { renderWithProviders } from '../../test/test-utils';
+import { GoalFormProvider } from '../../contexts/GoalFormContext';
 
 // モック
 vi.mock('../../schemas/goal-form', async () => {
@@ -47,6 +49,15 @@ describe('GoalInputForm', () => {
   let mockOnSubmit: ReturnType<typeof vi.fn>;
   let mockOnDraftSave: ReturnType<typeof vi.fn>;
 
+  // ヘルパー関数: GoalFormProviderでラップしてレンダリング
+  const renderGoalInputForm = (props: GoalInputFormProps) => {
+    return renderWithProviders(
+      <GoalFormProvider>
+        <GoalInputForm {...props} />
+      </GoalFormProvider>
+    );
+  };
+
   beforeEach(() => {
     mockOnSubmit = vi.fn().mockResolvedValue(undefined);
     mockOnDraftSave = vi.fn().mockResolvedValue(undefined);
@@ -59,7 +70,7 @@ describe('GoalInputForm', () => {
 
   describe('基本的なレンダリング', () => {
     it('すべての必須フィールドが表示される', () => {
-      render(<GoalInputForm {...defaultProps} />);
+      renderGoalInputForm(defaultProps);
 
       expect(screen.getByLabelText(/目標タイトル/)).toBeInTheDocument();
       expect(screen.getByLabelText(/目標説明/)).toBeInTheDocument();
@@ -69,7 +80,7 @@ describe('GoalInputForm', () => {
     });
 
     it('必須マークが正しく表示される', () => {
-      render(<GoalInputForm {...defaultProps} />);
+      renderGoalInputForm(defaultProps);
 
       const requiredFields = ['目標タイトル', '目標説明', '達成期限', '背景'];
       requiredFields.forEach(field => {
@@ -83,7 +94,7 @@ describe('GoalInputForm', () => {
     });
 
     it('送信ボタンが表示される', () => {
-      render(<GoalInputForm {...defaultProps} />);
+      renderGoalInputForm(defaultProps);
 
       expect(screen.getByRole('button', { name: /AI生成開始/ })).toBeInTheDocument();
     });
@@ -127,7 +138,7 @@ describe('GoalInputForm', () => {
   describe('フォーム入力', () => {
     it('テキスト入力が正しく動作する', async () => {
       const user = userEvent.setup();
-      render(<GoalInputForm {...defaultProps} />);
+      renderGoalInputForm(defaultProps);
 
       const titleInput = screen.getByLabelText(/目標タイトル/);
       await user.type(titleInput, 'テスト目標');
@@ -137,7 +148,7 @@ describe('GoalInputForm', () => {
 
     it('テキストエリア入力が正しく動作する', async () => {
       const user = userEvent.setup();
-      render(<GoalInputForm {...defaultProps} />);
+      renderGoalInputForm(defaultProps);
 
       const descriptionInput = screen.getByLabelText(/目標説明/);
       await user.type(descriptionInput, 'テスト説明');
@@ -147,7 +158,7 @@ describe('GoalInputForm', () => {
 
     it('文字数カウンターが正しく更新される', async () => {
       const user = userEvent.setup();
-      render(<GoalInputForm {...defaultProps} />);
+      renderGoalInputForm(defaultProps);
 
       const titleInput = screen.getByLabelText(/目標タイトル/);
       await user.type(titleInput, 'テスト');
@@ -160,7 +171,7 @@ describe('GoalInputForm', () => {
   describe('バリデーション', () => {
     it('必須フィールドが空の場合にエラーが表示される', async () => {
       const user = userEvent.setup();
-      render(<GoalInputForm {...defaultProps} onSubmit={mockOnSubmit} />);
+      render(<GoalInputForm {...defaultProps} onSubmit={mockOnSubmit} showErrorSummary={true} />);
 
       const submitButton = screen.getByRole('button', { name: /AI生成開始/ });
       await user.click(submitButton);
@@ -170,12 +181,12 @@ describe('GoalInputForm', () => {
         expect(screen.getByText(/入力内容を確認してください/)).toBeInTheDocument();
       });
 
-      // 個別のエラーメッセージも確認
+      // 個別のエラーメッセージも確認（最初に見つかったものを使用）
       await fastWaitFor(() => {
-        expect(screen.getByText(/目標タイトルは必須です/)).toBeInTheDocument();
-        expect(screen.getByText(/目標説明は必須です/)).toBeInTheDocument();
-        expect(screen.getByText(/達成期限は必須です/)).toBeInTheDocument();
-        expect(screen.getByText(/背景は必須です/)).toBeInTheDocument();
+        expect(screen.getAllByText(/目標タイトルは必須です/)[0]).toBeInTheDocument();
+        expect(screen.getAllByText(/目標説明は必須です/)[0]).toBeInTheDocument();
+        expect(screen.getAllByText(/達成期限は必須です/)[0]).toBeInTheDocument();
+        expect(screen.getAllByText(/背景は必須です/)[0]).toBeInTheDocument();
       });
 
       expect(mockOnSubmit).not.toHaveBeenCalled();
@@ -183,7 +194,7 @@ describe('GoalInputForm', () => {
 
     it('文字数制限を超えた場合にエラーが表示される', async () => {
       const user = userEvent.setup();
-      render(<GoalInputForm {...defaultProps} />);
+      renderGoalInputForm({ ...defaultProps, showErrorSummary: true });
 
       const titleInput = screen.getByLabelText(/目標タイトル/);
       const longTitle = 'a'.repeat(101); // 100文字制限を超える
@@ -193,13 +204,15 @@ describe('GoalInputForm', () => {
       await user.tab();
 
       await waitFor(() => {
-        expect(screen.getByText(/目標タイトルは100文字以内で入力してください/)).toBeInTheDocument();
+        // フィールドレベルまたはサマリーレベルでエラーが表示されることを確認
+        const errorElements = screen.queryAllByText(/目標タイトルは100文字以内で入力してください/);
+        expect(errorElements.length).toBeGreaterThan(0);
       });
     });
 
     it('有効なデータの場合はエラーが表示されない', async () => {
       const user = userEvent.setup();
-      render(<GoalInputForm {...defaultProps} />);
+      renderGoalInputForm(defaultProps);
 
       // 有効なデータを入力
       await user.type(screen.getByLabelText(/目標タイトル/), sampleFormData.title);
@@ -448,7 +461,7 @@ describe('GoalInputForm', () => {
 
   describe('アクセシビリティ', () => {
     it('適切なARIA属性が設定されている', () => {
-      render(<GoalInputForm {...defaultProps} />);
+      renderGoalInputForm(defaultProps);
 
       const titleInput = screen.getByLabelText(/目標タイトル/);
       expect(titleInput).toHaveAttribute('aria-invalid', 'false');
@@ -459,7 +472,7 @@ describe('GoalInputForm', () => {
 
     it('エラー状態でaria-invalid="true"が設定される', async () => {
       const user = userEvent.setup();
-      render(<GoalInputForm {...defaultProps} />);
+      renderGoalInputForm(defaultProps);
 
       const submitButton = screen.getByRole('button', { name: /AI生成開始/ });
       await user.click(submitButton);
@@ -493,7 +506,7 @@ describe('GoalInputForm', () => {
         value: 1200,
       });
 
-      render(<GoalInputForm {...defaultProps} />);
+      renderGoalInputForm(defaultProps);
 
       const container = screen.getByRole('form').parentElement;
       expect(container).toHaveClass('lg:max-w-6xl');
@@ -507,7 +520,7 @@ describe('GoalInputForm', () => {
         value: 400,
       });
 
-      render(<GoalInputForm {...defaultProps} />);
+      renderGoalInputForm(defaultProps);
 
       const titleInput = screen.getByLabelText(/目標タイトル/);
       expect(titleInput).toHaveClass('min-h-[44px]');

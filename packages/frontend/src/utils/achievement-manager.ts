@@ -55,6 +55,19 @@ export class AchievementManager {
   }
 
   /**
+   * すべての保留中の処理をクリアする（テスト用）
+   */
+  cleanup(): void {
+    if (this.batchTimeout) {
+      clearTimeout(this.batchTimeout);
+      this.batchTimeout = null;
+    }
+    this.pendingAchievements.clear();
+    this.animationQueue = [];
+    this.isProcessing = false;
+  }
+
+  /**
    * 達成イベントの処理をスケジュールする
    */
   private scheduleProcessing(): void {

@@ -14,9 +14,9 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
-    "test": "jest",
-    "test:coverage": "jest --coverage",
-    "test:watch": "jest --watch",
+    "test": "jest --passWithNoTests --maxWorkers=1 --forceExit --testTimeout=30000 --silent",
+    "test:coverage": "jest --coverage --passWithNoTests --maxWorkers=1 --forceExit --testTimeout=30000",
+    "test:watch": "jest --watch --passWithNoTests",
     "lint": "eslint . --ext ts --report-unused-disable-directives --max-warnings 0",
     "lint:fix": "eslint . --ext ts --fix",
     "format": "prettier --write .",

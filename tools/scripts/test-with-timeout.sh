@@ -4,7 +4,7 @@
 # Usage: ./test-with-timeout.sh [package] [timeout_seconds]
 
 # デフォルト設定
-DEFAULT_TIMEOUT=120  # 2分
+DEFAULT_TIMEOUT=60  # 2分→1分に短縮
 PACKAGE=${1:-"all"}
 TIMEOUT=${2:-$DEFAULT_TIMEOUT}
 
@@ -32,6 +32,26 @@ log_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
+# プロセス強制終了関数
+force_kill_process() {
+    local pid=$1
+    local description="$2"
+    
+    log_warning "Force killing process: $description (PID: $pid)"
+    
+    # 段階的に強制終了
+    kill -TERM $pid 2>/dev/null || true
+    sleep 2
+    
+    if kill -0 $pid 2>/dev/null; then
+        kill -KILL $pid 2>/dev/null || true
+        sleep 1
+    fi
+    
+    # 子プロセスも強制終了
+    pkill -P $pid 2>/dev/null || true
+}
+
 # タイムアウト付きコマンド実行（macOS対応）
 run_with_timeout() {
     local cmd="$1"
@@ -47,9 +67,7 @@ run_with_timeout() {
     while kill -0 $pid 2>/dev/null; do
         if [ $count -ge $timeout ]; then
             log_error "Timeout reached for: $description"
-            kill -TERM $pid 2>/dev/null || true
-            sleep 2
-            kill -KILL $pid 2>/dev/null || true
+            force_kill_process $pid "$description"
             return 124  # timeout exit code
         fi
         sleep 1
@@ -80,22 +98,27 @@ run_package_tests() {
         return 1
     fi
 
-    # フロントエンドテストのデフォルトタイムアウトを60秒に設定
-    if [ "$package_name" = "frontend" ] && [ "$TIMEOUT" -eq "$DEFAULT_TIMEOUT" ]; then
-        package_timeout=60
-    fi
+    # パッケージ別のタイムアウト設定
+    case "$package_name" in
+        "frontend")
+            package_timeout=45  # フロントエンドは45秒
+            ;;
+        "backend"|"shared"|"infrastructure")
+            package_timeout=30  # その他は30秒
+            ;;
+    esac
 
-    log_info "Testing package: $package_name"
+    log_info "Testing package: $package_name (timeout: ${package_timeout}s)"
 
     case "$package_name" in
         "backend")
-            run_with_timeout "cd $package_path && npx jest --passWithNoTests --maxWorkers=1 --forceExit --detectOpenHandles --testTimeout=30000 --silent" $package_timeout "backend"
+            run_with_timeout "cd $package_path && npm test" $package_timeout "backend"
             ;;
         "frontend")
-            run_with_timeout "cd $package_path && npx vitest run --reporter=basic --no-coverage --isolate=false --config=vitest.config.ts" $package_timeout "frontend"
+            run_with_timeout "cd $package_path && npm test" $package_timeout "frontend"
             ;;
         "shared")
-            run_with_timeout "cd $package_path && npx jest --passWithNoTests --maxWorkers=1 --forceExit --testTimeout=30000 --silent" $package_timeout "shared"
+            run_with_timeout "cd $package_path && npm test" $package_timeout "shared"
             ;;
         "infrastructure")
             if [ -f "$package_path/package.json" ] && grep -q '"test"' "$package_path/package.json"; then
@@ -117,7 +140,7 @@ run_all_tests() {
     local failed_packages=()
     local packages=("shared" "backend" "frontend" "infrastructure")
 
-    log_info "Running tests for all packages with timeout: ${TIMEOUT}s each"
+    log_info "Running tests for all packages with individual timeouts"
 
     for package in "${packages[@]}"; do
         if [ -d "packages/$package" ]; then

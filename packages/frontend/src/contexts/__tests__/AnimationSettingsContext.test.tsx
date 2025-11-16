@@ -63,19 +63,23 @@ const TestComponentWithHook: React.FC = () => {
 
 // matchMedia のモック
 const mockMatchMedia = (matches: boolean) => {
+  const mockMediaQueryList = {
+    matches,
+    media: '(prefers-reduced-motion: reduce)',
+    onchange: null,
+    addListener: vi.fn(),
+    removeListener: vi.fn(),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn(),
+  };
+
   Object.defineProperty(window, 'matchMedia', {
     writable: true,
-    value: vi.fn().mockImplementation(query => ({
-      matches,
-      media: query,
-      onchange: null,
-      addListener: vi.fn(),
-      removeListener: vi.fn(),
-      addEventListener: vi.fn(),
-      removeEventListener: vi.fn(),
-      dispatchEvent: vi.fn(),
-    })),
+    value: vi.fn().mockImplementation(() => mockMediaQueryList),
   });
+
+  return mockMediaQueryList;
 };
 
 describe('AnimationSettingsContext', () => {
@@ -141,6 +145,7 @@ describe('AnimationSettingsContext', () => {
 
   describe('動きを減らす設定の検出', () => {
     it('システムの動きを減らす設定が有効な場合、アニメーションが無効になる', () => {
+      // テスト前にmockMatchMediaを設定
       mockMatchMedia(true);
 
       render(
@@ -149,6 +154,7 @@ describe('AnimationSettingsContext', () => {
         </AnimationSettingsProvider>
       );
 
+      // prefers-reduced-motionが有効な場合、アニメーションは無効になる
       expect(screen.getByTestId('animation-enabled')).toHaveTextContent('false');
     });
 
@@ -175,12 +181,16 @@ describe('AnimationSettingsContext', () => {
         writable: true,
         value: vi.fn().mockImplementation(() => ({
           matches: false,
+          media: '(prefers-reduced-motion: reduce)',
           addEventListener: vi.fn().mockImplementation((event, callback) => {
             if (event === 'change') {
               mediaQueryCallback = callback;
             }
           }),
           removeEventListener: vi.fn(),
+          addListener: vi.fn(),
+          removeListener: vi.fn(),
+          dispatchEvent: vi.fn(),
         })),
       });
 
@@ -195,7 +205,10 @@ describe('AnimationSettingsContext', () => {
       // メディアクエリの変更をシミュレート
       if (mediaQueryCallback) {
         act(() => {
-          mediaQueryCallback({ matches: true } as MediaQueryListEvent);
+          mediaQueryCallback({
+            matches: true,
+            media: '(prefers-reduced-motion: reduce)',
+          } as MediaQueryListEvent);
         });
       }
 
@@ -240,9 +253,10 @@ describe('AnimationSettingsContext', () => {
       const progressElement = screen.getByTestId('progress-style');
       const colorElement = screen.getByTestId('color-style');
 
-      expect(transitionElement).not.toHaveStyle('transition');
-      expect(progressElement).not.toHaveStyle('transition');
-      expect(colorElement).not.toHaveStyle('transition');
+      // アニメーション無効時はtransitionプロパティが設定されない
+      expect(transitionElement).toHaveStyle('transition: none');
+      expect(progressElement).toHaveStyle('transition: none');
+      expect(colorElement).toHaveStyle('transition: none');
     });
   });
 
@@ -258,6 +272,7 @@ describe('AnimationSettingsContext', () => {
     });
 
     it('動きを減らす設定が有効な場合、falseを返す', () => {
+      // テスト前にmockMatchMediaを設定
       mockMatchMedia(true);
 
       render(
@@ -266,6 +281,7 @@ describe('AnimationSettingsContext', () => {
         </AnimationSettingsProvider>
       );
 
+      // prefers-reduced-motionが有効な場合、falseを返す
       expect(screen.getByTestId('hook-enabled')).toHaveTextContent('false');
     });
   });

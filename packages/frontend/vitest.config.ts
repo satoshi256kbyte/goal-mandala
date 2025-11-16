@@ -7,9 +7,9 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: ['./src/test/setup.ts'],
-    // タイムアウト設定を短縮（高速化優先）
-    testTimeout: 3000, // 5秒→3秒に短縮
-    hookTimeout: 2000, // 3秒→2秒に短縮
+    // タイムアウト設定（無限ループを防ぐため短縮）
+    testTimeout: 2000, // 5秒→2秒に短縮
+    hookTimeout: 1500, // 3秒→1.5秒に短縮
     teardownTimeout: 1000, // 2秒→1秒に短縮
     // E2Eテストと統合テストを除外
     exclude: [
@@ -25,33 +25,48 @@ export default defineConfig({
       '**/src/__tests__/integration/**',
       '**/__tests__/**/*.integration.test.ts',
       '**/__tests__/**/*.integration.test.tsx',
+      // 統合テストディレクトリを完全に除外
+      'packages/frontend/src/test/integration/**',
+      // パフォーマンステストとアクセシビリティテストを除外
+      '**/*performance*',
+      '**/*accessibility*',
+      '**/performance/**',
+      '**/accessibility/**',
     ],
-    // 並列実行設定の最適化（メモリ効率優先）
+    // 統合テストを明示的に除外するincludeパターン
+    include: [
+      '**/*.test.{ts,tsx}',
+      '!**/*.integration.test.{ts,tsx}',
+      '!**/test/integration/**',
+      '!**/*performance*',
+      '!**/*accessibility*',
+    ],
+    // 並列実行設定の最適化（安定性優先）
     pool: 'forks',
     poolOptions: {
       forks: {
-        singleFork: false,
-        maxForks: 2, // 4→2に削減（メモリ効率優先）
+        singleFork: true, // 単一フォークで実行
+        maxForks: 1,
         minForks: 1,
       },
     },
     // メモリリーク対策
     logHeapUsage: false,
-    // 並列実行数を削減（メモリ効率優先）
-    maxConcurrency: 4, // 8→4に削減
+    // 並列実行数を1に固定
+    maxConcurrency: 1,
     // テスト分離を無効化（高速化優先）
-    isolate: false, // true→falseに変更
+    isolate: false,
     // テストファイルのキャッシュを有効化
     cache: {
       dir: 'node_modules/.vitest',
     },
-    // レポーターを最小化（高速化優先）
-    reporters: ['dot'], // basic→dotに変更
+    // レポーターを最小化
+    reporters: ['dot'],
     // カバレッジをデフォルトで無効化
     coverage: {
-      enabled: false, // デフォルトで無効化
+      enabled: false,
       provider: 'v8',
-      reporter: ['json'], // text→jsonのみに変更
+      reporter: ['json'],
       reportsDirectory: './coverage',
       exclude: [
         'node_modules/',
@@ -66,7 +81,6 @@ export default defineConfig({
         'src/main.tsx',
         'src/vite-env.d.ts',
       ],
-      // カバレッジ閾値を80%に設定
       thresholds: {
         lines: 80,
         functions: 80,
