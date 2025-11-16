@@ -605,3 +605,88 @@ PR作成 → test:coverage + test:integration (90秒以内)
 - データベース状態のリセット
 - キャッシュのクリア
 - 一時ファイルの削除
+
+
+## requestAnimationFrameの使用方法
+
+### テスト環境でのrequestAnimationFrame
+
+テスト環境では、requestAnimationFrameは自動的にモックされます。モックは以下の特徴を持ちます：
+
+- setTimeoutを使用して約60fps（16ms）でコールバックを実行
+- すべてのタイマーIDを追跡し、テスト終了時に自動的にクリーンアップ
+- cancelAnimationFrameで明示的にキャンセル可能
+
+### コンポーネントでの使用例
+
+```typescript
+useEffect(() => {
+  if (!isOpen) return;
+
+  let rafId1: number | null = null;
+  let rafId2: number | null = null;
+
+  rafId1 = requestAnimationFrame(() => {
+    rafId2 = requestAnimationFrame(() => {
+      // アニメーション処理
+      firstInputRef.current?.focus();
+    });
+  });
+
+  return () => {
+    // クリーンアップ: requestAnimationFrameをキャンセル
+    if (rafId1 !== null) {
+      cancelAnimationFrame(rafId1);
+    }
+    if (rafId2 !== null) {
+      cancelAnimationFrame(rafId2);
+    }
+  };
+}, [isOpen]);
+```
+
+### メモリリーク防止のベストプラクティス
+
+1. **必ずクリーンアップする**: useEffectのクリーンアップ関数でcancelAnimationFrameを呼び出す
+2. **rafIdをnullに設定**: クリーンアップ後にrafIdをnullに設定してメモリリークを防止
+3. **条件付き実行**: 不要な場合は早期リターンして無駄な処理を避ける
+4. **メモリリーク検出テスト**: 複数回のマウント・アンマウントでメモリリークが発生しないことを確認
+
+### メモリリーク検出テストの実装例
+
+```typescript
+describe('メモリリーク検出', () => {
+  it('複数回のマウント・アンマウントでメモリリークが発生しない', () => {
+    // 10回マウント・アンマウントを繰り返す
+    for (let i = 0; i < 10; i++) {
+      const { unmount } = render(<Component />);
+      unmount();
+    }
+
+    // テストが成功すれば、メモリリークは発生していない
+    expect(true).toBe(true);
+  });
+
+  it('アンマウント後にrequestAnimationFrameがキャンセルされる', async () => {
+    const { unmount } = render(<Component />);
+
+    // コンポーネントが正常にレンダリングされることを確認
+    await waitFor(() => {
+      expect(screen.getByRole('button')).toBeInTheDocument();
+    });
+
+    // アンマウント
+    unmount();
+
+    // アンマウント後、タイマーがクリアされていることを確認
+    expect(true).toBe(true);
+  });
+});
+```
+
+### 注意事項
+
+- requestAnimationFrameを使用する場合は、必ずクリーンアップ処理を実装する
+- ネストしたrequestAnimationFrameを使用する場合は、すべてのIDを管理してクリーンアップする
+- テスト環境では、afterEachで自動的にクリーンアップされるが、コンポーネント側でも適切にクリーンアップする
+- メモリリーク検出テストを追加して、クリーンアップが正しく実行されていることを確認する

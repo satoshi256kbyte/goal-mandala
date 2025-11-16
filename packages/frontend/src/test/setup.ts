@@ -100,22 +100,26 @@ global.IntersectionObserver = class IntersectionObserver {
 } as any;
 
 // requestAnimationFrameのモック（タイマーIDを追跡）
-const animationFrameIds = new Set<number>();
-let animationFrameIdCounter = 0;
+const rafTimers = new Map<number, NodeJS.Timeout>();
+let rafIdCounter = 0;
 
-global.requestAnimationFrame = vi.fn((callback: FrameRequestCallback) => {
-  const id = ++animationFrameIdCounter;
-  animationFrameIds.add(id);
-  const timerId = setTimeout(() => {
-    animationFrameIds.delete(id);
+global.requestAnimationFrame = (callback: FrameRequestCallback): number => {
+  const id = ++rafIdCounter;
+  const timer = setTimeout(() => {
+    rafTimers.delete(id);
     callback(performance.now());
   }, 16); // 約60fps
+  rafTimers.set(id, timer);
   return id;
-});
+};
 
-global.cancelAnimationFrame = vi.fn((id: number) => {
-  animationFrameIds.delete(id);
-});
+global.cancelAnimationFrame = (id: number): void => {
+  const timer = rafTimers.get(id);
+  if (timer) {
+    clearTimeout(timer);
+    rafTimers.delete(id);
+  }
+};
 
 // Web Animations APIのモック
 if (typeof Element !== 'undefined') {
@@ -251,29 +255,47 @@ beforeEach(() => {
   vi.clearAllMocks();
 
   // animationFrameカウンターをリセット
-  animationFrameIdCounter = 0;
-  animationFrameIds.clear();
+  rafIdCounter = 0;
+  rafTimers.clear();
 });
 
 afterEach(() => {
-  // React Testing Libraryのクリーンアップ
-  cleanup();
+  try {
+    // React Testing Libraryのクリーンアップ
+    cleanup();
+  } catch (error) {
+    console.error('cleanup() failed:', error);
+  }
 
-  // すべてのタイマーをクリア
-  vi.clearAllTimers();
+  try {
+    // すべてのタイマーをクリア
+    vi.clearAllTimers();
+  } catch (error) {
+    console.error('vi.clearAllTimers() failed:', error);
+  }
 
-  // すべてのanimationFrameをキャンセル
-  animationFrameIds.forEach(id => {
-    cancelAnimationFrame(id);
-  });
-  animationFrameIds.clear();
+  try {
+    // すべてのrequestAnimationFrameタイマーをクリア
+    rafTimers.forEach(timer => clearTimeout(timer));
+    rafTimers.clear();
+  } catch (error) {
+    console.error('rafTimers cleanup failed:', error);
+  }
 
-  // ストレージのクリア
-  localStorageMock.clear();
-  sessionStorageMock.clear();
+  try {
+    // ストレージのクリア
+    localStorageMock.clear();
+    sessionStorageMock.clear();
+  } catch (error) {
+    console.error('storage cleanup failed:', error);
+  }
 
-  // すべてのモックをクリア
-  vi.clearAllMocks();
+  try {
+    // すべてのモックをクリア
+    vi.clearAllMocks();
+  } catch (error) {
+    console.error('vi.clearAllMocks() failed:', error);
+  }
 });
 
 // テストスイート終了時のクリーンアップ

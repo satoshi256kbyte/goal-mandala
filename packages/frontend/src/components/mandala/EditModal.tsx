@@ -132,11 +132,24 @@ export const EditModal: React.FC<EditModalProps> = ({
 
       // フォーカスを最初の入力フィールドに移動
       // 複数のrequestAnimationFrameを使用して確実にフォーカスを設定
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
+      let rafId1: number | null = null;
+      let rafId2: number | null = null;
+
+      rafId1 = requestAnimationFrame(() => {
+        rafId2 = requestAnimationFrame(() => {
           firstInputRef.current?.focus();
         });
       });
+
+      return () => {
+        // クリーンアップ: requestAnimationFrameをキャンセル
+        if (rafId1 !== null) {
+          cancelAnimationFrame(rafId1);
+        }
+        if (rafId2 !== null) {
+          cancelAnimationFrame(rafId2);
+        }
+      };
     }
   }, [isOpen]);
 
