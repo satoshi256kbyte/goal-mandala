@@ -73,7 +73,7 @@ export const GoalInputForm: React.FC<GoalInputFormProps> = ({
     watch,
     setValue,
     getValues,
-    formState: { errors, isValid, isDirty },
+    formState: { errors, isDirty },
     reset,
   } = useForm<GoalFormData>({
     resolver: zodResolver(goalFormSchema),

@@ -32,7 +32,10 @@
 ### 認証関連のテスト
 
 ```typescript
-import { createMockAuthUser, createMockAuthSession } from '../test/types/mock-types';
+import {
+  createMockAuthUser,
+  createMockAuthSession,
+} from '../test/types/mock-types';
 
 // デフォルト値を使用
 vi.mocked(getCurrentUser).mockResolvedValue(createMockAuthUser());

@@ -1,6 +1,6 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   goalFormSchema,
   partialGoalFormSchema,
@@ -117,14 +117,27 @@ export const useGoalForm = (options: UseGoalFormOptions = {}): UseGoalFormReturn
 
   // 内部状態
   const [lastSavedData, setLastSavedData] = useState<PartialGoalFormData | null>(null);
-  const [autoSaveTimer, setAutoSaveTimer] = useState<NodeJS.Timeout | null>(null);
+
+  // useRefで管理（メモリリーク防止）
+  const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const onDraftSaveRef = useRef(onDraftSave);
+  const initialDataRef = useRef<string>('');
 
   // フォームの値を監視
   const watchedValues = watch();
 
+  // onDraftSaveが変更されたらrefを更新（無限ループ防止）
+  useEffect(() => {
+    onDraftSaveRef.current = onDraftSave;
+  }, [onDraftSave]);
+
   // 初期データが変更された場合にフォームをリセット
   useEffect(() => {
-    if (initialData) {
+    const currentInitialData = JSON.stringify(initialData);
+
+    if (initialData && currentInitialData !== initialDataRef.current) {
+      initialDataRef.current = currentInitialData;
+
       reset({
         title: initialData.title || '',
         description: initialData.description || '',
@@ -136,8 +149,8 @@ export const useGoalForm = (options: UseGoalFormOptions = {}): UseGoalFormReturn
     }
   }, [initialData, reset]);
 
-  // 未保存の変更をチェック
-  const checkUnsavedChanges = useCallback((): boolean => {
+  // 未保存の変更をチェック（useMemoで最適化）
+  const hasUnsavedChanges = useMemo((): boolean => {
     if (!lastSavedData) {
       return isDirty;
     }
@@ -149,15 +162,22 @@ export const useGoalForm = (options: UseGoalFormOptions = {}): UseGoalFormReturn
     );
   }, [lastSavedData, isDirty, getValues]);
 
-  // フォーム状態の計算
-  const formState: FormState = {
-    isValid,
-    isDirty,
-    isSubmitting,
-    isValidating,
-    hasErrors: Object.keys(errors).length > 0,
-    hasUnsavedChanges: checkUnsavedChanges(),
-  };
+  const checkUnsavedChanges = useCallback((): boolean => {
+    return hasUnsavedChanges;
+  }, [hasUnsavedChanges]);
+
+  // フォーム状態の計算（useMemoで最適化）
+  const formState: FormState = useMemo(
+    () => ({
+      isValid,
+      isDirty,
+      isSubmitting,
+      isValidating,
+      hasErrors: Object.keys(errors).length > 0,
+      hasUnsavedChanges,
+    }),
+    [isValid, isDirty, isSubmitting, isValidating, errors, hasUnsavedChanges]
+  );
 
   // フィールド状態を取得
   const getFieldState = useCallback(
@@ -189,7 +209,7 @@ export const useGoalForm = (options: UseGoalFormOptions = {}): UseGoalFormReturn
 
   // 下書き保存の実行
   const saveDraft = useCallback(async (): Promise<void> => {
-    if (!onDraftSave) {
+    if (!onDraftSaveRef.current) {
       return;
     }
 
@@ -198,53 +218,60 @@ export const useGoalForm = (options: UseGoalFormOptions = {}): UseGoalFormReturn
       const validationResult = partialGoalFormSchema.safeParse(currentData);
 
       if (validationResult.success) {
-        await onDraftSave(validationResult.data);
+        await onDraftSaveRef.current(validationResult.data);
         setLastSavedData(validationResult.data);
       }
     } catch (error) {
       console.error('下書き保存エラー:', error);
       throw error;
     }
-  }, [onDraftSave, getValues]);
+  }, [getValues]);
 
   // 自動保存タイマーの設定
   useEffect(() => {
-    if (!enableAutoSave || !onDraftSave) {
+    if (!enableAutoSave || !onDraftSaveRef.current) {
       return;
     }
 
     // 変更がない場合はタイマーをクリア
     if (!isDirty) {
-      if (autoSaveTimer) {
-        clearTimeout(autoSaveTimer);
-        setAutoSaveTimer(null);
+      if (autoSaveTimerRef.current) {
+        clearTimeout(autoSaveTimerRef.current);
+        autoSaveTimerRef.current = null;
       }
       return;
     }
 
     // 既存のタイマーをクリア
-    if (autoSaveTimer) {
-      clearTimeout(autoSaveTimer);
+    if (autoSaveTimerRef.current) {
+      clearTimeout(autoSaveTimerRef.current);
     }
 
     // 新しいタイマーを設定
-    const timer = setTimeout(async () => {
+    autoSaveTimerRef.current = setTimeout(async () => {
       try {
-        await saveDraft();
+        const currentData = getValues();
+        const validationResult = partialGoalFormSchema.safeParse(currentData);
+
+        if (validationResult.success && onDraftSaveRef.current) {
+          await onDraftSaveRef.current(validationResult.data);
+          setLastSavedData(validationResult.data);
+        }
       } catch (error) {
         console.warn('自動保存に失敗しました:', error);
+      } finally {
+        autoSaveTimerRef.current = null;
       }
     }, autoSaveInterval);
 
-    setAutoSaveTimer(timer);
-
     // クリーンアップ
     return () => {
-      if (timer) {
-        clearTimeout(timer);
+      if (autoSaveTimerRef.current) {
+        clearTimeout(autoSaveTimerRef.current);
+        autoSaveTimerRef.current = null;
       }
     };
-  }, [isDirty, enableAutoSave, onDraftSave, autoSaveInterval, saveDraft]);
+  }, [isDirty, enableAutoSave, autoSaveInterval, getValues]);
 
   // フォームのリセット
   const resetForm = useCallback(

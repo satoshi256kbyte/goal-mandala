@@ -155,25 +155,32 @@ describe('useGoalForm', () => {
         })
       );
 
-      act(() => {
-        result.current.setValue('title', 'テスト');
+      // フォームの値を変更してdirtyにする
+      await act(async () => {
+        result.current.setValue('title', 'テスト', { shouldDirty: true });
+        await Promise.resolve();
       });
+
+      // isDirtyがtrueになっていることを確認
+      expect(result.current.formState.isDirty).toBe(true);
 
       // 5秒経過をシミュレート
       await act(async () => {
         vi.advanceTimersByTime(5000);
-        await Promise.resolve(); // マイクロタスクを処理
+        // タイマーのコールバックが実行されるまで待つ
+        await vi.runAllTimersAsync();
       });
 
-      await waitFor(
-        () => {
-          expect(mockOnDraftSave).toHaveBeenCalled();
-        },
-        { timeout: 1000 }
-      );
+      // 自動保存が呼ばれたことを確認
+      expect(mockOnDraftSave).toHaveBeenCalled();
 
       // クリーンアップ
       unmount();
+
+      // アンマウント後にタイマーがクリアされていることを確認
+      mockOnDraftSave.mockClear();
+      vi.advanceTimersByTime(5000);
+      expect(mockOnDraftSave).not.toHaveBeenCalled();
     });
 
     it('自動保存が無効な場合、保存されない', async () => {
@@ -239,48 +246,144 @@ describe('useGoalForm', () => {
       expect(result.current.checkUnsavedChanges()).toBe(false);
     });
 
-    it('変更がある場合はtrueを返す', () => {
+    it('変更がある場合はtrueを返す', async () => {
       const { result } = renderHookWithProviders(() =>
         useGoalForm({ initialData: sampleFormData, enableAutoSave: false })
       );
 
-      act(() => {
-        result.current.setValue('title', '変更されたタイトル');
+      await act(async () => {
+        result.current.setValue('title', '変更されたタイトル', { shouldDirty: true });
+        await Promise.resolve(); // 状態更新を待つ
       });
 
-      expect(result.current.checkUnsavedChanges()).toBe(true);
+      // isDirtyがtrueになっていることを確認
+      expect(result.current.formState.isDirty).toBe(true);
+      expect(result.current.formState.hasUnsavedChanges).toBe(true);
     });
   });
 });
 
 describe('useFieldValidation', () => {
-  it.skip('有効な値でバリデーションが成功する', async () => {
-    // useFieldValidationフックが存在しない、またはエクスポートされていないためスキップ
+  it('有効な値でバリデーションが成功する', async () => {
+    const { result } = renderHookWithProviders(() => useFieldValidation('title'));
+
+    await act(async () => {
+      const isValid = await result.current.validateField('有効なタイトル');
+      expect(isValid).toBe(true);
+    });
+
+    expect(result.current.validationState.isValid).toBe(true);
+    expect(result.current.validationState.error).toBeUndefined();
+    expect(result.current.validationState.isValidating).toBe(false);
   });
 
-  it.skip('無効な値でバリデーションが失敗する', async () => {
-    // useFieldValidationフックが存在しない、またはエクスポートされていないためスキップ
+  it('無効な値でバリデーションが失敗する', async () => {
+    const { result } = renderHookWithProviders(() => useFieldValidation('title'));
+
+    await act(async () => {
+      const isValid = await result.current.validateField('a'.repeat(101)); // 100文字制限を超える
+      expect(isValid).toBe(false);
+    });
+
+    expect(result.current.validationState.isValid).toBe(false);
+    expect(result.current.validationState.error).toBeDefined();
+    expect(result.current.validationState.isValidating).toBe(false);
   });
 
-  it.skip('バリデーション中の状態が正しく管理される', async () => {
-    // useFieldValidationフックが存在しない、またはエクスポートされていないためスキップ
+  it('バリデーション中の状態が正しく管理される', async () => {
+    const { result } = renderHookWithProviders(() => useFieldValidation('title'));
+
+    // バリデーション開始前
+    expect(result.current.validationState.isValidating).toBe(false);
+
+    // バリデーション実行
+    const validatePromise = act(async () => {
+      return result.current.validateField('テスト');
+    });
+
+    // バリデーション完了後
+    await validatePromise;
+    expect(result.current.validationState.isValidating).toBe(false);
   });
 });
 
 describe('useFormSubmission', () => {
-  it.skip('送信が成功する', async () => {
-    // useFormSubmissionフックが存在しない、またはエクスポートされていないためスキップ
+  it('送信が成功する', async () => {
+    const { result } = renderHookWithProviders(() => useFormSubmission());
+
+    const mockSubmitFn = vi.fn().mockResolvedValue(undefined);
+
+    await act(async () => {
+      await result.current.submitForm(mockSubmitFn);
+    });
+
+    expect(mockSubmitFn).toHaveBeenCalledTimes(1);
+    expect(result.current.submissionState.isSubmitting).toBe(false);
+    expect(result.current.submissionState.success).toBe(true);
+    expect(result.current.submissionState.error).toBeUndefined();
   });
 
-  it.skip('送信エラーが適切に処理される', async () => {
-    // useFormSubmissionフックが存在しない、またはエクスポートされていないためスキップ
+  it('送信エラーが適切に処理される', async () => {
+    const { result } = renderHookWithProviders(() => useFormSubmission());
+
+    const mockSubmitFn = vi.fn().mockRejectedValue(new Error('送信エラー'));
+
+    let thrownError: Error | null = null;
+
+    await act(async () => {
+      try {
+        await result.current.submitForm(mockSubmitFn);
+      } catch (error) {
+        thrownError = error as Error;
+      }
+    });
+
+    // エラーがスローされたことを確認
+    expect(thrownError).toBeInstanceOf(Error);
+    expect(thrownError?.message).toBe('送信エラー');
+
+    // 状態が正しく更新されていることを確認
+    expect(result.current.submissionState.isSubmitting).toBe(false);
+    expect(result.current.submissionState.success).toBe(false);
+    expect(result.current.submissionState.error).toBe('送信エラー');
   });
 
-  it.skip('送信中の状態が正しく管理される', async () => {
-    // useFormSubmissionフックが存在しない、またはエクスポートされていないためスキップ
+  it('送信中の状態が正しく管理される', async () => {
+    const { result } = renderHookWithProviders(() => useFormSubmission());
+
+    const mockSubmitFn = vi
+      .fn()
+      .mockImplementation(() => new Promise(resolve => setTimeout(resolve, 100)));
+
+    // 送信開始前
+    expect(result.current.submissionState.isSubmitting).toBe(false);
+
+    // 送信開始
+    const submitPromise = act(async () => {
+      return result.current.submitForm(mockSubmitFn);
+    });
+
+    // 送信完了後
+    await submitPromise;
+    expect(result.current.submissionState.isSubmitting).toBe(false);
+    expect(result.current.submissionState.success).toBe(true);
   });
 
-  it.skip('送信状態がリセットされる', () => {
-    // useFormSubmissionフックが存在しない、またはエクスポートされていないためスキップ
+  it('送信状態がリセットされる', () => {
+    const { result } = renderHookWithProviders(() => useFormSubmission());
+
+    // 初期状態
+    expect(result.current.submissionState.isSubmitting).toBe(false);
+    expect(result.current.submissionState.success).toBe(false);
+
+    // リセット実行
+    act(() => {
+      result.current.resetSubmissionState();
+    });
+
+    // リセット後
+    expect(result.current.submissionState.isSubmitting).toBe(false);
+    expect(result.current.submissionState.success).toBe(false);
+    expect(result.current.submissionState.error).toBeUndefined();
   });
 });
