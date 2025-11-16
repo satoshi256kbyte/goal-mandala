@@ -96,21 +96,25 @@ describe('ProgressCalculationEngine', () => {
 
     describe('エッジケース', () => {
       it('空文字列のタスクIDでデフォルト値を返す', async () => {
+        // 無効な入力に対してはエラーハンドリングによりデフォルト値（0）が返される
         const progress = await engine.calculateTaskProgress('');
         expect(progress).toBe(0);
       });
 
       it('nullのタスクIDでデフォルト値を返す', async () => {
+        // 無効な入力に対してはエラーハンドリングによりデフォルト値（0）が返される
         const progress = await engine.calculateTaskProgress(null as any);
         expect(progress).toBe(0);
       });
 
       it('undefinedのタスクIDでデフォルト値を返す', async () => {
+        // 無効な入力に対してはエラーハンドリングによりデフォルト値（0）が返される
         const progress = await engine.calculateTaskProgress(undefined as any);
         expect(progress).toBe(0);
       });
 
       it('数値のタスクIDでデフォルト値を返す', async () => {
+        // 無効な入力に対してはエラーハンドリングによりデフォルト値（0）が返される
         const progress = await engine.calculateTaskProgress(123 as any);
         expect(progress).toBe(0);
       });

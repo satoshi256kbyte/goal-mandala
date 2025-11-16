@@ -161,8 +161,26 @@ export class AnimationController {
     options: KeyframeAnimationOptions,
     id?: string,
     onInterrupt?: () => void
-  ): Animation {
+  ): Animation | null {
+    // DOM要素の存在チェック
+    if (!element || !element.animate) {
+      // テスト環境では警告を抑制
+      if (process.env.NODE_ENV !== 'test') {
+        console.warn('Animation target element is not available or does not support animations');
+      }
+      return null;
+    }
+
     const animation = element.animate(keyframes, options);
+
+    // アニメーションオブジェクトの存在チェック
+    if (!animation) {
+      // テスト環境では警告を抑制
+      if (process.env.NODE_ENV !== 'test') {
+        console.warn('Failed to create animation');
+      }
+      return null;
+    }
 
     if (id) {
       // 既存のアニメーションがあれば中断
@@ -335,7 +353,10 @@ export class IntegratedAnimationController extends AnimationController {
 
       return this.startAnimation(element, keyframes, optimizedOptions, id, onInterrupt);
     } catch (error) {
-      console.warn('Animation failed to start:', error);
+      // テスト環境では警告を抑制
+      if (process.env.NODE_ENV !== 'test') {
+        console.warn('Animation failed to start:', error);
+      }
       return null;
     }
   }
