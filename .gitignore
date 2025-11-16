@@ -327,5 +327,6 @@ coverage-output.log
 integration-test-report.json
 
 # Temporary documentation
-temp/**/*
-test-results/**/*
+**/temp/**/*
+**/tmp/**/*
+**/test-results/**/*
