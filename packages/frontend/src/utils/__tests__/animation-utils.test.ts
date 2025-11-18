@@ -569,16 +569,16 @@ describe('アニメーションユーティリティ関数', () => {
   });
 
   describe('エラーハンドリング', () => {
-    it('無効な要素でアニメーションを開始するとエラーが発生する', () => {
+    it('無効な要素でアニメーションを開始するとnullが返される', () => {
       const controller = new AnimationController();
       const invalidElement = null as any;
 
-      // nullの要素に対してanimateを呼ぶとTypeErrorが発生する
-      expect(() => {
-        controller.startAnimation(invalidElement, [{ opacity: 0 }, { opacity: 1 }], {
-          duration: 300,
-        });
-      }).toThrow(TypeError);
+      // nullの要素に対してはnullが返される（例外はスローされない）
+      const result = controller.startAnimation(invalidElement, [{ opacity: 0 }, { opacity: 1 }], {
+        duration: 300,
+      });
+
+      expect(result).toBeNull();
 
       controller.cleanup();
     });

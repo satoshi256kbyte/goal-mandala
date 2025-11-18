@@ -322,6 +322,12 @@ describe('useAchievementAnimation', () => {
         <TestComponent type="task" id="test-1" progress={100} onAchievement={onAchievement} />
       );
 
+      // 初回の100%トリガーを確認してクリア
+      await waitFor(() => {
+        expect(onAchievement).toHaveBeenCalledTimes(1);
+      });
+      onAchievement.mockClear();
+
       // 99%に変更
       rerender(
         <AnimationSettingsProvider>
@@ -413,6 +419,12 @@ describe('useMultipleAchievementAnimation', () => {
         <MultipleTestComponent elements={elements} onAchievement={onAchievement} />
       );
 
+      // task-2の初期100%トリガーを待つ
+      await waitFor(() => {
+        expect(onAchievement).toHaveBeenCalledTimes(1);
+      });
+      onAchievement.mockClear();
+
       // task-1の進捗を100%に更新
       const updatedElements = [
         { type: 'task' as const, id: 'task-1', progress: 100 },
@@ -431,7 +443,7 @@ describe('useMultipleAchievementAnimation', () => {
         );
       });
 
-      // task-2は既に100%だったので含まれない
+      // task-1のみが新たにトリガーされる
       const call = onAchievement.mock.calls[0][0];
       expect(call).toHaveLength(1);
       expect(call[0].id).toBe('task-1');
@@ -464,18 +476,49 @@ describe('useMultipleAchievementAnimation', () => {
   });
 
   describe('要素の登録・解除', () => {
-    it('要素が存在しない場合はエラーをスローする', () => {
-      const elements = [{ type: 'task' as const, id: 'nonexistent', progress: 100 }];
+    it('要素が存在しない場合はエラーをスローする', async () => {
+      // 1つの要素だけ登録
+      const elements = [{ type: 'task' as const, id: 'existing', progress: 100 }];
+      let caughtError: Error | null = null;
 
-      renderWithProvider(<MultipleTestComponent elements={elements} />);
-
-      const triggerButton = screen.getByTestId('trigger-multiple-button');
-
-      expect(() => {
-        act(() => {
-          triggerButton.click();
+      const TestComponentWithError: React.FC = () => {
+        const { registerElement, triggerMultipleAchievements } = useMultipleAchievementAnimation({
+          elements,
         });
-      }).toThrow('Element with id nonexistent not found');
+
+        const handleClick = () => {
+          try {
+            // 登録されていない要素でトリガーを試行
+            triggerMultipleAchievements([{ type: 'task', id: 'nonexistent', progress: 100 }]);
+          } catch (error) {
+            caughtError = error as Error;
+          }
+        };
+
+        return (
+          <div>
+            <div ref={el => registerElement('existing', el)} data-testid="existing-element">
+              Existing Element
+            </div>
+            <button onClick={handleClick} data-testid="trigger-error-button">
+              Trigger Error
+            </button>
+          </div>
+        );
+      };
+
+      renderWithProvider(<TestComponentWithError />);
+
+      const triggerButton = screen.getByTestId('trigger-error-button');
+
+      act(() => {
+        triggerButton.click();
+      });
+
+      await waitFor(() => {
+        expect(caughtError).toBeInstanceOf(Error);
+        expect(caughtError?.message).toBe('Element with id nonexistent not found');
+      });
     });
   });
 });

@@ -57,6 +57,14 @@ describe('useProfileForm', () => {
         result.current.setFieldValue('jobTitle', 'エンジニア');
       });
 
+      // 値が設定されたことを確認
+      expect(result.current.formData.jobTitle).toBe('エンジニア');
+
+      // バリデーションを再実行してエラーをクリア
+      act(() => {
+        result.current.validateField('jobTitle');
+      });
+
       expect(result.current.errors.jobTitle).toBeUndefined();
     });
 

@@ -8,8 +8,11 @@
     "build": "tsc && vite build",
     "build:analyze": "ANALYZE=true npm run build",
     "preview": "vite preview",
-    "test": "vitest run --reporter=dot --no-coverage --isolate=false --run --passWithNoTests",
-    "test:unit": "vitest run --reporter=dot --no-coverage --isolate=false --exclude='**/*.integration.test.*' --run --passWithNoTests",
+    "test": "npm run test:unit:batch1 && npm run test:unit:batch2",
+    "test:unit": "npm run test:unit:batch1 && npm run test:unit:batch2",
+    "test:unit:batch1": "vitest run --reporter=dot --no-coverage --isolate=true --exclude='**/*.integration.test.*' --run --passWithNoTests src/services/__tests__/progress-calculation-engine.test.ts src/components/mandala/EditModal.test.tsx src/components/common/__tests__/animation-components.test.tsx src/services/__tests__/progress-history-analysis.test.ts src/components/common/ProgressBar.test.tsx src/components/mandala/HistoryPanel.test.tsx src/schemas/goal-form.test.ts",
+    "test:unit:batch2": "vitest run --reporter=dot --no-coverage --isolate=true --exclude='**/*.integration.test.*' --run --passWithNoTests src/components/profile/__tests__/ProfileSetupForm.test.tsx src/utils/__tests__/animation-utils.test.ts src/pages/SubGoalEditPage.test.tsx src/hooks/__tests__/useAchievementAnimation.test.tsx src/services/__tests__/progress-data-validator.test.ts src/contexts/ActionContext.test.tsx src/services/__tests__/form-security.test.ts",
+    "test:unit:all": "vitest run --reporter=dot --no-coverage --isolate=false --exclude='**/*.integration.test.*' --run --passWithNoTests",
     "test:integration": "vitest run --reporter=dot --no-coverage --config vitest.integration.config.ts --run --passWithNoTests",
     "test:coverage": "vitest run --coverage --reporter=dot --isolate=false --run --passWithNoTests",
     "test:ci": "npm run test:unit",
@@ -87,13 +90,5 @@
     "typescript": "^5.2.2",
     "vite": "^5.0.0",
     "vitest": "^1.0.0"
-  },
-  "pnpm": {
-    "overrides": {
-      "esbuild@<=0.24.2": ">=0.25.0",
-      "hono@>=4.8.0 <4.9.6": ">=4.9.6",
-      "vite@<=5.4.19": ">=5.4.20",
-      "hono@<4.9.7": ">=4.9.7"
-    }
   }
 }

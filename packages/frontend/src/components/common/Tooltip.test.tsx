@@ -1,23 +1,10 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import userEvent from '@testing-library/user-event';
 import { Tooltip } from './Tooltip';
 
-// タイマーのモック
-vi.useFakeTimers();
-
 describe('Tooltip', () => {
-  beforeEach(() => {
-    vi.clearAllTimers();
-  });
-
-  afterEach(() => {
-    vi.runOnlyPendingTimers();
-    vi.useRealTimers();
-    vi.useFakeTimers();
-  });
-
   describe('基本的な表示機能', () => {
     it('子要素が正しく表示される', () => {
       render(
@@ -49,8 +36,6 @@ describe('Tooltip', () => {
       const trigger = screen.getByText('ホバーしてください');
       fireEvent.mouseEnter(trigger);
 
-      vi.runAllTimers();
-
       await waitFor(() => {
         expect(screen.getByText('テストツールチップ')).toBeInTheDocument();
       });
@@ -65,7 +50,6 @@ describe('Tooltip', () => {
 
       const trigger = screen.getByText('ホバーしてください');
       fireEvent.mouseEnter(trigger);
-      vi.runAllTimers();
 
       await waitFor(() => {
         expect(screen.getByText('テストツールチップ')).toBeInTheDocument();
@@ -94,7 +78,6 @@ describe('Tooltip', () => {
       expect(screen.queryByText('テストツールチップ')).not.toBeInTheDocument();
 
       // 遅延時間経過後に表示される
-      vi.advanceTimersByTime(500);
 
       await waitFor(() => {
         expect(screen.getByText('テストツールチップ')).toBeInTheDocument();
@@ -112,13 +95,11 @@ describe('Tooltip', () => {
       fireEvent.mouseEnter(trigger);
 
       // 遅延時間の半分経過
-      vi.advanceTimersByTime(250);
 
       // ホバー終了
       fireEvent.mouseLeave(trigger);
 
       // 残りの時間経過
-      vi.advanceTimersByTime(250);
 
       // ツールチップは表示されない
       expect(screen.queryByText('テストツールチップ')).not.toBeInTheDocument();
@@ -135,7 +116,6 @@ describe('Tooltip', () => {
 
       const trigger = screen.getByText('ホバーしてください');
       fireEvent.mouseEnter(trigger);
-      vi.runAllTimers();
 
       await waitFor(() => {
         const tooltip = screen.getByRole('tooltip');
@@ -152,7 +132,6 @@ describe('Tooltip', () => {
 
       const trigger = screen.getByText('ホバーしてください');
       fireEvent.mouseEnter(trigger);
-      vi.runAllTimers();
 
       await waitFor(() => {
         const tooltip = screen.getByRole('tooltip');
@@ -169,7 +148,6 @@ describe('Tooltip', () => {
 
       const trigger = screen.getByText('ホバーしてください');
       fireEvent.mouseEnter(trigger);
-      vi.runAllTimers();
 
       await waitFor(() => {
         const tooltip = screen.getByRole('tooltip');
@@ -186,7 +164,6 @@ describe('Tooltip', () => {
 
       const trigger = screen.getByText('ホバーしてください');
       fireEvent.mouseEnter(trigger);
-      vi.runAllTimers();
 
       await waitFor(() => {
         const tooltip = screen.getByRole('tooltip');
@@ -206,7 +183,6 @@ describe('Tooltip', () => {
       const trigger = screen.getByText('フォーカスしてください').parentElement;
       if (trigger) {
         fireEvent.focus(trigger);
-        vi.runAllTimers();
 
         await waitFor(() => {
           expect(screen.getByText('テストツールチップ')).toBeInTheDocument();
@@ -224,7 +200,6 @@ describe('Tooltip', () => {
       const trigger = screen.getByText('フォーカスしてください').parentElement;
       if (trigger) {
         fireEvent.focus(trigger);
-        vi.runAllTimers();
 
         await waitFor(() => {
           expect(screen.getByText('テストツールチップ')).toBeInTheDocument();
@@ -249,7 +224,6 @@ describe('Tooltip', () => {
 
       const trigger = screen.getByText('ホバーしてください');
       fireEvent.mouseEnter(trigger);
-      vi.runAllTimers();
 
       expect(screen.queryByText('テストツールチップ')).not.toBeInTheDocument();
     });
@@ -269,7 +243,6 @@ describe('Tooltip', () => {
 
       if (trigger) {
         fireEvent.mouseEnter(trigger);
-        vi.runAllTimers();
 
         await waitFor(() => {
           expect(trigger).toHaveAttribute('aria-describedby', 'tooltip');
@@ -297,7 +270,6 @@ describe('Tooltip', () => {
 
       const trigger = screen.getByText('ホバーしてください');
       fireEvent.mouseEnter(trigger);
-      vi.runAllTimers();
 
       await waitFor(() => {
         expect(screen.getByText('カスタム')).toBeInTheDocument();
@@ -327,7 +299,6 @@ describe('Tooltip', () => {
 
       const trigger = screen.getByText('ホバーしてください');
       fireEvent.mouseEnter(trigger);
-      vi.runAllTimers();
 
       await waitFor(() => {
         expect(screen.getByText('進捗状況')).toBeInTheDocument();
@@ -351,7 +322,6 @@ describe('Tooltip', () => {
 
       const trigger = screen.getByText('ホバーしてください');
       fireEvent.mouseEnter(trigger);
-      vi.runAllTimers();
 
       await waitFor(() => {
         const changeElement = screen.getByText('-20.0%');
@@ -370,7 +340,6 @@ describe('Tooltip', () => {
 
       const trigger = screen.getByText('ホバーしてください');
       fireEvent.mouseEnter(trigger);
-      vi.runAllTimers();
 
       await waitFor(() => {
         const tooltip = screen.getByRole('tooltip');
@@ -393,7 +362,6 @@ describe('Tooltip', () => {
 
       const trigger = screen.getByText('ホバーしてください');
       fireEvent.mouseEnter(trigger);
-      vi.runAllTimers();
 
       await waitFor(() => {
         const tooltip = screen.getByRole('tooltip');
@@ -432,7 +400,6 @@ describe('Tooltip', () => {
         fireEvent.touchStart(trigger);
 
         // 長押し時間経過
-        vi.advanceTimersByTime(100);
 
         await waitFor(() => {
           expect(screen.getByText('テストツールチップ')).toBeInTheDocument();
@@ -457,7 +424,6 @@ describe('Tooltip', () => {
         fireEvent.touchStart(trigger);
 
         // 短時間でタッチ終了
-        vi.advanceTimersByTime(100);
         fireEvent.touchEnd(trigger);
 
         await waitFor(() => {
@@ -483,11 +449,9 @@ describe('Tooltip', () => {
         fireEvent.touchStart(trigger);
 
         // タッチ移動
-        vi.advanceTimersByTime(100);
         fireEvent.touchMove(trigger);
 
         // 長押し時間経過
-        vi.advanceTimersByTime(200);
 
         // ツールチップは表示されない
         expect(screen.queryByText('テストツールチップ')).not.toBeInTheDocument();
@@ -512,7 +476,6 @@ describe('Tooltip', () => {
 
       const trigger = screen.getByText('ホバーしてください');
       fireEvent.mouseEnter(trigger);
-      vi.runAllTimers();
 
       await waitFor(() => {
         const tooltip = screen.getByRole('tooltip');

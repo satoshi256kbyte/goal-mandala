@@ -2,13 +2,18 @@
   "name": "@goal-mandala/shared",
   "version": "0.1.0",
   "private": true,
-  "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "import": "./dist/index.js",
+      "require": "./dist/index.js",
       "types": "./dist/index.d.ts"
+    },
+    "./dist/schemas/goal-form": {
+      "import": "./dist/schemas/goal-form.js",
+      "require": "./dist/schemas/goal-form.js",
+      "types": "./dist/schemas/goal-form.d.ts"
     }
   },
   "scripts": {

@@ -458,9 +458,12 @@ describe('ActionContext', () => {
 
       renderWithProvider(<TestAsyncComponent />);
 
-      await waitFor(() => {
-        expect(consoleSpy).toHaveBeenCalledWith('Loading actions for goal:', 'goal-1');
-      });
+      await waitFor(
+        () => {
+          expect(consoleSpy).toHaveBeenCalledWith('Loading actions for goal:', 'goal-1');
+        },
+        { timeout: 1000 }
+      );
 
       consoleSpy.mockRestore();
     });
@@ -480,11 +483,14 @@ describe('ActionContext', () => {
 
       renderWithProvider(<TestAsyncComponent />);
 
-      await waitFor(() => {
-        expect(consoleSpy).toHaveBeenCalledWith('Saving draft for action:', 'action-1', {
-          title: 'テストタイトル',
-        });
-      });
+      await waitFor(
+        () => {
+          expect(consoleSpy).toHaveBeenCalledWith('Saving draft for action:', 'action-1', {
+            title: 'テストタイトル',
+          });
+        },
+        { timeout: 1000 }
+      );
 
       consoleSpy.mockRestore();
     });
@@ -504,9 +510,12 @@ describe('ActionContext', () => {
 
       renderWithProvider(<TestAsyncComponent />);
 
-      await waitFor(() => {
-        expect(consoleSpy).toHaveBeenCalledWith('Restoring draft');
-      });
+      await waitFor(
+        () => {
+          expect(consoleSpy).toHaveBeenCalledWith('Restoring draft');
+        },
+        { timeout: 1000 }
+      );
 
       consoleSpy.mockRestore();
     });

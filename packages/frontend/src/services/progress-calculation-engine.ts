@@ -143,7 +143,11 @@ export class ProgressCalculationEngineImpl implements ProgressCalculationEngine 
 
         // マンダラチャートでは8つのアクションが必要
         if (actions.length !== 8) {
-          console.warn(`Expected 8 actions for subgoal ${subGoalId}, but found ${actions.length}`);
+          if (process.env.NODE_ENV !== 'test') {
+            console.warn(
+              `Expected 8 actions for subgoal ${subGoalId}, but found ${actions.length}`
+            );
+          }
         }
 
         const actionProgresses = await Promise.all(
@@ -201,7 +205,9 @@ export class ProgressCalculationEngineImpl implements ProgressCalculationEngine 
 
         // マンダラチャートでは8つのサブ目標が必要
         if (subGoals.length !== 8) {
-          console.warn(`Expected 8 subgoals for goal ${goalId}, but found ${subGoals.length}`);
+          if (process.env.NODE_ENV !== 'test') {
+            console.warn(`Expected 8 subgoals for goal ${goalId}, but found ${subGoals.length}`);
+          }
         }
 
         const subGoalProgresses = await Promise.all(
@@ -545,7 +551,9 @@ export class ProgressCalculationEngineImpl implements ProgressCalculationEngine 
     } catch (error) {
       // エラーハンドラーで処理
       // 要件5.1: エラーログを記録し、適切なエラーメッセージを返す
-      console.error(`Error calculating progress for ${entityType} ${entityId}:`, error);
+      if (process.env.NODE_ENV !== 'test') {
+        console.error(`Error calculating progress for ${entityType} ${entityId}:`, error);
+      }
 
       // 循環依存エラーの場合は例外をスロー
       // 要件5.4: 循環参照が検出されたとき、エラーを返し、計算を中断する

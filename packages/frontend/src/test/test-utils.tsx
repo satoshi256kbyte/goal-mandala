@@ -2,6 +2,7 @@ import { render, renderHook, RenderOptions, RenderHookOptions } from '@testing-l
 import { ReactElement, ReactNode } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { SubGoalProvider } from '../contexts/SubGoalContext';
 
 /**
  * テスト用のQueryClientを作成
@@ -33,14 +34,17 @@ export function createTestQueryClient() {
 interface AllProvidersProps {
   children: ReactNode;
   queryClient?: QueryClient;
+  goalId?: string;
 }
 
-function AllProviders({ children, queryClient }: AllProvidersProps) {
+function AllProviders({ children, queryClient, goalId = 'test-goal-id' }: AllProvidersProps) {
   const client = queryClient || createTestQueryClient();
 
   return (
     <QueryClientProvider client={client}>
-      <BrowserRouter>{children}</BrowserRouter>
+      <BrowserRouter>
+        <SubGoalProvider goalId={goalId}>{children}</SubGoalProvider>
+      </BrowserRouter>
     </QueryClientProvider>
   );
 }
@@ -51,13 +55,18 @@ function AllProviders({ children, queryClient }: AllProvidersProps) {
  */
 interface CustomRenderOptions extends Omit<RenderOptions, 'wrapper'> {
   queryClient?: QueryClient;
+  goalId?: string;
 }
 
 export function renderWithProviders(ui: ReactElement, options?: CustomRenderOptions) {
-  const { queryClient, ...renderOptions } = options || {};
+  const { queryClient, goalId, ...renderOptions } = options || {};
 
   return render(ui, {
-    wrapper: ({ children }) => <AllProviders queryClient={queryClient}>{children}</AllProviders>,
+    wrapper: ({ children }) => (
+      <AllProviders queryClient={queryClient} goalId={goalId}>
+        {children}
+      </AllProviders>
+    ),
     ...renderOptions,
   });
 }
@@ -68,16 +77,21 @@ export function renderWithProviders(ui: ReactElement, options?: CustomRenderOpti
  */
 interface CustomRenderHookOptions<Props> extends Omit<RenderHookOptions<Props>, 'wrapper'> {
   queryClient?: QueryClient;
+  goalId?: string;
 }
 
 export function renderHookWithProviders<Result, Props>(
   hook: (props: Props) => Result,
   options?: CustomRenderHookOptions<Props>
 ) {
-  const { queryClient, ...renderHookOptions } = options || {};
+  const { queryClient, goalId, ...renderHookOptions } = options || {};
 
   return renderHook(hook, {
-    wrapper: ({ children }) => <AllProviders queryClient={queryClient}>{children}</AllProviders>,
+    wrapper: ({ children }) => (
+      <AllProviders queryClient={queryClient} goalId={goalId}>
+        {children}
+      </AllProviders>
+    ),
     ...renderHookOptions,
   });
 }

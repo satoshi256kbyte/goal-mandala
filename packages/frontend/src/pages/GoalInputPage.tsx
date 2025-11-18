@@ -69,9 +69,20 @@ export const GoalInputPage: React.FC<GoalInputPageProps> = ({ className }) => {
 
       const response = await GoalFormService.getDraft();
 
+      // responseがundefinedまたはnullの場合の安全な処理
+      if (!response) {
+        setPageState(prev => ({
+          ...prev,
+          draftData: null,
+          isLoading: false,
+          isInitialized: true,
+        }));
+        return;
+      }
+
       setPageState(prev => ({
         ...prev,
-        draftData: response.draftData,
+        draftData: response.draftData || null,
         isLoading: false,
         isInitialized: true,
       }));
@@ -258,8 +269,9 @@ export const GoalInputPage: React.FC<GoalInputPageProps> = ({ className }) => {
                 </span>
               )}
               <button
+                type="button"
                 onClick={() => navigate('/dashboard')}
-                className="text-sm md:text-base lg:text-base text-blue-600 hover:text-blue-700 font-medium"
+                className="text-sm md:text-base lg:text-base text-blue-600 hover:text-blue-700 font-medium min-h-[44px] md:min-h-[auto] lg:min-h-[auto] flex items-center"
               >
                 ダッシュボードに戻る
               </button>

@@ -318,21 +318,23 @@ export const SubGoalForm: React.FC<SubGoalFormProps> = ({
           error={errors.title?.message}
           helpText="このサブ目標の名前を簡潔に入力してください"
         >
-          <div className="space-y-2">
-            <TextInput
-              name="title"
-              register={register}
-              placeholder="例：基礎知識の習得"
-              maxLength={FIELD_LIMITS.TITLE_MAX}
-              disabled={disabled}
-            />
-            <CharacterCounter
-              current={getFieldLength('title')}
-              max={FIELD_LIMITS.TITLE_MAX}
-              showWarning
-            />
-          </div>
+          <TextInput
+            name="title"
+            register={register}
+            placeholder="例：基礎知識の習得"
+            maxLength={FIELD_LIMITS.TITLE_MAX}
+            disabled={disabled}
+          />
         </FormField>
+
+        {/* タイトル文字数カウンター */}
+        <div className="mt-2">
+          <CharacterCounter
+            current={getFieldLength('title')}
+            max={FIELD_LIMITS.TITLE_MAX}
+            showWarning
+          />
+        </div>
 
         {/* サブ目標説明 */}
         <FormField
@@ -341,22 +343,24 @@ export const SubGoalForm: React.FC<SubGoalFormProps> = ({
           error={errors.description?.message}
           helpText="このサブ目標の詳細な内容について説明してください"
         >
-          <div className="space-y-2">
-            <TextArea
-              name="description"
-              register={register}
-              placeholder="例：プログラミングの基礎概念、データ構造、アルゴリズムについて理解し、基本的なコードが書けるようになる"
-              rows={4}
-              maxLength={FIELD_LIMITS.DESCRIPTION_MAX}
-              disabled={disabled}
-            />
-            <CharacterCounter
-              current={getFieldLength('description')}
-              max={FIELD_LIMITS.DESCRIPTION_MAX}
-              showWarning
-            />
-          </div>
+          <TextArea
+            name="description"
+            register={register}
+            placeholder="例：プログラミングの基礎概念、データ構造、アルゴリズムについて理解し、基本的なコードが書けるようになる"
+            rows={4}
+            maxLength={FIELD_LIMITS.DESCRIPTION_MAX}
+            disabled={disabled}
+          />
         </FormField>
+
+        {/* 説明文字数カウンター */}
+        <div className="mt-2">
+          <CharacterCounter
+            current={getFieldLength('description')}
+            max={FIELD_LIMITS.DESCRIPTION_MAX}
+            showWarning
+          />
+        </div>
 
         {/* 背景 */}
         <FormField
@@ -365,22 +369,24 @@ export const SubGoalForm: React.FC<SubGoalFormProps> = ({
           error={errors.background?.message}
           helpText="このサブ目標を設定した理由や現在の状況について説明してください"
         >
-          <div className="space-y-2">
-            <TextArea
-              name="background"
-              register={register}
-              placeholder="例：プログラミング未経験だが、基礎をしっかり身につけることで後の学習がスムーズになると考えている"
-              rows={3}
-              maxLength={FIELD_LIMITS.BACKGROUND_MAX}
-              disabled={disabled}
-            />
-            <CharacterCounter
-              current={getFieldLength('background')}
-              max={FIELD_LIMITS.BACKGROUND_MAX}
-              showWarning
-            />
-          </div>
+          <TextArea
+            name="background"
+            register={register}
+            placeholder="例：プログラミング未経験だが、基礎をしっかり身につけることで後の学習がスムーズになると考えている"
+            rows={3}
+            maxLength={FIELD_LIMITS.BACKGROUND_MAX}
+            disabled={disabled}
+          />
         </FormField>
+
+        {/* 背景文字数カウンター */}
+        <div className="mt-2">
+          <CharacterCounter
+            current={getFieldLength('background')}
+            max={FIELD_LIMITS.BACKGROUND_MAX}
+            showWarning
+          />
+        </div>
 
         {/* 制約事項 */}
         <FormField
@@ -388,22 +394,24 @@ export const SubGoalForm: React.FC<SubGoalFormProps> = ({
           error={errors.constraints?.message}
           helpText="このサブ目標達成において制限となる要因があれば入力してください（任意）"
         >
-          <div className="space-y-2">
-            <TextArea
-              name="constraints"
-              register={register}
-              placeholder="例：学習時間は平日夜と週末のみ。数学の知識が不足している"
-              rows={3}
-              maxLength={FIELD_LIMITS.CONSTRAINTS_MAX}
-              disabled={disabled}
-            />
-            <CharacterCounter
-              current={getFieldLength('constraints')}
-              max={FIELD_LIMITS.CONSTRAINTS_MAX}
-              showWarning
-            />
-          </div>
+          <TextArea
+            name="constraints"
+            register={register}
+            placeholder="例：学習時間は平日夜と週末のみ。数学の知識が不足している"
+            rows={3}
+            maxLength={FIELD_LIMITS.CONSTRAINTS_MAX}
+            disabled={disabled}
+          />
         </FormField>
+
+        {/* 制約事項文字数カウンター */}
+        <div className="mt-2">
+          <CharacterCounter
+            current={getFieldLength('constraints')}
+            max={FIELD_LIMITS.CONSTRAINTS_MAX}
+            showWarning
+          />
+        </div>
 
         {/* フォームアクション */}
         <div className={getButtonContainerClasses()}>

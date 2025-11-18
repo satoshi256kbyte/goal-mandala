@@ -584,9 +584,9 @@ export const getAccessibilitySettings = () => {
   }
 
   return {
-    reducedMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches,
-    highContrast: window.matchMedia('(prefers-contrast: high)').matches,
-    forcedColors: window.matchMedia('(forced-colors: active)').matches,
+    reducedMotion: window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches ?? false,
+    highContrast: window.matchMedia?.('(prefers-contrast: high)')?.matches ?? false,
+    forcedColors: window.matchMedia?.('(forced-colors: active)')?.matches ?? false,
   };
 };
 

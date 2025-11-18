@@ -37,12 +37,49 @@ vi.mock('../components/auth/AuthProvider', () => ({
   useAuth: () => mockAuthProvider,
 }));
 
+// GoalInputFormをモック
+vi.mock('../components/forms/GoalInputForm', () => ({
+  GoalInputForm: ({ className }: { className?: string }) => (
+    <div className={className} data-testid="goal-input-form">
+      <form>
+        <input type="text" placeholder="目標タイトル" />
+        <textarea placeholder="目標説明"></textarea>
+        <button type="submit">目標を作成</button>
+      </form>
+    </div>
+  ),
+}));
+
+// GoalFormContextをモック
+vi.mock('../contexts/GoalFormContext', () => ({
+  GoalFormProvider: ({ children }: { children: React.ReactNode }) => children,
+  useGoalFormContext: () => ({
+    formData: {},
+    setFormData: vi.fn(),
+    isSubmitting: false,
+    setIsSubmitting: vi.fn(),
+  }),
+}));
+
 // GoalFormServiceをモック
 vi.mock('../services/goalFormService', () => ({
   GoalFormService: {
-    getDraft: vi.fn().mockResolvedValue({ draftData: null }),
-    saveDraft: vi.fn().mockResolvedValue({ savedAt: new Date().toISOString() }),
-    createGoal: vi.fn().mockResolvedValue({ processingId: 'test-id' }),
+    getDraft: vi.fn().mockResolvedValue({
+      draftData: null,
+      savedAt: null,
+      message: 'No draft found',
+    }),
+    saveDraft: vi.fn().mockResolvedValue({
+      draftId: 'test-draft-id',
+      savedAt: new Date().toISOString(),
+      message: 'Draft saved successfully',
+    }),
+    createGoal: vi.fn().mockResolvedValue({
+      goalId: 'test-goal-id',
+      processingId: 'test-processing-id',
+      status: 'processing',
+      message: 'Goal creation started',
+    }),
     deleteDraft: vi.fn().mockResolvedValue({}),
   },
   getErrorMessage: vi.fn().mockReturnValue('テストエラー'),
@@ -50,9 +87,7 @@ vi.mock('../services/goalFormService', () => ({
 
 // テスト用のラッパーコンポーネント
 const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <BrowserRouter>
-    <AuthProvider>{children}</AuthProvider>
-  </BrowserRouter>
+  <BrowserRouter>{children}</BrowserRouter>
 );
 
 describe('GoalInputPage レスポンシブデザイン', () => {
@@ -463,10 +498,10 @@ describe('GoalInputPage レスポンシブデザイン', () => {
       await waitFor(() => {
         const backButton = screen.getByRole('button', { name: /ダッシュボードに戻る/i });
 
-        // ボタンがタッチ操作に適したサイズであることを確認
-        const computedStyle = window.getComputedStyle(backButton);
-        const minHeight = parseInt(computedStyle.minHeight || '0');
-        expect(minHeight).toBeGreaterThanOrEqual(44); // 44px以上
+        // ボタンがタッチ操作に適したクラスを持つことを確認
+        expect(backButton).toHaveClass('min-h-[44px]');
+        expect(backButton).toHaveClass('flex');
+        expect(backButton).toHaveClass('items-center');
       });
     });
   });

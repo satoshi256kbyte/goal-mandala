@@ -258,11 +258,109 @@ export default defineConfig({
 2. `getByLabelText` - フォーム要素に適している
 3. `getByTestId` - 上記で特定できない場合の最終手段
 
-#### 4. モックの適切な管理
+#### モックの適切な管理
 
 - モックの型定義を実際のAPIと一致させる
 - 各テスト前に`vi.clearAllMocks()`でリセット
 - モックファクトリーを作成して再利用する
+
+#### レスポンシブテストのベストプラクティス
+
+**テスト環境でのCSS制限への対応**:
+
+テスト環境ではTailwind CSSなどのスタイルが適用されないため、CSSの計算値（`getComputedStyle`）ではなく、適切なクラスが設定されているかを検証する：
+
+```typescript
+// ❌ 悪い例：計算値をテスト（テスト環境では0になる）
+const computedStyle = window.getComputedStyle(button);
+const minHeight = parseInt(computedStyle.minHeight || '0');
+expect(minHeight).toBeGreaterThanOrEqual(44);
+
+// ✅ 良い例：クラスの存在をテスト
+expect(button).toHaveClass('min-h-[44px]');
+expect(button).toHaveClass('flex');
+expect(button).toHaveClass('items-center');
+```
+
+**実装とテストの整合性確保**:
+
+- テストで期待する属性やクラスが実際のコンポーネントに設定されていることを確認
+- モックコンポーネントと実際のコンポーネントの構造を一致させる
+- アクセシビリティ属性（`type="button"`等）の設定を忘れずに行う
+
+#### JavaScript の null と undefined の区別
+
+**重要**: JavaScriptでは`null`と`undefined`は異なる値として扱われ、テストアサーションでも厳密に区別されます。
+
+**問題例**:
+```typescript
+// ❌ 実装がundefinedを返すが、テストはnullを期待
+const getRefreshToken = (): string | null => {
+  const token = localStorage.getItem('refreshToken');
+  return token; // localStorage.getItem()はnullまたは文字列を返す
+};
+
+// テストでの期待値
+expect(tokenManager.getRefreshToken()).toBe(null); // 失敗: undefinedが返される
+```
+
+**解決方法**:
+```typescript
+// ✅ 明示的にnullを返す
+const getRefreshToken = (): string | null => {
+  const token = localStorage.getItem('refreshToken');
+  return token ?? null; // undefinedの場合はnullに変換
+};
+
+// または、より明示的に
+const getRefreshToken = (): string | null => {
+  const token = localStorage.getItem('refreshToken');
+  return token !== null ? token : null;
+};
+```
+
+**ベストプラクティス**:
+- APIの戻り値型を明確に定義する（`string | null` vs `string | undefined`）
+- テストの期待値と実装の戻り値を一致させる
+- `??`演算子を活用してundefinedをnullに統一する
+
+#### モック設定の順序と明示性
+
+**重要**: モックの設定は順序と明示性が重要です。特にlocalStorageのモックでは、値の設定とmockReturnValueの両方が必要な場合があります。
+
+**問題例**:
+```typescript
+// ❌ mockReturnValueが設定されていない
+beforeEach(() => {
+  mockLocalStorage.clear();
+  mockLocalStorage.setItem('accessToken', 'test-token');
+  // mockReturnValueが未設定のため、getItemがundefinedを返す
+});
+```
+
+**解決方法**:
+```typescript
+// ✅ 明示的なmockReturnValue設定
+beforeEach(() => {
+  mockLocalStorage.clear();
+  mockLocalStorage.setItem('accessToken', 'test-token');
+  mockLocalStorage.getItem.mockReturnValue('test-token'); // 明示的に設定
+});
+
+// または、連続した呼び出しに対応
+beforeEach(() => {
+  mockLocalStorage.clear();
+  mockLocalStorage.getItem
+    .mockReturnValueOnce('test-access-token')    // 1回目の呼び出し
+    .mockReturnValueOnce('test-refresh-token')   // 2回目の呼び出し
+    .mockReturnValue(null);                      // それ以降の呼び出し
+});
+```
+
+**ベストプラクティス**:
+- モックの戻り値は明示的に設定する
+- 複数回の呼び出しがある場合は`mockReturnValueOnce()`を使用
+- テストの独立性を保つため、beforeEachで適切にリセットする
 
 #### 5. テストの構造
 

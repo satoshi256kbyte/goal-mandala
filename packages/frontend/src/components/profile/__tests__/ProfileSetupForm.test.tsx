@@ -1,5 +1,5 @@
-import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ProfileSetupForm } from '../ProfileSetupForm';
 import type { ProfileFormData } from '../../../types/profile';
 import * as useProfileFormModule from '../../../hooks/useProfileForm';
@@ -47,10 +47,6 @@ describe('ProfileSetupForm', () => {
 
     // useProfileFormのデフォルトモック実装
     vi.mocked(useProfileFormModule.useProfileForm).mockReturnValue(defaultUseProfileFormReturn);
-  });
-
-  afterEach(() => {
-    cleanup();
   });
 
   describe('フォーム表示のテスト', () => {

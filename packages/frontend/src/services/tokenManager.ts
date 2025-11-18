@@ -124,7 +124,8 @@ export class TokenManager {
    */
   getRefreshToken(): string | null {
     try {
-      return localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
+      const token = localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
+      return token || null;
     } catch (error) {
       console.error('Failed to get refresh token:', error);
       return null;
@@ -159,7 +160,7 @@ export class TokenManager {
    */
   isTokenExpired(token?: string): boolean {
     try {
-      const targetToken = token || this.getStoredToken();
+      const targetToken = token || localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
 
       if (!targetToken) {
         return true;
@@ -185,7 +186,7 @@ export class TokenManager {
    */
   getTokenExpirationTime(token?: string): Date | null {
     try {
-      const targetToken = token || this.getStoredToken();
+      const targetToken = token || localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
 
       if (!targetToken) {
         return null;
@@ -286,7 +287,7 @@ export class TokenManager {
     // 既存のタイマーをクリア
     this.clearTokenRefreshSchedule();
 
-    const token = this.getStoredToken();
+    const token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
     if (!token) {
       return;
     }
@@ -357,7 +358,8 @@ export class TokenManager {
    */
   getSessionId(): string | null {
     try {
-      return localStorage.getItem(STORAGE_KEYS.SESSION_ID);
+      const sessionId = localStorage.getItem(STORAGE_KEYS.SESSION_ID);
+      return sessionId || null;
     } catch (error) {
       console.error('Failed to get session ID:', error);
       return null;
@@ -370,7 +372,7 @@ export class TokenManager {
    */
   private initializeTokenRefresh(): void {
     try {
-      const token = this.getStoredToken();
+      const token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
       if (token && !this.isTokenExpired(token)) {
         this.scheduleTokenRefresh();
       }

@@ -27,7 +27,7 @@ describe('AuthStateMonitorProvider', () => {
     isLoading: false,
     user: null,
     error: null,
-    signOut: vi.fn(),
+    signOut: vi.fn().mockResolvedValue(undefined),
     getTokenExpirationTime: vi.fn(),
   };
 
@@ -38,16 +38,20 @@ describe('AuthStateMonitorProvider', () => {
     lastError: null,
     startMonitoring: vi.fn(),
     stopMonitoring: vi.fn(),
-    checkAuthState: vi.fn(),
+    checkAuthState: vi.fn().mockResolvedValue(undefined),
     clearError: vi.fn(),
   };
 
   beforeEach(() => {
-    mockUseAuthContext.mockReturnValue(mockAuthContext);
-    mockUseAuthStateMonitor.mockReturnValue(mockMonitorHook);
-
     vi.clearAllMocks();
     vi.useFakeTimers();
+
+    // Reset mocks to return Promises after clearAllMocks
+    mockAuthContext.signOut = vi.fn().mockResolvedValue(undefined);
+    mockMonitorHook.checkAuthState = vi.fn().mockResolvedValue(undefined);
+
+    mockUseAuthContext.mockReturnValue(mockAuthContext);
+    mockUseAuthStateMonitor.mockReturnValue(mockMonitorHook);
   });
 
   afterEach(() => {
@@ -152,6 +156,7 @@ describe('AuthStateMonitorProvider', () => {
         isAuthenticated: true,
         user: { id: '1', email: 'test@example.com' },
         getTokenExpirationTime: vi.fn().mockReturnValue(new Date(Date.now() + 3600000)),
+        signOut: vi.fn().mockResolvedValue(undefined), // Ensure signOut returns a Promise
       };
 
       mockUseAuthContext.mockReturnValue(authenticatedAuthContext);
@@ -498,6 +503,7 @@ describe('AuthStateMonitorProvider', () => {
         ...mockAuthContext,
         isAuthenticated: true,
         user: { id: '1', email: 'test@example.com' },
+        signOut: vi.fn().mockResolvedValue(undefined), // Ensure signOut returns a Promise
       };
 
       mockUseAuthContext.mockReturnValue(authenticatedAuthContext);

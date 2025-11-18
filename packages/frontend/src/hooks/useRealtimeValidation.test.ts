@@ -1,17 +1,19 @@
 import { renderHook, act } from '@testing-library/react';
-import { vi } from 'vitest';
+import { vi, beforeEach, afterEach } from 'vitest';
 import {
   useRealtimeValidation,
   useFieldValidation,
   useFormValidation,
 } from './useRealtimeValidation';
 
-// タイマーをモック化
-vi.useFakeTimers();
-
 describe('useRealtimeValidation', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
   afterEach(() => {
-    jest.clearAllTimers();
+    vi.runOnlyPendingTimers();
+    vi.useRealTimers();
   });
 
   describe('基本的なバリデーション機能', () => {

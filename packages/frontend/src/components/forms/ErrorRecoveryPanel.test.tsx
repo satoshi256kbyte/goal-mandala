@@ -25,7 +25,7 @@ vi.mock('../../hooks/useErrorRecovery', () => ({
   },
 }));
 
-const mockUseErrorRecovery = require('../../hooks/useErrorRecovery').useErrorRecovery;
+import { useErrorRecovery } from '../../hooks/useErrorRecovery';
 
 describe('ErrorRecoveryPanel', () => {
   const mockStartRecovery = vi.fn();

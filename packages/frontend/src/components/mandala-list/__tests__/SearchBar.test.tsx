@@ -1,11 +1,8 @@
-import { render, screen, fireEvent, cleanup } from '@testing-library/react';
-import { describe, it, expect, vi, afterEach } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
 import { SearchBar } from '../SearchBar';
 
 describe('SearchBar', () => {
-  afterEach(() => {
-    cleanup();
-  });
   describe('表示内容', () => {
     it('検索入力フィールドが表示される', () => {
       render(<SearchBar value="" onChange={vi.fn()} onClear={vi.fn()} />);

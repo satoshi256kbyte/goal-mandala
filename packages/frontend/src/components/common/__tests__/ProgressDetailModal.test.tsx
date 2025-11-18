@@ -28,23 +28,21 @@ vi.mock('date-fns/locale', () => ({
 }));
 
 // アクセシビリティフックのモック
-vi.mock('../../../hooks/useAccessibility', () => ({
-  useFocusTrap: vi.fn(() => ({ current: null })),
-  useLiveRegion: vi.fn(() => ({
-    announce: vi.fn(),
-  })),
-}));
+vi.mock('../../../hooks/useAccessibility', async importOriginal => {
+  const actual = await importOriginal<typeof import('../../../hooks/useAccessibility')>();
+  return {
+    ...actual,
+    useFocusTrap: vi.fn(() => null),
+  };
+});
 
 // スクリーンリーダーユーティリティのモック
-vi.mock('../../../utils/screen-reader', () => ({
-  getDialogAria: vi.fn(() => ({
-    role: 'dialog',
-    'aria-modal': true,
-    'aria-labelledby': 'title-id',
-    'aria-describedby': 'description-id',
-  })),
-  SR_ONLY_CLASS: 'sr-only',
-}));
+vi.mock('../../../utils/screen-reader', async importOriginal => {
+  const actual = await importOriginal<typeof import('../../../utils/screen-reader')>();
+  return {
+    ...actual,
+  };
+});
 
 describe('ProgressDetailModal', () => {
   const mockProgressHistory: ProgressHistoryEntry[] = [

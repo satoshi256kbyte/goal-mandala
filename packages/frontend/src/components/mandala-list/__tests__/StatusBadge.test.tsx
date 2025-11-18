@@ -1,12 +1,9 @@
-import { render, screen, cleanup } from '@testing-library/react';
-import { describe, it, expect, afterEach } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { describe, it, expect } from 'vitest';
 import { StatusBadge } from '../StatusBadge';
 import { GoalStatus } from '../../../types/mandala';
 
 describe('StatusBadge', () => {
-  afterEach(() => {
-    cleanup();
-  });
   describe('表示内容', () => {
     it('下書き状態を正しく表示する', () => {
       render(<StatusBadge status={GoalStatus.DRAFT} />);

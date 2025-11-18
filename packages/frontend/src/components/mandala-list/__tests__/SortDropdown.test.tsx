@@ -1,11 +1,8 @@
-import { render, screen, fireEvent, cleanup } from '@testing-library/react';
-import { describe, it, expect, vi, afterEach } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
 import { SortDropdown } from '../SortDropdown';
 
 describe('SortDropdown', () => {
-  afterEach(() => {
-    cleanup();
-  });
   describe('表示内容', () => {
     it('ソートドロップダウンが表示される', () => {
       render(<SortDropdown value="created_at_desc" onChange={vi.fn()} />);

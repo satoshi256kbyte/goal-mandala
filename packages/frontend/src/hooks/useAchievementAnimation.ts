@@ -55,7 +55,7 @@ export const useAchievementAnimation = (
   const { isAnimationEnabled, settings } = useAnimationSettings();
 
   const elementRef = useRef<HTMLDivElement>(null);
-  const previousProgressRef = useRef<number>(progress);
+  const previousProgressRef = useRef<number | null>(null);
   const isAnimatingRef = useRef<boolean>(false);
 
   // 達成アニメーションをトリガーする関数
@@ -115,7 +115,7 @@ export const useAchievementAnimation = (
     const currentProgress = progress;
 
     // 100%達成時の自動トリガー
-    if (previousProgress < 100 && currentProgress === 100) {
+    if ((previousProgress === null || previousProgress < 100) && currentProgress === 100) {
       triggerAchievement();
     }
 

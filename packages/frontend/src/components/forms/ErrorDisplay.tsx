@@ -158,6 +158,11 @@ export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
   onDismiss,
   className = '',
 }) => {
+  // エラーがない場合は何も表示しない
+  if (!error && (!errors || Object.keys(errors).length === 0)) {
+    return null;
+  }
+
   const getContainerClasses = () => {
     const baseClasses = 'rounded-md p-4';
     const severityClasses = {
@@ -407,8 +412,14 @@ export const InlineError: React.FC<InlineErrorProps> = ({
   error,
   severity = 'error',
   className = '',
+  fieldName,
 }) => {
   const errorMessage = message || error || '';
+
+  // エラーメッセージがない場合は何も表示しない
+  if (!errorMessage) {
+    return null;
+  }
 
   const severityClasses = {
     error: 'text-red-600 bg-red-50 border-red-200',
@@ -416,8 +427,15 @@ export const InlineError: React.FC<InlineErrorProps> = ({
     info: 'text-blue-600 bg-blue-50 border-blue-200',
   };
 
+  const errorId = fieldName ? `${fieldName}-error` : undefined;
+
   return (
-    <div className={`text-sm p-2 border rounded ${severityClasses[severity]} ${className}`}>
+    <div
+      id={errorId}
+      role="alert"
+      aria-live="polite"
+      className={`text-sm p-2 border rounded ${severityClasses[severity]} ${className}`}
+    >
       {errorMessage}
     </div>
   );

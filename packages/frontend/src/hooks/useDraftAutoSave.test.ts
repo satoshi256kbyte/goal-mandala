@@ -1,5 +1,5 @@
 import { renderHook, act } from '@testing-library/react';
-import { vi } from 'vitest';
+import { vi, beforeEach, afterEach } from 'vitest';
 import { useDraftAutoSave, useAutoSaveStatus } from './useDraftAutoSave';
 import { DraftService } from '../services/draftService';
 import { PartialGoalFormData } from '../schemas/goal-form';
@@ -7,9 +7,6 @@ import { PartialGoalFormData } from '../schemas/goal-form';
 // DraftServiceのモック
 vi.mock('../services/draftService');
 const mockDraftService = DraftService as Mock<typeof DraftService>;
-
-// タイマーのモック
-vi.useFakeTimers();
 
 describe('useDraftAutoSave', () => {
   const mockFormData: PartialGoalFormData = {
@@ -22,14 +19,13 @@ describe('useDraftAutoSave', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    jest.clearAllTimers();
+    vi.useFakeTimers();
     mockDraftService.saveDraft.mockResolvedValue();
   });
 
   afterEach(() => {
     vi.runOnlyPendingTimers();
     vi.useRealTimers();
-    vi.useFakeTimers();
   });
 
   describe('基本機能', () => {

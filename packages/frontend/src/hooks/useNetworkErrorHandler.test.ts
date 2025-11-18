@@ -27,6 +27,7 @@ describe('useNetworkErrorHandler', () => {
   });
 
   afterEach(() => {
+    vi.runOnlyPendingTimers();
     vi.useRealTimers();
   });
 
@@ -180,20 +181,13 @@ describe('useNetworkErrorHandler', () => {
 
       expect(result.current.retryCount).toBe(0);
 
-      act(() => {
+      await act(async () => {
         result.current.retry();
-      });
-
-      expect(result.current.retryCount).toBe(1);
-
-      // タイマーを進める
-      act(() => {
         vi.advanceTimersByTime(1000);
       });
 
-      await waitFor(() => {
-        expect(mockOnRetry).toHaveBeenCalledTimes(1);
-      });
+      expect(result.current.retryCount).toBe(1);
+      expect(mockOnRetry).toHaveBeenCalledTimes(1);
     });
 
     it('最大再試行回数に達すると再試行しない', () => {
@@ -364,18 +358,12 @@ describe('useNetworkErrorHandler', () => {
         result.current.setError(timeoutError);
       });
 
-      act(() => {
+      await act(async () => {
         result.current.attemptRecovery();
-      });
-
-      // タイマーを進める
-      act(() => {
         vi.advanceTimersByTime(1000);
       });
 
-      await waitFor(() => {
-        expect(mockOnRetry).toHaveBeenCalledTimes(1);
-      });
+      expect(mockOnRetry).toHaveBeenCalledTimes(1);
     });
 
     it('回復不可能なエラーは回復しない', async () => {

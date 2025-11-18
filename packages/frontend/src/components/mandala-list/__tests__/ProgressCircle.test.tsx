@@ -1,11 +1,8 @@
-import { render, screen, cleanup } from '@testing-library/react';
-import { describe, it, expect, afterEach } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { describe, it, expect } from 'vitest';
 import { ProgressCircle } from '../ProgressCircle';
 
 describe('ProgressCircle', () => {
-  afterEach(() => {
-    cleanup();
-  });
   describe('表示内容', () => {
     it('進捗率が正しく表示される', () => {
       render(<ProgressCircle progress={50} />);

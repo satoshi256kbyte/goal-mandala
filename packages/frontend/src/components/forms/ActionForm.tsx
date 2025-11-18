@@ -500,7 +500,7 @@ export const ActionForm: React.FC<ActionFormProps> = ({
               <DraftSaveButton
                 onClick={handleDraftSave}
                 disabled={!hasUnsavedChanges || isDraftSaving || disabled}
-                isLoading={isDraftSaving}
+                isSaving={isDraftSaving}
                 className={getButtonClasses('secondary')}
               />
             )}

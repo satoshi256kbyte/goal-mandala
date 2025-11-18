@@ -9,6 +9,7 @@ import {
 } from './SubGoalContext';
 import { SubGoal } from '../types/mandala';
 import { PartialSubGoalFormData } from '../schemas/subgoal-form';
+import { renderWithProviders } from '../test/test-utils';
 
 // テスト用のサンプルデータ
 const sampleSubGoals: SubGoal[] = [
@@ -43,7 +44,7 @@ const createWrapper = (
   initialSubGoals: SubGoal[] = [],
   autoSaveEnabled = true
 ) => {
-  return ({ children }: { children: React.ReactNode }) => (
+  const TestWrapper = ({ children }: { children: React.ReactNode }) => (
     <SubGoalProvider
       goalId={goalId}
       initialSubGoals={initialSubGoals}
@@ -52,6 +53,8 @@ const createWrapper = (
       {children}
     </SubGoalProvider>
   );
+  TestWrapper.displayName = 'TestWrapper';
+  return TestWrapper;
 };
 
 describe('SubGoalContext', () => {

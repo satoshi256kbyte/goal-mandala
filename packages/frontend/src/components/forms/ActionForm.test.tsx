@@ -177,7 +177,7 @@ describe('ActionForm', () => {
         </TestWrapper>
       );
 
-      expect(screen.getByText(/一度実行すれば完了するアクション/)).toBeInTheDocument();
+      expect(screen.getAllByText(/一度実行すれば完了するアクション/)).toHaveLength(2);
       expect(screen.getByText(/継続的に行う必要があるアクション/)).toBeInTheDocument();
     });
   });
@@ -264,8 +264,8 @@ describe('ActionForm', () => {
       );
 
       // 文字数カウンターの存在を確認（具体的な数値は統合テストで確認）
-      expect(screen.getByText(/100/)).toBeInTheDocument(); // タイトルの最大文字数
-      expect(screen.getByText(/500/)).toBeInTheDocument(); // 説明の最大文字数
+      expect(screen.getAllByText(/100/)).toHaveLength(2); // タイトルの最大文字数（表示用とスクリーンリーダー用）
+      expect(screen.getAllByText(/500/)).toHaveLength(4); // 説明と背景の最大文字数（各2つずつ）
     });
   });
 

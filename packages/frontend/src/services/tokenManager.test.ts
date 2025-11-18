@@ -19,7 +19,9 @@ const mockLocalStorage = (() => {
   let store: Record<string, string> = {};
 
   return {
-    getItem: vi.fn((key: string) => store[key] || null),
+    getItem: vi.fn((key: string) => {
+      return store[key] || null;
+    }),
     setItem: vi.fn((key: string, value: string) => {
       store[key] = value;
     }),
@@ -29,12 +31,19 @@ const mockLocalStorage = (() => {
     clear: vi.fn(() => {
       store = {};
     }),
+    get store() {
+      return store;
+    },
+    set store(newStore: Record<string, string>) {
+      store = newStore;
+    },
   };
 })();
 
 // グローバルオブジェクトにLocalStorageをセット
-Object.defineProperty(window, 'localStorage', {
+Object.defineProperty(globalThis, 'localStorage', {
   value: mockLocalStorage,
+  writable: true,
 });
 
 // テスト用のJWTトークンを生成
@@ -57,22 +66,34 @@ describe('TokenManager', () => {
 
   beforeEach(() => {
     // LocalStorageをクリア
-    mockLocalStorage.clear();
+    mockLocalStorage.store = {};
     vi.clearAllMocks();
+
+    // シングルトンインスタンスをリセット
+    (TokenManager as any).instance = undefined;
+
+    // タイマーをモック（インスタンス作成前に設定）
+    vi.useFakeTimers();
 
     // 新しいインスタンスを取得
     tokenManager = TokenManager.getInstance();
-
-    // タイマーをモック
-    vi.useFakeTimers();
   });
 
   afterEach(() => {
-    // タイマーをリストア
-    vi.useRealTimers();
-
     // TokenManagerのクリーンアップ
-    tokenManager.clearTokenRefreshSchedule();
+    try {
+      tokenManager.clearTokenRefreshSchedule();
+    } catch (error) {
+      // エラーを無視
+    }
+
+    // タイマーをリストア
+    try {
+      vi.runOnlyPendingTimers();
+      vi.useRealTimers();
+    } catch (error) {
+      // エラーを無視
+    }
   });
 
   describe('シングルトンパターン', () => {
@@ -129,7 +150,11 @@ describe('TokenManager', () => {
   describe('getToken', () => {
     it('有効なトークンを取得できること', () => {
       const token = createTestToken();
-      mockLocalStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, token);
+      // モックストアに直接設定
+      mockLocalStorage.store[STORAGE_KEYS.ACCESS_TOKEN] = token;
+
+      // モック関数の戻り値も設定
+      mockLocalStorage.getItem.mockReturnValue(token);
 
       const result = tokenManager.getToken();
 
@@ -144,7 +169,11 @@ describe('TokenManager', () => {
 
     it('期限切れのトークンの場合はnullを返し、トークンを削除すること', () => {
       const expiredToken = createTestToken(Math.floor(Date.now() / 1000) - 3600); // 1時間前に期限切れ
-      mockLocalStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, expiredToken);
+      // モックストアに直接設定
+      mockLocalStorage.store[STORAGE_KEYS.ACCESS_TOKEN] = expiredToken;
+
+      // 最初の呼び出しで期限切れトークンを返し、その後はnullを返す
+      mockLocalStorage.getItem.mockReturnValueOnce(expiredToken).mockReturnValue(null);
 
       const result = tokenManager.getToken();
 
@@ -156,7 +185,11 @@ describe('TokenManager', () => {
   describe('getRefreshToken', () => {
     it('リフレッシュトークンを取得できること', () => {
       const refreshToken = 'refresh-token-123';
-      mockLocalStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
+      // モックストアに直接設定
+      mockLocalStorage.store[STORAGE_KEYS.REFRESH_TOKEN] = refreshToken;
+
+      // モック関数の戻り値も設定
+      mockLocalStorage.getItem.mockReturnValue(refreshToken);
 
       const result = tokenManager.getRefreshToken();
 
@@ -218,7 +251,11 @@ describe('TokenManager', () => {
 
     it('トークンが指定されない場合は保存されたトークンをチェックすること', () => {
       const token = createTestToken(Math.floor(Date.now() / 1000) + 3600);
-      mockLocalStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, token);
+      // モックストアに直接設定
+      mockLocalStorage.store[STORAGE_KEYS.ACCESS_TOKEN] = token;
+
+      // モック関数の戻り値も設定
+      mockLocalStorage.getItem.mockReturnValue(token);
 
       const result = tokenManager.isTokenExpired();
 
@@ -251,7 +288,11 @@ describe('TokenManager', () => {
       const refreshToken = 'refresh-token-123';
       const newToken = createTestToken();
 
-      mockLocalStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
+      // モックストアに直接設定
+      mockLocalStorage.store[STORAGE_KEYS.REFRESH_TOKEN] = refreshToken;
+
+      // モック関数の戻り値も設定
+      mockLocalStorage.getItem.mockReturnValue(refreshToken);
 
       // AuthService.getCurrentSessionTypedをモック
       (AuthService.getCurrentSessionTyped as Mock).mockResolvedValue({
@@ -274,7 +315,8 @@ describe('TokenManager', () => {
 
     it('セッション取得に失敗した場合はエラーを投げ、トークンを削除すること', async () => {
       const refreshToken = 'refresh-token-123';
-      mockLocalStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
+      // モックストアに直接設定
+      mockLocalStorage.store[STORAGE_KEYS.REFRESH_TOKEN] = refreshToken;
 
       (AuthService.getCurrentSessionTyped as Mock).mockResolvedValue(null);
 
@@ -287,7 +329,11 @@ describe('TokenManager', () => {
     it('適切なタイミングでリフレッシュをスケジュールすること', () => {
       const expTime = Math.floor(Date.now() / 1000) + 3600; // 1時間後
       const token = createTestToken(expTime);
-      mockLocalStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, token);
+      // モックストアに直接設定
+      mockLocalStorage.store[STORAGE_KEYS.ACCESS_TOKEN] = token;
+
+      // モック関数の戻り値も設定
+      mockLocalStorage.getItem.mockReturnValue(token);
 
       const setTimeoutSpy = vi.spyOn(global, 'setTimeout');
 
@@ -316,7 +362,11 @@ describe('TokenManager', () => {
   describe('getLastActivity', () => {
     it('最終アクティビティ時刻を取得できること', () => {
       const testDate = new Date().toISOString();
-      mockLocalStorage.setItem(STORAGE_KEYS.LAST_ACTIVITY, testDate);
+      // モックストアに直接設定
+      mockLocalStorage.store[STORAGE_KEYS.LAST_ACTIVITY] = testDate;
+
+      // モック関数の戻り値も設定
+      mockLocalStorage.getItem.mockReturnValue(testDate);
 
       const result = tokenManager.getLastActivity();
 
@@ -334,7 +384,11 @@ describe('TokenManager', () => {
   describe('getSessionId', () => {
     it('セッションIDを取得できること', () => {
       const sessionId = 'test-session-id';
-      mockLocalStorage.setItem(STORAGE_KEYS.SESSION_ID, sessionId);
+      // モックストアに直接設定
+      mockLocalStorage.store[STORAGE_KEYS.SESSION_ID] = sessionId;
+
+      // モック関数の戻り値も設定
+      mockLocalStorage.getItem.mockReturnValue(sessionId);
 
       const result = tokenManager.getSessionId();
 
@@ -370,7 +424,7 @@ describe('TokenManager', () => {
 
       const result = tokenManager.getToken();
 
-      expect(result).toBeNull();
+      expect(result).toBe(null);
     });
   });
 });

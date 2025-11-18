@@ -1,5 +1,5 @@
 import { renderHook, act } from '@testing-library/react';
-import { vi } from 'vitest';
+import { vi, beforeEach, afterEach } from 'vitest';
 import {
   useFormSubmission,
   useGoalFormSubmission,
@@ -11,13 +11,15 @@ import {
 global.fetch = vi.fn();
 const mockFetch = fetch as Mock<typeof fetch>;
 
-// タイマーをモック化
-vi.useFakeTimers();
-
 describe('useFormSubmission', () => {
   beforeEach(() => {
     mockFetch.mockClear();
-    jest.clearAllTimers();
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.runOnlyPendingTimers();
+    vi.useRealTimers();
   });
 
   describe('基本的な送信機能', () => {

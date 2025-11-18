@@ -92,7 +92,11 @@ export const FormField: React.FC<FormFieldProps> = ({
 
   // フィールドのスタイルクラスを生成
   const getFieldClassName = () => {
-    const baseClasses = (children as React.ReactElement).props.className || '';
+    if (!children || !React.isValidElement(children)) {
+      return '';
+    }
+
+    const baseClasses = children.props?.className || '';
 
     if (hasError) {
       return `${baseClasses} border-red-300 focus:border-red-500 focus:ring-red-500`;
@@ -203,14 +207,18 @@ export const FormField: React.FC<FormFieldProps> = ({
 
       {/* 入力フィールド */}
       <div className="relative">
-        {React.cloneElement(children as React.ReactElement, {
-          id: fieldId,
-          'aria-describedby': getDescribedBy(),
-          'aria-invalid': hasError ? 'true' : 'false',
-          className: getFieldClassName(),
-          onFocus: handleFocus,
-          onBlur: handleBlur,
-        })}
+        {React.isValidElement(children) ? (
+          React.cloneElement(children, {
+            id: fieldId,
+            'aria-describedby': getDescribedBy(),
+            'aria-invalid': hasError ? 'true' : 'false',
+            className: getFieldClassName(),
+            onFocus: handleFocus,
+            onBlur: handleBlur,
+          })
+        ) : (
+          <div className="text-red-500 text-sm">無効なフィールドコンポーネントです</div>
+        )}
 
         {/* バリデーション状態インジケーター */}
         {renderValidationIndicator()}

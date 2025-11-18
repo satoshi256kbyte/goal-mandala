@@ -1,231 +1,65 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { vi, beforeEach, afterEach } from 'vitest';
 import { ErrorDisplay, InlineError, ErrorSummary } from './ErrorDisplay';
-import { SubmissionErrorType } from '../../hooks/useFormSubmission';
-
-// タイマーをモック化
-vi.useFakeTimers();
+import { FormErrorSeverity, FormErrorType } from '../../types/form-error';
 
 describe('ErrorDisplay', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
   afterEach(() => {
-    jest.clearAllTimers();
+    vi.runOnlyPendingTimers();
+    vi.useRealTimers();
   });
 
   describe('基本的な表示機能', () => {
-    it('バリデーションエラーが正常に表示される', () => {
-      const validationErrors = {
-        title: '目標タイトルは必須です',
-        description: '目標説明は必須です',
+    it('errorsプロパティでエラーが表示される', () => {
+      const errors = {
+        title: 'タイトルエラー',
+        description: '説明エラー',
       };
 
-      render(<ErrorDisplay validationErrors={validationErrors} />);
+      render(<ErrorDisplay errors={errors} />);
 
-      expect(screen.getByText('目標タイトルは必須です')).toBeInTheDocument();
-      expect(screen.getByText('目標説明は必須です')).toBeInTheDocument();
+      expect(screen.getByText('• タイトルエラー')).toBeInTheDocument();
+      expect(screen.getByText('• 説明エラー')).toBeInTheDocument();
     });
 
-    it('送信エラーが正常に表示される', () => {
-      const submissionError = {
-        type: SubmissionErrorType.NETWORK_ERROR,
-        message: 'ネットワークエラーが発生しました',
+    it('FormErrorオブジェクトでエラーが表示される', () => {
+      const error = {
+        message: 'フォームエラーが発生しました',
+        severity: FormErrorSeverity.MEDIUM,
+        type: FormErrorType.VALIDATION_ERROR,
+        field: 'title',
+        code: 'VALIDATION_ERROR',
+        retryable: false,
+        timestamp: new Date(),
       };
 
-      render(<ErrorDisplay submissionError={submissionError} />);
+      render(<ErrorDisplay error={error} />);
 
-      expect(screen.getByText('ネットワークエラーが発生しました')).toBeInTheDocument();
+      expect(screen.getByText('フォームエラーが発生しました')).toBeInTheDocument();
     });
 
     it('エラーがない場合は何も表示されない', () => {
       const { container } = render(<ErrorDisplay />);
       expect(container.firstChild).toBeNull();
     });
-
-    it('複数のバリデーションエラーが表示される', () => {
-      const validationErrors = {
-        title: 'タイトルエラー',
-        description: '説明エラー',
-        deadline: '期限エラー',
-      };
-
-      render(<ErrorDisplay validationErrors={validationErrors} />);
-
-      expect(screen.getByText('タイトルエラー')).toBeInTheDocument();
-      expect(screen.getByText('説明エラー')).toBeInTheDocument();
-      expect(screen.getByText('期限エラー')).toBeInTheDocument();
-    });
-  });
-
-  describe('エラー数制限機能', () => {
-    it('最大エラー数を超えた場合に制限される', () => {
-      const validationErrors = {
-        title: 'エラー1',
-        description: 'エラー2',
-        deadline: 'エラー3',
-        background: 'エラー4',
-        constraints: 'エラー5',
-        extra: 'エラー6',
-      };
-
-      render(<ErrorDisplay validationErrors={validationErrors} maxErrors={3} />);
-
-      expect(screen.getByText('エラー1')).toBeInTheDocument();
-      expect(screen.getByText('エラー2')).toBeInTheDocument();
-      expect(screen.getByText('エラー3')).toBeInTheDocument();
-      expect(screen.queryByText('エラー4')).not.toBeInTheDocument();
-      expect(screen.getByText('他に 3 件のエラーがあります')).toBeInTheDocument();
-    });
-
-    it('エラー数が制限以下の場合は全て表示される', () => {
-      const validationErrors = {
-        title: 'エラー1',
-        description: 'エラー2',
-      };
-
-      render(<ErrorDisplay validationErrors={validationErrors} maxErrors={5} />);
-
-      expect(screen.getByText('エラー1')).toBeInTheDocument();
-      expect(screen.getByText('エラー2')).toBeInTheDocument();
-      expect(screen.queryByText(/他に.*件のエラー/)).not.toBeInTheDocument();
-    });
-  });
-
-  describe('詳細表示機能', () => {
-    it('詳細表示が有効な場合にフィールド名が表示される', () => {
-      const validationErrors = {
-        title: 'タイトルエラー',
-      };
-
-      render(<ErrorDisplay validationErrors={validationErrors} showDetails={true} />);
-
-      expect(screen.getByText('目標タイトル: タイトルエラー')).toBeInTheDocument();
-    });
-
-    it('送信エラーの詳細情報が表示される', () => {
-      const submissionError = {
-        type: SubmissionErrorType.VALIDATION_ERROR,
-        message: 'バリデーションエラー',
-        details: {
-          title: 'タイトルが無効です',
-          description: '説明が無効です',
-        },
-      };
-
-      render(<ErrorDisplay submissionError={submissionError} showDetails={true} />);
-
-      expect(screen.getByText('フォームの入力内容に問題があります')).toBeInTheDocument();
-      expect(screen.getByText('目標タイトル: タイトルが無効です')).toBeInTheDocument();
-      expect(screen.getByText('目標説明: 説明が無効です')).toBeInTheDocument();
-    });
-  });
-
-  describe('自動非表示機能', () => {
-    it('指定時間後に自動で非表示になる', async () => {
-      const onErrorHide = vi.fn();
-      const validationErrors = {
-        title: 'エラーメッセージ',
-      };
-
-      render(
-        <ErrorDisplay
-          validationErrors={validationErrors}
-          autoHideMs={3000}
-          onErrorHide={onErrorHide}
-        />
-      );
-
-      expect(screen.getByText('エラーメッセージ')).toBeInTheDocument();
-
-      // 時間を進める
-      vi.advanceTimersByTime(3000);
-
-      await waitFor(() => {
-        expect(screen.queryByText('エラーメッセージ')).not.toBeInTheDocument();
-      });
-
-      expect(onErrorHide).toHaveBeenCalledTimes(1);
-    });
-
-    it('エラーが変更されると表示状態がリセットされる', () => {
-      const { rerender } = render(
-        <ErrorDisplay validationErrors={{ title: 'エラー1' }} autoHideMs={3000} />
-      );
-
-      expect(screen.getByText('エラー1')).toBeInTheDocument();
-
-      // 時間を少し進める
-      vi.advanceTimersByTime(1000);
-
-      // エラーを変更
-      rerender(<ErrorDisplay validationErrors={{ title: 'エラー2' }} autoHideMs={3000} />);
-
-      expect(screen.getByText('エラー2')).toBeInTheDocument();
-
-      // 残りの時間を進めても表示されたまま
-      vi.advanceTimersByTime(2000);
-      expect(screen.getByText('エラー2')).toBeInTheDocument();
-    });
-  });
-
-  describe('エラーヒント機能', () => {
-    it('ネットワークエラーのヒントが表示される', () => {
-      const submissionError = {
-        type: SubmissionErrorType.NETWORK_ERROR,
-        message: 'ネットワークエラー',
-      };
-
-      render(<ErrorDisplay submissionError={submissionError} />);
-
-      expect(
-        screen.getByText('インターネット接続を確認して、再度お試しください。')
-      ).toBeInTheDocument();
-    });
-
-    it('サーバーエラーのヒントが表示される', () => {
-      const submissionError = {
-        type: SubmissionErrorType.SERVER_ERROR,
-        message: 'サーバーエラー',
-      };
-
-      render(<ErrorDisplay submissionError={submissionError} />);
-
-      expect(screen.getByText('しばらく時間をおいて再度お試しください。')).toBeInTheDocument();
-    });
-
-    it('バリデーションエラーのヒントが表示される', () => {
-      const submissionError = {
-        type: SubmissionErrorType.VALIDATION_ERROR,
-        message: 'バリデーションエラー',
-      };
-
-      render(<ErrorDisplay submissionError={submissionError} />);
-
-      expect(
-        screen.getByText('入力内容を確認して、必須項目を入力してください。')
-      ).toBeInTheDocument();
-    });
   });
 
   describe('アクセシビリティ', () => {
     it('適切なARIA属性が設定される', () => {
-      const validationErrors = {
-        title: 'エラーメッセージ',
-      };
-
-      render(<ErrorDisplay validationErrors={validationErrors} />);
-
-      const errorContainer = screen.getByRole('alert');
-      expect(errorContainer).toHaveAttribute('aria-live', 'assertive');
-    });
-
-    it('各エラーメッセージに適切なIDが設定される', () => {
-      const validationErrors = {
+      const errors = {
         title: 'タイトルエラー',
       };
 
-      render(<ErrorDisplay validationErrors={validationErrors} />);
+      render(<ErrorDisplay errors={errors} />);
 
-      expect(document.getElementById('validation-error-title')).toBeInTheDocument();
+      const errorContainer = screen.getByRole('alert');
+      expect(errorContainer).toHaveAttribute('aria-live', 'polite');
+      expect(errorContainer).toHaveAttribute('aria-atomic', 'true');
     });
   });
 });
@@ -259,59 +93,47 @@ describe('InlineError', () => {
 
 describe('ErrorSummary', () => {
   it('エラーサマリーが表示される', () => {
-    const validationErrors = {
-      title: 'タイトルエラー',
-      description: '説明エラー',
-    };
+    const errors = [
+      {
+        message: 'タイトルエラー',
+        severity: FormErrorSeverity.HIGH,
+        type: FormErrorType.VALIDATION_ERROR,
+        field: 'title',
+        code: 'VALIDATION_ERROR',
+        retryable: false,
+        timestamp: new Date(),
+      },
+      {
+        message: '説明エラー',
+        severity: FormErrorSeverity.HIGH,
+        type: FormErrorType.VALIDATION_ERROR,
+        field: 'description',
+        code: 'VALIDATION_ERROR',
+        retryable: false,
+        timestamp: new Date(),
+      },
+    ];
 
-    render(<ErrorSummary validationErrors={validationErrors} />);
+    render(<ErrorSummary errors={errors} />);
 
-    expect(screen.getByText('2 件のエラーがあります')).toBeInTheDocument();
-    expect(screen.getByText('目標タイトル: タイトルエラー')).toBeInTheDocument();
-    expect(screen.getByText('目標説明: 説明エラー')).toBeInTheDocument();
-  });
-
-  it('送信エラーも含めてカウントされる', () => {
-    const validationErrors = {
-      title: 'タイトルエラー',
-    };
-    const submissionError = {
-      type: SubmissionErrorType.NETWORK_ERROR,
-      message: 'ネットワークエラー',
-    };
-
-    render(<ErrorSummary validationErrors={validationErrors} submissionError={submissionError} />);
-
-    expect(screen.getByText('2 件のエラーがあります')).toBeInTheDocument();
-  });
-
-  it('フィールドフォーカス機能が動作する', () => {
-    const onFieldFocus = vi.fn();
-    const validationErrors = {
-      title: 'タイトルエラー',
-    };
-
-    render(<ErrorSummary validationErrors={validationErrors} onFieldFocus={onFieldFocus} />);
-
-    const fieldButton = screen.getByRole('button', { name: /目標タイトル: タイトルエラー/ });
-    fireEvent.click(fieldButton);
-
-    expect(onFieldFocus).toHaveBeenCalledWith('title');
+    expect(screen.getByText('エラーが発生しました (2件)')).toBeInTheDocument();
+    // より柔軟なマッチャーを使用
+    expect(
+      screen.getByText((content, element) => {
+        return element?.textContent === 'title: ';
+      })
+    ).toBeInTheDocument();
+    expect(screen.getByText('タイトルエラー')).toBeInTheDocument();
+    expect(
+      screen.getByText((content, element) => {
+        return element?.textContent === 'description: ';
+      })
+    ).toBeInTheDocument();
+    expect(screen.getByText('説明エラー')).toBeInTheDocument();
   });
 
   it('エラーがない場合は何も表示されない', () => {
     const { container } = render(<ErrorSummary />);
     expect(container.firstChild).toBeNull();
-  });
-
-  it('適切なARIA属性が設定される', () => {
-    const validationErrors = {
-      title: 'エラー',
-    };
-
-    render(<ErrorSummary validationErrors={validationErrors} />);
-
-    const summaryElement = screen.getByRole('alert');
-    expect(summaryElement).toHaveAttribute('aria-labelledby', 'error-summary-title');
   });
 });

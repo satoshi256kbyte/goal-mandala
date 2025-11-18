@@ -4,10 +4,10 @@ import { afterEach, beforeEach, afterAll, vi } from 'vitest';
 
 // Testing Libraryの設定を最適化
 configure({
-  // デフォルトのwaitForタイムアウトを大幅に短縮
-  asyncUtilTimeout: 500, // 1000ms→500msに短縮
-  // DOM要素の検索タイムアウトを大幅に短縮
-  getByTimeout: 500, // 1000ms→500msに短縮
+  // デフォルトのwaitForタイムアウトを短縮
+  asyncUtilTimeout: 1000,
+  // DOM要素の検索タイムアウトを短縮
+  getByTimeout: 1000,
   // React Strict Modeを無効化して警告を抑制
   reactStrictMode: false,
 });
@@ -105,7 +105,7 @@ let rafIdCounter = 0;
 
 global.requestAnimationFrame = (callback: FrameRequestCallback): number => {
   const id = ++rafIdCounter;
-  const timer = setTimeout(() => {
+  const timer = globalThis.setTimeout(() => {
     rafTimers.delete(id);
     callback(performance.now());
   }, 16); // 約60fps
@@ -213,7 +213,7 @@ if (typeof Element !== 'undefined') {
     };
 
     // アニメーションを自動的に完了させる（テスト環境）
-    setTimeout(() => {
+    globalThis.setTimeout(() => {
       if (animation.playState === 'running') {
         animation.finish();
       }
@@ -349,7 +349,13 @@ beforeEach(() => {
 afterEach(async () => {
   try {
     // 1. 非同期処理の完了を待機
-    await new Promise(resolve => setTimeout(resolve, 0));
+    await new Promise(resolve => {
+      if (typeof setTimeout !== 'undefined') {
+        setTimeout(resolve, 0);
+      } else {
+        resolve(undefined);
+      }
+    });
   } catch (error) {
     console.error('async wait failed:', error);
   }
@@ -454,7 +460,13 @@ afterEach(async () => {
 
   try {
     // 11. 非同期処理の完了を再度待機
-    await new Promise(resolve => setTimeout(resolve, 0));
+    await new Promise(resolve => {
+      if (typeof setTimeout !== 'undefined') {
+        setTimeout(resolve, 0);
+      } else {
+        resolve(undefined);
+      }
+    });
   } catch (error) {
     console.error('final async wait failed:', error);
   }

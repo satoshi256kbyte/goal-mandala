@@ -26,10 +26,17 @@ const validateDate = {
    */
   isNotPast: (dateString: string): boolean => {
     if (!validateDate.isValidDate(dateString)) return false;
-    const selectedDate = new Date(dateString);
+
+    // 文字列を直接比較（YYYY-MM-DD形式）
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return selectedDate >= today;
+    const todayString =
+      today.getFullYear() +
+      '-' +
+      String(today.getMonth() + 1).padStart(2, '0') +
+      '-' +
+      String(today.getDate()).padStart(2, '0');
+
+    return dateString >= todayString;
   },
 
   /**
@@ -336,7 +343,13 @@ export const fieldValidators = {
       return { isValid: true };
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return { isValid: false, error: error.errors[0]?.message };
+        const firstError = error.errors[0];
+        // ユニオンエラーの場合、実際のエラーメッセージを取得
+        if (firstError?.code === 'invalid_union' && firstError.unionErrors) {
+          const actualError = firstError.unionErrors[0]?.errors?.[0];
+          return { isValid: false, error: actualError?.message || firstError.message };
+        }
+        return { isValid: false, error: firstError?.message };
       }
       return { isValid: false, error: '不明なエラーが発生しました' };
     }
