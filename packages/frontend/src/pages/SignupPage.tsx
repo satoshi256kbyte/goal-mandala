@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AuthLayout from '../components/auth/AuthLayout';
 import { SignupForm } from '../components/auth/SignupForm';
-import { ErrorAlert, SuccessMessage, NetworkStatus } from '../components/common';
+import { ErrorAlert, SuccessMessage } from '../components/common';
 import { useAuthForm } from '../hooks/useAuthForm';
 import type { SignupFormData } from '../utils/validation';
 

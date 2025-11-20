@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { NewPasswordForm } from './NewPasswordForm';
 import type { NewPasswordFormData } from '../../utils/validation';
@@ -70,7 +70,9 @@ describe('NewPasswordForm', () => {
     });
 
     // フォームを送信
-    fireEvent.submit(screen.getByRole('button', { name: 'パスワードを変更' }).closest('form')!);
+    const form = screen.getByRole('button', { name: 'パスワードを変更' }).closest('form');
+    expect(form).toBeTruthy();
+    fireEvent.submit(form!);
 
     await waitFor(() => {
       expect(mockOnSubmit).toHaveBeenCalledWith(formData);

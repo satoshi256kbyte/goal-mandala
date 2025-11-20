@@ -1,7 +1,7 @@
 import React from 'react';
-import { screen, waitFor } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import ProfileSetupPage from '../../pages/ProfileSetupPage';
 import { useAuth } from '../../hooks/useAuth';
 import { updateProfile } from '../../services/profileService';
@@ -9,12 +9,8 @@ import {
   setupIntegrationTest,
   cleanupIntegrationTest,
   renderWithProviders,
-  waitForLoadingToFinish,
-  waitForSuccessMessage,
   waitForErrorMessage,
 } from '../../test/utils/integration-test-utils';
-import { testDataGenerator } from '../../test/utils/TestDataGenerator';
-import { mockManager } from '../../test/utils/MockManager';
 
 // Mock dependencies
 vi.mock('../../hooks/useAuth');

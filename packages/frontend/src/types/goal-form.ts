@@ -2,7 +2,7 @@
  * 目標入力フォーム関連の型定義
  */
 
-import { UseFormRegister, UseFormSetValue, FieldError } from 'react-hook-form';
+import { UseFormRegister, UseFormSetValue } from 'react-hook-form';
 
 // スキーマファイルから型をインポート
 export type { GoalFormData, PartialGoalFormData } from '../schemas/goal-form';

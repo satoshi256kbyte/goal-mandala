@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
 import { vi } from 'vitest';
@@ -17,7 +17,7 @@ vi.mock('aws-amplify/auth', () => ({
   fetchAuthSession: vi.fn(),
 }));
 
-import { signIn, signUp, resetPassword } from 'aws-amplify/auth';
+import { signIn, signUp } from 'aws-amplify/auth';
 
 const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <BrowserRouter>

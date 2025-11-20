@@ -1,6 +1,6 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
-import { SafeText, SafeTextArea } from '../SafeText';
+import { render } from '@testing-library/react';
+import { SafeText } from '../SafeText';
 
 import { vi } from 'vitest';
 

@@ -1,6 +1,6 @@
-import { renderHook, act } from '@testing-library/react';
+import { renderHook } from '@testing-library/react';
 import { vi } from 'vitest';
-import { useDraftManualSave, useManualSaveStatus } from './useDraftManualSave';
+import { useDraftManualSave } from './useDraftManualSave';
 import { DraftService } from '../services/draftService';
 import { PartialGoalFormData } from '../schemas/goal-form';
 

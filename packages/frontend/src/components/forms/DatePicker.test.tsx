@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useForm } from 'react-hook-form';
 import { vi } from 'vitest';
@@ -69,11 +69,7 @@ describe('DatePicker', () => {
 
       // エラーありの状態でレンダリング
       const TestWrapperWithError: React.FC = () => {
-        const {
-          register,
-          setValue,
-          formState: { errors },
-        } = useForm<GoalFormData>({
+        const { register, setValue } = useForm<GoalFormData>({
           mode: 'onChange',
         });
 

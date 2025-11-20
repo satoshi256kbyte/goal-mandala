@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import MandalaCell from './MandalaCell';
-import { CellData, Position } from '../../types';
+import { CellData } from '../../types';
 
 const meta: Meta<typeof MandalaCell> = {
   title: 'Components/Mandala/MandalaCell',

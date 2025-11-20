@@ -1,6 +1,6 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { vi, beforeEach, afterEach, describe, it, expect } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { vi, beforeEach, afterEach, describe, it } from 'vitest';
 import userEvent from '@testing-library/user-event';
 
 // Mock components

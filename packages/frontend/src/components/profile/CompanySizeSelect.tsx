@@ -1,6 +1,6 @@
 import React, { memo } from 'react';
 import type { CompanySizeSelectProps } from '../../types/profile';
-import { COMPANY_SIZE_OPTIONS, ARIA_LABELS, TEST_IDS } from '../../constants/profile';
+import { COMPANY_SIZE_OPTIONS, ARIA_LABELS } from '../../constants/profile';
 
 /**
  * 組織規模選択コンポーネント

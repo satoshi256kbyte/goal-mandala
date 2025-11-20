@@ -2,10 +2,10 @@
  * 認証状態監視フックのテスト
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi, type Mock } from 'vitest';
-import { renderHook, act } from '@testing-library/react';
-import { useAuthStateMonitor, useSimpleAuthStateMonitor } from './useAuthStateMonitor';
-import { authStateMonitor, type AuthState, type AuthError } from '../services/auth-state-monitor';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { renderHook } from '@testing-library/react';
+import { useAuthStateMonitor } from './useAuthStateMonitor';
+import { authStateMonitor, type AuthState } from '../services/auth-state-monitor';
 
 // モック
 vi.mock('../services/auth-state-monitor', () => ({

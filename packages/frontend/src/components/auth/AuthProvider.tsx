@@ -1,5 +1,5 @@
 import React from 'react';
-import { AuthContext, useAuth } from '../../hooks/useAuth';
+import { AuthContext } from '../../hooks/useAuth';
 
 /**
  * 認証プロバイダーのプロパティ

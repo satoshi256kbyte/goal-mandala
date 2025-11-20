@@ -1,11 +1,10 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { vi } from 'vitest';
 import { DynamicFormField } from './DynamicFormField';
 // Mock dependencies
 const mockOnChange = vi.fn();
-const mockOnSave = vi.fn();
 const mockRegister = vi.fn(() => ({
   onChange: vi.fn(),
   onBlur: vi.fn(),
@@ -229,7 +228,7 @@ describe('DynamicFormField', () => {
           register={mockRegister}
         />
       );
-      const input = screen.getByPlaceholderText('タイトルを入力してください');
+      screen.getByPlaceholderText('タイトルを入力してください');
       // Check for required indicator (asterisk)
       expect(screen.getByLabelText('必須')).toBeInTheDocument();
     });

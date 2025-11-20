@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { useForm, SubmitHandler } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   subGoalFormSchema,
@@ -17,7 +17,7 @@ import {
 } from './index';
 import { useResponsiveLayout } from '../../hooks/useResponsiveLayout';
 import { useKeyboardNavigation } from '../../hooks/useKeyboardNavigation';
-import { /* useFocusManagement, */ useAnnouncement } from '../../hooks/useFocusManagement';
+// import { useFocusManagement } from '../../hooks/useFocusManagement';
 import { useSubGoalForm } from '../../hooks/useSubGoalForm';
 
 /**

@@ -9,7 +9,7 @@ import {
 } from '../types/progress';
 import { ActionType } from '../types/mandala';
 import { progressErrorHandler } from './progress-error-handler';
-import { progressDataValidator, ValidationResult } from './progress-data-validator';
+import { progressDataValidator } from './progress-data-validator';
 import { progressSecurityManager } from './progress-security-manager';
 
 /**

@@ -2,8 +2,8 @@
  * 下書き保存API統合のテスト
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { DraftApiClient, draftApiUtils } from './draft-api';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { DraftApiClient } from './draft-api';
 import { subGoalApiService } from './subgoal-api';
 import { actionApiService } from './action-api';
 import type { SubGoal, Action, ActionType } from '../types/mandala';

@@ -2,8 +2,8 @@
  * 認証状態監視プロバイダーのテスト
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi, type Mock } from 'vitest';
-import { render, screen, act } from '@testing-library/react';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
 import React from 'react';
 import {
   AuthStateMonitorProvider,

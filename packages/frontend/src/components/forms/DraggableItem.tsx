@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { DraggableItem as DraggableItemType, useDragDrop } from './DragDropProvider';
+import { DraggableItem as DraggableItemType } from './DragDropProvider';
 
 /**
  * ドラッグハンドルのプロパティ

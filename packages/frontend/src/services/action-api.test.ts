@@ -2,8 +2,8 @@
  * アクションAPI クライアントのテスト
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { actionApiClient, actionApiService } from './action-api';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { actionApiClient } from './action-api';
 import { apiClient } from './api-client';
 import type { Action, ActionType } from '../types/mandala';
 import type {

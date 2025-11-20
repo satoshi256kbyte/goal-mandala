@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CellData, Position } from '../../types';
+import { CellData } from '../../types';
 import { sanitizeText } from '../../utils/security';
 import { InlineEditor } from './InlineEditor';
 

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link } from 'react-router-dom';
-import { newPasswordZodSchema, type NewPasswordFormData } from '../../utils/validation';
+import { newPasswordZodSchema } from '../../utils/validation';
 import { ErrorMessage } from '../common/ErrorMessage';
 import { LoadingButton } from '../common/LoadingButton';
 

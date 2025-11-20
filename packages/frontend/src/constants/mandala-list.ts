@@ -2,7 +2,7 @@
  * マンダラチャート一覧画面の定数定義
  */
 
-import { GoalStatus, SortOption } from '../types/mandala-list';
+import { GoalStatus } from '../types/mandala-list';
 
 /**
  * ページネーション設定

@@ -1,11 +1,11 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
-import { vi, describe, it, expect, beforeEach } from 'vitest';
-import { MemoryRouter, Routes, Route } from 'react-router-dom';
+import { render, screen } from '@testing-library/react';
+import { vi, describe, it, expect } from 'vitest';
+import { MemoryRouter, Routes } from 'react-router-dom';
 import { AppRouter } from './AppRouter';
 import { AuthProvider } from '../components/auth/AuthProvider';
 import { ProtectedRoute } from '../components/auth/ProtectedRoute';
-import { createMockAuthUser, createMockAuthSession } from '../test/types/mock-types';
+import { createMockAuthUser } from '../test/types/mock-types';
 
 // Amplifyのモック
 vi.mock('aws-amplify', () => ({

@@ -1,7 +1,6 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
-import userEvent from '@testing-library/user-event';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it } from 'vitest';
 import { Tooltip } from './Tooltip';
 
 describe('Tooltip', () => {

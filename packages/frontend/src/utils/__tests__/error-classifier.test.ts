@@ -2,8 +2,8 @@
  * エラー分類ユーティリティのテスト
  */
 
-import { describe, it, expect } from 'vitest';
-import { classifyError, ErrorType } from '../error-classifier';
+import { describe, it } from 'vitest';
+import { classifyError } from '../error-classifier';
 
 describe('classifyError', () => {
   describe('ネットワークエラーの分類', () => {

@@ -2,8 +2,8 @@
  * TokenManager のユニットテスト
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi, Mock } from 'vitest';
-import { TokenManager, STORAGE_KEYS } from './tokenManager';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { TokenManager } from './tokenManager';
 import { AuthService } from './auth';
 
 // AuthServiceをモック

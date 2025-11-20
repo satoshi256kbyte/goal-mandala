@@ -2,7 +2,7 @@
  * Frontend パッケージの基本テスト
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render } from '@testing-library/react';
 import App from './App';
 

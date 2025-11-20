@@ -2,8 +2,8 @@
  * サブ目標API クライアントのテスト
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { subGoalApiClient, subGoalApiService } from './subgoal-api';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { subGoalApiClient } from './subgoal-api';
 import { apiClient } from './api-client';
 import type { SubGoal } from '../types/mandala';
 import type {

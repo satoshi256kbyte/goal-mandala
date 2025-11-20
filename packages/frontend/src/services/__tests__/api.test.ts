@@ -2,8 +2,8 @@
  * APIサービスのテスト
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { ApiClient, NetworkErrorType, goalFormApiService } from '../api';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { ApiClient, NetworkErrorType } from '../api';
 import { createMockNavigator } from '../../test/types/mock-types';
 
 describe('ApiClient', () => {

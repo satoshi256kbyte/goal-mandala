@@ -1,5 +1,5 @@
 import React from 'react';
-import { renderHook, act } from '@testing-library/react';
+import { renderHook } from '@testing-library/react';
 import { vi } from 'vitest';
 import {
   SubGoalProvider,
@@ -9,7 +9,6 @@ import {
 } from './SubGoalContext';
 import { SubGoal } from '../types/mandala';
 import { PartialSubGoalFormData } from '../schemas/subgoal-form';
-import { renderWithProviders } from '../test/test-utils';
 
 // テスト用のサンプルデータ
 const sampleSubGoals: SubGoal[] = [

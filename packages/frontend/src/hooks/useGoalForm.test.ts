@@ -1,8 +1,8 @@
-import { act, waitFor } from '@testing-library/react';
+import { act } from '@testing-library/react';
 import { vi } from 'vitest';
 import { renderHookWithProviders } from '../test/test-utils';
-import { useGoalForm, useFieldValidation, useFormSubmission } from './useGoalForm';
-import { GoalFormData, PartialGoalFormData } from '../schemas/goal-form';
+import { useGoalForm, useFieldValidation } from './useGoalForm';
+import { GoalFormData } from '../schemas/goal-form';
 
 // テスト用のサンプルデータ
 const sampleFormData: GoalFormData = {

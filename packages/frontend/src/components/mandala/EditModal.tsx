@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Goal, SubGoal, Action, ActionType } from '../../types/mandala';
+import { Goal, SubGoal, Action } from '../../types/mandala';
 import './EditModal.css';
 
 // バリデーションスキーマ

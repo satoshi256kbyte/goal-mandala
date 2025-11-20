@@ -1,7 +1,7 @@
 import React from 'react';
-import { render, screen, waitFor, within, act } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { BrowserRouter } from 'react-router-dom';
 import { SubGoalEditPage } from './SubGoalEditPage';
 import { SubGoal } from '../types/mandala';

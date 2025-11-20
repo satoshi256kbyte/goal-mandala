@@ -1,10 +1,9 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { vi } from 'vitest';
 import {
   MobileLayout,
   MobileHeader,
-  MobileFooter,
   MobileButton,
   MobileCard,
   MobileListItem,

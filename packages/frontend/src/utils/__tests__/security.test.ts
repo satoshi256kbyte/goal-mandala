@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { sanitizeText, stripHtml, validateCellData, sanitizeCellData } from '../security';
+import { describe, it } from 'vitest';
+import { sanitizeText, stripHtml, validateCellData } from '../security';
 
 describe('security utilities', () => {
   describe('sanitizeText', () => {

@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom';
-import { cleanup, configure } from '@testing-library/react';
-import { afterEach, beforeEach, afterAll, vi } from 'vitest';
+import { cleanup } from '@testing-library/react';
+import { afterEach, beforeEach, afterAll } from 'vitest';
 
 // Testing Libraryの設定を最適化
 configure({

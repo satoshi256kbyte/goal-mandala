@@ -10,7 +10,7 @@ import {
   UseMutationOptions,
 } from '@tanstack/react-query';
 import { useCallback } from 'react';
-import { SubGoal, Action } from '../types/mandala';
+import { SubGoal } from '../types/mandala';
 import { subGoalAPI } from '../services/subgoal-api';
 import { actionAPI } from '../services/action-api';
 

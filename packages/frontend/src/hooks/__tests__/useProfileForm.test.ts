@@ -1,5 +1,5 @@
-import { renderHook, act, waitFor } from '@testing-library/react';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { renderHook, act } from '@testing-library/react';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { useProfileForm } from '../useProfileForm';
 import { updateProfile } from '../../services/profileService';
 

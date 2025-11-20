@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { useResponsive, useVirtualKeyboard } from '../../hooks/useResponsive';
+import { useResponsive } from '../../hooks/useResponsive';
 
 interface MobileFormFieldProps {
   label: string;

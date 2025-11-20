@@ -46,18 +46,15 @@ enum ActionType {
 }
 
 enum TaskType {
-  ACTION // 実行タスク
-  LEARNING // 学習タスク
-  RESEARCH // 調査タスク
-  MEETING // 会議・打ち合わせ
-  REVIEW // レビュー・確認
+  EXECUTION // 実行タスク
+  HABIT // 習慣タスク
 }
 
 enum TaskStatus {
-  PENDING // 未着手
+  NOT_STARTED // 未着手
   IN_PROGRESS // 進行中
   COMPLETED // 完了
-  CANCELLED // キャンセル
+  SKIPPED // スキップ
 }
 
 enum ReminderStatus {
@@ -173,26 +170,30 @@ model Action {
 }
 
 model Task {
-  id            String     @id @default(uuid()) @db.Uuid
-  actionId      String     @db.Uuid
-  title         String     @db.VarChar(200)
-  description   String?    @db.Text
-  type          TaskType   @default(ACTION)
-  status        TaskStatus @default(PENDING)
-  estimatedTime Int?       @db.SmallInt
-  completedAt   DateTime?  @db.Timestamptz
-  createdAt     DateTime   @default(now()) @db.Timestamptz
-  updatedAt     DateTime   @updatedAt @db.Timestamptz
+  id               String     @id @default(uuid()) @db.Uuid
+  actionId         String     @db.Uuid
+  title            String     @db.VarChar(255)
+  description      String?    @db.Text
+  type             TaskType   @default(EXECUTION)
+  status           TaskStatus @default(NOT_STARTED)
+  estimatedMinutes Int        @db.SmallInt
+  deadline         DateTime?  @db.Timestamptz
+  completedAt      DateTime?  @db.Timestamptz
+  createdAt        DateTime   @default(now()) @db.Timestamptz
+  updatedAt        DateTime   @updatedAt @db.Timestamptz
 
   // Relations
   action      Action         @relation(fields: [actionId], references: [id], onDelete: Cascade)
   reminders   TaskReminder[]
   reflections Reflection[]
+  notes       TaskNote[]
+  history     TaskHistory[]
 
   // Indexes
   @@index([actionId, status])
-  @@index([status, createdAt])
-  @@index([actionId, createdAt]) // タスク生成時の既存タスク取得用
+  @@index([status])
+  @@index([deadline])
+  @@index([createdAt])
   @@map("tasks")
 }
 
@@ -285,4 +286,53 @@ model ProcessingState {
   @@index([status, createdAt])
   @@index([type, status])
   @@map("processing_state")
+}
+
+model TaskNote {
+  id        String   @id @default(uuid()) @db.Uuid
+  taskId    String   @db.Uuid
+  userId    String   @db.Uuid
+  content   String   @db.Text
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
+
+  // Relations
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  // Indexes
+  @@index([taskId])
+  @@index([createdAt])
+  @@map("task_notes")
+}
+
+model TaskHistory {
+  id        String     @id @default(uuid()) @db.Uuid
+  taskId    String     @db.Uuid
+  userId    String     @db.Uuid
+  oldStatus TaskStatus
+  newStatus TaskStatus
+  changedAt DateTime   @default(now()) @db.Timestamptz
+
+  // Relations
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  // Indexes
+  @@index([taskId])
+  @@index([changedAt])
+  @@map("task_history")
+}
+
+model SavedView {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @db.Uuid
+  name        String   @db.VarChar(255)
+  filters     Json // TaskFilters型のJSON
+  searchQuery String?  @db.VarChar(255)
+  createdAt   DateTime @default(now()) @db.Timestamptz
+  updatedAt   DateTime @updatedAt @db.Timestamptz
+
+  // Indexes
+  @@index([userId])
+  @@index([createdAt])
+  @@map("saved_views")
 }

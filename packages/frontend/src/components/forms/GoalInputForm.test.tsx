@@ -1,8 +1,8 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { vi } from 'vitest';
-import { GoalInputForm, GoalInputFormProps } from './GoalInputForm';
+import { GoalInputForm } from './GoalInputForm';
 import { GoalFormData } from '../../schemas/goal-form';
 import { renderWithProviders } from '../../test/test-utils';
 import { GoalFormProvider } from '../../contexts/GoalFormContext';

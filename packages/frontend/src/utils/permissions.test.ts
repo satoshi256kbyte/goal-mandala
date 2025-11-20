@@ -1,4 +1,4 @@
-import { canEditGoal, canEditSubGoal, canEditAction, hasEditPermission } from './permissions';
+import { canEditGoal, canEditSubGoal, canEditAction } from './permissions';
 
 describe('Frontend 権限チェック', () => {
   describe('canEditGoal', () => {

@@ -1,8 +1,8 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { vi } from 'vitest';
-import { EnhancedErrorDisplay, FieldErrorDisplay } from './EnhancedErrorDisplay';
-import { ApiError, NetworkErrorType } from '../../services/api';
+import { EnhancedErrorDisplay } from './EnhancedErrorDisplay';
+import { ApiError } from '../../services/api';
 
 describe('EnhancedErrorDisplay', () => {
   const mockOnFieldFocus = vi.fn();

@@ -403,7 +403,7 @@ interface HybridFocusManagerProps {
 
 export function HybridFocusManager({
   children,
-  trapFocus = false, // eslint-disable-line @typescript-eslint/no-unused-vars
+  trapFocus = false,
   restoreFocus = false,
   className = '',
 }: HybridFocusManagerProps) {

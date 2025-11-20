@@ -1,7 +1,7 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { vi } from 'vitest';
-import { TabletLayout, TabletHeader, TabletSplitView, TabletCardGrid } from '../TabletLayout';
+import { TabletLayout, TabletHeader, TabletSplitView } from '../TabletLayout';
 import { useResponsive } from '../../../hooks/useResponsive';
 
 // useResponsiveフックのモック

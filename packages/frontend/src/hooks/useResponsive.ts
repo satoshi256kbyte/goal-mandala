@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 // ブレークポイント定義
 export const breakpoints = {

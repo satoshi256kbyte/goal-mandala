@@ -2,7 +2,7 @@
  * APIクライアント（シンプル版）のテスト
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { apiClient } from '../apiClient';
 
 describe('apiClient', () => {

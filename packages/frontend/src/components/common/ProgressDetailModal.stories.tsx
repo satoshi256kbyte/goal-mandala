@@ -5,7 +5,7 @@
 
 import type { Meta, StoryObj } from '@storybook/react';
 import { ProgressDetailModal } from './ProgressDetailModal';
-import { ProgressHistoryEntry, SignificantChange } from '../../services/progress-history-service';
+import { ProgressHistoryEntry } from '../../services/progress-history-service';
 
 const meta: Meta<typeof ProgressDetailModal> = {
   title: 'Components/Common/ProgressDetailModal',

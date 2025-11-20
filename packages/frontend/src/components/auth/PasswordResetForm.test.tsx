@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { PasswordResetForm } from './PasswordResetForm';
 import type { PasswordResetFormData } from '../../utils/validation';
@@ -43,9 +43,11 @@ describe('PasswordResetForm', () => {
     });
 
     // フォームを送信
-    fireEvent.submit(
-      screen.getByRole('button', { name: 'パスワードリセットメールを送信' }).closest('form')!
-    );
+    const form = screen
+      .getByRole('button', { name: 'パスワードリセットメールを送信' })
+      .closest('form');
+    expect(form).toBeTruthy();
+    fireEvent.submit(form!);
 
     await waitFor(() => {
       expect(mockOnSubmit).toHaveBeenCalledWith(formData);

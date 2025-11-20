@@ -8,7 +8,7 @@ import {
   SaveDraftResponse,
   getErrorMessage,
 } from '../services/goalFormService';
-import { GoalFormData, PartialGoalFormData } from '../schemas/goal-form';
+import { GoalFormData } from '../schemas/goal-form';
 import { useAuth } from '../components/auth/AuthProvider';
 
 /**

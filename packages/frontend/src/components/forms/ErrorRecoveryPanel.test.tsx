@@ -1,8 +1,8 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { vi } from 'vitest';
 import { ErrorRecoveryPanel } from './ErrorRecoveryPanel';
-import { ApiError, NetworkErrorType } from '../../services/api';
+import { ApiError } from '../../services/api';
 
 // useErrorRecoveryをモック
 vi.mock('../../hooks/useErrorRecovery', () => ({
@@ -24,8 +24,6 @@ vi.mock('../../hooks/useErrorRecovery', () => ({
     CONTACT_SUPPORT: 'contact_support',
   },
 }));
-
-import { useErrorRecovery } from '../../hooks/useErrorRecovery';
 
 describe('ErrorRecoveryPanel', () => {
   const mockStartRecovery = vi.fn();

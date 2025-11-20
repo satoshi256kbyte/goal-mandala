@@ -2,8 +2,8 @@
  * Goals API Service のユニットテスト
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { getGoals, GoalsApiError } from '../goals-api';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { getGoals } from '../goals-api';
 import { GoalStatus } from '../../../types/mandala-list';
 import { MANDALA_LIST_ERROR_MESSAGES } from '../../../constants/mandala-list';
 

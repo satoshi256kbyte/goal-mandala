@@ -1,58 +1,65 @@
-/**
- * XSS対策のためのテキストサニタイズ関数
- */
-export const sanitizeText = (text: string): string => {
-  if (typeof text !== 'string') return '';
-
-  return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#x27;')
-    .replace(/\//g, '&#x2F;');
+// XSS Protection
+export const sanitizeHtml = (input: string): string => {
+  const div = document.createElement('div');
+  div.textContent = input;
+  return div.innerHTML;
 };
 
-/**
- * HTMLタグを除去する関数
- */
-export const stripHtml = (html: string): string => {
-  if (typeof html !== 'string') return '';
+// Input validation
+export const validateInput = {
+  taskTitle: (title: string): boolean => {
+    return title.length >= 1 && title.length <= 200 && !/[<>]/.test(title);
+  },
 
-  return html.replace(/<[^>]*>/g, '');
+  noteContent: (content: string): boolean => {
+    return content.length >= 1 && content.length <= 5000;
+  },
+
+  searchQuery: (query: string): boolean => {
+    return query.length <= 100 && !/[<>]/.test(query);
+  },
 };
 
-/**
- * セルデータの検証
- */
-export const validateCellData = (cellData: unknown): boolean => {
-  if (!cellData || typeof cellData !== 'object') return false;
+// Token management
+export const tokenManager = {
+  getAccessToken: (): string | null => {
+    return localStorage.getItem('accessToken');
+  },
 
-  const data = cellData as Record<string, unknown>;
+  setAccessToken: (token: string): void => {
+    localStorage.setItem('accessToken', token);
+  },
 
-  return (
-    typeof data.id === 'string' &&
-    ['goal', 'subgoal', 'action', 'empty'].includes(data.type as string) &&
-    typeof data.title === 'string' &&
-    typeof data.progress === 'number' &&
-    data.progress >= 0 &&
-    data.progress <= 100
-  );
+  removeTokens: (): void => {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+  },
+
+  isTokenExpired: (token: string): boolean => {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return Date.now() >= payload.exp * 1000;
+    } catch {
+      return true;
+    }
+  },
 };
 
-/**
- * 入力データの検証とサニタイズ
- */
-export const sanitizeCellData = (cellData: unknown): Record<string, unknown> => {
-  if (!validateCellData(cellData)) {
-    throw new Error('Invalid cell data');
-  }
+// Content Security Policy
+export const setupCSP = (): void => {
+  const meta = document.createElement('meta');
+  meta.httpEquiv = 'Content-Security-Policy';
+  meta.content = [
+    "default-src 'self'",
+    "script-src 'self' 'unsafe-inline'",
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data: https:",
+    "connect-src 'self' " + (process.env.REACT_APP_API_URL || 'http://localhost:3001'),
+    "font-src 'self'",
+    "object-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+  ].join('; ');
 
-  const data = cellData as Record<string, unknown>;
-
-  return {
-    ...data,
-    title: sanitizeText(data.title as string),
-    description: data.description ? sanitizeText(data.description as string) : undefined,
-  };
+  document.head.appendChild(meta);
 };

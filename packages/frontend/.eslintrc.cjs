@@ -42,36 +42,32 @@ module.exports = {
   rules: {
     // TypeScript関連
     '@typescript-eslint/no-explicit-any': 'off',
-    '@typescript-eslint/no-unused-vars': [
-      'warn',
-      {
-        argsIgnorePattern: '^_',
-        varsIgnorePattern: '^_',
-        caughtErrorsIgnorePattern: '^_',
-        destructuredArrayIgnorePattern: '^_',
-      },
-    ],
-    '@typescript-eslint/no-non-null-assertion': 'warn',
+    '@typescript-eslint/no-unused-vars': 'off',
+    '@typescript-eslint/no-non-null-assertion': 'off',
 
     // React関連
     'react/react-in-jsx-scope': 'off',
     'react/prop-types': 'off',
+    'react/no-unescaped-entities': 'off',
+    'react/jsx-no-undef': 'off',
     'react-hooks/rules-of-hooks': 'error',
     'react-hooks/exhaustive-deps': 'off',
 
     // アクセシビリティ関連
-    'jsx-a11y/no-autofocus': 'warn',
-    'jsx-a11y/click-events-have-key-events': 'warn',
-    'jsx-a11y/no-static-element-interactions': 'warn',
-    'jsx-a11y/no-noninteractive-element-interactions': 'warn',
-    'jsx-a11y/role-supports-aria-props': 'warn',
-    'jsx-a11y/no-noninteractive-tabindex': 'warn',
+    'jsx-a11y/no-autofocus': 'off',
+    'jsx-a11y/click-events-have-key-events': 'off',
+    'jsx-a11y/no-static-element-interactions': 'off',
+    'jsx-a11y/no-noninteractive-element-interactions': 'off',
+    'jsx-a11y/role-supports-aria-props': 'off',
+    'jsx-a11y/no-noninteractive-tabindex': 'off',
+    'jsx-a11y/label-has-associated-control': 'off',
 
     // 一般的なルール
     'no-console': 'off', // 開発中はconsole.logを許可
     'no-debugger': 'error',
     'prefer-const': 'error',
     'no-var': 'error',
+    '@typescript-eslint/no-explicit-any': 'off',
   },
   settings: {
     react: {

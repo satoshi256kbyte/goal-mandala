@@ -1,6 +1,6 @@
-import { renderHook, act } from '@testing-library/react';
+import { renderHook } from '@testing-library/react';
 import { vi } from 'vitest';
-import { useTimeout, useMultipleTimeouts, useFormTimeout } from './useTimeout';
+import { useTimeout, useMultipleTimeouts } from './useTimeout';
 
 describe('useTimeout', () => {
   beforeEach(() => {

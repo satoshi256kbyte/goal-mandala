@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useCallback, useReducer, useEffect } from 'react';
-import { GoalFormData, PartialGoalFormData } from '../schemas/goal-form';
+import { GoalFormData } from '../schemas/goal-form';
 
 /**
  * フォームの状態

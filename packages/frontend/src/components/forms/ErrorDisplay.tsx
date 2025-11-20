@@ -10,7 +10,7 @@
  */
 
 import React from 'react';
-import { FormError, FormErrorSeverity, FormErrorType } from '../../types/form-error';
+import { FormError, FormErrorSeverity } from '../../types/form-error';
 
 /**
  * エラー表示コンポーネントのProps

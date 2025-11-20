@@ -1,5 +1,5 @@
 import React from 'react';
-import { DraftData, draftUtils } from '../../services/draftService';
+import { DraftData } from '../../services/draftService';
 
 /**
  * 下書き復元通知のプロパティ

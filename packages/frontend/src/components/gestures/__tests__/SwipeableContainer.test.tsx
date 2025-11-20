@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { vi } from 'vitest';
 import {
   SwipeableContainer,
@@ -15,8 +15,8 @@ const createTouchEvent = (type: string, touches: Array<{ clientX: number; client
       ...touch,
       identifier: 0,
       target: document.body,
-      radiusX: 0,
-      radiusY: 0,
+      radiusX: 1,
+      radiusY: 1,
       rotationAngle: 0,
       force: 1,
     })) as any,

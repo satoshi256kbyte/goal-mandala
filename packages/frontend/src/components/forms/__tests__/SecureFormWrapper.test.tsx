@@ -11,7 +11,7 @@
 
 import React from 'react';
 import { vi } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { SecureFormWrapper } from '../SecureFormWrapper';
 import { AuthContext } from '../../../services/form-security';
 import * as useFormSecurityModule from '../../../hooks/useFormSecurity';

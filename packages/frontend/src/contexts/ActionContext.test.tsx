@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, act, waitFor } from '@testing-library/react';
+import { render, screen, act } from '@testing-library/react';
 import { vi } from 'vitest';
 import { renderWithProviders } from '../test/test-utils';
 import {
@@ -8,7 +8,7 @@ import {
   useActionState,
   useActionActions,
 } from './ActionContext';
-import { Action, ActionType } from '../types/mandala';
+import { Action } from '../types/mandala';
 
 // テスト用のアクションデータ
 const mockActions: Action[] = [

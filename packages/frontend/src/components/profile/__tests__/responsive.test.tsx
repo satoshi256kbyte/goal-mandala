@@ -6,8 +6,8 @@
  * コンポーネントが適切に表示されることを確認します。
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { describe, it, expect, beforeEach } from 'vitest';
+import { render } from '@testing-library/react';
 import { IndustrySelect } from '../IndustrySelect';
 import { CompanySizeSelect } from '../CompanySizeSelect';
 import { JobTitleInput } from '../JobTitleInput';

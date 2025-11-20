@@ -1,8 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { EditModal } from './EditModal';
-import { Goal, SubGoal, Action, GoalStatus, ActionType } from '../../types/mandala';
+import { Goal, SubGoal, Action, GoalStatus } from '../../types/mandala';
 
 describe('EditModal', () => {
   const mockOnSave = vi.fn();

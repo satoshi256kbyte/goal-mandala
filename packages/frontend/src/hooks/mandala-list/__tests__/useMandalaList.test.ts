@@ -4,10 +4,10 @@
 
 import { waitFor } from '@testing-library/react';
 import { act } from 'react';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { renderHookWithProviders } from '../../../test/test-utils';
 import { useMandalaList } from '../useMandalaList';
-import { GoalsService, GoalsApiError } from '../../../services/mandala-list/goals-api';
+import { GoalsService } from '../../../services/mandala-list/goals-api';
 import { GoalStatus } from '../../../types/mandala-list';
 import type { GoalsListResponse } from '../../../types/mandala-list';
 

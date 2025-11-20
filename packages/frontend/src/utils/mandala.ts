@@ -1,4 +1,4 @@
-import { Goal, SubGoal, Action, GridData, CellData, Position } from '../types';
+import { Goal, SubGoal, Action, GridData, CellData } from '../types';
 import { ValidationResult } from '../types/validation';
 
 export const generateGridData = (goal: Goal, subGoals: SubGoal[], actions: Action[]): GridData => {

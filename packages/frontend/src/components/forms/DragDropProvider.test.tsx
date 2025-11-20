@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { vi } from 'vitest';
 import userEvent from '@testing-library/user-event';
 import {
@@ -7,7 +7,6 @@ import {
   DraggableItem,
   DragConstraints,
   Draggable,
-  Droppable,
   DragDropItem,
   useDragDrop,
 } from './DragDropProvider';
@@ -33,7 +32,7 @@ const TestDragDropComponent: React.FC<{
 
 // テスト用のフックコンポーネント
 const TestHookComponent: React.FC = () => {
-  const { dragState, startDrag, endDrag } = useDragDrop();
+  const { dragState } = useDragDrop();
 
   return (
     <div>
@@ -135,7 +134,7 @@ describe('DragDropProvider', () => {
       fireEvent.dragStart(dragItem, {
         dataTransfer: {
           effectAllowed: '',
-          setData: vi.fn((format, data) => {
+          setData: vi.fn((_format, _data) => {
             // setDataの動作をモック
           }),
           setDragImage: vi.fn(),

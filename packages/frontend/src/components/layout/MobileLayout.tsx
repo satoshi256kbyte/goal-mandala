@@ -1,5 +1,5 @@
 import React from 'react';
-import { useResponsive, useVirtualKeyboard, useSafeArea } from '../../hooks/useResponsive';
+import { useResponsive, useVirtualKeyboard } from '../../hooks/useResponsive';
 
 interface MobileLayoutProps {
   children: React.ReactNode;

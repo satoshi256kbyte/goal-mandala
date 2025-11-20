@@ -8,7 +8,7 @@
  * - 6.4: StorageEventが発生した時に認証状態が適切に更新される
  */
 
-import { User, AuthState } from '../types/storage-sync';
+import { User } from '../types/storage-sync';
 
 export type { User, AuthState };
 

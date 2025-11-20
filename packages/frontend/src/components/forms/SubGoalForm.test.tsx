@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { vi } from 'vitest';
 import { SubGoalForm } from './SubGoalForm';
@@ -61,9 +61,6 @@ const sampleFormData = {
 const mockOnSubmit = vi.fn();
 const mockOnDraftSave = vi.fn();
 const mockOnRegenerate = vi.fn();
-
-// テストラッパー
-const TestWrapper = ({ children }: { children: React.ReactNode }) => <div>{children}</div>;
 
 describe('SubGoalForm', () => {
   beforeEach(() => {

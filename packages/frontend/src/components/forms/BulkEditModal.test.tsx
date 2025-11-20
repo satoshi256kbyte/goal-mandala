@@ -1,8 +1,8 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { vi, beforeEach, describe, it, expect } from 'vitest';
-import { BulkEditModal, BulkEditableItem } from './BulkEditModal';
+import { vi, beforeEach, describe, it } from 'vitest';
+import { BulkEditModal } from './BulkEditModal';
 
 // Mock all dependencies to prevent complex interactions
 vi.mock('../../utils/screen-reader', () => ({

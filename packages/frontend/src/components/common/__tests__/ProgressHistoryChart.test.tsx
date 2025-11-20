@@ -3,7 +3,7 @@
  */
 
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { vi } from 'vitest';
 import { ProgressHistoryChart } from '../ProgressHistoryChart';
 import {
@@ -14,7 +14,13 @@ import {
 // Recharts のモック
 vi.mock('recharts', () => ({
   LineChart: ({ children, onClick }: any) => (
-    <div data-testid="line-chart" onClick={onClick}>
+    <div
+      data-testid="line-chart"
+      onClick={onClick}
+      onKeyDown={(e: any) => e.key === 'Enter' && onClick?.(e)}
+      role="button"
+      tabIndex={0}
+    >
       {children}
     </div>
   ),
@@ -105,7 +111,7 @@ describe('ProgressHistoryChart', () => {
     });
 
     it('カスタムの高さを適用する', () => {
-      const { container } = render(<ProgressHistoryChart data={mockData} height={400} />);
+      render(<ProgressHistoryChart data={mockData} height={400} />);
 
       const responsiveContainer = screen.getByTestId('responsive-container');
       expect(responsiveContainer).toBeInTheDocument();

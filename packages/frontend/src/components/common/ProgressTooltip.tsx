@@ -1,5 +1,5 @@
 import React from 'react';
-import { Tooltip, TooltipProps } from './Tooltip';
+import { Tooltip } from './Tooltip';
 
 export interface ProgressTooltipProps extends Omit<TooltipProps, 'content' | 'progressInfo'> {
   /** 現在の進捗値 */

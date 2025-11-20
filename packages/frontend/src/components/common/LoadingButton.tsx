@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import { useFocusVisible, useLiveRegion } from '../../hooks/useAccessibility';
+import { useFocusVisible } from '../../hooks/useAccessibility';
 
 /**
  * ローディングボタンコンポーネントのProps

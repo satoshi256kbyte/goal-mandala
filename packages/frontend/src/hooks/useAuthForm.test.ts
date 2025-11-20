@@ -1,7 +1,7 @@
-import { describe, it, expect, vi } from 'vitest';
-import { renderHook, act } from '@testing-library/react';
+import { describe, it, expect } from 'vitest';
+import { renderHook } from '@testing-library/react';
 import { useAuthForm } from './useAuthForm';
-import { loginSchema, signupSchema, passwordResetSchema } from '../utils/validation';
+import { loginSchema, signupSchema } from '../utils/validation';
 
 describe('useAuthForm', () => {
   describe('ログインフォーム', () => {

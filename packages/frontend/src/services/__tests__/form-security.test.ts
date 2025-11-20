@@ -10,7 +10,7 @@
  */
 
 import { vi } from 'vitest';
-import { FormSecurity, SubGoalFormData, ActionFormData } from '../form-security';
+import { FormSecurity, SubGoalFormData } from '../form-security';
 
 describe('FormSecurity', () => {
   let formSecurity: FormSecurity;

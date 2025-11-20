@@ -1,7 +1,7 @@
-import { renderHook, act } from '@testing-library/react';
+import { renderHook } from '@testing-library/react';
 import { vi } from 'vitest';
-import { useDraftRestore, useDraftRestoreStatus } from './useDraftRestore';
-import { DraftService, DraftData } from '../services/draftService';
+import { useDraftRestore } from './useDraftRestore';
+import { DraftService } from '../services/draftService';
 import { PartialGoalFormData } from '../schemas/goal-form';
 
 // DraftServiceのモック

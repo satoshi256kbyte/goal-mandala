@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef } from 'react';
-import { ApiError, NetworkErrorType } from '../services/api';
+import { ApiError } from '../services/api';
 
 /**
  * ネットワークエラーハンドリングフックの戻り値の型

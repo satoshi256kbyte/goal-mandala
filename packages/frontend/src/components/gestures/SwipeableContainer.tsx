@@ -1,5 +1,5 @@
 import React, { useRef, useState, useCallback } from 'react';
-import { useTouch, SwipeEvent } from '../../hooks/useTouch';
+import { useTouch } from '../../hooks/useTouch';
 
 interface SwipeableContainerProps {
   children: React.ReactNode;

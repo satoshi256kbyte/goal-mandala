@@ -1,4 +1,4 @@
-import { renderHook, act } from '@testing-library/react';
+import { renderHook } from '@testing-library/react';
 import { vi } from 'vitest';
 import React from 'react';
 import {
@@ -7,7 +7,7 @@ import {
   useSubGoalFormSubmission,
 } from './useSubGoalForm';
 import { renderHookWithProviders } from '../test/test-utils';
-import { SubGoalFormData, PartialSubGoalFormData } from '../schemas/subgoal-form';
+import { SubGoalFormData } from '../schemas/subgoal-form';
 
 // テスト用のサンプルデータ
 const sampleFormData: SubGoalFormData = {

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 /**
  * ネットワーク状態フックの戻り値の型

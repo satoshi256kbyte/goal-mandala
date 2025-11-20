@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { vi } from 'vitest';
 import { DraftRestoreNotification } from './DraftRestoreNotification';
 import { DraftData } from '../../services/draftService';

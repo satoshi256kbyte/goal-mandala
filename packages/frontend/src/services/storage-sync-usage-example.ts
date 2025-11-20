@@ -4,7 +4,7 @@
  * このファイルは、StorageSyncクラスの使用方法を示すサンプルコードです。
  */
 
-import { StorageSync, AuthState, User } from './storage-sync';
+import { StorageSync, AuthState } from './storage-sync';
 
 // 基本的な使用例
 export function basicUsageExample() {

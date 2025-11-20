@@ -3,7 +3,7 @@
  */
 
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { vi } from 'vitest';
 import { ProgressHistoryContainer } from '../ProgressHistoryContainer';
 import { progressHistoryService } from '../../../services/progress-history-service';
@@ -23,6 +23,11 @@ vi.mock('../ProgressHistoryChart', () => ({
     <div
       data-testid="progress-history-chart"
       onClick={() => onDateClick && onDateClick(new Date('2024-01-15'), 50)}
+      onKeyDown={(e: any) =>
+        e.key === 'Enter' && onDateClick && onDateClick(new Date('2024-01-15'), 50)
+      }
+      role="button"
+      tabIndex={0}
     >
       Chart with {data.length} data points
     </div>

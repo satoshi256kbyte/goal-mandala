@@ -1,7 +1,7 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render } from '@testing-library/react';
 import { vi } from 'vitest';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes } from 'react-router-dom';
 import { ProtectedRoute } from '../ProtectedRoute';
 import { useAuth } from '../../../hooks/useAuth';
 
@@ -14,7 +14,7 @@ const LoginPage = () => <div>Login Page</div>;
 const ProfileSetupPage = () => <div>Profile Setup Page</div>;
 const HomePage = () => <div>Home Page</div>;
 
-const renderWithRouter = (initialEntries: string[] = ['/']) => {
+const renderWithRouter = (_initialEntries: string[] = ['/']) => {
   return render(
     <BrowserRouter>
       <Routes>
