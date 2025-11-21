@@ -72,6 +72,33 @@ export class TaskService implements ITaskService {
   }
 
   /**
+   * ユーザーがタスクにアクセス権限を持つかチェック
+   */
+  async checkUserAccess(userId: string, taskId: string): Promise<boolean> {
+    try {
+      const task = await this.prisma.task.findUnique({
+        where: { id: taskId },
+        include: {
+          action: {
+            include: {
+              subGoal: {
+                include: {
+                  goal: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      return task?.action.subGoal.goal.userId === userId;
+    } catch (error) {
+      console.error('Error checking user access:', error);
+      return false;
+    }
+  }
+
+  /**
    * ユーザーのタスク一覧を取得
    */
   async getTasks(userId: string, filters?: TaskFilters): Promise<Task[]> {

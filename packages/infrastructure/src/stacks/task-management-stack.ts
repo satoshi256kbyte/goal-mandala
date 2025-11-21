@@ -6,6 +6,9 @@ import * as events from 'aws-cdk-lib/aws-events';
 import * as targets from 'aws-cdk-lib/aws-events-targets';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as logs from 'aws-cdk-lib/aws-logs';
+import * as cloudwatch from 'aws-cdk-lib/aws-cloudwatch';
+import * as sns from 'aws-cdk-lib/aws-sns';
+import * as cloudwatchActions from 'aws-cdk-lib/aws-cloudwatch-actions';
 
 export interface TaskManagementStackProps extends StackProps {
   environment: string;
@@ -17,9 +20,16 @@ export interface TaskManagementStackProps extends StackProps {
 export class TaskManagementStack extends Stack {
   public readonly taskApi: apigateway.RestApi;
   public readonly taskFunction: lambda.Function;
+  public readonly notificationTopic: sns.Topic;
 
   constructor(scope: Construct, id: string, props: TaskManagementStackProps) {
     super(scope, id, props);
+
+    // SNS Topic for alerts
+    this.notificationTopic = new sns.Topic(this, 'TaskManagementAlerts', {
+      displayName: 'Task Management Alerts',
+      topicName: `task-management-alerts-${props.environment}`,
+    });
 
     // Lambda execution role
     const taskLambdaRole = new iam.Role(this, 'TaskLambdaRole', {
@@ -54,6 +64,18 @@ export class TaskManagementStack extends Stack {
               ],
               resources: ['*'],
             }),
+            // CloudWatch Logs access
+            new iam.PolicyStatement({
+              effect: iam.Effect.ALLOW,
+              actions: ['logs:CreateLogGroup', 'logs:CreateLogStream', 'logs:PutLogEvents'],
+              resources: ['*'],
+            }),
+            // CloudWatch Metrics access
+            new iam.PolicyStatement({
+              effect: iam.Effect.ALLOW,
+              actions: ['cloudwatch:PutMetricData'],
+              resources: ['*'],
+            }),
           ],
         }),
       },
@@ -72,7 +94,9 @@ export class TaskManagementStack extends Stack {
         DATABASE_SECRET_ARN: props.databaseSecretArn,
         AWS_REGION: this.region,
       },
-      logRetention: logs.RetentionDays.ONE_WEEK,
+      logRetention: logs.RetentionDays.ONE_MONTH,
+      deadLetterQueueEnabled: true,
+      reservedConcurrentExecutions: 10,
     });
 
     // API Gateway
@@ -141,17 +165,81 @@ export class TaskManagementStack extends Stack {
 
     notificationRule.addTarget(new targets.LambdaFunction(this.taskFunction));
 
-    // CloudWatch alarms
-    this.taskFunction.metricErrors().createAlarm(this, 'TaskFunctionErrors', {
+    // CloudWatch Alarms
+    const errorAlarm = this.taskFunction.metricErrors().createAlarm(this, 'TaskFunctionErrors', {
       threshold: 5,
       evaluationPeriods: 2,
       alarmDescription: 'Task function error rate is too high',
+      treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
     });
 
-    this.taskFunction.metricDuration().createAlarm(this, 'TaskFunctionDuration', {
-      threshold: Duration.seconds(25).toMilliseconds(),
-      evaluationPeriods: 3,
-      alarmDescription: 'Task function duration is too long',
+    const durationAlarm = this.taskFunction
+      .metricDuration()
+      .createAlarm(this, 'TaskFunctionDuration', {
+        threshold: Duration.seconds(25).toMilliseconds(),
+        evaluationPeriods: 3,
+        alarmDescription: 'Task function duration is too long',
+        treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
+      });
+
+    const throttleAlarm = this.taskFunction
+      .metricThrottles()
+      .createAlarm(this, 'TaskFunctionThrottles', {
+        threshold: 1,
+        evaluationPeriods: 1,
+        alarmDescription: 'Task function is being throttled',
+        treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
+      });
+
+    // API Gateway Alarms
+    const apiErrorAlarm = new cloudwatch.Alarm(this, 'TaskApiErrors', {
+      metric: this.taskApi.metricServerError(),
+      threshold: 5,
+      evaluationPeriods: 2,
+      alarmDescription: 'Task API server error rate is too high',
+      treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
     });
+
+    const apiLatencyAlarm = new cloudwatch.Alarm(this, 'TaskApiLatency', {
+      metric: this.taskApi.metricLatency(),
+      threshold: 2000, // 2 seconds
+      evaluationPeriods: 3,
+      alarmDescription: 'Task API latency is too high',
+      treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
+    });
+
+    // Add SNS actions to alarms
+    const snsAction = new cloudwatchActions.SnsAction(this.notificationTopic);
+    errorAlarm.addAlarmAction(snsAction);
+    durationAlarm.addAlarmAction(snsAction);
+    throttleAlarm.addAlarmAction(snsAction);
+    apiErrorAlarm.addAlarmAction(snsAction);
+    apiLatencyAlarm.addAlarmAction(snsAction);
+
+    // CloudWatch Dashboard
+    const dashboard = new cloudwatch.Dashboard(this, 'TaskManagementDashboard', {
+      dashboardName: `task-management-${props.environment}`,
+    });
+
+    dashboard.addWidgets(
+      new cloudwatch.GraphWidget({
+        title: 'Lambda Function Metrics',
+        left: [
+          this.taskFunction.metricInvocations(),
+          this.taskFunction.metricErrors(),
+          this.taskFunction.metricThrottles(),
+        ],
+        right: [this.taskFunction.metricDuration()],
+      }),
+      new cloudwatch.GraphWidget({
+        title: 'API Gateway Metrics',
+        left: [
+          this.taskApi.metricCount(),
+          this.taskApi.metricServerError(),
+          this.taskApi.metricClientError(),
+        ],
+        right: [this.taskApi.metricLatency()],
+      })
+    );
   }
 }

@@ -403,6 +403,9 @@ importers:
       '@typescript-eslint/parser':
         specifier: ^6.19.0
         version: 6.21.0(eslint@8.57.1)(typescript@5.9.2)
+      fast-check:
+        specifier: ^3.23.2
+        version: 3.23.2
       jest:
         specifier: ^29.7.0
         version: 29.7.0(@types/node@20.19.10)(ts-node@10.9.2)
@@ -8022,6 +8025,13 @@ packages:
       jest-matcher-utils: 29.7.0
       jest-message-util: 29.7.0
       jest-util: 29.7.0
+    dev: true
+
+  /fast-check@3.23.2:
+    resolution: {integrity: sha512-h5+1OzzfCC3Ef7VbtKdcv7zsstUQwUDlYpUTvjeUsJAssPgLn7QzbboPtL5ro04Mq0rPOsMzl7q5hIbRs2wD1A==}
+    engines: {node: '>=8.0.0'}
+    dependencies:
+      pure-rand: 6.1.0
     dev: true
 
   /fast-check@4.3.0:

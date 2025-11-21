@@ -1,4 +1,4 @@
-import { Task, TaskStatus, TaskFilters, TaskNote } from '@goal-mandala/shared';
+import { Task, TaskStatus, TaskFilters, TaskNote, TaskHistory } from '@goal-mandala/shared';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
 

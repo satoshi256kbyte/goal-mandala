@@ -1,28 +1,89 @@
 import React, { useState } from 'react';
-import { Task, TaskNote, TaskHistory } from '@goal-mandala/shared';
+import { useParams } from 'react-router-dom';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Task, TaskNote, TaskHistory, TaskStatus } from '@goal-mandala/shared';
+import { LoadingSpinner } from '../components/common/LoadingSpinner';
+import { ErrorAlert } from '../components/common/ErrorAlert';
+import { taskApi } from '../services/taskApi';
 
-interface TaskDetailPageProps {
-  task: Task;
-  notes: TaskNote[];
-  history: TaskHistory[];
-  onStatusChange: (status: TaskStatus) => void;
-  onAddNote: (content: string) => void;
-  onUpdateNote: (noteId: string, content: string) => void;
-  onDeleteNote: (noteId: string) => void;
-}
-
-export const TaskDetailPage: React.FC<TaskDetailPageProps> = ({
-  task,
-  notes,
-  history,
-  onStatusChange,
-  onAddNote,
-  onUpdateNote,
-  onDeleteNote,
-}) => {
+export const TaskDetailPage: React.FC = () => {
+  const { taskId } = useParams<{ taskId: string }>();
   const [newNote, setNewNote] = useState('');
   const [editingNote, setEditingNote] = useState<string | null>(null);
   const [editContent, setEditContent] = useState('');
+  const queryClient = useQueryClient();
+
+  // Fetch task detail
+  const {
+    data: taskData,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ['task', taskId],
+    queryFn: () => taskApi.getTaskById(taskId!),
+    enabled: !!taskId,
+  });
+
+  // Mutations
+  const updateStatusMutation = useMutation({
+    mutationFn: (status: TaskStatus) => taskApi.updateTaskStatus(taskId!, status),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['task', taskId] });
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+    },
+  });
+
+  const addNoteMutation = useMutation({
+    mutationFn: (content: string) => taskApi.addNote(taskId!, content),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['task', taskId] });
+      setNewNote('');
+    },
+  });
+
+  const updateNoteMutation = useMutation({
+    mutationFn: ({ noteId, content }: { noteId: string; content: string }) =>
+      taskApi.updateNote(taskId!, noteId, content),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['task', taskId] });
+      setEditingNote(null);
+      setEditContent('');
+    },
+  });
+
+  const deleteNoteMutation = useMutation({
+    mutationFn: (noteId: string) => taskApi.deleteNote(taskId!, noteId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['task', taskId] });
+    },
+  });
+
+  if (!taskId) {
+    return <div>タスクIDが指定されていません</div>;
+  }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <LoadingSpinner />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <ErrorAlert message="タスクの読み込みに失敗しました" onRetry={() => refetch()} />
+      </div>
+    );
+  }
+
+  if (!taskData) {
+    return <div>タスクが見つかりません</div>;
+  }
+
+  const { task, notes, history } = taskData;
 
   const statusLabels = {
     not_started: '未着手',
@@ -40,8 +101,7 @@ export const TaskDetailPage: React.FC<TaskDetailPageProps> = ({
 
   const handleAddNote = () => {
     if (newNote.trim()) {
-      onAddNote(newNote.trim());
-      setNewNote('');
+      addNoteMutation.mutate(newNote.trim());
     }
   };
 
@@ -52,9 +112,7 @@ export const TaskDetailPage: React.FC<TaskDetailPageProps> = ({
 
   const handleSaveEdit = () => {
     if (editingNote && editContent.trim()) {
-      onUpdateNote(editingNote, editContent.trim());
-      setEditingNote(null);
-      setEditContent('');
+      updateNoteMutation.mutate({ noteId: editingNote, content: editContent.trim() });
     }
   };
 
@@ -140,7 +198,7 @@ export const TaskDetailPage: React.FC<TaskDetailPageProps> = ({
             <select
               id="status-select"
               value={task.status}
-              onChange={e => onStatusChange(e.target.value as TaskStatus)}
+              onChange={e => updateStatusMutation.mutate(e.target.value as TaskStatus)}
               className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="not_started">未着手</option>
@@ -214,7 +272,7 @@ export const TaskDetailPage: React.FC<TaskDetailPageProps> = ({
                             編集
                           </button>
                           <button
-                            onClick={() => onDeleteNote(note.id)}
+                            onClick={() => deleteNoteMutation.mutate(note.id)}
                             className="text-red-600 hover:text-red-800"
                           >
                             削除

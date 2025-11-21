@@ -39,6 +39,11 @@ export interface IFilterService {
   getSavedViews(userId: string): Promise<SavedView[]>;
 
   /**
+   * 保存済みビューをIDで取得
+   */
+  getSavedViewById(viewId: string): Promise<SavedView | null>;
+
+  /**
    * 保存済みビューを削除
    */
   deleteSavedView(viewId: string, userId: string): Promise<void>;
@@ -195,6 +200,24 @@ export class FilterService implements IFilterService {
         filters: JSON.parse(view.filters),
       })
     );
+  }
+
+  /**
+   * 保存済みビューをIDで取得
+   */
+  async getSavedViewById(viewId: string): Promise<SavedView | null> {
+    const savedView = await this.prisma.savedView.findUnique({
+      where: { id: viewId },
+    });
+
+    if (!savedView) {
+      return null;
+    }
+
+    return {
+      ...savedView,
+      filters: JSON.parse(savedView.filters),
+    };
   }
 
   /**

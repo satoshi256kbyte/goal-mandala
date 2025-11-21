@@ -1,102 +1,339 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Hono } from 'hono';
+import { PrismaClient } from '../../generated/prisma-client';
+import { TaskService } from '../../services/task.service';
+import { FilterService } from '../../services/filter.service';
+import { ProgressService } from '../../services/progress.service';
+import { NotificationService } from '../../services/notification.service';
+import {
+  generateMockTask,
+  generateMockTaskNote,
+  generateMockTaskHistory,
+} from '@goal-mandala/shared';
 import taskManagementApp from '../task-management';
 
-// Mock services
-vi.mock('../services/task.service');
-vi.mock('../services/filter.service');
-vi.mock('../services/progress.service');
-vi.mock('../services/notification.service');
-vi.mock('../middleware/auth');
+// Mock dependencies
+jest.mock('../../generated/prisma-client');
+jest.mock('../../services/task.service');
+jest.mock('../../services/filter.service');
+jest.mock('../../services/progress.service');
+jest.mock('../../services/notification.service');
+jest.mock('../../middleware/auth', () => ({
+  authMiddleware: jest.fn((c, next) => {
+    c.set('user', { id: 'user-1', email: 'test@example.com' });
+    return next();
+  }),
+  getCurrentUser: jest.fn(() => ({ id: 'user-1', email: 'test@example.com' })),
+}));
 
-describe('Task Management API', () => {
-  let app: Hono;
+describe('Task Management Handler', () => {
+  let mockTaskService: jest.Mocked<TaskService>;
+  let mockFilterService: jest.Mocked<FilterService>;
+  let mockProgressService: jest.Mocked<ProgressService>;
+  let mockNotificationService: jest.Mocked<NotificationService>;
 
   beforeEach(() => {
-    app = new Hono();
-    app.route('/api', taskManagementApp);
+    jest.clearAllMocks();
+
+    mockTaskService = {
+      getTasks: jest.fn(),
+      getTaskById: jest.fn(),
+      updateTaskStatus: jest.fn(),
+      addNote: jest.fn(),
+      updateNote: jest.fn(),
+      deleteNote: jest.fn(),
+      bulkUpdateStatus: jest.fn(),
+      bulkDelete: jest.fn(),
+      getTaskNotes: jest.fn(),
+      getTaskHistory: jest.fn(),
+      checkUserAccess: jest.fn(),
+    } as any;
+
+    mockFilterService = {
+      searchTasks: jest.fn(),
+      getSavedViews: jest.fn(),
+      saveView: jest.fn(),
+      getSavedViewById: jest.fn(),
+      deleteSavedView: jest.fn(),
+    } as any;
+
+    mockProgressService = {
+      updateProgress: jest.fn(),
+    } as any;
+
+    mockNotificationService = {
+      cancelNotification: jest.fn(),
+    } as any;
   });
 
-  describe('GET /api/tasks', () => {
+  describe('GET /tasks', () => {
     it('should return tasks for authenticated user', async () => {
-      const mockTasks = [{ id: '1', title: 'Test Task', status: 'not_started' }];
+      const mockTasks = [generateMockTask(), generateMockTask()];
+      mockTaskService.getTasks.mockResolvedValue(mockTasks);
 
-      const res = await app.request('/api/tasks', {
-        headers: { Authorization: 'Bearer mock-token' },
+      const app = new Hono();
+      app.route('/', taskManagementApp);
+
+      const res = await app.request('/tasks', {
+        headers: { Authorization: 'Bearer test-token' },
       });
 
       expect(res.status).toBe(200);
+      const data = await res.json();
+      expect(data.tasks).toHaveLength(2);
+      expect(data.total).toBe(2);
+    });
+
+    it('should apply filters when provided', async () => {
+      const mockTasks = [generateMockTask({ status: 'completed' })];
+      mockTaskService.getTasks.mockResolvedValue(mockTasks);
+
+      const app = new Hono();
+      app.route('/', taskManagementApp);
+
+      const res = await app.request('/tasks?status=completed', {
+        headers: { Authorization: 'Bearer test-token' },
+      });
+
+      expect(res.status).toBe(200);
+      expect(mockTaskService.getTasks).toHaveBeenCalledWith('user-1', {
+        statuses: ['completed'],
+        deadlineRange: undefined,
+        actionIds: undefined,
+      });
+    });
+
+    it('should apply search when provided', async () => {
+      const mockTasks = [generateMockTask()];
+      mockTaskService.getTasks.mockResolvedValue(mockTasks);
+      mockFilterService.searchTasks.mockReturnValue(mockTasks);
+
+      const app = new Hono();
+      app.route('/', taskManagementApp);
+
+      const res = await app.request('/tasks?search=test', {
+        headers: { Authorization: 'Bearer test-token' },
+      });
+
+      expect(res.status).toBe(200);
+      expect(mockFilterService.searchTasks).toHaveBeenCalledWith(mockTasks, 'test');
     });
   });
 
-  describe('PATCH /api/tasks/:id/status', () => {
-    it('should update task status', async () => {
-      const res = await app.request('/api/tasks/1/status', {
+  describe('GET /tasks/:id', () => {
+    it('should return task details with notes and history', async () => {
+      const mockTask = generateMockTask();
+      const mockNotes = [generateMockTaskNote()];
+      const mockHistory = [generateMockTaskHistory()];
+
+      mockTaskService.checkUserAccess.mockResolvedValue(true);
+      mockTaskService.getTaskById.mockResolvedValue(mockTask);
+      mockTaskService.getTaskNotes.mockResolvedValue(mockNotes);
+      mockTaskService.getTaskHistory.mockResolvedValue(mockHistory);
+
+      const app = new Hono();
+      app.route('/', taskManagementApp);
+
+      const res = await app.request(`/tasks/${mockTask.id}`, {
+        headers: { Authorization: 'Bearer test-token' },
+      });
+
+      expect(res.status).toBe(200);
+      const data = await res.json();
+      expect(data.task).toEqual(mockTask);
+      expect(data.notes).toEqual(mockNotes);
+      expect(data.history).toEqual(mockHistory);
+    });
+
+    it('should return 403 when user lacks access', async () => {
+      mockTaskService.checkUserAccess.mockResolvedValue(false);
+      mockTaskService.getTaskById.mockResolvedValue(generateMockTask());
+
+      const app = new Hono();
+      app.route('/', taskManagementApp);
+
+      const res = await app.request('/tasks/task-1', {
+        headers: { Authorization: 'Bearer test-token' },
+      });
+
+      expect(res.status).toBe(403);
+    });
+  });
+
+  describe('PATCH /tasks/:id/status', () => {
+    it('should update task status successfully', async () => {
+      const mockTask = generateMockTask({ status: 'completed' });
+      mockTaskService.checkUserAccess.mockResolvedValue(true);
+      mockTaskService.getTaskById.mockResolvedValue(mockTask);
+      mockTaskService.updateTaskStatus.mockResolvedValue(mockTask);
+
+      const app = new Hono();
+      app.route('/', taskManagementApp);
+
+      const res = await app.request(`/tasks/${mockTask.id}/status`, {
         method: 'PATCH',
         headers: {
-          Authorization: 'Bearer mock-token',
           'Content-Type': 'application/json',
+          Authorization: 'Bearer test-token',
         },
         body: JSON.stringify({ status: 'completed' }),
       });
 
       expect(res.status).toBe(200);
+      expect(mockTaskService.updateTaskStatus).toHaveBeenCalledWith(mockTask.id, 'completed');
+      expect(mockProgressService.updateProgress).toHaveBeenCalledWith(mockTask.id);
+      expect(mockNotificationService.cancelNotification).toHaveBeenCalledWith(mockTask.id);
     });
 
     it('should return 400 for invalid status', async () => {
-      const res = await app.request('/api/tasks/1/status', {
+      mockTaskService.checkUserAccess.mockResolvedValue(true);
+      mockTaskService.getTaskById.mockResolvedValue(generateMockTask());
+
+      const app = new Hono();
+      app.route('/', taskManagementApp);
+
+      const res = await app.request('/tasks/task-1/status', {
         method: 'PATCH',
         headers: {
-          Authorization: 'Bearer mock-token',
           'Content-Type': 'application/json',
+          Authorization: 'Bearer test-token',
         },
         body: JSON.stringify({ status: 'invalid' }),
       });
 
-      expect(res.status).toBe(500);
+      expect(res.status).toBe(400);
     });
   });
 
-  describe('POST /api/tasks/:id/notes', () => {
-    it('should add note to task', async () => {
-      const res = await app.request('/api/tasks/1/notes', {
+  describe('POST /tasks/:id/notes', () => {
+    it('should add note successfully', async () => {
+      const mockNote = generateMockTaskNote();
+      mockTaskService.checkUserAccess.mockResolvedValue(true);
+      mockTaskService.getTaskById.mockResolvedValue(generateMockTask());
+      mockTaskService.addNote.mockResolvedValue(mockNote);
+
+      const app = new Hono();
+      app.route('/', taskManagementApp);
+
+      const res = await app.request('/tasks/task-1/notes', {
         method: 'POST',
         headers: {
-          Authorization: 'Bearer mock-token',
           'Content-Type': 'application/json',
+          Authorization: 'Bearer test-token',
         },
         body: JSON.stringify({ content: 'Test note' }),
       });
 
       expect(res.status).toBe(200);
+      expect(mockTaskService.addNote).toHaveBeenCalledWith('task-1', 'user-1', 'Test note');
+    });
+
+    it('should return 400 for empty content', async () => {
+      mockTaskService.checkUserAccess.mockResolvedValue(true);
+      mockTaskService.getTaskById.mockResolvedValue(generateMockTask());
+
+      const app = new Hono();
+      app.route('/', taskManagementApp);
+
+      const res = await app.request('/tasks/task-1/notes', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer test-token',
+        },
+        body: JSON.stringify({ content: '' }),
+      });
+
+      expect(res.status).toBe(400);
     });
   });
 
-  describe('POST /api/tasks/bulk/status', () => {
-    it('should bulk update task status', async () => {
-      const res = await app.request('/api/tasks/bulk/status', {
+  describe('POST /tasks/bulk/status', () => {
+    it('should update multiple tasks successfully', async () => {
+      const taskIds = ['task-1', 'task-2'];
+      mockTaskService.checkUserAccess.mockResolvedValue(true);
+
+      const app = new Hono();
+      app.route('/', taskManagementApp);
+
+      const res = await app.request('/tasks/bulk/status', {
         method: 'POST',
         headers: {
-          Authorization: 'Bearer mock-token',
           'Content-Type': 'application/json',
+          Authorization: 'Bearer test-token',
+        },
+        body: JSON.stringify({ taskIds, status: 'completed' }),
+      });
+
+      expect(res.status).toBe(200);
+      expect(mockTaskService.bulkUpdateStatus).toHaveBeenCalledWith(taskIds, 'completed');
+
+      const data = await res.json();
+      expect(data.updatedCount).toBe(2);
+    });
+
+    it('should return 403 when user lacks access to some tasks', async () => {
+      const taskIds = ['task-1', 'task-2'];
+      mockTaskService.checkUserAccess.mockResolvedValueOnce(true).mockResolvedValueOnce(false);
+
+      const app = new Hono();
+      app.route('/', taskManagementApp);
+
+      const res = await app.request('/tasks/bulk/status', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer test-token',
+        },
+        body: JSON.stringify({ taskIds, status: 'completed' }),
+      });
+
+      expect(res.status).toBe(403);
+    });
+  });
+
+  describe('Saved Views', () => {
+    it('should get saved views', async () => {
+      const mockViews = [{ id: 'view-1', name: 'Test View', filters: {} }];
+      mockFilterService.getSavedViews.mockResolvedValue(mockViews);
+
+      const app = new Hono();
+      app.route('/', taskManagementApp);
+
+      const res = await app.request('/saved-views', {
+        headers: { Authorization: 'Bearer test-token' },
+      });
+
+      expect(res.status).toBe(200);
+      const data = await res.json();
+      expect(data.views).toEqual(mockViews);
+    });
+
+    it('should save view successfully', async () => {
+      const mockView = { id: 'view-1', name: 'Test View', filters: {} };
+      mockFilterService.saveView.mockResolvedValue(mockView);
+
+      const app = new Hono();
+      app.route('/', taskManagementApp);
+
+      const res = await app.request('/saved-views', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer test-token',
         },
         body: JSON.stringify({
-          taskIds: ['1', '2'],
-          status: 'completed',
+          name: 'Test View',
+          filters: { statuses: ['completed'] },
         }),
       });
 
       expect(res.status).toBe(200);
-    });
-  });
-
-  describe('GET /api/saved-views', () => {
-    it('should return saved views for user', async () => {
-      const res = await app.request('/api/saved-views', {
-        headers: { Authorization: 'Bearer mock-token' },
-      });
-
-      expect(res.status).toBe(200);
+      expect(mockFilterService.saveView).toHaveBeenCalledWith(
+        'user-1',
+        'Test View',
+        { statuses: ['completed'] },
+        undefined
+      );
     });
   });
 });
