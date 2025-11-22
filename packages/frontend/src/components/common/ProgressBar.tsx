@@ -229,9 +229,22 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
     displayText = `${Math.round(displayValue)}%`;
   }
 
-  // 前回の進捗値を追跡
-  const previousValueRef = useRef<number>(displayValue);
+  // 前回の進捗値を追跡（初期値は現在の値ではなく、未設定状態を示す）
+  const previousValueRef = useRef<number | null>(null);
   const [isAchieving, setIsAchieving] = useState(false);
+
+  // コールバックをuseRefで管理（依存配列から除外するため）
+  const onProgressChangeRef = useRef(onProgressChange);
+  const onAchievementRef = useRef(onAchievement);
+
+  // コールバックが変更されたらrefを更新
+  useEffect(() => {
+    onProgressChangeRef.current = onProgressChange;
+  }, [onProgressChange]);
+
+  useEffect(() => {
+    onAchievementRef.current = onAchievement;
+  }, [onAchievement]);
 
   // 進捗変化とアチーブメント検出
   useEffect(() => {
@@ -242,9 +255,15 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
       return;
     }
 
+    // 初回レンダリング時はコールバックを呼ばない
+    if (previousValue === null) {
+      previousValueRef.current = displayValue;
+      return;
+    }
+
     // 進捗変化のコールバック
-    if (previousValue !== displayValue && onProgressChange) {
-      onProgressChange(displayValue, previousValue);
+    if (previousValue !== displayValue && onProgressChangeRef.current) {
+      onProgressChangeRef.current(displayValue, previousValue);
     }
 
     // 100%達成時の処理
@@ -257,16 +276,14 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
         }, settings.achievementDuration);
       }
 
-      if (onAchievement) {
-        onAchievement();
+      if (onAchievementRef.current) {
+        onAchievementRef.current();
       }
     }
 
     previousValueRef.current = displayValue;
   }, [
     displayValue,
-    onAchievement,
-    onProgressChange,
     settings.achievementEnabled,
     settings.achievementDuration,
     isAnimationEnabled,

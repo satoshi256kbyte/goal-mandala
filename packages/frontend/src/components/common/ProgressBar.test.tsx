@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act, waitFor } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
 import userEvent from '@testing-library/user-event';
 import { ProgressBar } from './ProgressBar';
@@ -579,44 +579,60 @@ describe('ProgressBar', () => {
   });
 
   describe('コールバック機能', () => {
-    it.skip('進捗変化時にonProgressChangeが呼ばれる', async () => {
-      // TODO: ProgressBarコンポーネントの実装を確認して、コールバックが正しく呼ばれるようにする
+    it('進捗変化時にonProgressChangeが呼ばれる', async () => {
       const onProgressChange = vi.fn();
+
+      // 初期レンダリング
       const { rerender } = renderWithProvider(
         <ProgressBar value={30} onProgressChange={onProgressChange} />
       );
 
-      // 進捗値を変更
-      rerender(
-        <AnimationSettingsProvider>
-          <ProgressBar value={70} onProgressChange={onProgressChange} />
-        </AnimationSettingsProvider>
-      );
+      // 初期状態を確認
+      expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '30');
 
-      // useEffectが実行されるまで待機
+      // 進捗値を変更（同じProviderを使用）
+      rerender(<ProgressBar value={70} onProgressChange={onProgressChange} />);
+
+      // 進捗値が更新されたことを確認
       await waitFor(() => {
-        expect(onProgressChange).toHaveBeenCalledWith(70, 30);
+        expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '70');
       });
+
+      // コールバックが呼ばれたことを確認
+      await waitFor(
+        () => {
+          expect(onProgressChange).toHaveBeenCalledWith(70, 30);
+        },
+        { timeout: 3000 }
+      );
     });
 
-    it.skip('100%達成時にonAchievementが呼ばれる', async () => {
-      // TODO: ProgressBarコンポーネントの実装を確認して、コールバックが正しく呼ばれるようにする
+    it('100%達成時にonAchievementが呼ばれる', async () => {
       const onAchievement = vi.fn();
+
+      // 初期レンダリング
       const { rerender } = renderWithProvider(
         <ProgressBar value={90} onAchievement={onAchievement} />
       );
 
-      // 100%に変更
-      rerender(
-        <AnimationSettingsProvider>
-          <ProgressBar value={100} onAchievement={onAchievement} />
-        </AnimationSettingsProvider>
-      );
+      // 初期状態を確認
+      expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '90');
 
-      // useEffectが実行されるまで待機
+      // 100%に変更（同じProviderを使用）
+      rerender(<ProgressBar value={100} onAchievement={onAchievement} />);
+
+      // 進捗値が100%に更新されたことを確認
       await waitFor(() => {
-        expect(onAchievement).toHaveBeenCalled();
+        expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '100');
       });
+
+      // コールバックが呼ばれたことを確認
+      await waitFor(
+        () => {
+          expect(onAchievement).toHaveBeenCalled();
+        },
+        { timeout: 3000 }
+      );
     });
 
     it('100%未満から100%未満への変化ではonAchievementが呼ばれない', () => {

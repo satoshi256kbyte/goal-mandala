@@ -158,9 +158,11 @@ describe('ProfileSetup Integration Tests', () => {
       expect(submitButton).toBeDisabled();
     });
 
-    it.skip('should handle API error', async () => {
+    it('should handle API error', async () => {
       const user = userEvent.setup();
       const errorMessage = 'サーバーエラーが発生しました';
+
+      // Mock the updateProfile to reject with an error
       mockUpdateProfile.mockRejectedValueOnce(new Error(errorMessage));
 
       renderWithProviders(<ProfileSetupPage />);
@@ -187,17 +189,16 @@ describe('ProfileSetup Integration Tests', () => {
       const submitButton = await screen.findByRole('button', { name: /次へ/ });
       await user.click(submitButton);
 
-      // Check that API was called
+      // Wait for API to be called and error to be handled
       await waitFor(
         () => {
           expect(mockUpdateProfile).toHaveBeenCalled();
+          // Check that error message is displayed
+          const errorElements = screen.queryAllByText(errorMessage);
+          expect(errorElements.length).toBeGreaterThan(0);
         },
-        { timeout: 2000 }
+        { timeout: 5000 }
       );
-
-      // Note: エラーメッセージの表示確認はスキップ
-      // （実装によってエラー表示の方法が異なるため）
-      await waitForErrorMessage(errorMessage);
 
       // Should not redirect
       expect(mockNavigate).not.toHaveBeenCalled();

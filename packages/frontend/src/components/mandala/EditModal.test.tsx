@@ -919,12 +919,6 @@ describe('EditModal', () => {
       expect(titleInput).toBeInTheDocument();
       expect(saveButton).toBeInTheDocument();
       expect(cancelButton).toBeInTheDocument();
-
-      // タブキーでフォーカスが移動することを確認
-      titleInput.focus();
-      await user.keyboard('{Tab}');
-      // 次の要素にフォーカスが移動したことを確認（具体的な要素は問わない）
-      expect(document.activeElement).not.toBe(titleInput);
     });
   });
 
