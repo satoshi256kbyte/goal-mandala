@@ -1,4 +1,4 @@
-import { renderHook } from '@testing-library/react';
+import { renderHook, act } from '@testing-library/react';
 import { vi, beforeEach } from 'vitest';
 import {
   useFormSubmission,

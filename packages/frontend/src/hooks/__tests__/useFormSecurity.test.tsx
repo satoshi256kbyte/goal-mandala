@@ -11,7 +11,7 @@
 
 import React from 'react';
 import { vi } from 'vitest';
-import { renderHook } from '@testing-library/react';
+import { renderHook, act } from '@testing-library/react';
 import { useFormSecurity } from '../useFormSecurity';
 import { AuthContext, SubGoalFormData } from '../../services/form-security';
 

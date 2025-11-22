@@ -1,7 +1,7 @@
-import { renderHook } from '@testing-library/react';
+import { renderHook, act } from '@testing-library/react';
 import { vi } from 'vitest';
 import { useErrorRecovery, RecoveryStrategy } from './useErrorRecovery';
-import { ApiError } from '../services/api';
+import { ApiError, NetworkErrorType } from '../services/api';
 
 // navigator.onLineをモック
 Object.defineProperty(navigator, 'onLine', {

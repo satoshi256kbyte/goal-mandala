@@ -1,5 +1,5 @@
-import { useState, useCallback, useRef } from 'react';
-import { ApiError } from '../services/api';
+import { useState, useCallback, useRef, useEffect } from 'react';
+import { ApiError, NetworkErrorType } from '../services/api';
 
 /**
  * エラー回復戦略の種類
