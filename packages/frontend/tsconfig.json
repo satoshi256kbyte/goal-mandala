@@ -22,7 +22,7 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
-    "types": ["vite/client"],
+    "types": ["vite/client", "vitest/globals"],
     "baseUrl": ".",
     "paths": {
       "@goal-mandala/shared/*": ["../shared/src/*"],
@@ -33,13 +33,8 @@
   "exclude": [
     "dist",
     "node_modules",
-    "**/*.test.ts",
-    "**/*.test.tsx",
-    "**/*.spec.ts",
-    "**/*.spec.tsx",
     "**/*.stories.ts",
     "**/*.stories.tsx",
-    "src/test/**/*",
     "src/stories/**/*",
     "src/examples/**/*"
   ],
