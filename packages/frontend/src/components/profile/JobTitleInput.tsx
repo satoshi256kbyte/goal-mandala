@@ -1,6 +1,6 @@
 import React, { memo } from 'react';
 import type { JobTitleInputProps } from '../../types/profile';
-import { PLACEHOLDERS, MAX_LENGTH, ARIA_LABELS } from '../../constants/profile';
+import { PLACEHOLDERS, MAX_LENGTH, ARIA_LABELS, TEST_IDS } from '../../constants/profile';
 
 /**
  * 職種入力コンポーネント

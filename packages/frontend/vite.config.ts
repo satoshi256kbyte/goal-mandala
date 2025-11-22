@@ -21,28 +21,6 @@ export default defineConfig({
       '@goal-mandala/shared': '../shared/src',
     },
   },
-  // テスト設定
-  test: {
-    globals: true,
-    environment: 'jsdom',
-    setupFiles: ['./src/test/setup.ts'],
-    testTimeout: 10000,
-    hookTimeout: 10000,
-    // ユニットテストのみを実行（E2Eテストを除外）
-    include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
-    exclude: [
-      '**/node_modules/**',
-      '**/dist/**',
-      '**/e2e/**',
-      '**/.{idea,git,cache,output,temp}/**',
-      '**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build}.config.*',
-    ],
-    css: {
-      modules: {
-        classNameStrategy: 'non-scoped',
-      },
-    },
-  },
   build: {
     // バンドルサイズ最適化
     rollupOptions: {

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { SubGoalProvider } from '../contexts/SubGoalContext';
 import { DragDropProvider } from '../components/forms/DragDropProvider';
 import { BulkEditModal } from '../components/forms/BulkEditModal';
@@ -9,7 +9,7 @@ import { ErrorAlert } from '../components/common/ErrorAlert';
 import { SuccessMessage } from '../components/common/SuccessMessage';
 import { SubGoal } from '../types/mandala';
 import { useAuth } from '../components/auth/AuthProvider';
-import { useKeyboardNavigation } from '../hooks/useAccessibility';
+import { useKeyboardNavigation, useLiveRegion } from '../hooks/useAccessibility';
 
 /**
  * サブ目標編集ページのプロパティ

@@ -1,7 +1,7 @@
 import { render, renderHook, RenderOptions } from '@testing-library/react';
 import { ReactElement } from 'react';
 import { BrowserRouter } from 'react-router-dom';
-import { QueryClient } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { SubGoalProvider } from '../contexts/SubGoalContext';
 
 /**

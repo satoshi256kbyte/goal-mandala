@@ -3,7 +3,7 @@
  * 要件4.2, 4.3に対応
  */
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { useAnimationSettings } from '../contexts/AnimationSettingsContext';
 import {
   globalAchievementManager,

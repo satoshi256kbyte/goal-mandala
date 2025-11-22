@@ -1,6 +1,6 @@
 import React, { memo } from 'react';
 import type { IndustrySelectProps } from '../../types/profile';
-import { INDUSTRY_OPTIONS, ARIA_LABELS } from '../../constants/profile';
+import { INDUSTRY_OPTIONS, ARIA_LABELS, TEST_IDS } from '../../constants/profile';
 
 /**
  * 業種選択コンポーネント
