@@ -1,13 +1,30 @@
 {
-  "mcpServers": {
+	"mcpServers": {
+    "awslabs.core-mcp-server": {
+      "command": "uvx",
+      "args": ["awslabs.core-mcp-server@latest"],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "aws-foundation": "true",
+        "solutions-architect": "true"
+      },
+      "autoApprove": [],
+      "disabled": false
+    },
     "awslabs.aws-documentation-mcp-server": {
       "command": "uvx",
       "args": ["awslabs.aws-documentation-mcp-server@latest"],
       "env": {
-        "FASTMCP_LOG_LEVEL": "ERROR"
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_DOCUMENTATION_PARTITION": "aws",
+        "MCP_USER_AGENT": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
       },
       "disabled": false,
-      "autoApprove": ["search_documentation", "read_documentation"]
+      "autoApprove": []
+    },
+    "aws-knowledge-mcp-server": {
+      "command": "uvx",
+      "args": ["fastmcp", "run", "https://knowledge-mcp.global.api.aws"]
     },
     "awslabs.cdk-mcp-server": {
       "command": "uvx",
@@ -16,36 +33,16 @@
         "FASTMCP_LOG_LEVEL": "ERROR"
       },
       "disabled": false,
-      "autoApprove": ["CheckCDKNagSuppressions"]
-    },
-    "aws-knowledge-mcp-server": {
-      "command": "uvx",
-      "args": [
-        "mcp-proxy",
-        "--transport",
-        "streamablehttp",
-        "https://knowledge-mcp.global.api.aws"
-      ],
-      "disabled": false,
       "autoApprove": []
     },
     "awslabs.bedrock-kb-retrieval-mcp-server": {
       "command": "uvx",
       "args": ["awslabs.bedrock-kb-retrieval-mcp-server@latest"],
       "env": {
-        "AWS_REGION": "us-east-1",
+        "AWS_REGION": "ap-northeast-1",
         "FASTMCP_LOG_LEVEL": "ERROR",
         "KB_INCLUSION_TAG_KEY": "optional-tag-key-to-filter-kbs",
         "BEDROCK_KB_RERANKING_ENABLED": "false"
-      },
-      "disabled": false,
-      "autoApprove": []
-    },
-    "awslabs.aws-diagram-mcp-server": {
-      "command": "uvx",
-      "args": ["awslabs.aws-diagram-mcp-server"],
-      "env": {
-        "FASTMCP_LOG_LEVEL": "ERROR"
       },
       "disabled": false,
       "autoApprove": []
@@ -58,12 +55,13 @@
       },
       "disabled": false,
       "autoApprove": []
+    },
+    "Context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp", "--api-key", "ctx7sk-a6a3ee83-78c1-497d-8627-da695a873870"],
+      "env": {},
+      "disabled": false,
+      "autoApprove": []
     }
-    // "context7": {
-    //   "command": "npx",
-    //   "args": ["-y", "@upstash/context7-mcp"],
-    //   "disabled": false,
-    //   "autoApprove": []
-    // }
   }
 }
