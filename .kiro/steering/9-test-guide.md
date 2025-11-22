@@ -1159,6 +1159,136 @@ describe('メモリリーク検出', () => {
 - テスト環境では、afterEachで自動的にクリーンアップされるが、コンポーネント側でも適切にクリーンアップする
 - メモリリーク検出テストを追加して、クリーンアップが正しく実行されていることを確認する
 
+## スキップテストの復活とカバレッジ向上（2025年11月追加）
+
+### 背景
+
+テストアーキテクチャ刷新の過程で、一部のテストケースを一時的にスキップ（`it.skip`）しました。
+これらのテストを復活させ、エラーを解消することでカバレッジを向上させます。
+
+### スキップされているテスト一覧
+
+| ファイル | テストケース | 理由 | 優先度 |
+|---------|-------------|------|--------|
+| `src/components/common/SuccessMessage.test.tsx` | 自動クローズが設定されている場合は指定時間後に閉じる | タイマー関連のテスト | 中 |
+| `src/components/common/ErrorAlert.test.tsx` | 自動クローズが設定されている場合は指定時間後に閉じる | タイマー関連のテスト | 中 |
+| `src/components/common/ProgressBar.test.tsx` | 進捗変化時にonProgressChangeが呼ばれる | コールバック関連のテスト | 高 |
+| `src/components/common/ProgressBar.test.tsx` | 100%達成時にonAchievementが呼ばれる | コールバック関連のテスト | 高 |
+| `src/__tests__/integration/ProfileSetup.integration.test.tsx` | should handle API error | APIエラーハンドリングのテスト | 高 |
+
+### 復活の方針
+
+#### 1. タイマー関連のテスト（SuccessMessage, ErrorAlert）
+
+**問題**: タイマーを使用した自動クローズのテストが不安定
+
+**解決方法**:
+```typescript
+beforeEach(() => {
+  vi.useFakeTimers();
+});
+
+afterEach(() => {
+  vi.useRealTimers();
+});
+
+it('自動クローズが設定されている場合は指定時間後に閉じる', async () => {
+  const onClose = vi.fn();
+  render(<SuccessMessage message="Success" autoClose={3000} onClose={onClose} />);
+
+  // タイマーを進める
+  await act(async () => {
+    vi.advanceTimersByTime(3000);
+    await vi.runAllTimersAsync();
+  });
+
+  expect(onClose).toHaveBeenCalled();
+});
+```
+
+#### 2. コールバック関連のテスト（ProgressBar）
+
+**問題**: コールバック関数が呼ばれることを確認するテストが不安定
+
+**解決方法**:
+```typescript
+it('進捗変化時にonProgressChangeが呼ばれる', async () => {
+  const onProgressChange = vi.fn();
+  const { rerender } = render(
+    <ProgressBar value={30} onProgressChange={onProgressChange} />
+  );
+
+  // 進捗値を変更
+  await act(async () => {
+    rerender(<ProgressBar value={70} onProgressChange={onProgressChange} />);
+  });
+
+  // useEffectが実行されるまで待機
+  await waitFor(() => {
+    expect(onProgressChange).toHaveBeenCalledWith(70, 30);
+  });
+});
+```
+
+#### 3. APIエラーハンドリングのテスト（ProfileSetup）
+
+**問題**: APIエラーのテストが不安定
+
+**解決方法**:
+```typescript
+it('should handle API error', async () => {
+  // APIモックを設定
+  vi.mocked(api.createProfile).mockRejectedValueOnce(
+    new Error('API Error')
+  );
+
+  render(<ProfileSetup />);
+
+  // フォームに入力
+  await userEvent.type(screen.getByLabelText('業種'), 'IT');
+  await userEvent.click(screen.getByRole('button', { name: '保存' }));
+
+  // エラーメッセージの表示を確認
+  await waitFor(() => {
+    expect(screen.getByText(/エラーが発生しました/)).toBeInTheDocument();
+  });
+});
+```
+
+### 実施手順
+
+1. **ProgressBarのコールバックテストを復活**
+   - `it.skip` → `it` に変更
+   - テストを実行してエラーを確認
+   - エラーを修正
+   - テストが成功することを確認
+
+2. **ProfileSetupのAPIエラーテストを復活**
+   - `it.skip` → `it` に変更
+   - テストを実行してエラーを確認
+   - エラーを修正
+   - テストが成功することを確認
+
+3. **タイマー関連のテストを復活**
+   - `it.skip` → `it` に変更
+   - `vi.useFakeTimers()`を使用
+   - テストを実行してエラーを確認
+   - エラーを修正
+   - テストが成功することを確認
+
+### 期待される成果
+
+- **スキップテスト数**: 5 → 0
+- **テストケース数**: 558 → 563（+5）
+- **カバレッジ向上**: 17.49% → 約20%（推定）
+
+### 進捗記録
+
+**2025年11月22日 - 開始**
+- スキップテスト一覧を作成
+- 復活計画を策定
+- 実施手順を定義
+
 
 ## テストエラー修正のベストプラクティス（2025年11月追加）
 
