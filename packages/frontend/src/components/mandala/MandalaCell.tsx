@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { CellData } from '../../types';
-import { sanitizeText } from '../../utils/security';
+import { sanitizeText } from '../../utils/input-sanitizer';
 import { InlineEditor } from './InlineEditor';
 
 interface MandalaCellProps {

@@ -1,5 +1,5 @@
 import { describe, it } from 'vitest';
-import { sanitizeText, stripHtml, validateCellData } from '../security';
+import { sanitizeText, stripHtml, validateCellData } from '../input-sanitizer';
 
 describe('security utilities', () => {
   describe('sanitizeText', () => {
