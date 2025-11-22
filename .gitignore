@@ -344,3 +344,6 @@ integration-test-report.json
 **/temp/**/*
 **/tmp/**/*
 **/test-results/**/*
+
+# Kiro
+.kiro/settings/mcp.json
