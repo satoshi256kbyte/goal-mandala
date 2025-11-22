@@ -50,10 +50,8 @@ export default defineConfig({
       '**/src/test/e2e/**',
       '**/src/__tests__/e2e/**',
       // 問題のあるテストファイルを一時的に除外
-      '**/src/hooks/useNetworkStatus.test.ts',
       '**/src/components/forms/DatePicker.test.tsx',
       '**/src/components/forms/ValidationIntegration.test.tsx',
-      '**/src/components/mandala/__tests__/MandalaChart.test.tsx',
     ],
     // 並列実行の制限
     maxConcurrency: 4,
