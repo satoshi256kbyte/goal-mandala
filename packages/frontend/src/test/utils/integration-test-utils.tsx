@@ -6,7 +6,7 @@
 import { render, RenderOptions, waitFor } from '@testing-library/react';
 import { ReactElement } from 'react';
 import { BrowserRouter } from 'react-router-dom';
-import { QueryClient } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { vi } from 'vitest';
 import { testDataGenerator } from './TestDataGenerator';
 import { mockManager } from './MockManager';

@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { ProfileFormData, UseProfileFormOptions } from '../types/profile';
 import { updateProfile } from '../services/profileService';
 import { debounce } from '../utils/debounce';
