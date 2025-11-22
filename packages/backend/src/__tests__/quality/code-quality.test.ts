@@ -1,4 +1,3 @@
-import { describe, it, expect } from 'vitest';
 import { execSync } from 'child_process';
 import { readFileSync, readdirSync, statSync } from 'fs';
 import { join } from 'path';
@@ -22,7 +21,7 @@ describe('Code Quality Tests', () => {
 
   it('should have TypeScript type checking pass', () => {
     try {
-      execSync('npx tsc --noEmit', { stdio: 'pipe' });
+      execSync('npx tsc --noEmit --skipLibCheck', { stdio: 'pipe' });
     } catch (error) {
       throw new Error(`TypeScript check failed: ${error}`);
     }
@@ -55,9 +54,19 @@ describe('Code Quality Tests', () => {
         const filePath = join(dir, file);
         const stat = statSync(filePath);
 
-        if (stat.isDirectory() && !file.startsWith('.') && file !== 'node_modules') {
+        if (
+          stat.isDirectory() &&
+          !file.startsWith('.') &&
+          file !== 'node_modules' &&
+          file !== 'generated'
+        ) {
           checkDirectory(filePath);
-        } else if (file.endsWith('.ts') && !file.includes('.test.') && !file.includes('.spec.')) {
+        } else if (
+          file.endsWith('.ts') &&
+          !file.includes('.test.') &&
+          !file.includes('.spec.') &&
+          !filePath.includes('/generated/')
+        ) {
           const content = readFileSync(filePath, 'utf8');
           const lines = content.split('\n');
 

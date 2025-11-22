@@ -1,22 +1,63 @@
 import { Hono } from 'hono';
-import { PrismaClient } from '../../generated/prisma-client';
-import { TaskService } from '../../services/task.service';
-import { FilterService } from '../../services/filter.service';
-import { ProgressService } from '../../services/progress.service';
-import { NotificationService } from '../../services/notification.service';
 import {
   generateMockTask,
   generateMockTaskNote,
   generateMockTaskHistory,
 } from '@goal-mandala/shared';
-import taskManagementApp from '../task-management';
+
+// Create mock service instances first
+const mockTaskService = {
+  getTasks: jest.fn(),
+  getTaskById: jest.fn(),
+  updateTaskStatus: jest.fn(),
+  addNote: jest.fn(),
+  updateNote: jest.fn(),
+  deleteNote: jest.fn(),
+  bulkUpdateStatus: jest.fn(),
+  bulkDelete: jest.fn(),
+  getTaskNotes: jest.fn(),
+  getTaskHistory: jest.fn(),
+  checkUserAccess: jest.fn(),
+};
+
+const mockFilterService = {
+  searchTasks: jest.fn(),
+  getSavedViews: jest.fn(),
+  saveView: jest.fn(),
+  deleteSavedView: jest.fn(),
+  getSavedViewById: jest.fn(),
+};
+
+const mockProgressService = {
+  updateProgress: jest.fn(),
+};
+
+const mockNotificationService = {
+  cancelNotification: jest.fn(),
+  scheduleNotification: jest.fn(),
+};
 
 // Mock dependencies
-jest.mock('../../generated/prisma-client');
-jest.mock('../../services/task.service');
-jest.mock('../../services/filter.service');
-jest.mock('../../services/progress.service');
-jest.mock('../../services/notification.service');
+jest.mock('../../generated/prisma-client', () => ({
+  PrismaClient: jest.fn().mockImplementation(() => ({})),
+}));
+
+jest.mock('../../services/task.service', () => ({
+  TaskService: jest.fn().mockImplementation(() => mockTaskService),
+}));
+
+jest.mock('../../services/filter.service', () => ({
+  FilterService: jest.fn().mockImplementation(() => mockFilterService),
+}));
+
+jest.mock('../../services/progress.service', () => ({
+  ProgressService: jest.fn().mockImplementation(() => mockProgressService),
+}));
+
+jest.mock('../../services/notification.service', () => ({
+  NotificationService: jest.fn().mockImplementation(() => mockNotificationService),
+}));
+
 jest.mock('../../middleware/auth', () => ({
   authMiddleware: jest.fn((c, next) => {
     c.set('user', { id: 'user-1', email: 'test@example.com' });
@@ -25,44 +66,11 @@ jest.mock('../../middleware/auth', () => ({
   getCurrentUser: jest.fn(() => ({ id: 'user-1', email: 'test@example.com' })),
 }));
 
-describe('Task Management Handler', () => {
-  let mockTaskService: jest.Mocked<TaskService>;
-  let mockFilterService: jest.Mocked<FilterService>;
-  let mockProgressService: jest.Mocked<ProgressService>;
-  let mockNotificationService: jest.Mocked<NotificationService>;
+import taskManagementApp from '../task-management';
 
+describe('Task Management Handler', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-
-    mockTaskService = {
-      getTasks: jest.fn(),
-      getTaskById: jest.fn(),
-      updateTaskStatus: jest.fn(),
-      addNote: jest.fn(),
-      updateNote: jest.fn(),
-      deleteNote: jest.fn(),
-      bulkUpdateStatus: jest.fn(),
-      bulkDelete: jest.fn(),
-      getTaskNotes: jest.fn(),
-      getTaskHistory: jest.fn(),
-      checkUserAccess: jest.fn(),
-    } as any;
-
-    mockFilterService = {
-      searchTasks: jest.fn(),
-      getSavedViews: jest.fn(),
-      saveView: jest.fn(),
-      getSavedViewById: jest.fn(),
-      deleteSavedView: jest.fn(),
-    } as any;
-
-    mockProgressService = {
-      updateProgress: jest.fn(),
-    } as any;
-
-    mockNotificationService = {
-      cancelNotification: jest.fn(),
-    } as any;
   });
 
   describe('GET /tasks', () => {
@@ -139,9 +147,27 @@ describe('Task Management Handler', () => {
 
       expect(res.status).toBe(200);
       const data = await res.json();
-      expect(data.task).toEqual(mockTask);
-      expect(data.notes).toEqual(mockNotes);
-      expect(data.history).toEqual(mockHistory);
+
+      // JSONレスポンスでは日付は文字列として返される
+      expect(data.task).toEqual({
+        ...mockTask,
+        createdAt: mockTask.createdAt.toISOString(),
+        updatedAt: mockTask.updatedAt.toISOString(),
+        deadline: mockTask.deadline?.toISOString(),
+      });
+      expect(data.notes).toEqual(
+        mockNotes.map(note => ({
+          ...note,
+          createdAt: note.createdAt.toISOString(),
+          updatedAt: note.updatedAt.toISOString(),
+        }))
+      );
+      expect(data.history).toEqual(
+        mockHistory.map(h => ({
+          ...h,
+          changedAt: h.changedAt.toISOString(),
+        }))
+      );
     });
 
     it('should return 403 when user lacks access', async () => {
@@ -249,7 +275,10 @@ describe('Task Management Handler', () => {
 
   describe('POST /tasks/bulk/status', () => {
     it('should update multiple tasks successfully', async () => {
-      const taskIds = ['task-1', 'task-2'];
+      const taskIds = [
+        '550e8400-e29b-41d4-a716-446655440001',
+        '550e8400-e29b-41d4-a716-446655440002',
+      ];
       mockTaskService.checkUserAccess.mockResolvedValue(true);
 
       const app = new Hono();
@@ -272,7 +301,10 @@ describe('Task Management Handler', () => {
     });
 
     it('should return 403 when user lacks access to some tasks', async () => {
-      const taskIds = ['task-1', 'task-2'];
+      const taskIds = [
+        '550e8400-e29b-41d4-a716-446655440001',
+        '550e8400-e29b-41d4-a716-446655440002',
+      ];
       mockTaskService.checkUserAccess.mockResolvedValueOnce(true).mockResolvedValueOnce(false);
 
       const app = new Hono();

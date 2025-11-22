@@ -1,15 +1,15 @@
 import { describe, it, expect, jest, beforeEach } from '@jest/globals';
 import { Hono } from 'hono';
-import taskManagementApp from './task-management';
 
-// Mock dependencies
-jest.mock('../generated/prisma-client');
-jest.mock('../services/task.service');
-jest.mock('../services/filter.service');
-jest.mock('../services/progress.service');
-jest.mock('../services/notification.service');
-jest.mock('../middleware/auth');
+// Mock functions must be declared before the mock
+const mockAuthMiddleware = jest.fn((c, next) => {
+  c.set('user', { id: 'test-user-id' });
+  return next();
+});
 
+const mockGetCurrentUser = jest.fn(() => ({ id: 'test-user-id' }));
+
+// Create mock service instances
 const mockTaskService = {
   getTasks: jest.fn(),
   getTaskById: jest.fn(),
@@ -41,18 +41,33 @@ const mockNotificationService = {
   scheduleNotification: jest.fn(),
 };
 
-const mockAuthMiddleware = jest.fn((c, next) => {
-  c.set('user', { id: 'test-user-id' });
-  return next();
-});
+// Mock dependencies
+jest.mock('../generated/prisma-client', () => ({
+  PrismaClient: jest.fn().mockImplementation(() => ({})),
+}));
 
-const mockGetCurrentUser = jest.fn(() => ({ id: 'test-user-id' }));
+jest.mock('../services/task.service', () => ({
+  TaskService: jest.fn().mockImplementation(() => mockTaskService),
+}));
 
-// Mock the auth module
+jest.mock('../services/filter.service', () => ({
+  FilterService: jest.fn().mockImplementation(() => mockFilterService),
+}));
+
+jest.mock('../services/progress.service', () => ({
+  ProgressService: jest.fn().mockImplementation(() => mockProgressService),
+}));
+
+jest.mock('../services/notification.service', () => ({
+  NotificationService: jest.fn().mockImplementation(() => mockNotificationService),
+}));
+
 jest.mock('../middleware/auth', () => ({
   authMiddleware: mockAuthMiddleware,
   getCurrentUser: mockGetCurrentUser,
 }));
+
+import taskManagementApp from './task-management';
 
 describe('Task Management Handler', () => {
   beforeEach(() => {
@@ -179,6 +194,9 @@ describe('Task Management Handler', () => {
 
   describe('POST /tasks/bulk/status', () => {
     it('should bulk update task status', async () => {
+      const taskId1 = '550e8400-e29b-41d4-a716-446655440001';
+      const taskId2 = '550e8400-e29b-41d4-a716-446655440002';
+
       mockTaskService.checkUserAccess.mockResolvedValue(true);
       mockTaskService.bulkUpdateStatus.mockResolvedValue(undefined);
       mockProgressService.updateProgress.mockResolvedValue(undefined);
@@ -191,13 +209,13 @@ describe('Task Management Handler', () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          taskIds: ['task-1', 'task-2'],
+          taskIds: [taskId1, taskId2],
           status: 'completed',
         }),
       });
 
       expect(mockTaskService.bulkUpdateStatus).toHaveBeenCalledWith(
-        ['task-1', 'task-2'],
+        [taskId1, taskId2],
         'completed'
       );
       expect(res.status).toBe(200);
