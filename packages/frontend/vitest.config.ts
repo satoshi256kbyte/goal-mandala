@@ -46,9 +46,6 @@ export default defineConfig({
       '**/src/pages/MandalaChartPage.test.tsx',
       '**/src/test/e2e/**',
       '**/src/__tests__/e2e/**',
-      // formsとpagesのテストを除外（インポートエラーが多数）
-      '**/src/components/forms/**/*.test.tsx',
-      '**/src/pages/**/*.test.tsx',
     ],
     // 並列実行の制限
     maxConcurrency: 4,

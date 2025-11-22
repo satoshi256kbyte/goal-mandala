@@ -1,3 +1,4 @@
+import { render, screen, waitFor, fireEvent, act } from '@testing-library/react';
 import { generateGridData } from '../mandala';
 import { Goal, SubGoal, Action, GoalStatus } from '../../types';
 

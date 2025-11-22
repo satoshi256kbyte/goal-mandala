@@ -1,6 +1,11 @@
 import React from 'react';
 import { generateScreenReaderText } from '../../utils/screen-reader';
 
+/**
+ * スクリーンリーダー専用のクラス
+ */
+const SR_ONLY_CLASS = 'sr-only';
+
 export interface CharacterCounterProps {
   /** 現在の文字数 */
   currentLength?: number;

@@ -1,5 +1,5 @@
 import React from 'react';
-import { render } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent, act } from '@testing-library/react';
 import { CharacterLimitWarning } from './CharacterLimitWarning';
 
 describe('CharacterLimitWarning', () => {

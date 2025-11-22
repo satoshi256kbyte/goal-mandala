@@ -1,5 +1,5 @@
 import React from 'react';
-import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { ExclamationTriangleIcon, XCircleIcon } from '@heroicons/react/24/outline';
 
 export interface CharacterLimitWarningProps {
   /** 現在の文字数 */

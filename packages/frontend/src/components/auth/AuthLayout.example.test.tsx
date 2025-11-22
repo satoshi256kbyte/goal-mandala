@@ -1,4 +1,4 @@
-import { render } from '@testing-library/react';
+import { render, waitFor, fireEvent, act } from '@testing-library/react';
 import { describe, it } from 'vitest';
 import AuthLayoutExample from './AuthLayout.example';
 

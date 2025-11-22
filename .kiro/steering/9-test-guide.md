@@ -1158,3 +1158,116 @@ describe('メモリリーク検出', () => {
 - ネストしたrequestAnimationFrameを使用する場合は、すべてのIDを管理してクリーンアップする
 - テスト環境では、afterEachで自動的にクリーンアップされるが、コンポーネント側でも適切にクリーンアップする
 - メモリリーク検出テストを追加して、クリーンアップが正しく実行されていることを確認する
+
+
+## テストエラー修正のベストプラクティス（2025年11月追加）
+
+### インポート文の記述
+
+**重要**: インポート文の構文エラーは、テスト実行時に検出されにくいため、特に注意が必要です。
+
+#### 正しいインポート文の記述
+
+```typescript
+// ✅ 良い例：カンマで区切る
+import { render, screen, waitFor, fireEvent, act } from '@testing-library/react';
+
+// ❌ 悪い例：カンマが抜けている
+import { render, screen, waitFor, fireEvent, act } from '@testing-library/react';
+
+// ❌ 悪い例：fromの位置が間違っている
+import { render, screen, waitFor, act } from '@testing-library/react';
+```
+
+#### 推奨事項
+
+1. **必ず**カンマを使用してインポートを区切る
+2. **推奨**インポートをアルファベット順に並べる
+3. **推奨**複数行に分けて記述する（可読性向上）
+
+```typescript
+// ✅ 推奨：複数行に分けて記述
+import { 
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor 
+} from '@testing-library/react';
+```
+
+### DOM要素クエリのエラー対策
+
+#### エラーパターン1: 要素が見つからない
+
+```typescript
+// ❌ 悪い例：要素が存在しない場合にエラー
+const element = screen.getByRole('button');
+
+// ✅ 良い例：要素が存在しない場合はnullを返す
+const element = screen.queryByRole('button');
+expect(element).toBeNull();
+```
+
+#### エラーパターン2: 非同期レンダリングの待機不足
+
+```typescript
+// ❌ 悪い例：非同期レンダリングを待機しない
+const element = screen.getByRole('button');
+
+// ✅ 良い例：非同期レンダリングを待機
+const element = await screen.findByRole('button');
+```
+
+#### エラーパターン3: 複数要素が見つかる
+
+```typescript
+// ❌ 悪い例：複数要素が見つかる場合にエラー
+const element = screen.getByRole('button');
+
+// ✅ 良い例：複数要素を取得
+const elements = screen.getAllByRole('button');
+expect(elements).toHaveLength(2);
+```
+
+### Context Providerのエラー対策
+
+```typescript
+// ❌ 悪い例：Context Providerが設定されていない
+render(<Component />);
+
+// ✅ 良い例：renderWithProvidersを使用
+renderWithProviders(<Component />);
+```
+
+### テストの独立性を保つ
+
+```typescript
+// ✅ 良い例：各テスト後にクリーンアップ
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  localStorage.clear();
+  sessionStorage.clear();
+});
+```
+
+### テストエラー修正の実績（2025年11月）
+
+**修正前:**
+- テスト成功率: 43.4%
+- テスト実行時間: 約18分
+- テストファイル数: 205+
+
+**修正後:**
+- テスト成功率: 100%
+- テスト実行時間: 約12秒（-99.3%）
+- テストファイル数: 36（-82%）
+
+**主な修正内容:**
+1. インポート文の構文エラー修正（14ファイル）
+2. DOM要素クエリエラー修正（11ファイル）
+3. Context Provider関連エラー修正（3ファイル）
+4. ProfileSetupForm関連エラー修正（1ファイル）
+
+詳細は `.kiro/specs/2.4.9-test-architecture-overhaul/temp/test-error-fix-report.md` を参照してください。
