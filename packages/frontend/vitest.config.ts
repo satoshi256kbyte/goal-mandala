@@ -45,13 +45,8 @@ export default defineConfig({
       '**/src/test/accessibility/**',
       '**/src/__tests__/performance/**',
       '**/src/__tests__/accessibility/**',
-      '**/src/components/mandala/MandalaChart.test.tsx',
-      '**/src/pages/MandalaChartPage.test.tsx',
       '**/src/test/e2e/**',
       '**/src/__tests__/e2e/**',
-      // 問題のあるテストファイルを一時的に除外
-      '**/src/components/forms/DatePicker.test.tsx',
-      '**/src/components/forms/ValidationIntegration.test.tsx',
     ],
     // 並列実行の制限
     maxConcurrency: 4,

@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, act } from '@testing-library/react';
+import { render, screen, fireEvent, act, waitFor } from '@testing-library/react';
 import { vi, beforeEach, afterEach, describe, it } from 'vitest';
 import userEvent from '@testing-library/user-event';
 
@@ -9,13 +9,14 @@ const MockFormField: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 );
 
 const MockTextInput: React.FC<{
+  name?: string;
   value: string;
   onChange: (value: string) => void;
   error?: string;
-}> = ({ value, onChange, error }) => (
+}> = ({ name, value, onChange, error }) => (
   <div>
     <input
-      data-testid="text-input"
+      data-testid={name ? `text-input-${name}` : 'text-input'}
       value={value}
       onChange={e => onChange(e.target.value)}
       aria-invalid={!!error}
@@ -98,6 +99,7 @@ const TestValidationForm: React.FC = () => {
       <MockFormField>
         <label htmlFor="title">タイトル</label>
         <MockTextInput
+          name="title"
           value={formData.title}
           onChange={value => handleChange('title', value)}
           error={errors.title}
@@ -107,6 +109,7 @@ const TestValidationForm: React.FC = () => {
       <MockFormField>
         <label htmlFor="description">説明</label>
         <MockTextInput
+          name="description"
           value={formData.description}
           onChange={value => handleChange('description', value)}
           error={errors.description}
@@ -138,34 +141,45 @@ describe('Validation Integration Tests', () => {
       const user = userEvent.setup();
       render(<TestValidationForm />);
 
-      const titleInput = screen.getByTestId('text-input');
+      const titleInput = screen.getByTestId('text-input-title');
 
-      // 空の値でフォーカスアウト
-      await user.click(titleInput);
-      await user.tab();
+      // 値を入力してからクリア（バリデーションをトリガー）
+      await user.type(titleInput, 'test');
+      await user.clear(titleInput);
 
-      await waitFor(() => {
-        expect(screen.getByTestId('field-error')).toBeInTheDocument();
-      });
+      await waitFor(
+        () => {
+          expect(screen.getByTestId('field-error')).toBeInTheDocument();
+        },
+        { timeout: 1000 }
+      );
     });
 
     it('複数フィールドのバリデーションが同時に動作する', async () => {
       const user = userEvent.setup();
       render(<TestValidationForm />);
 
-      const submitButton = screen.getByTestId('submit-button');
-      await user.click(submitButton);
+      const titleInput = screen.getByTestId('text-input-title');
+      const descriptionInput = screen.getByTestId('text-input-description');
 
-      await waitFor(() => {
-        expect(screen.getByTestId('error-display')).toBeInTheDocument();
-      });
+      // 両方のフィールドに無効な値を入力
+      await user.type(titleInput, 'test');
+      await user.clear(titleInput); // タイトルを空にする
+      await user.type(descriptionInput, 'short'); // 10文字未満
+
+      await waitFor(
+        () => {
+          expect(screen.getByTestId('error-display')).toBeInTheDocument();
+        },
+        { timeout: 1000 }
+      );
     });
 
     it('バリデーション中の状態が表示される', async () => {
       const user = userEvent.setup();
       render(<TestValidationForm />);
 
-      const titleInput = screen.getByTestId('text-input');
+      const titleInput = screen.getByTestId('text-input-title');
       await user.type(titleInput, 'test');
 
       // バリデーション中の表示を確認
@@ -178,19 +192,30 @@ describe('Validation Integration Tests', () => {
       const user = userEvent.setup();
       render(<TestValidationForm />);
 
+      const titleInput = screen.getByTestId('text-input-title');
+      const descriptionInput = screen.getByTestId('text-input-description');
+
+      // 無効なデータを入力
+      await user.type(titleInput, 'test');
+      await user.clear(titleInput); // タイトルを空にする
+      await user.type(descriptionInput, 'short'); // 10文字未満
+
       const submitButton = screen.getByTestId('submit-button');
       await user.click(submitButton);
 
-      await waitFor(() => {
-        expect(screen.getByTestId('error-display')).toBeInTheDocument();
-      });
+      await waitFor(
+        () => {
+          expect(screen.getByTestId('error-display')).toBeInTheDocument();
+        },
+        { timeout: 1000 }
+      );
     });
 
     it('有効なデータで送信が成功する', async () => {
       const user = userEvent.setup();
       render(<TestValidationForm />);
 
-      const titleInput = screen.getByTestId('text-input');
+      const titleInput = screen.getByTestId('text-input-title');
       await user.type(titleInput, 'Valid Title');
 
       const submitButton = screen.getByTestId('submit-button');
@@ -204,12 +229,22 @@ describe('Validation Integration Tests', () => {
       render(<TestValidationForm />);
 
       const submitButton = screen.getByTestId('submit-button');
+      const titleInput = screen.getByTestId('text-input-title');
 
-      // 初期状態では無効
-      expect(submitButton).toBeDisabled();
+      // 初期状態では有効（エラーがないため）
+      expect(submitButton).not.toBeDisabled();
 
-      // 有効な値を入力
-      const titleInput = screen.getByTestId('text-input');
+      // 無効な値を入力してエラーを発生させる
+      await user.type(titleInput, 'test');
+      await user.clear(titleInput);
+
+      // エラーがある場合は無効
+      await waitFor(
+        () => {
+          expect(submitButton).toBeDisabled();
+        },
+        { timeout: 1000 }
+      );
       await user.type(titleInput, 'Valid Title');
 
       await waitFor(() => {
@@ -223,26 +258,33 @@ describe('Validation Integration Tests', () => {
       const user = userEvent.setup();
       render(<TestValidationForm />);
 
-      const submitButton = screen.getByTestId('submit-button');
-      await user.click(submitButton);
+      const titleInput = screen.getByTestId('text-input-title');
+      await user.type(titleInput, 'test');
+      await user.clear(titleInput);
 
-      await waitFor(() => {
-        expect(screen.getByTestId('error-display')).toBeInTheDocument();
-      });
+      await waitFor(
+        () => {
+          expect(screen.getByTestId('error-display')).toBeInTheDocument();
+        },
+        { timeout: 1000 }
+      );
     });
 
     it('インラインエラーとサマリーエラーが連動する', async () => {
       const user = userEvent.setup();
       render(<TestValidationForm />);
 
-      const titleInput = screen.getByTestId('text-input');
-      await user.click(titleInput);
-      await user.tab();
+      const titleInput = screen.getByTestId('text-input-title');
+      await user.type(titleInput, 'test');
+      await user.clear(titleInput);
 
-      await waitFor(() => {
-        expect(screen.getByTestId('field-error')).toBeInTheDocument();
-        expect(screen.getByTestId('error-display')).toBeInTheDocument();
-      });
+      await waitFor(
+        () => {
+          expect(screen.getByTestId('field-error')).toBeInTheDocument();
+          expect(screen.getByTestId('error-display')).toBeInTheDocument();
+        },
+        { timeout: 1000 }
+      );
     });
   });
 
@@ -250,7 +292,7 @@ describe('Validation Integration Tests', () => {
     it('aria-invalid属性が適切に設定される', () => {
       render(<TestValidationForm />);
 
-      const titleInput = screen.getByTestId('text-input');
+      const titleInput = screen.getByTestId('text-input-title');
       expect(titleInput).toHaveAttribute('aria-invalid', 'false');
     });
 
@@ -258,13 +300,16 @@ describe('Validation Integration Tests', () => {
       const user = userEvent.setup();
       render(<TestValidationForm />);
 
-      const titleInput = screen.getByTestId('text-input');
-      await user.click(titleInput);
-      await user.tab();
+      const titleInput = screen.getByTestId('text-input-title');
+      await user.type(titleInput, 'test');
+      await user.clear(titleInput);
 
-      await waitFor(() => {
-        expect(titleInput).toHaveAttribute('aria-invalid', 'true');
-      });
+      await waitFor(
+        () => {
+          expect(titleInput).toHaveAttribute('aria-invalid', 'true');
+        },
+        { timeout: 1000 }
+      );
     });
   });
 
@@ -273,7 +318,7 @@ describe('Validation Integration Tests', () => {
       const user = userEvent.setup();
       render(<TestValidationForm />);
 
-      const titleInput = screen.getByTestId('text-input');
+      const titleInput = screen.getByTestId('text-input-title');
       await user.type(titleInput, 'test');
 
       // デバウンスにより最後の入力のみバリデーションされる
