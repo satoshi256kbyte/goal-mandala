@@ -2,11 +2,12 @@
  * useMandalaList フックのユニットテスト
  */
 
-import { renderHook, waitFor } from '@testing-library/react';
+import { waitFor } from '@testing-library/react';
 import { act } from 'react';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
+import { renderHookWithProviders } from '../../../test/test-utils';
 import { useMandalaList } from '../useMandalaList';
-import { GoalsService, GoalsApiError } from '../../../services/mandala-list/goals-api';
+import { GoalsService } from '../../../services/mandala-list/goals-api';
 import { GoalStatus } from '../../../types/mandala-list';
 import type { GoalsListResponse } from '../../../types/mandala-list';
 
@@ -52,7 +53,7 @@ describe('useMandalaList', () => {
 
   describe('初期化', () => {
     it('初期状態が正しく設定される', () => {
-      const { result } = renderHook(() => useMandalaList());
+      const { result } = renderHookWithProviders(() => useMandalaList());
 
       expect(result.current.mandalas).toEqual([]);
       expect(result.current.totalItems).toBe(0);
@@ -67,7 +68,7 @@ describe('useMandalaList', () => {
     });
 
     it('カスタムオプションで初期化できる', () => {
-      const { result } = renderHook(() =>
+      const { result } = renderHookWithProviders(() =>
         useMandalaList({
           initialPage: 2,
           itemsPerPage: 10,
@@ -80,7 +81,7 @@ describe('useMandalaList', () => {
 
   describe('データ取得', () => {
     it('初回マウント時にデータを取得する', async () => {
-      const { result } = renderHook(() => useMandalaList());
+      const { result } = renderHookWithProviders(() => useMandalaList());
 
       await waitFor(() => {
         expect(result.current.isLoading).toBe(false);
@@ -100,7 +101,7 @@ describe('useMandalaList', () => {
     });
 
     it('refetchでデータを再取得できる', async () => {
-      const { result } = renderHook(() => useMandalaList());
+      const { result } = renderHookWithProviders(() => useMandalaList());
 
       await waitFor(() => {
         expect(result.current.isLoading).toBe(false);
@@ -118,7 +119,7 @@ describe('useMandalaList', () => {
 
   describe('検索機能', () => {
     it('検索キーワードを設定できる', async () => {
-      const { result } = renderHook(() => useMandalaList());
+      const { result } = renderHookWithProviders(() => useMandalaList());
 
       await waitFor(() => {
         expect(result.current.isLoading).toBe(false);
@@ -140,7 +141,7 @@ describe('useMandalaList', () => {
     });
 
     it('検索キーワード変更時にページが1にリセットされる', async () => {
-      const { result } = renderHook(() => useMandalaList());
+      const { result } = renderHookWithProviders(() => useMandalaList());
 
       await waitFor(() => {
         expect(result.current.isLoading).toBe(false);
@@ -164,7 +165,7 @@ describe('useMandalaList', () => {
 
   describe('フィルター機能', () => {
     it('状態フィルターを設定できる', async () => {
-      const { result } = renderHook(() => useMandalaList());
+      const { result } = renderHookWithProviders(() => useMandalaList());
 
       await waitFor(() => {
         expect(result.current.isLoading).toBe(false);
@@ -186,7 +187,7 @@ describe('useMandalaList', () => {
     });
 
     it('フィルター変更時にページが1にリセットされる', async () => {
-      const { result } = renderHook(() => useMandalaList());
+      const { result } = renderHookWithProviders(() => useMandalaList());
 
       await waitFor(() => {
         expect(result.current.isLoading).toBe(false);
@@ -208,7 +209,7 @@ describe('useMandalaList', () => {
     });
 
     it('フィルタークリアで初期状態に戻る', async () => {
-      const { result } = renderHook(() => useMandalaList());
+      const { result } = renderHookWithProviders(() => useMandalaList());
 
       await waitFor(() => {
         expect(result.current.isLoading).toBe(false);
@@ -247,7 +248,7 @@ describe('useMandalaList', () => {
 
   describe('ソート機能', () => {
     it('ソート条件を設定できる', async () => {
-      const { result } = renderHook(() => useMandalaList());
+      const { result } = renderHookWithProviders(() => useMandalaList());
 
       await waitFor(() => {
         expect(result.current.isLoading).toBe(false);
@@ -269,7 +270,7 @@ describe('useMandalaList', () => {
     });
 
     it('ソート変更時にページが1にリセットされる', async () => {
-      const { result } = renderHook(() => useMandalaList());
+      const { result } = renderHookWithProviders(() => useMandalaList());
 
       await waitFor(() => {
         expect(result.current.isLoading).toBe(false);
@@ -293,7 +294,7 @@ describe('useMandalaList', () => {
 
   describe('ページネーション機能', () => {
     it('ページ番号を設定できる', async () => {
-      const { result } = renderHook(() => useMandalaList());
+      const { result } = renderHookWithProviders(() => useMandalaList());
 
       await waitFor(() => {
         expect(result.current.isLoading).toBe(false);
@@ -323,7 +324,7 @@ describe('useMandalaList', () => {
 
       vi.mocked(GoalsService.getGoals).mockResolvedValue(mockManyMandalas);
 
-      const { result } = renderHook(() => useMandalaList());
+      const { result } = renderHookWithProviders(() => useMandalaList());
 
       await waitFor(() => {
         expect(result.current.isLoading).toBe(false);
@@ -343,7 +344,7 @@ describe('useMandalaList', () => {
         new GoalsApiError(errorMessage, 500, 'SERVER_ERROR')
       );
 
-      const { result } = renderHook(() => useMandalaList());
+      const { result } = renderHookWithProviders(() => useMandalaList());
 
       await waitFor(() => {
         expect(result.current.isLoading).toBe(false);
@@ -358,7 +359,7 @@ describe('useMandalaList', () => {
       vi.mocked(GoalsService.getGoals).mockReset();
       vi.mocked(GoalsService.getGoals).mockRejectedValue(new TypeError('Network error'));
 
-      const { result } = renderHook(() => useMandalaList());
+      const { result } = renderHookWithProviders(() => useMandalaList());
 
       await waitFor(() => {
         expect(result.current.isLoading).toBe(false);
@@ -374,7 +375,7 @@ describe('useMandalaList', () => {
         new GoalsApiError('エラー', 500, 'ERROR')
       );
 
-      const { result } = renderHook(() => useMandalaList());
+      const { result } = renderHookWithProviders(() => useMandalaList());
 
       await waitFor(() => {
         expect(result.current.isLoading).toBe(false);
@@ -405,7 +406,7 @@ describe('useMandalaList', () => {
 
       vi.mocked(GoalsService.getGoals).mockReturnValue(promise);
 
-      const { result } = renderHook(() => useMandalaList());
+      const { result } = renderHookWithProviders(() => useMandalaList());
 
       expect(result.current.isFetching).toBe(true);
 
@@ -420,7 +421,7 @@ describe('useMandalaList', () => {
     });
 
     it('初回ロード時はisLoadingがtrueになる', () => {
-      const { result } = renderHook(() => useMandalaList());
+      const { result } = renderHookWithProviders(() => useMandalaList());
 
       expect(result.current.isLoading).toBe(true);
     });

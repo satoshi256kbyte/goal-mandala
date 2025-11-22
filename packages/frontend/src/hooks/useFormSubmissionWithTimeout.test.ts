@@ -1,4 +1,5 @@
-import { renderHook, act, waitFor } from '@testing-library/react';
+import { renderHook, act } from '@testing-library/react';
+import { vi } from 'vitest';
 import {
   useFormSubmissionWithTimeout,
   useGoalFormSubmission,
@@ -7,25 +8,25 @@ import {
 import { NetworkErrorType } from '../services/api';
 
 // AbortControllerをモック
-global.AbortController = jest.fn(() => ({
-  abort: jest.fn(),
+global.AbortController = vi.fn(() => ({
+  abort: vi.fn(),
   signal: {},
 })) as any;
 
 describe('useFormSubmissionWithTimeout', () => {
   beforeEach(() => {
-    jest.useFakeTimers();
-    jest.clearAllMocks();
+    vi.useFakeTimers();
+    vi.clearAllMocks();
   });
 
   afterEach(() => {
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   describe('基本機能', () => {
     it('正常な送信が機能する', async () => {
-      const mockSubmitFn = jest.fn().mockResolvedValue({ success: true, id: '123' });
-      const mockOnSuccess = jest.fn();
+      const mockSubmitFn = vi.fn().mockResolvedValue({ success: true, id: '123' });
+      const mockOnSuccess = vi.fn();
 
       const { result } = renderHook(() =>
         useFormSubmissionWithTimeout({
@@ -73,8 +74,8 @@ describe('useFormSubmissionWithTimeout', () => {
 
     it('エラーが発生した場合の処理', async () => {
       const mockError = new Error('送信エラー');
-      const mockSubmitFn = jest.fn().mockRejectedValue(mockError);
-      const mockOnError = jest.fn();
+      const mockSubmitFn = vi.fn().mockRejectedValue(mockError);
+      const mockOnError = vi.fn();
 
       const { result } = renderHook(() =>
         useFormSubmissionWithTimeout({
@@ -104,7 +105,7 @@ describe('useFormSubmissionWithTimeout', () => {
         .mockImplementation(
           () => new Promise(resolve => setTimeout(() => resolve({ success: true }), 2000))
         );
-      const mockOnTimeout = jest.fn();
+      const mockOnTimeout = vi.fn();
 
       const { result } = renderHook(() =>
         useFormSubmissionWithTimeout({
@@ -121,7 +122,7 @@ describe('useFormSubmissionWithTimeout', () => {
 
       // タイムアウト時間経過
       act(() => {
-        jest.advanceTimersByTime(1000);
+        vi.advanceTimersByTime(1000);
       });
 
       await waitFor(() => {
@@ -138,7 +139,7 @@ describe('useFormSubmissionWithTimeout', () => {
         .mockImplementation(
           () => new Promise(resolve => setTimeout(() => resolve({ success: true }), 2000))
         );
-      const mockOnWarning = jest.fn();
+      const mockOnWarning = vi.fn();
 
       const { result } = renderHook(() =>
         useFormSubmissionWithTimeout({
@@ -154,7 +155,7 @@ describe('useFormSubmissionWithTimeout', () => {
 
       // 警告時間経過
       act(() => {
-        jest.advanceTimersByTime(500);
+        vi.advanceTimersByTime(500);
       });
 
       expect(result.current.isWarning).toBe(true);
@@ -182,7 +183,7 @@ describe('useFormSubmissionWithTimeout', () => {
 
       // 500ms経過
       act(() => {
-        jest.advanceTimersByTime(500);
+        vi.advanceTimersByTime(500);
       });
 
       expect(result.current.progress).toBeCloseTo(0.5, 1);
@@ -196,7 +197,7 @@ describe('useFormSubmissionWithTimeout', () => {
         .mockImplementation(
           () => new Promise(resolve => setTimeout(() => resolve({ success: true }), 1000))
         );
-      const mockOnCancel = jest.fn();
+      const mockOnCancel = vi.fn();
 
       const { result } = renderHook(() =>
         useFormSubmissionWithTimeout({
@@ -222,14 +223,14 @@ describe('useFormSubmissionWithTimeout', () => {
   describe('再試行機能', () => {
     it('再試行可能なエラーで再試行できる', async () => {
       let callCount = 0;
-      const mockSubmitFn = jest.fn().mockImplementation(() => {
+      const mockSubmitFn = vi.fn().mockImplementation(() => {
         callCount++;
         if (callCount === 1) {
           return Promise.reject(new Error('ネットワークエラー'));
         }
         return Promise.resolve({ success: true });
       });
-      const mockOnRetry = jest.fn();
+      const mockOnRetry = vi.fn();
 
       const { result } = renderHook(() =>
         useFormSubmissionWithTimeout({
@@ -254,7 +255,7 @@ describe('useFormSubmissionWithTimeout', () => {
 
       // 遅延時間経過
       act(() => {
-        jest.advanceTimersByTime(100);
+        vi.advanceTimersByTime(100);
       });
 
       await waitFor(() => {
@@ -265,7 +266,7 @@ describe('useFormSubmissionWithTimeout', () => {
     });
 
     it('最大再試行回数に達すると再試行しない', async () => {
-      const mockSubmitFn = jest.fn().mockRejectedValue(new Error('エラー'));
+      const mockSubmitFn = vi.fn().mockRejectedValue(new Error('エラー'));
 
       const { result } = renderHook(() =>
         useFormSubmissionWithTimeout({
@@ -296,7 +297,7 @@ describe('useFormSubmissionWithTimeout', () => {
 
   describe('エラークリア', () => {
     it('エラーをクリアできる', async () => {
-      const mockSubmitFn = jest.fn().mockRejectedValue(new Error('エラー'));
+      const mockSubmitFn = vi.fn().mockRejectedValue(new Error('エラー'));
 
       const { result } = renderHook(() => useFormSubmissionWithTimeout());
 
@@ -316,8 +317,8 @@ describe('useFormSubmissionWithTimeout', () => {
 
   describe('コールバック', () => {
     it('送信開始時のコールバックが実行される', async () => {
-      const mockSubmitFn = jest.fn().mockResolvedValue({ success: true });
-      const mockOnStart = jest.fn();
+      const mockSubmitFn = vi.fn().mockResolvedValue({ success: true });
+      const mockOnStart = vi.fn();
 
       const { result } = renderHook(() =>
         useFormSubmissionWithTimeout({
@@ -336,11 +337,11 @@ describe('useFormSubmissionWithTimeout', () => {
 
 describe('useGoalFormSubmission', () => {
   beforeEach(() => {
-    jest.useFakeTimers();
+    vi.useFakeTimers();
   });
 
   afterEach(() => {
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   it('目標フォーム用の設定が適用される', () => {
@@ -352,7 +353,7 @@ describe('useGoalFormSubmission', () => {
   });
 
   it('カスタムオプションを上書きできる', () => {
-    const mockOnStart = jest.fn();
+    const mockOnStart = vi.fn();
     const { result } = renderHook(() =>
       useGoalFormSubmission({
         onSubmitStart: mockOnStart,
@@ -365,11 +366,11 @@ describe('useGoalFormSubmission', () => {
 
 describe('useDraftSaveSubmission', () => {
   beforeEach(() => {
-    jest.useFakeTimers();
+    vi.useFakeTimers();
   });
 
   afterEach(() => {
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   it('下書き保存用の設定が適用される', () => {
@@ -381,7 +382,7 @@ describe('useDraftSaveSubmission', () => {
   });
 
   it('カスタムオプションを上書きできる', () => {
-    const mockOnSuccess = jest.fn();
+    const mockOnSuccess = vi.fn();
     const { result } = renderHook(() =>
       useDraftSaveSubmission({
         onSubmitSuccess: mockOnSuccess,

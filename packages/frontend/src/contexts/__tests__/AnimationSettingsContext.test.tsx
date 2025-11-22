@@ -1,5 +1,6 @@
 import React from 'react';
-import { render, screen, act, waitFor } from '@testing-library/react';
+import { render, screen, act } from '@testing-library/react';
+import { vi } from 'vitest';
 import userEvent from '@testing-library/user-event';
 import {
   AnimationSettingsProvider,
@@ -7,6 +8,35 @@ import {
   useIsAnimationEnabled,
   DEFAULT_ANIMATION_SETTINGS,
 } from '../AnimationSettingsContext';
+
+// animation-performanceユーティリティをモック
+vi.mock('../../utils/animation-performance', () => ({
+  globalPerformanceMonitor: {
+    startMonitoring: vi.fn(),
+    stopMonitoring: vi.fn(),
+  },
+  globalInterruptController: {
+    interruptAllAnimations: vi.fn(),
+    interruptAnimation: vi.fn(),
+  },
+  globalAdaptiveQuality: {
+    startAdaptiveAdjustment: vi.fn(),
+    stopAdaptiveAdjustment: vi.fn(),
+  },
+  globalAccessibilityManager: {
+    addCallback: vi.fn(),
+    removeCallback: vi.fn(),
+    isDisabled: vi.fn(() => false),
+  },
+}));
+
+// animation-utilsをモック
+vi.mock('../../utils/animation-utils', () => ({
+  globalAnimationController: {
+    cancelAllAnimations: vi.fn(),
+    cancelAnimation: vi.fn(),
+  },
+}));
 
 // テスト用のコンポーネント
 const TestComponent: React.FC = () => {
@@ -60,31 +90,25 @@ const TestComponentWithHook: React.FC = () => {
   return <div data-testid="hook-enabled">{isEnabled.toString()}</div>;
 };
 
-// matchMedia のモック
-const mockMatchMedia = (matches: boolean) => {
-  Object.defineProperty(window, 'matchMedia', {
-    writable: true,
-    value: jest.fn().mockImplementation(query => ({
-      matches,
-      media: query,
-      onchange: null,
-      addListener: jest.fn(),
-      removeListener: jest.fn(),
-      addEventListener: jest.fn(),
-      removeEventListener: jest.fn(),
-      dispatchEvent: jest.fn(),
-    })),
-  });
-};
+// 不要になったヘルパー関数を削除
 
 describe('AnimationSettingsContext', () => {
+  let mockAccessibilityManager: any;
+
+  beforeAll(async () => {
+    // 動的importでモックを取得
+    const animationPerformance = await import('../../utils/animation-performance');
+    mockAccessibilityManager = vi.mocked(animationPerformance.globalAccessibilityManager);
+  });
+
   beforeEach(() => {
+    vi.clearAllMocks();
     // デフォルトでは動きを減らす設定は無効
-    mockMatchMedia(false);
+    mockAccessibilityManager.isDisabled.mockReturnValue(false);
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('基本機能', () => {
@@ -140,7 +164,7 @@ describe('AnimationSettingsContext', () => {
 
   describe('動きを減らす設定の検出', () => {
     it('システムの動きを減らす設定が有効な場合、アニメーションが無効になる', () => {
-      mockMatchMedia(true);
+      mockAccessibilityManager.isDisabled.mockReturnValue(true);
 
       render(
         <AnimationSettingsProvider>
@@ -148,11 +172,12 @@ describe('AnimationSettingsContext', () => {
         </AnimationSettingsProvider>
       );
 
+      // prefers-reduced-motionが有効な場合、アニメーションは無効になる
       expect(screen.getByTestId('animation-enabled')).toHaveTextContent('false');
     });
 
     it('respectReducedMotionがfalseの場合、システム設定を無視する', () => {
-      mockMatchMedia(true);
+      mockAccessibilityManager.isDisabled.mockReturnValue(true);
 
       const initialSettings = {
         respectReducedMotion: false,
@@ -168,20 +193,12 @@ describe('AnimationSettingsContext', () => {
     });
 
     it('メディアクエリの変更を検出する', async () => {
-      let mediaQueryCallback: ((e: MediaQueryListEvent) => void) | null = null;
+      let callback: ((disabled: boolean) => void) | undefined;
 
-      Object.defineProperty(window, 'matchMedia', {
-        writable: true,
-        value: jest.fn().mockImplementation(() => ({
-          matches: false,
-          addEventListener: jest.fn().mockImplementation((event, callback) => {
-            if (event === 'change') {
-              mediaQueryCallback = callback;
-            }
-          }),
-          removeEventListener: jest.fn(),
-        })),
+      mockAccessibilityManager.addCallback.mockImplementation(cb => {
+        callback = cb;
       });
+      mockAccessibilityManager.isDisabled.mockReturnValue(false);
 
       render(
         <AnimationSettingsProvider>
@@ -191,10 +208,10 @@ describe('AnimationSettingsContext', () => {
 
       expect(screen.getByTestId('animation-enabled')).toHaveTextContent('true');
 
-      // メディアクエリの変更をシミュレート
-      if (mediaQueryCallback) {
+      // アクセシビリティ設定の変更をシミュレート
+      if (callback) {
         act(() => {
-          mediaQueryCallback({ matches: true } as MediaQueryListEvent);
+          callback(true);
         });
       }
 
@@ -239,9 +256,12 @@ describe('AnimationSettingsContext', () => {
       const progressElement = screen.getByTestId('progress-style');
       const colorElement = screen.getByTestId('color-style');
 
-      expect(transitionElement).not.toHaveStyle('transition');
-      expect(progressElement).not.toHaveStyle('transition');
-      expect(colorElement).not.toHaveStyle('transition');
+      // アニメーション無効時はtransitionプロパティが設定されない（空のオブジェクトが返される）
+      expect(transitionElement).not.toHaveStyle('transition: opacity 200ms ease-out');
+      expect(progressElement).not.toHaveStyle('transition: width 300ms ease-out');
+      expect(colorElement).not.toHaveStyle(
+        'transition: background-color 300ms ease-out, border-color 300ms ease-out, color 300ms ease-out, box-shadow 300ms ease-out'
+      );
     });
   });
 
@@ -257,7 +277,7 @@ describe('AnimationSettingsContext', () => {
     });
 
     it('動きを減らす設定が有効な場合、falseを返す', () => {
-      mockMatchMedia(true);
+      mockAccessibilityManager.isDisabled.mockReturnValue(true);
 
       render(
         <AnimationSettingsProvider>
@@ -265,6 +285,7 @@ describe('AnimationSettingsContext', () => {
         </AnimationSettingsProvider>
       );
 
+      // prefers-reduced-motionが有効な場合、falseを返す
       expect(screen.getByTestId('hook-enabled')).toHaveTextContent('false');
     });
   });
@@ -272,7 +293,7 @@ describe('AnimationSettingsContext', () => {
   describe('エラーハンドリング', () => {
     it('プロバイダー外でフックを使用するとエラーが発生する', () => {
       // コンソールエラーを抑制
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
       expect(() => {
         render(<TestComponent />);
@@ -292,6 +313,9 @@ describe('AnimationSettingsContext', () => {
         achievementDuration: 600,
         easing: 'ease-out',
         respectReducedMotion: true,
+        enablePerformanceMonitoring: true,
+        enableAdaptiveQuality: true,
+        performanceLevel: 'high',
       });
     });
   });

@@ -1,4 +1,5 @@
-import { renderHook, act } from '@testing-library/react';
+import { renderHook } from '@testing-library/react';
+import { vi } from 'vitest';
 import { useCharacterCounter } from './useCharacterCounter';
 
 describe('useCharacterCounter', () => {
@@ -46,7 +47,7 @@ describe('useCharacterCounter', () => {
     });
 
     it('制限到達時にコールバックが呼ばれる', () => {
-      const onLimitReached = jest.fn();
+      const onLimitReached = vi.fn();
       const { result } = renderHook(() =>
         useCharacterCounter({
           maxLength: 5,
@@ -107,7 +108,7 @@ describe('useCharacterCounter', () => {
 
   describe('コールバック', () => {
     it('onChange コールバックが呼ばれる', () => {
-      const onChange = jest.fn();
+      const onChange = vi.fn();
       const { result } = renderHook(() =>
         useCharacterCounter({
           maxLength: 100,
@@ -123,7 +124,7 @@ describe('useCharacterCounter', () => {
     });
 
     it('制限内での変更時はonLimitReachedが呼ばれない', () => {
-      const onLimitReached = jest.fn();
+      const onLimitReached = vi.fn();
       const { result } = renderHook(() =>
         useCharacterCounter({
           maxLength: 100,

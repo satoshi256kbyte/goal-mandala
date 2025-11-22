@@ -1,20 +1,21 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { EnhancedErrorDisplay, FieldErrorDisplay } from './EnhancedErrorDisplay';
-import { ApiError, NetworkErrorType } from '../../services/api';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { vi } from 'vitest';
+import { EnhancedErrorDisplay } from './EnhancedErrorDisplay';
+import { ApiError } from '../../services/api';
 
 describe('EnhancedErrorDisplay', () => {
-  const mockOnFieldFocus = jest.fn();
-  const mockOnRetry = jest.fn();
-  const mockOnErrorHide = jest.fn();
+  const mockOnFieldFocus = vi.fn();
+  const mockOnRetry = vi.fn();
+  const mockOnErrorHide = vi.fn();
 
   beforeEach(() => {
-    jest.clearAllMocks();
-    jest.useFakeTimers();
+    vi.clearAllMocks();
+    vi.useFakeTimers();
   });
 
   afterEach(() => {
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   describe('基本表示', () => {
@@ -189,7 +190,7 @@ describe('EnhancedErrorDisplay', () => {
       expect(screen.getByText('テストエラー')).toBeInTheDocument();
 
       // 1秒経過
-      jest.advanceTimersByTime(1000);
+      vi.advanceTimersByTime(1000);
 
       await waitFor(() => {
         expect(screen.queryByText('テストエラー')).not.toBeInTheDocument();
@@ -244,11 +245,11 @@ describe('EnhancedErrorDisplay', () => {
 
 describe('FieldErrorDisplay', () => {
   beforeEach(() => {
-    jest.useFakeTimers();
+    vi.useFakeTimers();
   });
 
   afterEach(() => {
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   it('単一エラーメッセージを表示する', () => {
@@ -280,7 +281,7 @@ describe('FieldErrorDisplay', () => {
 
     expect(screen.getByText('テストエラー')).toBeInTheDocument();
 
-    jest.advanceTimersByTime(1000);
+    vi.advanceTimersByTime(1000);
 
     await waitFor(() => {
       expect(screen.queryByText('テストエラー')).not.toBeInTheDocument();

@@ -1,11 +1,12 @@
-import { renderHook, act } from '@testing-library/react';
-import { useDraftRestore, useDraftRestoreStatus } from './useDraftRestore';
-import { DraftService, DraftData } from '../services/draftService';
+import { renderHook } from '@testing-library/react';
+import { vi } from 'vitest';
+import { useDraftRestore } from './useDraftRestore';
+import { DraftService } from '../services/draftService';
 import { PartialGoalFormData } from '../schemas/goal-form';
 
 // DraftServiceのモック
-jest.mock('../services/draftService');
-const mockDraftService = DraftService as jest.Mocked<typeof DraftService>;
+vi.mock('../services/draftService');
+const mockDraftService = DraftService as Mock<typeof DraftService>;
 
 describe('useDraftRestore', () => {
   const mockFormData: PartialGoalFormData = {
@@ -23,7 +24,7 @@ describe('useDraftRestore', () => {
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('基本機能', () => {
@@ -40,7 +41,7 @@ describe('useDraftRestore', () => {
     it('下書きデータを正常に読み込める', async () => {
       mockDraftService.loadDraft.mockResolvedValue(mockDraftData);
 
-      const onDraftFound = jest.fn();
+      const onDraftFound = vi.fn();
       const { result } = renderHook(() => useDraftRestore({ onDraftFound }));
 
       let loadedData: DraftData | null;
@@ -73,7 +74,7 @@ describe('useDraftRestore', () => {
     it('自動復元が有効な場合、初期化時に下書きを復元する', async () => {
       mockDraftService.loadDraft.mockResolvedValue(mockDraftData);
 
-      const onRestoreSuccess = jest.fn();
+      const onRestoreSuccess = vi.fn();
 
       await act(async () => {
         renderHook(() =>
@@ -90,7 +91,7 @@ describe('useDraftRestore', () => {
     it('自動復元が無効な場合、初期化時に復元しない', async () => {
       mockDraftService.loadDraft.mockResolvedValue(mockDraftData);
 
-      const onRestoreSuccess = jest.fn();
+      const onRestoreSuccess = vi.fn();
 
       await act(async () => {
         renderHook(() =>
@@ -107,7 +108,7 @@ describe('useDraftRestore', () => {
 
   describe('手動復元', () => {
     it('下書きを手動で復元できる', async () => {
-      const onRestoreSuccess = jest.fn();
+      const onRestoreSuccess = vi.fn();
       const { result } = renderHook(() => useDraftRestore({ onRestoreSuccess }));
 
       // 下書きデータを設定
@@ -126,7 +127,7 @@ describe('useDraftRestore', () => {
     });
 
     it('下書きデータがない場合はエラーになる', async () => {
-      const onRestoreError = jest.fn();
+      const onRestoreError = vi.fn();
       const { result } = renderHook(() => useDraftRestore({ onRestoreError }));
 
       let restoredData: PartialGoalFormData | null;
@@ -140,7 +141,7 @@ describe('useDraftRestore', () => {
     });
 
     it('引数で指定した下書きデータを復元できる', async () => {
-      const onRestoreSuccess = jest.fn();
+      const onRestoreSuccess = vi.fn();
       const { result } = renderHook(() => useDraftRestore({ onRestoreSuccess }));
 
       let restoredData: PartialGoalFormData | null;
@@ -155,7 +156,7 @@ describe('useDraftRestore', () => {
 
   describe('復元拒否', () => {
     it('復元を拒否できる', () => {
-      const onRestoreRejected = jest.fn();
+      const onRestoreRejected = vi.fn();
       const { result } = renderHook(() => useDraftRestore({ onRestoreRejected }));
 
       act(() => {
@@ -192,7 +193,7 @@ describe('useDraftRestore', () => {
       const clearError = new Error('削除エラー');
       mockDraftService.clearDraft.mockRejectedValue(clearError);
 
-      const onRestoreError = jest.fn();
+      const onRestoreError = vi.fn();
       const { result } = renderHook(() => useDraftRestore({ onRestoreError }));
 
       await act(async () => {
@@ -279,7 +280,7 @@ describe('useDraftRestore', () => {
       const loadError = new Error('読み込みエラー');
       mockDraftService.loadDraft.mockRejectedValue(loadError);
 
-      const onRestoreError = jest.fn();
+      const onRestoreError = vi.fn();
       const { result } = renderHook(() => useDraftRestore({ onRestoreError }));
 
       let loadedData: DraftData | null;

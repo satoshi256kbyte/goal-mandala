@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { useForm, SubmitHandler } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   goalFormSchema,
@@ -9,11 +9,9 @@ import {
   FIELD_LIMITS,
   dateUtils,
 } from '../../schemas/goal-form';
-import { FormField, TextInput, TextArea, DatePicker, ErrorDisplay } from './index';
+import { FormField, TextInput, TextArea, DatePicker } from './index';
 import { useResponsiveLayout } from '../../hooks/useResponsiveLayout';
 import { useKeyboardNavigation } from '../../hooks/useKeyboardNavigation';
-import { /* useFocusManagement, */ useAnnouncement } from '../../hooks/useFocusManagement';
-
 /**
  * GoalInputFormのプロパティ
  */
@@ -73,7 +71,7 @@ export const GoalInputForm: React.FC<GoalInputFormProps> = ({
     watch,
     setValue,
     getValues,
-    formState: { errors, isValid, isDirty },
+    formState: { errors, isDirty },
     reset,
   } = useForm<GoalFormData>({
     resolver: zodResolver(goalFormSchema),

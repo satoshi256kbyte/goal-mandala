@@ -9,7 +9,7 @@ import {
   GoalStatus,
   ActionType,
 } from '../../types';
-import { generateGridData, validateGridData } from '../../utils/mandala';
+import { generateGridData } from '../../utils/mandala';
 import MandalaGrid from './MandalaGrid';
 import './MandalaChart.css';
 

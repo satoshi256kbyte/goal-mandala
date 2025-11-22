@@ -1,5 +1,5 @@
 import React from 'react';
-import { generateScreenReaderText, SR_ONLY_CLASS } from '../../utils/screen-reader';
+import { generateScreenReaderText } from '../../utils/screen-reader';
 
 export interface CharacterCounterProps {
   /** 現在の文字数 */

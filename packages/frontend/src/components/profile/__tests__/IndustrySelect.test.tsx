@@ -1,5 +1,5 @@
-import { render, screen, fireEvent, cleanup } from '@testing-library/react';
-import { describe, it, expect, vi, afterEach } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { describe, it, expect } from 'vitest';
 import { IndustrySelect } from '../IndustrySelect';
 import {
   INDUSTRY_OPTIONS,
@@ -9,10 +9,6 @@ import {
 } from '../../../constants/profile';
 
 describe('IndustrySelect', () => {
-  afterEach(() => {
-    cleanup();
-  });
-
   const defaultProps = {
     value: '',
     onChange: vi.fn(),

@@ -1,7 +1,7 @@
 import React from 'react';
-import { renderHook, act } from '@testing-library/react';
+import { renderHook } from '@testing-library/react';
 import { vi } from 'vitest';
-import { useAuth, AuthContext } from './useAuth';
+import { useAuth } from './useAuth';
 import { AuthProvider } from '../components/auth/AuthProvider';
 
 // Amplifyのモック

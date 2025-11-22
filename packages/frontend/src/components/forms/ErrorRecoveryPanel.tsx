@@ -1,5 +1,5 @@
 import React from 'react';
-import { useErrorRecovery, RecoveryStrategy, RecoveryAction } from '../../hooks/useErrorRecovery';
+import { useErrorRecovery, RecoveryStrategy } from '../../hooks/useErrorRecovery';
 import { ApiError } from '../../services/api';
 import { ValidationMessage } from './ValidationMessage';
 

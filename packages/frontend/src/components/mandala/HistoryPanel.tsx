@@ -218,7 +218,6 @@ export const HistoryPanel: React.FC<HistoryPanelProps> = ({
           onClick={handleCloseDetail}
           role="presentation"
         >
-          {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
           <div
             role="dialog"
             aria-labelledby="history-detail-title"

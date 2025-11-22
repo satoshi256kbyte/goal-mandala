@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { ProgressCalculationEngineImpl } from '../progress-calculation-engine';
 import { TaskStatus } from '../../types/progress';
 import { ActionType } from '../../types/mandala';

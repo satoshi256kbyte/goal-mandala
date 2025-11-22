@@ -2,8 +2,9 @@
  * APIサービスのテスト
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { ApiClient, NetworkErrorType, goalFormApiService } from '../api';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { ApiClient, NetworkErrorType } from '../api';
+import { createMockNavigator } from '../../test/types/mock-types';
 
 describe('ApiClient', () => {
   let apiClient: ApiClient;
@@ -15,9 +16,7 @@ describe('ApiClient', () => {
     global.fetch = fetchMock;
 
     // navigatorをモック
-    global.navigator = {
-      onLine: true,
-    } as any;
+    global.navigator = createMockNavigator() as Navigator;
 
     apiClient = new ApiClient('/api');
   });
@@ -186,9 +185,7 @@ describe('ApiClient', () => {
     });
 
     it('オフライン時にエラーを返す', async () => {
-      global.navigator = {
-        onLine: false,
-      } as any;
+      global.navigator = createMockNavigator({ onLine: false }) as Navigator;
 
       await expect(apiClient.get('/test')).rejects.toMatchObject({
         code: NetworkErrorType.OFFLINE,
@@ -264,9 +261,7 @@ describe('goalFormApiService', () => {
   beforeEach(() => {
     fetchMock = vi.fn();
     global.fetch = fetchMock;
-    global.navigator = {
-      onLine: true,
-    } as any;
+    global.navigator = createMockNavigator() as Navigator;
   });
 
   afterEach(() => {

@@ -2,7 +2,7 @@
  * 認証セキュリティサービスのテスト
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { AuthSecurityService } from '../auth-security';
 
 describe('AuthSecurityService', () => {

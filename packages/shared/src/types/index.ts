@@ -68,10 +68,11 @@ export interface Task {
   id: string;
   actionId: string;
   title: string;
-  description: string;
+  description?: string;
   type: TaskType;
   status: TaskStatus;
   estimatedMinutes: number;
+  deadline?: Date;
   completedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -121,4 +122,47 @@ export interface ProgressHierarchy {
   action: ActionProgress;
   subGoal: SubGoalProgress;
   goal: GoalProgress;
+}
+
+// タスク管理機能の型定義
+export interface TaskNote {
+  id: string;
+  taskId: string;
+  userId: string;
+  content: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface TaskHistory {
+  id: string;
+  taskId: string;
+  userId: string;
+  oldStatus: TaskStatus;
+  newStatus: TaskStatus;
+  changedAt: Date;
+}
+
+export interface SavedView {
+  id: string;
+  userId: string;
+  name: string;
+  filters: TaskFilters;
+  searchQuery?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export type DeadlineRange = 'today' | 'this_week' | 'overdue' | 'custom';
+
+export interface CustomDeadlineRange {
+  start: Date;
+  end: Date;
+}
+
+export interface TaskFilters {
+  statuses?: TaskStatus[];
+  deadlineRange?: DeadlineRange;
+  customDeadlineRange?: CustomDeadlineRange;
+  actionIds?: string[];
 }

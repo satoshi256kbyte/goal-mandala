@@ -4,8 +4,8 @@
  * 複数のStorageSyncインスタンス間での実際の同期動作をテストします。
  */
 
-import { describe, test, expect, beforeEach, afterEach, vi } from 'vitest';
-import { StorageSync, AuthState } from './storage-sync';
+import { describe, test, expect, beforeEach, afterEach } from 'vitest';
+import { StorageSync } from './storage-sync';
 
 // 複数タブをシミュレートするためのヘルパー
 class TabSimulator {

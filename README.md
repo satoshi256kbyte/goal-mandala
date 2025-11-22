@@ -47,7 +47,7 @@ pnpm run act:debug
 pnpm run act:dry-run
 ```
 
-詳細は [act使用ガイド](./docs/act-usage-guide.md) を参照してください。
+詳細は [実装ガイド](./.kiro/steering/7-implementation-guide.md) を参照してください。
 
 #### バックエンドテスト戦略
 
@@ -107,7 +107,7 @@ pnpm run test:safe
 フロントエンドでは、用途に応じて複数のテストコマンドを用意しています：
 
 ```bash
-# 高速ユニットテスト（カバレッジなし、推奨）
+# 基本テスト（高速・カバレッジなし、推奨）
 pnpm --filter @goal-mandala/frontend test
 
 # ユニットテストのみ実行
@@ -116,25 +116,31 @@ pnpm --filter @goal-mandala/frontend test:unit
 # 統合テストのみ実行
 pnpm --filter @goal-mandala/frontend test:integration
 
-# 最速テスト（分離なし、開発中の確認用）
-pnpm --filter @goal-mandala/frontend test:fast
-
 # カバレッジ付きテスト（CI/CD用）
 pnpm --filter @goal-mandala/frontend test:coverage
+
+# E2Eテスト（重要フローのみ）
+pnpm --filter @goal-mandala/frontend test:e2e
+
+# 開発用ウォッチモード
+pnpm --filter @goal-mandala/frontend test:watch
 ```
 
 **テスト実行時間の目安**:
-- `test:fast`: 約15秒（開発中の高速フィードバック用）
-- `test:unit`: 約30秒（コミット前の確認用）
-- `test:integration`: 約45秒（統合テスト実行用）
-- `test:coverage`: 約60秒（カバレッジレポート生成用）
+
+- `test`: 約60秒（基本テスト、カバレッジなし）
+- `test:unit`: 約60秒（ユニットテストのみ）
+- `test:integration`: 約30秒（統合テストのみ）
+- `test:e2e`: 約120秒（E2Eテスト）
+- `test:coverage`: JSON形式のみ（カバレッジレポート生成）
 
 **開発フローでの使い分け**:
-- **開発中**: `test:fast` で高速フィードバック
+
+- **開発中**: `test` または `test:watch` で高速フィードバック
 - **コミット前**: `test:unit` で品質確認
 - **PR作成前**: `test:coverage` で完全チェック
 
-詳細は [テスト実行ルール](./docs/test-execution-rules.md) を参照してください。
+詳細は [テストガイド](./.kiro/steering/9-test-guide.md) を参照してください。
 
 ## クイックスタート
 
@@ -155,7 +161,7 @@ cp .env.example .env
 pnpm run env:check
 ```
 
-詳細な環境変数設定については [環境変数設定ガイド](./docs/environment-variables.md) を参照してください。
+詳細な環境変数設定については [実装ガイド](./.kiro/steering/7-implementation-guide.md#環境変数管理) を参照してください。
 
 ### 3. ローカル開発環境の起動
 
@@ -184,13 +190,12 @@ curl http://localhost:3001/health
 ### 開発者向けドキュメント
 
 - [CONTRIBUTING.md](./CONTRIBUTING.md) - 開発者向け詳細ガイド（SAM CLI環境の使用方法を含む）
-- [環境変数設定ガイド](./docs/environment-variables.md) - 環境変数の詳細設定
 - [AWS SAM CLI公式ドキュメント](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/) - SAM CLIの詳細な使用方法
 
 ### アーキテクチャドキュメント
 
-- [モノレポアーキテクチャ](./docs/monorepo-architecture.md) - パッケージ構成と依存関係
-- [統合テストガイド](./docs/integration-testing.md) - テスト実行方法
+- [技術スタック](./.kiro/steering/2-technology-stack.md) - モノレポ構成とパッケージ依存関係
+- [テストガイド](./.kiro/steering/9-test-guide.md) - テスト戦略と実行方法
 
 ## インフラストラクチャ（AWS CDK）
 

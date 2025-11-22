@@ -1,20 +1,16 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ProgressTooltip } from './ProgressTooltip';
-
-// タイマーのモック
-vi.useFakeTimers();
 
 describe('ProgressTooltip', () => {
   beforeEach(() => {
-    vi.clearAllTimers();
+    vi.useFakeTimers();
   });
 
   afterEach(() => {
     vi.runOnlyPendingTimers();
     vi.useRealTimers();
-    vi.useFakeTimers();
   });
 
   describe('基本的な進捗表示', () => {
@@ -27,7 +23,6 @@ describe('ProgressTooltip', () => {
 
       const trigger = screen.getByText('ホバーしてください');
       fireEvent.mouseEnter(trigger);
-      vi.runAllTimers();
 
       await waitFor(() => {
         expect(screen.getByText('75.5%')).toBeInTheDocument();
@@ -44,7 +39,6 @@ describe('ProgressTooltip', () => {
 
       const trigger = screen.getByText('ホバーしてください');
       fireEvent.mouseEnter(trigger);
-      vi.runAllTimers();
 
       await waitFor(() => {
         expect(screen.getByText('アクション進捗')).toBeInTheDocument();
@@ -62,7 +56,6 @@ describe('ProgressTooltip', () => {
       );
 
       fireEvent.mouseEnter(trigger);
-      vi.runAllTimers();
 
       await waitFor(() => {
         expect(screen.getByText('目標進捗')).toBeInTheDocument();
@@ -90,7 +83,6 @@ describe('ProgressTooltip', () => {
 
         const trigger = screen.getByText(`ホバーしてください${index}`);
         fireEvent.mouseEnter(trigger);
-        vi.runAllTimers();
 
         await waitFor(() => {
           expect(screen.getByText(testCase.expectedStatus)).toBeInTheDocument();
@@ -116,7 +108,6 @@ describe('ProgressTooltip', () => {
 
       const trigger = screen.getByText('ホバーしてください');
       fireEvent.mouseEnter(trigger);
-      vi.runAllTimers();
 
       await waitFor(() => {
         expect(screen.getByText('前回から')).toBeInTheDocument();
@@ -135,7 +126,6 @@ describe('ProgressTooltip', () => {
 
       const trigger = screen.getByText('ホバーしてください');
       fireEvent.mouseEnter(trigger);
-      vi.runAllTimers();
 
       await waitFor(() => {
         const changeElement = screen.getByText('-30.0%');
@@ -153,7 +143,6 @@ describe('ProgressTooltip', () => {
 
       const trigger = screen.getByText('ホバーしてください');
       fireEvent.mouseEnter(trigger);
-      vi.runAllTimers();
 
       await waitFor(() => {
         const changeElement = screen.getByText('変更なし');
@@ -173,7 +162,6 @@ describe('ProgressTooltip', () => {
 
       const trigger = screen.getByText('ホバーしてください');
       fireEvent.mouseEnter(trigger);
-      vi.runAllTimers();
 
       await waitFor(() => {
         expect(screen.getByText('目標まで')).toBeInTheDocument();
@@ -190,7 +178,6 @@ describe('ProgressTooltip', () => {
 
       const trigger = screen.getByText('ホバーしてください');
       fireEvent.mouseEnter(trigger);
-      vi.runAllTimers();
 
       await waitFor(() => {
         expect(screen.queryByText('目標まで')).not.toBeInTheDocument();
@@ -208,7 +195,6 @@ describe('ProgressTooltip', () => {
 
       const trigger = screen.getByText('ホバーしてください');
       fireEvent.mouseEnter(trigger);
-      vi.runAllTimers();
 
       await waitFor(() => {
         expect(screen.getByText('完了タスク')).toBeInTheDocument();
@@ -226,7 +212,6 @@ describe('ProgressTooltip', () => {
 
       const trigger = screen.getByText('ホバーしてください');
       fireEvent.mouseEnter(trigger);
-      vi.runAllTimers();
 
       await waitFor(() => {
         expect(screen.getByText('0/5')).toBeInTheDocument();
@@ -247,7 +232,6 @@ describe('ProgressTooltip', () => {
 
       const trigger = screen.getByText('ホバーしてください');
       fireEvent.mouseEnter(trigger);
-      vi.runAllTimers();
 
       await waitFor(() => {
         expect(screen.getByText('最終更新')).toBeInTheDocument();
@@ -266,7 +250,6 @@ describe('ProgressTooltip', () => {
 
       const trigger = screen.getByText('ホバーしてください');
       fireEvent.mouseEnter(trigger);
-      vi.runAllTimers();
 
       await waitFor(() => {
         expect(screen.getByText('完了予定')).toBeInTheDocument();
@@ -285,7 +268,6 @@ describe('ProgressTooltip', () => {
 
       const trigger = screen.getByText('ホバーしてください');
       fireEvent.mouseEnter(trigger);
-      vi.runAllTimers();
 
       await waitFor(() => {
         expect(screen.queryByText('完了予定')).not.toBeInTheDocument();
@@ -303,7 +285,6 @@ describe('ProgressTooltip', () => {
 
       const trigger = screen.getByText('ホバーしてください');
       fireEvent.mouseEnter(trigger);
-      vi.runAllTimers();
 
       await waitFor(() => {
         expect(screen.getByText('順調に進んでいます！')).toBeInTheDocument();
@@ -328,7 +309,6 @@ describe('ProgressTooltip', () => {
 
       const trigger = screen.getByText('ホバーしてください');
       fireEvent.mouseEnter(trigger);
-      vi.runAllTimers();
 
       await waitFor(() => {
         expect(screen.getByText('75.0%')).toBeInTheDocument();
@@ -346,7 +326,6 @@ describe('ProgressTooltip', () => {
 
       const trigger = screen.getByText('ホバーしてください');
       fireEvent.mouseEnter(trigger);
-      vi.runAllTimers();
 
       await waitFor(() => {
         expect(screen.getByText('完了タスク')).toBeInTheDocument();
@@ -378,7 +357,6 @@ describe('ProgressTooltip', () => {
 
       const trigger = screen.getByText('ホバーしてください');
       fireEvent.mouseEnter(trigger);
-      vi.runAllTimers();
 
       await waitFor(() => {
         // 基本情報

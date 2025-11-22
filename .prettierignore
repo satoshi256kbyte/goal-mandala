@@ -13,6 +13,17 @@ out/
 # Generated files
 *.tsbuildinfo
 **/*.tsbuildinfo
+*.d.ts
+*.js
+!*.config.js
+!jest.config.js
+!tailwind.config.js
+!esbuild.config.js
+!vite.config.js
+!vitest.config.js
+
+# Prisma generated files
+**/generated/prisma-client/
 
 # Coverage reports
 coverage/

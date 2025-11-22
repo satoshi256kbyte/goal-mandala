@@ -1,9 +1,9 @@
-import { renderHook, act } from '@testing-library/react';
+import { renderHook } from '@testing-library/react';
 import { vi } from 'vitest';
 import React from 'react';
-import { useActionForm, useActionFieldValidation, useActionFormSubmission } from './useActionForm';
+import { useActionForm, useActionFieldValidation } from './useActionForm';
 import { ActionProvider } from '../contexts/ActionContext';
-import { ActionType, Action } from '../types/mandala';
+import { ActionType } from '../types/mandala';
 import { ActionFormData } from '../schemas/action-form';
 
 // テスト用のアクションデータ
@@ -21,11 +21,13 @@ const mockActions: Action[] = [
 
 // テスト用のプロバイダーラッパー
 const createWrapper = (initialActions: Action[] = []) => {
-  return ({ children }: { children: React.ReactNode }) => (
+  const TestWrapper = ({ children }: { children: React.ReactNode }) => (
     <ActionProvider initialActions={initialActions} goalId="goal-1">
       {children}
     </ActionProvider>
   );
+  TestWrapper.displayName = 'TestWrapper';
+  return TestWrapper;
 };
 
 describe('useActionForm', () => {

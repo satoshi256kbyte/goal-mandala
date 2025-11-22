@@ -1,4 +1,5 @@
-import { DraftService, DraftServiceError, draftUtils } from './draftService';
+import { DraftService, DraftServiceError } from './draftService';
+import { vi } from 'vitest';
 import { PartialGoalFormData } from '../schemas/goal-form';
 
 // LocalStorageのモック
@@ -6,14 +7,14 @@ const mockLocalStorage = (() => {
   let store: Record<string, string> = {};
 
   return {
-    getItem: jest.fn((key: string) => store[key] || null),
-    setItem: jest.fn((key: string, value: string) => {
+    getItem: vi.fn((key: string) => store[key] || null),
+    setItem: vi.fn((key: string, value: string) => {
       store[key] = value;
     }),
-    removeItem: jest.fn((key: string) => {
+    removeItem: vi.fn((key: string) => {
       delete store[key];
     }),
-    clear: jest.fn(() => {
+    clear: vi.fn(() => {
       store = {};
     }),
   };
@@ -26,7 +27,7 @@ Object.defineProperty(window, 'localStorage', {
 describe('DraftService', () => {
   beforeEach(() => {
     mockLocalStorage.clear();
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('saveDraft', () => {

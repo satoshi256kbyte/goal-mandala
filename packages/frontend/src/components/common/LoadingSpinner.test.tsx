@@ -1,6 +1,6 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
-import { LoadingSpinner, LoadingOverlay, InlineLoading } from './LoadingSpinner';
+import { render } from '@testing-library/react';
+import { LoadingSpinner, LoadingOverlay } from './LoadingSpinner';
 
 describe('LoadingSpinner', () => {
   describe('基本表示', () => {

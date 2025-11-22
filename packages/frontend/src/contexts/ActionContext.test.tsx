@@ -1,13 +1,14 @@
 import React from 'react';
-import { render, screen, act, waitFor } from '@testing-library/react';
+import { render, screen, act } from '@testing-library/react';
 import { vi } from 'vitest';
+import { renderWithProviders } from '../test/test-utils';
 import {
   ActionProvider,
   useActionContext,
   useActionState,
   useActionActions,
 } from './ActionContext';
-import { Action, ActionType } from '../types/mandala';
+import { Action } from '../types/mandala';
 
 // テスト用のアクションデータ
 const mockActions: Action[] = [
@@ -145,7 +146,7 @@ describe('ActionContext', () => {
       autoSaveEnabled?: boolean;
     } = {}
   ) => {
-    return render(<ActionProvider {...props}>{component}</ActionProvider>);
+    return renderWithProviders(<ActionProvider {...props}>{component}</ActionProvider>);
   };
 
   describe('初期化', () => {
@@ -457,9 +458,12 @@ describe('ActionContext', () => {
 
       renderWithProvider(<TestAsyncComponent />);
 
-      await waitFor(() => {
-        expect(consoleSpy).toHaveBeenCalledWith('Loading actions for goal:', 'goal-1');
-      });
+      await waitFor(
+        () => {
+          expect(consoleSpy).toHaveBeenCalledWith('Loading actions for goal:', 'goal-1');
+        },
+        { timeout: 1000 }
+      );
 
       consoleSpy.mockRestore();
     });
@@ -479,11 +483,14 @@ describe('ActionContext', () => {
 
       renderWithProvider(<TestAsyncComponent />);
 
-      await waitFor(() => {
-        expect(consoleSpy).toHaveBeenCalledWith('Saving draft for action:', 'action-1', {
-          title: 'テストタイトル',
-        });
-      });
+      await waitFor(
+        () => {
+          expect(consoleSpy).toHaveBeenCalledWith('Saving draft for action:', 'action-1', {
+            title: 'テストタイトル',
+          });
+        },
+        { timeout: 1000 }
+      );
 
       consoleSpy.mockRestore();
     });
@@ -503,9 +510,12 @@ describe('ActionContext', () => {
 
       renderWithProvider(<TestAsyncComponent />);
 
-      await waitFor(() => {
-        expect(consoleSpy).toHaveBeenCalledWith('Restoring draft');
-      });
+      await waitFor(
+        () => {
+          expect(consoleSpy).toHaveBeenCalledWith('Restoring draft');
+        },
+        { timeout: 1000 }
+      );
 
       consoleSpy.mockRestore();
     });

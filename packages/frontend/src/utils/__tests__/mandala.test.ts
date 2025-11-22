@@ -1,5 +1,5 @@
-import { generateGridData, validateGridData } from '../mandala';
-import { Goal, SubGoal, Action, GoalStatus, ActionType } from '../../types';
+import { generateGridData } from '../mandala';
+import { Goal, SubGoal, Action, GoalStatus } from '../../types';
 
 describe('mandala utilities', () => {
   const mockGoal: Goal = {

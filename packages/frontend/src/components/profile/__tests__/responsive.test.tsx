@@ -6,8 +6,8 @@
  * コンポーネントが適切に表示されることを確認します。
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { describe, it, expect, beforeEach } from 'vitest';
+import { render } from '@testing-library/react';
 import { IndustrySelect } from '../IndustrySelect';
 import { CompanySizeSelect } from '../CompanySizeSelect';
 import { JobTitleInput } from '../JobTitleInput';
@@ -50,7 +50,7 @@ describe('プロフィール入力コンポーネント - レスポンシブテ�
       setViewportSize(375, 667); // iPhone SE サイズ
       const { container } = render(<IndustrySelect {...mockProps} />);
 
-      const select = screen.getByLabelText(/業種/);
+      const select = screen.getByTestId('industry-select');
       expect(select).toBeInTheDocument();
 
       // profile-form-selectクラスが適用されていることを確認
@@ -65,7 +65,7 @@ describe('プロフィール入力コンポーネント - レスポンシブテ�
       setViewportSize(768, 1024); // iPad サイズ
       const { container } = render(<IndustrySelect {...mockProps} />);
 
-      const select = screen.getByLabelText(/業種/);
+      const select = screen.getByTestId('industry-select');
       expect(select).toBeInTheDocument();
       expect(select).toHaveClass('profile-form-select');
 
@@ -77,7 +77,7 @@ describe('プロフィール入力コンポーネント - レスポンシブテ�
       setViewportSize(1920, 1080); // フルHD サイズ
       const { container } = render(<IndustrySelect {...mockProps} />);
 
-      const select = screen.getByLabelText(/業種/);
+      const select = screen.getByTestId('industry-select');
       expect(select).toBeInTheDocument();
       expect(select).toHaveClass('profile-form-select');
 
@@ -98,7 +98,7 @@ describe('プロフィール入力コンポーネント - レスポンシブテ�
       setViewportSize(375, 667);
       const { container } = render(<CompanySizeSelect {...mockProps} />);
 
-      const select = screen.getByLabelText(/組織規模/);
+      const select = screen.getByTestId('company-size-select');
       expect(select).toBeInTheDocument();
       expect(select).toHaveClass('profile-form-select');
 
@@ -110,7 +110,7 @@ describe('プロフィール入力コンポーネント - レスポンシブテ�
       setViewportSize(768, 1024);
       const { container } = render(<CompanySizeSelect {...mockProps} />);
 
-      const select = screen.getByLabelText(/組織規模/);
+      const select = screen.getByTestId('company-size-select');
       expect(select).toBeInTheDocument();
       expect(select).toHaveClass('profile-form-select');
     });
@@ -119,7 +119,7 @@ describe('プロフィール入力コンポーネント - レスポンシブテ�
       setViewportSize(1920, 1080);
       const { container } = render(<CompanySizeSelect {...mockProps} />);
 
-      const select = screen.getByLabelText(/組織規模/);
+      const select = screen.getByTestId('company-size-select');
       expect(select).toBeInTheDocument();
       expect(select).toHaveClass('profile-form-select');
     });
@@ -137,7 +137,7 @@ describe('プロフィール入力コンポーネント - レスポンシブテ�
       setViewportSize(375, 667);
       const { container } = render(<JobTitleInput {...mockProps} />);
 
-      const input = screen.getByLabelText(/職種/);
+      const input = screen.getByTestId('job-title-input');
       expect(input).toBeInTheDocument();
       expect(input).toHaveClass('profile-form-input');
 
@@ -154,7 +154,7 @@ describe('プロフィール入力コンポーネント - レスポンシブテ�
       setViewportSize(768, 1024);
       const { container } = render(<JobTitleInput {...mockProps} />);
 
-      const input = screen.getByLabelText(/職種/);
+      const input = screen.getByTestId('job-title-input');
       expect(input).toBeInTheDocument();
       expect(input).toHaveClass('profile-form-input');
 
@@ -166,7 +166,7 @@ describe('プロフィール入力コンポーネント - レスポンシブテ�
       setViewportSize(1920, 1080);
       const { container } = render(<JobTitleInput {...mockProps} />);
 
-      const input = screen.getByLabelText(/職種/);
+      const input = screen.getByTestId('job-title-input');
       expect(input).toBeInTheDocument();
       expect(input).toHaveClass('profile-form-input');
 
@@ -187,7 +187,7 @@ describe('プロフィール入力コンポーネント - レスポンシブテ�
       setViewportSize(375, 667);
       const { container } = render(<PositionInput {...mockProps} />);
 
-      const input = screen.getByLabelText(/役職/);
+      const input = screen.getByTestId('position-input');
       expect(input).toBeInTheDocument();
       expect(input).toHaveClass('profile-form-input');
 
@@ -209,7 +209,7 @@ describe('プロフィール入力コンポーネント - レスポンシブテ�
       setViewportSize(768, 1024);
       const { container } = render(<PositionInput {...mockProps} />);
 
-      const input = screen.getByLabelText(/役職/);
+      const input = screen.getByTestId('position-input');
       expect(input).toBeInTheDocument();
       expect(input).toHaveClass('profile-form-input');
 
@@ -221,7 +221,7 @@ describe('プロフィール入力コンポーネント - レスポンシブテ�
       setViewportSize(1920, 1080);
       const { container } = render(<PositionInput {...mockProps} />);
 
-      const input = screen.getByLabelText(/役職/);
+      const input = screen.getByTestId('position-input');
       expect(input).toBeInTheDocument();
       expect(input).toHaveClass('profile-form-input');
 
@@ -243,14 +243,14 @@ describe('プロフィール入力コンポーネント - レスポンシブテ�
       setViewportSize(375, 667);
       const { container, rerender } = render(<IndustrySelect {...mockProps} />);
 
-      let select = screen.getByLabelText(/業種/);
+      let select = screen.getByTestId('industry-select');
       expect(select).toBeInTheDocument();
 
       // タブレットサイズに変更
       setViewportSize(768, 1024);
       rerender(<IndustrySelect {...mockProps} />);
 
-      select = screen.getByLabelText(/業種/);
+      select = screen.getByTestId('industry-select');
       expect(select).toBeInTheDocument();
       expect(select).toHaveClass('profile-form-select');
 
@@ -258,7 +258,7 @@ describe('プロフィール入力コンポーネント - レスポンシブテ�
       setViewportSize(1920, 1080);
       rerender(<IndustrySelect {...mockProps} />);
 
-      select = screen.getByLabelText(/業種/);
+      select = screen.getByTestId('industry-select');
       expect(select).toBeInTheDocument();
       expect(select).toHaveClass('profile-form-select');
     });
@@ -278,7 +278,7 @@ describe('プロフィール入力コンポーネント - レスポンシブテ�
       };
 
       render(<IndustrySelect {...mockProps} />);
-      const select = screen.getByLabelText(/業種/);
+      const select = screen.getByTestId('industry-select');
 
       // CSSクラスが適用されていることを確認
       // 実際のサイズはCSSで定義されているため、クラスの存在を確認
@@ -306,7 +306,7 @@ describe('プロフィール入力コンポーネント - レスポンシブテ�
       };
 
       render(<JobTitleInput {...mockProps} />);
-      const input = screen.getByLabelText(/職種/);
+      const input = screen.getByTestId('job-title-input');
 
       // CSSクラスが適用されていることを確認
       // 実際のフォントサイズはCSSで定義されているため、クラスの存在を確認

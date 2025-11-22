@@ -9,7 +9,7 @@
  * 要件: 1.2, 5.4
  */
 
-import { createContext, useContext, useMemo, useCallback } from 'react';
+import { createContext, useContext, useMemo } from 'react';
 import type { AuthError } from '../services/auth';
 import type { User } from '../services/auth-state-monitor';
 

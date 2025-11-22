@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { useForm, SubmitHandler } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   actionFormSchema,
@@ -17,7 +17,6 @@ import {
 } from './index';
 import { useResponsiveLayout } from '../../hooks/useResponsiveLayout';
 import { useKeyboardNavigation } from '../../hooks/useKeyboardNavigation';
-import { /* useFocusManagement, */ useAnnouncement } from '../../hooks/useFocusManagement';
 import { useActionForm } from '../../hooks/useActionForm';
 import { ActionType } from '../../types/mandala';
 
@@ -500,7 +499,7 @@ export const ActionForm: React.FC<ActionFormProps> = ({
               <DraftSaveButton
                 onClick={handleDraftSave}
                 disabled={!hasUnsavedChanges || isDraftSaving || disabled}
-                isLoading={isDraftSaving}
+                isSaving={isDraftSaving}
                 className={getButtonClasses('secondary')}
               />
             )}

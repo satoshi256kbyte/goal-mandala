@@ -1,8 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { ConflictDialog } from './ConflictDialog';
-import { Goal, SubGoal, Action, GoalStatus, ActionType } from '../../types/mandala';
+import { Goal, SubGoal, Action, GoalStatus } from '../../types/mandala';
 
 describe('ConflictDialog', () => {
   const mockOnReload = vi.fn();

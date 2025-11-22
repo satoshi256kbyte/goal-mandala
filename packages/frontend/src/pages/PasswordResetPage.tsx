@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import AuthLayout from '../components/auth/AuthLayout';
 import { PasswordResetForm } from '../components/auth/PasswordResetForm';
 import { NewPasswordForm } from '../components/auth/NewPasswordForm';
-import { ErrorAlert, SuccessMessage, NetworkStatus } from '../components/common';
+import { ErrorAlert, SuccessMessage } from '../components/common';
 import { useAuthForm } from '../hooks/useAuthForm';
 import { AuthService } from '../services/auth';
 import type { PasswordResetFormData, NewPasswordFormData } from '../utils/validation';

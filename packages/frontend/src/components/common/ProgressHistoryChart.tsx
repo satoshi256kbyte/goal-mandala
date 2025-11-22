@@ -16,10 +16,10 @@ import {
   ReferenceLine,
   Dot,
 } from 'recharts';
-import { format, parseISO } from 'date-fns';
+import { format } from 'date-fns';
 import { ja } from 'date-fns/locale';
 import { cn } from '../../utils/cn';
-import { ProgressHistoryEntry, SignificantChange } from '../../services/progress-history-service';
+import { ProgressHistoryEntry } from '../../services/progress-history-service';
 import { ProgressDetailModal } from './ProgressDetailModal';
 
 export interface ProgressHistoryChartProps {

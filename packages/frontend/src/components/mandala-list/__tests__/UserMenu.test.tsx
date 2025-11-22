@@ -1,7 +1,7 @@
-import { render, screen, cleanup, fireEvent, waitFor } from '@testing-library/react';
-import { describe, it, expect, afterEach, vi, beforeEach } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { BrowserRouter } from 'react-router-dom';
-import { UserMenu, UserMenuWithAuth } from '../UserMenu';
+import { UserMenu } from '../UserMenu';
 import { AuthContext } from '../../../hooks/useAuth';
 
 // テスト用のラッパーコンポーネント
@@ -22,7 +22,7 @@ describe('UserMenu', () => {
   });
 
   afterEach(() => {
-    cleanup();
+    vi.clearAllTimers();
   });
 
   describe('メニュー表示', () => {
@@ -365,7 +365,7 @@ describe('UserMenuWithAuth', () => {
   });
 
   afterEach(() => {
-    cleanup();
+    vi.clearAllTimers();
   });
 
   it('認証済みユーザーの情報が表示される', () => {

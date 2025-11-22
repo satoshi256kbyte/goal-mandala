@@ -3,7 +3,8 @@
  */
 
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render } from '@testing-library/react';
+import { vi } from 'vitest';
 import { ProgressHistoryAnalysis } from '../ProgressHistoryAnalysis';
 import {
   ProgressHistoryEntry,
@@ -12,14 +13,14 @@ import {
 } from '../../../services/progress-history-service';
 
 // date-fns のモック
-jest.mock('date-fns', () => ({
-  format: jest.fn((date, formatStr) => {
+vi.mock('date-fns', () => ({
+  format: vi.fn((date, formatStr) => {
     if (formatStr === 'MM月dd日') return '01月15日';
     return '2024-01-15';
   }),
 }));
 
-jest.mock('date-fns/locale', () => ({
+vi.mock('date-fns/locale', () => ({
   ja: {},
 }));
 

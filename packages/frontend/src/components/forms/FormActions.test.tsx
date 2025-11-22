@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render } from '@testing-library/react';
 import { vi } from 'vitest';
 import { DraftSaveButton } from './DraftSaveButton';
 import { SubmitButton } from './SubmitButton';
@@ -24,7 +24,7 @@ const FormActionsTestComponent: React.FC<{
   onDraftSave?: () => void;
   onSubmit?: () => void;
 }> = ({ formData, isFormValid, onDraftSave, onSubmit }) => {
-  const { state, saveDraft, submitForm, canSaveDraft, canSubmit } = useFormActions({
+  const { state, canSaveDraft, canSubmit } = useFormActions({
     formData,
     isFormValid,
     onDraftSaveSuccess: onDraftSave,

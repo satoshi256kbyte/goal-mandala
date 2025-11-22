@@ -2,7 +2,7 @@
  * 認証状態監視サービスのテスト
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi, type Mock } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import {
   AuthStateMonitor,
   type AuthState,

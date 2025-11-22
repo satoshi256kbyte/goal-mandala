@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link } from 'react-router-dom';
-import { signupZodSchema, type SignupFormData } from '../../utils/validation';
+import { signupZodSchema } from '../../utils/validation';
 import { ErrorMessage } from '../common/ErrorMessage';
 import { LoadingButton } from '../common/LoadingButton';
 import {

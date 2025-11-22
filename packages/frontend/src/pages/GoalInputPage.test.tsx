@@ -1,6 +1,6 @@
 import React from 'react';
-import { render, screen, act } from '@testing-library/react';
-import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { BrowserRouter } from 'react-router-dom';
 import { GoalInputPage } from './GoalInputPage';
 import { GoalFormService } from '../services/goalFormService';

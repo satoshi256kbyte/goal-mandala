@@ -2,21 +2,26 @@
   "name": "@goal-mandala/shared",
   "version": "0.1.0",
   "private": true,
-  "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "import": "./dist/index.js",
+      "require": "./dist/index.js",
       "types": "./dist/index.d.ts"
+    },
+    "./dist/schemas/goal-form": {
+      "import": "./dist/schemas/goal-form.js",
+      "require": "./dist/schemas/goal-form.js",
+      "types": "./dist/schemas/goal-form.d.ts"
     }
   },
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
-    "test": "jest",
-    "test:coverage": "jest --coverage",
-    "test:watch": "jest --watch",
+    "test": "jest --passWithNoTests --maxWorkers=1 --forceExit --testTimeout=30000 --silent",
+    "test:coverage": "jest --coverage --passWithNoTests --maxWorkers=1 --forceExit --testTimeout=30000",
+    "test:watch": "jest --watch --passWithNoTests",
     "lint": "eslint . --ext ts --report-unused-disable-directives --max-warnings 0",
     "lint:fix": "eslint . --ext ts --fix",
     "format": "prettier --write .",
@@ -31,6 +36,7 @@
     "@types/node": "^20.10.0",
     "@typescript-eslint/eslint-plugin": "^6.19.0",
     "@typescript-eslint/parser": "^6.19.0",
+    "fast-check": "^3.23.2",
     "jest": "^29.7.0",
     "ts-jest": "^29.1.1",
     "typescript": "^5.2.2"

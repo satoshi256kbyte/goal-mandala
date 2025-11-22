@@ -1,11 +1,12 @@
-import { renderHook, act } from '@testing-library/react';
-import { useDraftManualSave, useManualSaveStatus } from './useDraftManualSave';
+import { renderHook } from '@testing-library/react';
+import { vi } from 'vitest';
+import { useDraftManualSave } from './useDraftManualSave';
 import { DraftService } from '../services/draftService';
 import { PartialGoalFormData } from '../schemas/goal-form';
 
 // DraftServiceのモック
-jest.mock('../services/draftService');
-const mockDraftService = DraftService as jest.Mocked<typeof DraftService>;
+vi.mock('../services/draftService');
+const mockDraftService = DraftService as Mock<typeof DraftService>;
 
 describe('useDraftManualSave', () => {
   const mockFormData: PartialGoalFormData = {
@@ -25,7 +26,7 @@ describe('useDraftManualSave', () => {
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     mockDraftService.saveDraft.mockResolvedValue();
   });
 
@@ -41,7 +42,7 @@ describe('useDraftManualSave', () => {
     });
 
     it('手動保存が正常に実行される', async () => {
-      const onSaveSuccess = jest.fn();
+      const onSaveSuccess = vi.fn();
       const { result } = renderHook(() => useDraftManualSave({ onSaveSuccess }));
 
       let saveResult: boolean;
@@ -58,7 +59,7 @@ describe('useDraftManualSave', () => {
     });
 
     it('空のデータの場合は保存されない', async () => {
-      const onSaveError = jest.fn();
+      const onSaveError = vi.fn();
       const { result } = renderHook(() => useDraftManualSave({ onSaveError }));
 
       let saveResult: boolean;
@@ -82,7 +83,7 @@ describe('useDraftManualSave', () => {
       const saveError = new Error('保存エラー');
       mockDraftService.saveDraft.mockRejectedValue(saveError);
 
-      const onSaveError = jest.fn();
+      const onSaveError = vi.fn();
       const { result } = renderHook(() => useDraftManualSave({ onSaveError }));
 
       let saveResult: boolean;
@@ -223,9 +224,9 @@ describe('useDraftManualSave', () => {
 
   describe('コールバック', () => {
     it('保存の各段階でコールバックが呼ばれる', async () => {
-      const onSaveStart = jest.fn();
-      const onSaveSuccess = jest.fn();
-      const onSaveComplete = jest.fn();
+      const onSaveStart = vi.fn();
+      const onSaveSuccess = vi.fn();
+      const onSaveComplete = vi.fn();
 
       const { result } = renderHook(() =>
         useDraftManualSave({

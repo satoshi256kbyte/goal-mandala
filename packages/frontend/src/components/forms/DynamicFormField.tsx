@@ -1,14 +1,14 @@
 import React from 'react';
-import { UseFormRegister, FieldError, UseFormWatch } from 'react-hook-form';
+import { UseFormRegister, FieldError } from 'react-hook-form';
 import { TextInput } from './TextInput';
 import { TextArea } from './TextArea';
-import { FormField, ValidationState } from './FormField';
+import { FormField } from './FormField';
 import { CharacterCounter } from './CharacterCounter';
 import { CharacterLimitWarning } from './CharacterLimitWarning';
 import { useCharacterCounter } from '../../hooks/useCharacterCounter';
 import { useResponsive } from '../../hooks/useResponsive';
 import { useLiveRegion } from '../../hooks/useAccessibility';
-import { useStableCallback, useStableMemo } from '../../utils/performance';
+import { useStableCallback } from '../../utils/performance';
 import {
   getFormFieldAria,
   generateScreenReaderText,
@@ -434,7 +434,11 @@ const DynamicFormFieldComponent: React.FC<DynamicFormFieldProps> = ({
         );
 
       default:
-        return null;
+        return (
+          <div className="text-red-500 text-sm p-2 border border-red-300 rounded">
+            サポートされていないフィールドタイプ: {field.type}
+          </div>
+        );
     }
   };
 

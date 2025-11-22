@@ -1,4 +1,4 @@
-import { sanitizeInput, sanitizeHtml, escapeHtml } from './sanitize';
+import { sanitizeInput, sanitizeHtml } from './sanitize';
 
 describe('Frontend sanitizeInput', () => {
   describe('XSS対策', () => {

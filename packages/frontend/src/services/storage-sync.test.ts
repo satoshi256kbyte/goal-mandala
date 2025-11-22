@@ -2,8 +2,8 @@
  * StorageSync ユニットテスト
  */
 
-import { describe, test, expect, beforeEach, afterEach, vi } from 'vitest';
-import { StorageSync, AuthState } from './storage-sync';
+import { describe, test, expect, beforeEach, afterEach } from 'vitest';
+import { StorageSync } from './storage-sync';
 
 describe('StorageSync', () => {
   let storageSync: StorageSync;

@@ -1,12 +1,9 @@
-import { render, screen, fireEvent, cleanup } from '@testing-library/react';
-import { describe, it, expect, vi, afterEach } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { describe, it, expect } from 'vitest';
 import { StatusFilter } from '../StatusFilter';
 import { GoalStatus } from '../../../types/mandala';
 
 describe('StatusFilter', () => {
-  afterEach(() => {
-    cleanup();
-  });
   describe('表示内容', () => {
     it('フィルタードロップダウンが表示される', () => {
       render(<StatusFilter value="all" onChange={vi.fn()} />);

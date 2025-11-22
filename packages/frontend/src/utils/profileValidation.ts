@@ -1,5 +1,5 @@
-import { ProfileFormData, ProfileFormErrors, ValidationResult } from '../types/profile';
-import { INDUSTRIES, COMPANY_SIZES } from '../constants/profile';
+import { ProfileFormData, ProfileFormErrors } from '../types/profile';
+import { INDUSTRIES } from '../constants/profile';
 
 export const validateProfileForm = (data: ProfileFormData): ValidationResult => {
   const errors: ProfileFormErrors = {};

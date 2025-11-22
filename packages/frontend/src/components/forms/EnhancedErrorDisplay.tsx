@@ -1,7 +1,7 @@
 import React from 'react';
 import { ValidationMessage } from './ValidationMessage';
-import { InlineError, ErrorSummary } from './ErrorDisplay';
-import { ApiError, NetworkErrorType } from '../../services/api';
+import { InlineError } from './ErrorDisplay';
+import { ApiError } from '../../services/api';
 
 /**
  * 拡張エラー表示のプロパティ

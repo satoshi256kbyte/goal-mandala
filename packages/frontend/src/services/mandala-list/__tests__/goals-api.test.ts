@@ -2,8 +2,8 @@
  * Goals API Service のユニットテスト
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { getGoals, GoalsApiError } from '../goals-api';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { getGoals } from '../goals-api';
 import { GoalStatus } from '../../../types/mandala-list';
 import { MANDALA_LIST_ERROR_MESSAGES } from '../../../constants/mandala-list';
 
@@ -11,12 +11,9 @@ import { MANDALA_LIST_ERROR_MESSAGES } from '../../../constants/mandala-list';
 global.fetch = vi.fn();
 
 describe('Goals API Service', () => {
-  const mockToken = 'test-auth-token';
-
   beforeEach(() => {
     vi.clearAllMocks();
-    // localStorageのモック
-    Storage.prototype.getItem = vi.fn(() => mockToken);
+    // setup.tsでデフォルトの認証トークンが設定されているので、ここでは何もしない
   });
 
   afterEach(() => {
@@ -100,19 +97,23 @@ describe('Goals API Service', () => {
         expect.any(String),
         expect.objectContaining({
           headers: expect.objectContaining({
-            Authorization: `Bearer ${mockToken}`,
+            Authorization: 'Bearer mock-auth-token',
           }),
         })
       );
     });
 
     it('認証トークンがない場合はエラーをスローする', async () => {
-      Storage.prototype.getItem = vi.fn(() => null);
+      // localStorageから認証トークンを削除
+      localStorage.removeItem('auth_token');
 
       await expect(getGoals({ page: 1, limit: 20 })).rejects.toThrow(GoalsApiError);
       await expect(getGoals({ page: 1, limit: 20 })).rejects.toThrow(
         MANDALA_LIST_ERROR_MESSAGES.UNAUTHORIZED
       );
+
+      // テスト後に認証トークンを復元
+      localStorage.setItem('auth_token', 'mock-auth-token');
     });
 
     it('401エラー時に認証エラーをスローする', async () => {

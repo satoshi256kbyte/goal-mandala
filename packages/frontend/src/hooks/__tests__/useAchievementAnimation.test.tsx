@@ -1,5 +1,6 @@
 import React from 'react';
-import { render, screen, waitFor, act } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
+import { vi } from 'vitest';
 import {
   useAchievementAnimation,
   useMultipleAchievementAnimation,
@@ -8,11 +9,11 @@ import { AnimationSettingsProvider } from '../../contexts/AnimationSettingsConte
 import { globalAchievementManager } from '../../utils/achievement-manager';
 
 // Web Animations API のモック
-const mockAnimate = jest.fn();
+const mockAnimate = vi.fn();
 const mockAnimation = {
-  addEventListener: jest.fn(),
-  cancel: jest.fn(),
-  finish: jest.fn(),
+  addEventListener: vi.fn(),
+  cancel: vi.fn(),
+  finish: vi.fn(),
 };
 
 Object.defineProperty(HTMLElement.prototype, 'animate', {
@@ -23,10 +24,10 @@ Object.defineProperty(HTMLElement.prototype, 'animate', {
 // matchMedia のモック
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
-  value: jest.fn().mockImplementation(() => ({
+  value: vi.fn().mockImplementation(() => ({
     matches: false,
-    addEventListener: jest.fn(),
-    removeEventListener: jest.fn(),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
   })),
 });
 
@@ -97,7 +98,7 @@ const MultipleTestComponent: React.FC<{
 
 describe('useAchievementAnimation', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     globalAchievementManager.clearPendingAchievements();
   });
 
@@ -116,7 +117,7 @@ describe('useAchievementAnimation', () => {
     });
 
     it('進捗が100%に達した時に自動的にアチーブメントをトリガーする', async () => {
-      const onAchievement = jest.fn();
+      const onAchievement = vi.fn();
 
       const { rerender } = renderWithProvider(
         <TestComponent type="task" id="test-1" progress={50} onAchievement={onAchievement} />
@@ -135,7 +136,7 @@ describe('useAchievementAnimation', () => {
     });
 
     it('手動でアチーブメントをトリガーできる', async () => {
-      const onAchievement = jest.fn();
+      const onAchievement = vi.fn();
 
       renderWithProvider(
         <TestComponent type="task" id="test-1" progress={50} onAchievement={onAchievement} />
@@ -152,7 +153,7 @@ describe('useAchievementAnimation', () => {
     });
 
     it('アチーブメントをキャンセルできる', () => {
-      const spy = jest.spyOn(globalAchievementManager, 'cancelAchievement');
+      const spy = vi.spyOn(globalAchievementManager, 'cancelAchievement');
 
       renderWithProvider(<TestComponent type="task" id="test-1" progress={50} />);
 
@@ -167,7 +168,7 @@ describe('useAchievementAnimation', () => {
     });
 
     it('アニメーション無効時はアチーブメントをトリガーしない', async () => {
-      const onAchievement = jest.fn();
+      const onAchievement = vi.fn();
 
       renderWithProvider(
         <TestComponent type="task" id="test-1" progress={100} onAchievement={onAchievement} />,
@@ -180,7 +181,7 @@ describe('useAchievementAnimation', () => {
     });
 
     it('達成アニメーション無効時はアチーブメントをトリガーしない', async () => {
-      const onAchievement = jest.fn();
+      const onAchievement = vi.fn();
 
       renderWithProvider(
         <TestComponent type="task" id="test-1" progress={100} onAchievement={onAchievement} />,
@@ -192,7 +193,7 @@ describe('useAchievementAnimation', () => {
     });
 
     it('disabled=trueの場合はアチーブメントをトリガーしない', async () => {
-      const onAchievement = jest.fn();
+      const onAchievement = vi.fn();
 
       renderWithProvider(
         <TestComponent
@@ -211,7 +212,7 @@ describe('useAchievementAnimation', () => {
 
   describe('アニメーションタイプ', () => {
     it('taskタイプのアチーブメントを正しく処理する', async () => {
-      const onAchievement = jest.fn();
+      const onAchievement = vi.fn();
 
       renderWithProvider(
         <TestComponent type="task" id="test-1" progress={100} onAchievement={onAchievement} />
@@ -229,7 +230,7 @@ describe('useAchievementAnimation', () => {
     });
 
     it('actionタイプのアチーブメントを正しく処理する', async () => {
-      const onAchievement = jest.fn();
+      const onAchievement = vi.fn();
 
       renderWithProvider(
         <TestComponent type="action" id="test-1" progress={100} onAchievement={onAchievement} />
@@ -247,7 +248,7 @@ describe('useAchievementAnimation', () => {
     });
 
     it('subgoalタイプのアチーブメントを正しく処理する', async () => {
-      const onAchievement = jest.fn();
+      const onAchievement = vi.fn();
 
       renderWithProvider(
         <TestComponent type="subgoal" id="test-1" progress={100} onAchievement={onAchievement} />
@@ -265,7 +266,7 @@ describe('useAchievementAnimation', () => {
     });
 
     it('goalタイプのアチーブメントを正しく処理する', async () => {
-      const onAchievement = jest.fn();
+      const onAchievement = vi.fn();
 
       renderWithProvider(
         <TestComponent type="goal" id="test-1" progress={100} onAchievement={onAchievement} />
@@ -285,7 +286,7 @@ describe('useAchievementAnimation', () => {
 
   describe('進捗変化の検出', () => {
     it('進捗が99%から100%に変化した時のみトリガーする', async () => {
-      const onAchievement = jest.fn();
+      const onAchievement = vi.fn();
 
       const { rerender } = renderWithProvider(
         <TestComponent type="task" id="test-1" progress={99} onAchievement={onAchievement} />
@@ -315,11 +316,17 @@ describe('useAchievementAnimation', () => {
     });
 
     it('進捗が100%から99%に下がった場合はトリガーしない', async () => {
-      const onAchievement = jest.fn();
+      const onAchievement = vi.fn();
 
       const { rerender } = renderWithProvider(
         <TestComponent type="task" id="test-1" progress={100} onAchievement={onAchievement} />
       );
+
+      // 初回の100%トリガーを確認してクリア
+      await waitFor(() => {
+        expect(onAchievement).toHaveBeenCalledTimes(1);
+      });
+      onAchievement.mockClear();
 
       // 99%に変更
       rerender(
@@ -335,7 +342,7 @@ describe('useAchievementAnimation', () => {
 
   describe('クリーンアップ', () => {
     it('コンポーネントアンマウント時にアチーブメントをキャンセルする', () => {
-      const spy = jest.spyOn(globalAchievementManager, 'cancelAchievement');
+      const spy = vi.spyOn(globalAchievementManager, 'cancelAchievement');
 
       const { unmount } = renderWithProvider(
         <TestComponent type="task" id="test-1" progress={50} />
@@ -352,7 +359,7 @@ describe('useAchievementAnimation', () => {
 
 describe('useMultipleAchievementAnimation', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     globalAchievementManager.clearPendingAchievements();
   });
 
@@ -376,7 +383,7 @@ describe('useMultipleAchievementAnimation', () => {
     });
 
     it('複数のアチーブメントを同時にトリガーできる', async () => {
-      const onAchievement = jest.fn();
+      const onAchievement = vi.fn();
       const elements = [
         { type: 'task' as const, id: 'task-1', progress: 100 },
         { type: 'task' as const, id: 'task-2', progress: 100 },
@@ -402,7 +409,7 @@ describe('useMultipleAchievementAnimation', () => {
     });
 
     it('進捗が100%に達した要素のみをトリガーする', async () => {
-      const onAchievement = jest.fn();
+      const onAchievement = vi.fn();
       const elements = [
         { type: 'task' as const, id: 'task-1', progress: 50 },
         { type: 'task' as const, id: 'task-2', progress: 100 },
@@ -411,6 +418,12 @@ describe('useMultipleAchievementAnimation', () => {
       const { rerender } = renderWithProvider(
         <MultipleTestComponent elements={elements} onAchievement={onAchievement} />
       );
+
+      // task-2の初期100%トリガーを待つ
+      await waitFor(() => {
+        expect(onAchievement).toHaveBeenCalledTimes(1);
+      });
+      onAchievement.mockClear();
 
       // task-1の進捗を100%に更新
       const updatedElements = [
@@ -430,14 +443,14 @@ describe('useMultipleAchievementAnimation', () => {
         );
       });
 
-      // task-2は既に100%だったので含まれない
+      // task-1のみが新たにトリガーされる
       const call = onAchievement.mock.calls[0][0];
       expect(call).toHaveLength(1);
       expect(call[0].id).toBe('task-1');
     });
 
     it('アニメーション無効時は何もしない', async () => {
-      const onAchievement = jest.fn();
+      const onAchievement = vi.fn();
       const elements = [{ type: 'task' as const, id: 'task-1', progress: 100 }];
 
       renderWithProvider(
@@ -450,7 +463,7 @@ describe('useMultipleAchievementAnimation', () => {
     });
 
     it('disabled=trueの場合は何もしない', async () => {
-      const onAchievement = jest.fn();
+      const onAchievement = vi.fn();
       const elements = [{ type: 'task' as const, id: 'task-1', progress: 100 }];
 
       renderWithProvider(
@@ -463,18 +476,49 @@ describe('useMultipleAchievementAnimation', () => {
   });
 
   describe('要素の登録・解除', () => {
-    it('要素が存在しない場合はエラーをスローする', () => {
-      const elements = [{ type: 'task' as const, id: 'nonexistent', progress: 100 }];
+    it('要素が存在しない場合はエラーをスローする', async () => {
+      // 1つの要素だけ登録
+      const elements = [{ type: 'task' as const, id: 'existing', progress: 100 }];
+      let caughtError: Error | null = null;
 
-      renderWithProvider(<MultipleTestComponent elements={elements} />);
-
-      const triggerButton = screen.getByTestId('trigger-multiple-button');
-
-      expect(() => {
-        act(() => {
-          triggerButton.click();
+      const TestComponentWithError: React.FC = () => {
+        const { registerElement, triggerMultipleAchievements } = useMultipleAchievementAnimation({
+          elements,
         });
-      }).toThrow('Element with id nonexistent not found');
+
+        const handleClick = () => {
+          try {
+            // 登録されていない要素でトリガーを試行
+            triggerMultipleAchievements([{ type: 'task', id: 'nonexistent', progress: 100 }]);
+          } catch (error) {
+            caughtError = error as Error;
+          }
+        };
+
+        return (
+          <div>
+            <div ref={el => registerElement('existing', el)} data-testid="existing-element">
+              Existing Element
+            </div>
+            <button onClick={handleClick} data-testid="trigger-error-button">
+              Trigger Error
+            </button>
+          </div>
+        );
+      };
+
+      renderWithProvider(<TestComponentWithError />);
+
+      const triggerButton = screen.getByTestId('trigger-error-button');
+
+      act(() => {
+        triggerButton.click();
+      });
+
+      await waitFor(() => {
+        expect(caughtError).toBeInstanceOf(Error);
+        expect(caughtError?.message).toBe('Element with id nonexistent not found');
+      });
     });
   });
 });

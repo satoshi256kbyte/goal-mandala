@@ -1,6 +1,6 @@
-import { renderHook, act } from '@testing-library/react';
+import { renderHook } from '@testing-library/react';
 import { vi } from 'vitest';
-import { useResponsiveLayout, useResponsiveLayoutConfig, BREAKPOINTS } from './useResponsiveLayout';
+import { useResponsiveLayout, useResponsiveLayoutConfig } from './useResponsiveLayout';
 
 // window.innerWidthをモック
 const mockInnerWidth = (width: number) => {

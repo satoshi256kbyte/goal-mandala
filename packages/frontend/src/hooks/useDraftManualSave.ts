@@ -1,6 +1,6 @@
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { PartialGoalFormData } from '../schemas/goal-form';
-import { DraftService, draftUtils } from '../services/draftService';
+import { DraftService } from '../services/draftService';
 
 /**
  * 手動保存の状態

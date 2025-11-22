@@ -1,19 +1,20 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { render } from '@testing-library/react';
+import { vi } from 'vitest';
+import { BrowserRouter, Routes } from 'react-router-dom';
 import { ProtectedRoute } from '../ProtectedRoute';
 import { useAuth } from '../../../hooks/useAuth';
 
 // Mock the auth hook
-jest.mock('../../../hooks/useAuth');
-const mockUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
+vi.mock('../../../hooks/useAuth');
+const mockUseAuth = useAuth as ReturnType<typeof vi.fn>;
 
 const TestComponent = () => <div>Protected Content</div>;
 const LoginPage = () => <div>Login Page</div>;
 const ProfileSetupPage = () => <div>Profile Setup Page</div>;
 const HomePage = () => <div>Home Page</div>;
 
-const renderWithRouter = (initialEntries: string[] = ['/']) => {
+const renderWithRouter = (_initialEntries: string[] = ['/']) => {
   return render(
     <BrowserRouter>
       <Routes>
@@ -43,7 +44,7 @@ const renderWithRouter = (initialEntries: string[] = ['/']) => {
 
 describe('ProtectedRoute', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     // Mock window.location for navigation tests
     delete (window as any).location;
     window.location = { ...window.location, pathname: '/' };

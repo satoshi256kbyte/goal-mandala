@@ -1,7 +1,7 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback } from 'react';
 import { useFormTimeout } from './useTimeout';
 import { useNetworkErrorHandler } from './useNetworkErrorHandler';
-import { ApiError, NetworkErrorType } from '../services/api';
+import { ApiError } from '../services/api';
 
 /**
  * タイムアウト付きフォーム送信フックの戻り値の型

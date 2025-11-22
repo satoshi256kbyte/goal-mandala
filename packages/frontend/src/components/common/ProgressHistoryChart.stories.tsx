@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import ProgressHistoryChart from './ProgressHistoryChart';
-import { ProgressHistoryEntry, SignificantChange } from '../../services/progress-history-service';
+import { ProgressHistoryEntry } from '../../services/progress-history-service';
 
 const meta: Meta<typeof ProgressHistoryChart> = {
   title: 'Components/Common/ProgressHistoryChart',

@@ -1,6 +1,6 @@
-import { useEffect, useRef, useCallback, useMemo } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { PartialGoalFormData } from '../schemas/goal-form';
-import { DraftService, draftUtils } from '../services/draftService';
+import { DraftService } from '../services/draftService';
 
 /**
  * 自動保存の設定

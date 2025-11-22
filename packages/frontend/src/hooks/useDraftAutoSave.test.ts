@@ -1,14 +1,12 @@
-import { renderHook, act } from '@testing-library/react';
-import { useDraftAutoSave, useAutoSaveStatus } from './useDraftAutoSave';
+import { renderHook } from '@testing-library/react';
+import { vi, beforeEach } from 'vitest';
+import { useDraftAutoSave } from './useDraftAutoSave';
 import { DraftService } from '../services/draftService';
 import { PartialGoalFormData } from '../schemas/goal-form';
 
 // DraftServiceのモック
-jest.mock('../services/draftService');
-const mockDraftService = DraftService as jest.Mocked<typeof DraftService>;
-
-// タイマーのモック
-jest.useFakeTimers();
+vi.mock('../services/draftService');
+const mockDraftService = DraftService as Mock<typeof DraftService>;
 
 describe('useDraftAutoSave', () => {
   const mockFormData: PartialGoalFormData = {
@@ -20,20 +18,19 @@ describe('useDraftAutoSave', () => {
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
-    jest.clearAllTimers();
+    vi.clearAllMocks();
+    vi.useFakeTimers();
     mockDraftService.saveDraft.mockResolvedValue();
   });
 
   afterEach(() => {
-    jest.runOnlyPendingTimers();
-    jest.useRealTimers();
-    jest.useFakeTimers();
+    vi.runOnlyPendingTimers();
+    vi.useRealTimers();
   });
 
   describe('基本機能', () => {
     it('自動保存が有効な場合、指定間隔で保存が実行される', async () => {
-      const onSaveSuccess = jest.fn();
+      const onSaveSuccess = vi.fn();
 
       renderHook(() =>
         useDraftAutoSave({
@@ -46,7 +43,7 @@ describe('useDraftAutoSave', () => {
 
       // 30秒経過
       act(() => {
-        jest.advanceTimersByTime(30000);
+        vi.advanceTimersByTime(30000);
       });
 
       await act(async () => {
@@ -68,7 +65,7 @@ describe('useDraftAutoSave', () => {
 
       // 30秒経過
       act(() => {
-        jest.advanceTimersByTime(30000);
+        vi.advanceTimersByTime(30000);
       });
 
       await act(async () => {
@@ -97,7 +94,7 @@ describe('useDraftAutoSave', () => {
 
       // 30秒経過
       act(() => {
-        jest.advanceTimersByTime(30000);
+        vi.advanceTimersByTime(30000);
       });
 
       await act(async () => {
@@ -110,7 +107,7 @@ describe('useDraftAutoSave', () => {
 
   describe('手動保存', () => {
     it('saveNowで手動保存が実行される', async () => {
-      const onSaveSuccess = jest.fn();
+      const onSaveSuccess = vi.fn();
 
       const { result } = renderHook(() =>
         useDraftAutoSave({
@@ -135,7 +132,7 @@ describe('useDraftAutoSave', () => {
       const saveError = new Error('保存エラー');
       mockDraftService.saveDraft.mockRejectedValue(saveError);
 
-      const onSaveError = jest.fn();
+      const onSaveError = vi.fn();
 
       const { result } = renderHook(() =>
         useDraftAutoSave({
@@ -246,7 +243,7 @@ describe('useDraftAutoSave', () => {
 
       // 3秒後に保存を試行（最小間隔5秒未満なのでスキップ）
       act(() => {
-        jest.advanceTimersByTime(3000);
+        vi.advanceTimersByTime(3000);
       });
 
       await act(async () => {
@@ -257,7 +254,7 @@ describe('useDraftAutoSave', () => {
 
       // 6秒後に保存を試行（最小間隔を超えているので実行）
       act(() => {
-        jest.advanceTimersByTime(3000);
+        vi.advanceTimersByTime(3000);
       });
 
       await act(async () => {
@@ -285,7 +282,7 @@ describe('useDraftAutoSave', () => {
 
       // 30秒経過しても保存されない
       act(() => {
-        jest.advanceTimersByTime(30000);
+        vi.advanceTimersByTime(30000);
       });
 
       await act(async () => {
@@ -301,7 +298,7 @@ describe('useDraftAutoSave', () => {
 
       // 30秒経過すると保存される
       act(() => {
-        jest.advanceTimersByTime(30000);
+        vi.advanceTimersByTime(30000);
       });
 
       await act(async () => {
@@ -314,9 +311,9 @@ describe('useDraftAutoSave', () => {
 
   describe('コールバック', () => {
     it('保存の各段階でコールバックが呼ばれる', async () => {
-      const onSaveStart = jest.fn();
-      const onSaveSuccess = jest.fn();
-      const onSaveComplete = jest.fn();
+      const onSaveStart = vi.fn();
+      const onSaveSuccess = vi.fn();
+      const onSaveComplete = vi.fn();
 
       const { result } = renderHook(() =>
         useDraftAutoSave({

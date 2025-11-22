@@ -10,7 +10,7 @@
  */
 
 import React from 'react';
-import { FormError, FormErrorSeverity, FormErrorType } from '../../types/form-error';
+import { FormError, FormErrorSeverity } from '../../types/form-error';
 
 /**
  * エラー表示コンポーネントのProps
@@ -149,6 +149,8 @@ const RecoveryOptions: React.FC<{
  */
 export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
   error,
+  errors,
+  title,
   displayType = 'inline',
   showRecoveryOptions = true,
   onRetry,
@@ -156,6 +158,11 @@ export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
   onDismiss,
   className = '',
 }) => {
+  // エラーがない場合は何も表示しない
+  if (!error && (!errors || Object.keys(errors).length === 0)) {
+    return null;
+  }
+
   const getContainerClasses = () => {
     const baseClasses = 'rounded-md p-4';
     const severityClasses = {
@@ -188,6 +195,27 @@ export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
       : severityClasses[FormErrorSeverity.MEDIUM];
   };
 
+  // errorsプロパティが提供された場合のレンダリング
+  if (errors && Object.keys(errors).length > 0) {
+    return (
+      <div className={getContainerClasses()} role="alert" aria-live="polite" aria-atomic="true">
+        <div className="flex">
+          <div className="flex-shrink-0">
+            <ErrorIcon severity={FormErrorSeverity.MEDIUM} />
+          </div>
+          <div className="ml-3 flex-1">
+            {title && <div className={`text-sm font-medium ${getTextClasses()} mb-2`}>{title}</div>}
+            <ul className={`text-sm ${getTextClasses()} space-y-1`}>
+              {Object.entries(errors).map(([key, message]) => (
+                <li key={key}>• {message}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={getContainerClasses()} role="alert" aria-live="polite" aria-atomic="true">
       <div className="flex">
@@ -205,13 +233,13 @@ export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
             </div>
           )}
 
-          {error.field && displayType === 'summary' && (
+          {error?.field && displayType === 'summary' && (
             <div className={`mt-1 text-xs ${getTextClasses()} opacity-75`}>
               フィールド: {error.field}
             </div>
           )}
 
-          {showRecoveryOptions && (
+          {showRecoveryOptions && error && (
             <RecoveryOptions
               error={error}
               onRetry={onRetry}
@@ -384,8 +412,14 @@ export const InlineError: React.FC<InlineErrorProps> = ({
   error,
   severity = 'error',
   className = '',
+  fieldName,
 }) => {
   const errorMessage = message || error || '';
+
+  // エラーメッセージがない場合は何も表示しない
+  if (!errorMessage) {
+    return null;
+  }
 
   const severityClasses = {
     error: 'text-red-600 bg-red-50 border-red-200',
@@ -393,8 +427,15 @@ export const InlineError: React.FC<InlineErrorProps> = ({
     info: 'text-blue-600 bg-blue-50 border-blue-200',
   };
 
+  const errorId = fieldName ? `${fieldName}-error` : undefined;
+
   return (
-    <div className={`text-sm p-2 border rounded ${severityClasses[severity]} ${className}`}>
+    <div
+      id={errorId}
+      role="alert"
+      aria-live="polite"
+      className={`text-sm p-2 border rounded ${severityClasses[severity]} ${className}`}
+    >
       {errorMessage}
     </div>
   );

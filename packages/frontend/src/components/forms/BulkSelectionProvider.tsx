@@ -84,7 +84,7 @@ export const BulkSelectionProvider: React.FC<BulkSelectionProviderProps> = ({
   onSelectionChange,
   onSelectionModeChange,
   maxSelection,
-  minSelection = 0, // eslint-disable-line @typescript-eslint/no-unused-vars
+  minSelection = 0,
 }) => {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isSelectionMode, setIsSelectionMode] = useState(false);

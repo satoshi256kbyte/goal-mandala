@@ -2,7 +2,7 @@
  * サブ目標・アクション API 関連の型定義
  */
 
-import { SubGoal, Action, ActionType } from './mandala';
+import { SubGoal, Action } from './mandala';
 
 /**
  * サブ目標API関連の型定義

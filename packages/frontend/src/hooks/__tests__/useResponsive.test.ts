@@ -1,4 +1,5 @@
-import { renderHook, act } from '@testing-library/react';
+import { renderHook } from '@testing-library/react';
+import { vi } from 'vitest';
 import {
   useResponsive,
   useBreakpoint,
@@ -13,17 +14,17 @@ const mockMatchMedia = (matches: boolean) => ({
   matches,
   media: '',
   onchange: null,
-  addListener: jest.fn(),
-  removeListener: jest.fn(),
-  addEventListener: jest.fn(),
-  removeEventListener: jest.fn(),
-  dispatchEvent: jest.fn(),
+  addListener: vi.fn(),
+  removeListener: vi.fn(),
+  addEventListener: vi.fn(),
+  removeEventListener: vi.fn(),
+  dispatchEvent: vi.fn(),
 });
 
 // window.matchMediaのモック
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
-  value: jest.fn().mockImplementation(query => mockMatchMedia(false)),
+  value: vi.fn().mockImplementation(query => mockMatchMedia(false)),
 });
 
 // window.innerWidthとinnerHeightのモック
@@ -112,7 +113,7 @@ describe('useResponsive', () => {
 
   it('タッチデバイスを正しく検出する', () => {
     // タッチデバイスのモック
-    window.matchMedia = jest.fn().mockImplementation(query => {
+    window.matchMedia = vi.fn().mockImplementation(query => {
       if (query === '(pointer: coarse)') {
         return mockMatchMedia(true);
       }
@@ -146,7 +147,7 @@ describe('useBreakpoint', () => {
 
 describe('useMediaQuery', () => {
   it('メディアクエリにマッチする場合にtrueを返す', () => {
-    window.matchMedia = jest.fn().mockImplementation(() => mockMatchMedia(true));
+    window.matchMedia = vi.fn().mockImplementation(() => mockMatchMedia(true));
 
     const { result } = renderHook(() => useMediaQuery('(min-width: 768px)'));
 
@@ -154,7 +155,7 @@ describe('useMediaQuery', () => {
   });
 
   it('メディアクエリにマッチしない場合にfalseを返す', () => {
-    window.matchMedia = jest.fn().mockImplementation(() => mockMatchMedia(false));
+    window.matchMedia = vi.fn().mockImplementation(() => mockMatchMedia(false));
 
     const { result } = renderHook(() => useMediaQuery('(min-width: 768px)'));
 
@@ -187,8 +188,8 @@ describe('useViewportSize', () => {
 describe('useSafeArea', () => {
   it('セーフエリアの値を返す', () => {
     // getComputedStyleのモック
-    const mockGetComputedStyle = jest.fn().mockReturnValue({
-      getPropertyValue: jest.fn().mockImplementation(prop => {
+    const mockGetComputedStyle = vi.fn().mockReturnValue({
+      getPropertyValue: vi.fn().mockImplementation(prop => {
         switch (prop) {
           case 'env(safe-area-inset-top)':
             return '44px';
@@ -238,8 +239,8 @@ describe('useVirtualKeyboard', () => {
     // Visual Viewport APIのモック
     const mockVisualViewport = {
       height: 400,
-      addEventListener: jest.fn(),
-      removeEventListener: jest.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
     };
 
     Object.defineProperty(window, 'visualViewport', {

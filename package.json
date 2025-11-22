@@ -117,6 +117,14 @@
     "cognito:validate:stg": "cd packages/infrastructure && pnpm run cognito:validate:stg",
     "cognito:validate:prod": "cd packages/infrastructure && pnpm run cognito:validate:prod"
   },
+  "pnpm": {
+    "overrides": {
+      "esbuild@<=0.24.2": ">=0.25.0",
+      "hono@>=4.8.0 <4.9.6": ">=4.9.6",
+      "vite@<=5.4.19": ">=5.4.20",
+      "hono@<4.9.7": ">=4.9.7"
+    }
+  },
   "dependencies": {
     "dotenv": "^16.4.5",
     "zod": "^3.22.4"

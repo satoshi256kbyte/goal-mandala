@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { UseFormRegister, UseFormSetValue, FieldError } from 'react-hook-form';
+import { UseFormRegister, UseFormSetValue } from 'react-hook-form';
 import { GoalFormData } from '../../types/goal-form';
 import {
   validateDate,
@@ -8,7 +8,7 @@ import {
   getDefaultDateRange,
   isDateInRange,
 } from '../../utils/date-validation';
-import { formatDateToISO, parseDate, formatDateForDisplay } from '../../utils/date-formatter';
+import { formatDateToISO, parseDate } from '../../utils/date-formatter';
 
 export interface DateInputProps {
   /** フィールド名 */

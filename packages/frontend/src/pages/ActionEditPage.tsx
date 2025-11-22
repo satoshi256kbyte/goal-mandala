@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { ActionProvider } from '../contexts/ActionContext';
 import { DragDropProvider } from '../components/forms/DragDropProvider';
 import { BulkEditModal } from '../components/forms/BulkEditModal';
@@ -7,9 +7,9 @@ import { BulkSelectionProvider } from '../components/forms/BulkSelectionProvider
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { ErrorAlert } from '../components/common/ErrorAlert';
 import { SuccessMessage } from '../components/common/SuccessMessage';
-import { Action, ActionType, SubGoal } from '../types/mandala';
+import { Action, ActionType } from '../types/mandala';
 import { useAuth } from '../components/auth/AuthProvider';
-import { useKeyboardNavigation, useLiveRegion } from '../hooks/useAccessibility';
+import { useKeyboardNavigation } from '../hooks/useAccessibility';
 
 /**
  * アクション編集ページのプロパティ

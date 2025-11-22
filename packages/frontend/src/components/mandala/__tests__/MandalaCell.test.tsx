@@ -1,6 +1,6 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
 import '@testing-library/jest-dom';
 import MandalaCell from '../MandalaCell';
 import { CellData } from '../../../types';
@@ -378,6 +378,48 @@ describe('MandalaCell', () => {
       );
 
       expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('色分け表示', () => {
+    it('進捗0%時に灰色が適用される', () => {
+      const cellData = { ...mockCellData, progress: 0 };
+      render(<MandalaCell {...defaultProps} cellData={cellData} />);
+
+      const cell = screen.getByRole('gridcell');
+      expect(cell).toHaveClass('progress-0');
+    });
+
+    it('進捗1-49%時に薄い赤色が適用される', () => {
+      const cellData = { ...mockCellData, progress: 25 };
+      render(<MandalaCell {...defaultProps} cellData={cellData} />);
+
+      const cell = screen.getByRole('gridcell');
+      expect(cell).toHaveClass('progress-low');
+    });
+
+    it('進捗50-79%時に薄い黄色が適用される', () => {
+      const cellData = { ...mockCellData, progress: 65 };
+      render(<MandalaCell {...defaultProps} cellData={cellData} />);
+
+      const cell = screen.getByRole('gridcell');
+      expect(cell).toHaveClass('progress-medium');
+    });
+
+    it('進捗80-99%時に薄い緑色が適用される', () => {
+      const cellData = { ...mockCellData, progress: 90 };
+      render(<MandalaCell {...defaultProps} cellData={cellData} />);
+
+      const cell = screen.getByRole('gridcell');
+      expect(cell).toHaveClass('progress-high');
+    });
+
+    it('進捗100%時に濃い緑色が適用される', () => {
+      const cellData = { ...mockCellData, progress: 100 };
+      render(<MandalaCell {...defaultProps} cellData={cellData} />);
+
+      const cell = screen.getByRole('gridcell');
+      expect(cell).toHaveClass('progress-100');
     });
   });
 });

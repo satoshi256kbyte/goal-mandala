@@ -1,5 +1,5 @@
-import { renderHook, act, waitFor } from '@testing-library/react';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { renderHook, act } from '@testing-library/react';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { useProfileForm } from '../useProfileForm';
 import { updateProfile } from '../../services/profileService';
 
@@ -55,6 +55,14 @@ describe('useProfileForm', () => {
       // 値を設定してエラーをクリア
       act(() => {
         result.current.setFieldValue('jobTitle', 'エンジニア');
+      });
+
+      // 値が設定されたことを確認
+      expect(result.current.formData.jobTitle).toBe('エンジニア');
+
+      // バリデーションを再実行してエラーをクリア
+      act(() => {
+        result.current.validateField('jobTitle');
       });
 
       expect(result.current.errors.jobTitle).toBeUndefined();

@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { sanitizeForDisplay, sanitizeFormValue, logXSSAttempt } from '../utils/xss-protection';
+import { sanitizeForDisplay, sanitizeFormValue } from '../utils/xss-protection';
 
 /**
  * 安全なコンテンツ表示のためのカスタムフック

@@ -2,6 +2,7 @@
 import * as cdk from 'aws-cdk-lib';
 import { VpcStack, DatabaseStack, CognitoStack, ApiStack, FrontendStack } from './stacks';
 import { StepFunctionsStack } from './stacks/step-functions-stack';
+import { TaskManagementStack } from './stacks/task-management-stack';
 import { getEnvironmentConfig } from './config/environment';
 
 const app = new cdk.App();
@@ -73,6 +74,22 @@ try {
   });
   stepFunctionsStack.addDependency(apiStack);
 
+  // Task Managementスタック作成（VPCスタック、データベーススタックに依存）
+  const taskManagementStack = new TaskManagementStack(
+    app,
+    `${config.stackPrefix}-task-management`,
+    {
+      env,
+      environment,
+      databaseSecretArn: databaseStack.database.secret?.secretArn || '',
+      vpcId: vpcStack.vpc.vpcId,
+      subnetIds: vpcStack.vpc.privateSubnets.map(subnet => subnet.subnetId),
+      description: `Task Management stack for ${config.stackPrefix} environment`,
+    }
+  );
+  taskManagementStack.addDependency(vpcStack);
+  taskManagementStack.addDependency(databaseStack);
+
   // フロントエンドスタック作成（Cognitoスタックに依存）
   const frontendStack = new FrontendStack(app, `${config.stackPrefix}-frontend`, {
     env,
@@ -102,4 +119,12 @@ try {
 }
 
 // エクスポート（テスト用）
-export { VpcStack, DatabaseStack, CognitoStack, ApiStack, FrontendStack, StepFunctionsStack };
+export {
+  VpcStack,
+  DatabaseStack,
+  CognitoStack,
+  ApiStack,
+  FrontendStack,
+  StepFunctionsStack,
+  TaskManagementStack,
+};

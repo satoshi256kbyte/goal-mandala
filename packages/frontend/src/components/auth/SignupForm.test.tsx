@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { SignupForm } from './SignupForm';
 import type { SignupFormData } from '../../utils/validation';
@@ -54,7 +54,9 @@ describe('SignupForm', () => {
     });
 
     // フォームを送信
-    fireEvent.submit(screen.getByRole('button', { name: 'アカウント作成' }).closest('form')!);
+    const form = screen.getByRole('button', { name: 'アカウント作成' }).closest('form');
+    expect(form).toBeTruthy();
+    fireEvent.submit(form!);
 
     await waitFor(() => {
       expect(mockOnSubmit).toHaveBeenCalledWith(formData);

@@ -1,7 +1,7 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render } from '@testing-library/react';
 import { vi } from 'vitest';
-import { FormActions, MemoizedFormActions } from './FormActions';
+import { FormActions } from './FormActions';
 import { PartialGoalFormData } from '../../schemas/goal-form';
 import { useFormActions } from '../../hooks/useFormActions';
 
@@ -29,10 +29,7 @@ describe('FormActions', () => {
     constraints: 'テスト制約',
   };
 
-  const emptyFormData: PartialGoalFormData = {
-    title: '',
-    description: '',
-    deadline: '',
+  const validFormData: PartialGoalFormData = {
     background: '',
     constraints: '',
   };

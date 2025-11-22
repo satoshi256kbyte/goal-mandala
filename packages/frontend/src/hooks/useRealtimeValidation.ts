@@ -1,5 +1,5 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
-import { fieldValidators, ValidationErrorType } from '../schemas/goal-form';
+import { useState, useCallback, useRef } from 'react';
+import { fieldValidators } from '../schemas/goal-form';
 
 /**
  * バリデーション結果の型定義

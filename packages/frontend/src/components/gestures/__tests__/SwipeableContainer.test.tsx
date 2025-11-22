@@ -1,5 +1,6 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
+import { vi } from 'vitest';
 import {
   SwipeableContainer,
   SwipeableTabs,
@@ -14,8 +15,8 @@ const createTouchEvent = (type: string, touches: Array<{ clientX: number; client
       ...touch,
       identifier: 0,
       target: document.body,
-      radiusX: 0,
-      radiusY: 0,
+      radiusX: 1,
+      radiusY: 1,
       rotationAngle: 0,
       force: 1,
     })) as any,
@@ -24,7 +25,7 @@ const createTouchEvent = (type: string, touches: Array<{ clientX: number; client
 
 describe('SwipeableContainer', () => {
   it('左スワイプが検出される', () => {
-    const onSwipeLeft = jest.fn();
+    const onSwipeLeft = vi.fn();
     render(
       <SwipeableContainer onSwipeLeft={onSwipeLeft}>
         <div>スワイプ可能なコンテンツ</div>
@@ -50,7 +51,7 @@ describe('SwipeableContainer', () => {
   });
 
   it('右スワイプが検出される', () => {
-    const onSwipeRight = jest.fn();
+    const onSwipeRight = vi.fn();
     render(
       <SwipeableContainer onSwipeRight={onSwipeRight}>
         <div>スワイプ可能なコンテンツ</div>
@@ -76,7 +77,7 @@ describe('SwipeableContainer', () => {
   });
 
   it('上スワイプが検出される', () => {
-    const onSwipeUp = jest.fn();
+    const onSwipeUp = vi.fn();
     render(
       <SwipeableContainer onSwipeUp={onSwipeUp}>
         <div>スワイプ可能なコンテンツ</div>
@@ -102,7 +103,7 @@ describe('SwipeableContainer', () => {
   });
 
   it('下スワイプが検出される', () => {
-    const onSwipeDown = jest.fn();
+    const onSwipeDown = vi.fn();
     render(
       <SwipeableContainer onSwipeDown={onSwipeDown}>
         <div>スワイプ可能なコンテンツ</div>
@@ -128,7 +129,7 @@ describe('SwipeableContainer', () => {
   });
 
   it('無効化されている場合はスワイプが検出されない', () => {
-    const onSwipeLeft = jest.fn();
+    const onSwipeLeft = vi.fn();
     render(
       <SwipeableContainer onSwipeLeft={onSwipeLeft} disabled>
         <div>無効化されたコンテンツ</div>
@@ -152,7 +153,7 @@ describe('SwipeableContainer', () => {
   });
 
   it('閾値未満のスワイプは検出されない', () => {
-    const onSwipeLeft = jest.fn();
+    const onSwipeLeft = vi.fn();
     render(
       <SwipeableContainer onSwipeLeft={onSwipeLeft} threshold={100}>
         <div>スワイプ可能なコンテンツ</div>
@@ -194,7 +195,7 @@ describe('SwipeableTabs', () => {
   });
 
   it('左スワイプで次のタブに移動する', () => {
-    const onIndexChange = jest.fn();
+    const onIndexChange = vi.fn();
     render(
       <SwipeableTabs activeIndex={0} onIndexChange={onIndexChange}>
         {tabs}
@@ -218,7 +219,7 @@ describe('SwipeableTabs', () => {
   });
 
   it('右スワイプで前のタブに移動する', () => {
-    const onIndexChange = jest.fn();
+    const onIndexChange = vi.fn();
     render(
       <SwipeableTabs activeIndex={1} onIndexChange={onIndexChange}>
         {tabs}
@@ -242,7 +243,7 @@ describe('SwipeableTabs', () => {
   });
 
   it('最初のタブで右スワイプしても移動しない', () => {
-    const onIndexChange = jest.fn();
+    const onIndexChange = vi.fn();
     render(
       <SwipeableTabs activeIndex={0} onIndexChange={onIndexChange}>
         {tabs}
@@ -266,7 +267,7 @@ describe('SwipeableTabs', () => {
   });
 
   it('最後のタブで左スワイプしても移動しない', () => {
-    const onIndexChange = jest.fn();
+    const onIndexChange = vi.fn();
     render(
       <SwipeableTabs activeIndex={2} onIndexChange={onIndexChange}>
         {tabs}
@@ -325,7 +326,7 @@ describe('SwipeToDelete', () => {
   });
 
   it('閾値を超えるスワイプで削除が実行される', () => {
-    const onDelete = jest.fn();
+    const onDelete = vi.fn();
     render(
       <SwipeToDelete onDelete={onDelete} deleteThreshold={50}>
         <div>削除可能なアイテム</div>
@@ -383,7 +384,7 @@ describe('PullToRefresh', () => {
   });
 
   it('閾値を超える下スワイプでリフレッシュが実行される', async () => {
-    const onRefresh = jest.fn().mockResolvedValue(undefined);
+    const onRefresh = vi.fn().mockResolvedValue(undefined);
     render(
       <PullToRefresh onRefresh={onRefresh} refreshThreshold={50}>
         <div>リフレッシュ可能なコンテンツ</div>

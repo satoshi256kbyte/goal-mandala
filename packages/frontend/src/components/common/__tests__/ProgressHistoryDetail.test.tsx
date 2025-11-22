@@ -3,16 +3,17 @@
  */
 
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
-import { ProgressHistoryDetail, ProgressDayTooltip } from '../ProgressHistoryDetail';
+import { render, screen } from '@testing-library/react';
+import { vi } from 'vitest';
+import { ProgressHistoryDetail } from '../ProgressHistoryDetail';
 import {
   ProgressHistoryEntry,
   SignificantChange,
 } from '../../../services/progress-history-service';
 
 // date-fns のモック
-jest.mock('date-fns', () => ({
-  format: jest.fn((date, formatStr) => {
+vi.mock('date-fns', () => ({
+  format: vi.fn((date, formatStr) => {
     if (formatStr === 'yyyy-MM-dd') return '2024-01-15';
     if (formatStr === 'yyyy年MM月dd日') return '2024年01月15日';
     if (formatStr === 'EEEE') return '月曜日';
@@ -20,12 +21,12 @@ jest.mock('date-fns', () => ({
   }),
 }));
 
-jest.mock('date-fns/locale', () => ({
+vi.mock('date-fns/locale', () => ({
   ja: {},
 }));
 
 // Tooltip コンポーネントのモック
-jest.mock('../Tooltip', () => ({
+vi.mock('../Tooltip', () => ({
   Tooltip: ({ children, content }: any) => (
     <div
       data-testid="tooltip"
@@ -77,11 +78,11 @@ describe('ProgressHistoryDetail', () => {
     historyData: mockHistoryData,
     significantChanges: mockSignificantChanges,
     isVisible: true,
-    onClose: jest.fn(),
+    onClose: vi.fn(),
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('基本的な表示', () => {
@@ -242,7 +243,7 @@ describe('ProgressHistoryDetail', () => {
 
   describe('インタラクション', () => {
     it('閉じるボタンをクリックするとonCloseが呼ばれる', () => {
-      const onClose = jest.fn();
+      const onClose = vi.fn();
       render(<ProgressHistoryDetail {...defaultProps} onClose={onClose} />);
 
       const closeButtons = screen.getAllByText('閉じる');
@@ -252,7 +253,7 @@ describe('ProgressHistoryDetail', () => {
     });
 
     it('フッターの閉じるボタンをクリックするとonCloseが呼ばれる', () => {
-      const onClose = jest.fn();
+      const onClose = vi.fn();
       render(<ProgressHistoryDetail {...defaultProps} onClose={onClose} />);
 
       const closeButtons = screen.getAllByText('閉じる');

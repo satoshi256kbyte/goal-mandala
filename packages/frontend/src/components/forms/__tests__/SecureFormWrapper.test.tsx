@@ -11,9 +11,10 @@
 
 import React from 'react';
 import { vi } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { SecureFormWrapper } from '../SecureFormWrapper';
 import { AuthContext } from '../../../services/form-security';
+import * as useFormSecurityModule from '../../../hooks/useFormSecurity';
 
 // useFormSecurityフックをモック
 vi.mock('../../../hooks/useFormSecurity', () => ({
@@ -96,7 +97,7 @@ describe('SecureFormWrapper', () => {
   describe('認証・認可のテスト', () => {
     it('認証されていない場合はエラーを表示する', () => {
       // useFormSecurityフックを認証されていない状態でモック
-      const mockUseFormSecurity = require('../../../hooks/useFormSecurity').useFormSecurity;
+      const mockUseFormSecurity = vi.spyOn(useFormSecurityModule, 'useFormSecurity');
       mockUseFormSecurity.mockReturnValueOnce({
         isAuthenticated: false,
         isValidating: false,
@@ -125,7 +126,7 @@ describe('SecureFormWrapper', () => {
 
     it('必要な権限がない場合はエラーを表示する', () => {
       // useFormSecurityフックを権限不足の状態でモック
-      const mockUseFormSecurity = require('../../../hooks/useFormSecurity').useFormSecurity;
+      const mockUseFormSecurity = vi.spyOn(useFormSecurityModule, 'useFormSecurity');
       mockUseFormSecurity.mockReturnValueOnce({
         isAuthenticated: true,
         isValidating: false,
@@ -163,7 +164,7 @@ describe('SecureFormWrapper', () => {
   describe('セキュリティエラーの表示', () => {
     it('セキュリティエラーを表示する', () => {
       // useFormSecurityフックをエラー状態でモック
-      const mockUseFormSecurity = require('../../../hooks/useFormSecurity').useFormSecurity;
+      const mockUseFormSecurity = vi.spyOn(useFormSecurityModule, 'useFormSecurity');
       mockUseFormSecurity.mockReturnValueOnce({
         isAuthenticated: true,
         isValidating: false,
@@ -188,7 +189,7 @@ describe('SecureFormWrapper', () => {
 
     it('セキュリティ警告を表示する', () => {
       // useFormSecurityフックを警告状態でモック
-      const mockUseFormSecurity = require('../../../hooks/useFormSecurity').useFormSecurity;
+      const mockUseFormSecurity = vi.spyOn(useFormSecurityModule, 'useFormSecurity');
       mockUseFormSecurity.mockReturnValueOnce({
         isAuthenticated: true,
         isValidating: false,
@@ -215,7 +216,7 @@ describe('SecureFormWrapper', () => {
   describe('検証中の状態', () => {
     it('検証中はローディング表示をする', () => {
       // useFormSecurityフックを検証中の状態でモック
-      const mockUseFormSecurity = require('../../../hooks/useFormSecurity').useFormSecurity;
+      const mockUseFormSecurity = vi.spyOn(useFormSecurityModule, 'useFormSecurity');
       mockUseFormSecurity.mockReturnValueOnce({
         isAuthenticated: true,
         isValidating: true,
@@ -256,7 +257,7 @@ describe('SecureFormWrapper', () => {
       const mockValidateRequest = vi.fn(() => ({ isValid: true, errors: [], warnings: [] }));
 
       // useFormSecurityフックをモック
-      const mockUseFormSecurity = require('../../../hooks/useFormSecurity').useFormSecurity;
+      const mockUseFormSecurity = vi.spyOn(useFormSecurityModule, 'useFormSecurity');
       mockUseFormSecurity.mockReturnValueOnce({
         isAuthenticated: true,
         isValidating: false,
@@ -303,7 +304,7 @@ describe('SecureFormWrapper', () => {
       const mockGetCSRFToken = vi.fn(() => 'valid-token');
 
       // useFormSecurityフックをモック
-      const mockUseFormSecurity = require('../../../hooks/useFormSecurity').useFormSecurity;
+      const mockUseFormSecurity = vi.spyOn(useFormSecurityModule, 'useFormSecurity');
       mockUseFormSecurity.mockReturnValueOnce({
         isAuthenticated: true,
         isValidating: false,
@@ -342,7 +343,7 @@ describe('SecureFormWrapper', () => {
       const mockOnSecurityError = vi.fn();
 
       // useFormSecurityフックをエラー状態でモック
-      const mockUseFormSecurity = require('../../../hooks/useFormSecurity').useFormSecurity;
+      const mockUseFormSecurity = vi.spyOn(useFormSecurityModule, 'useFormSecurity');
       mockUseFormSecurity.mockReturnValueOnce({
         isAuthenticated: true,
         isValidating: false,
@@ -369,7 +370,7 @@ describe('SecureFormWrapper', () => {
       const mockOnSecurityWarning = vi.fn();
 
       // useFormSecurityフックを警告状態でモック
-      const mockUseFormSecurity = require('../../../hooks/useFormSecurity').useFormSecurity;
+      const mockUseFormSecurity = vi.spyOn(useFormSecurityModule, 'useFormSecurity');
       mockUseFormSecurity.mockReturnValueOnce({
         isAuthenticated: true,
         isValidating: false,

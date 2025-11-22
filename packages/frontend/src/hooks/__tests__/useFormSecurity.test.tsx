@@ -11,9 +11,9 @@
 
 import React from 'react';
 import { vi } from 'vitest';
-import { renderHook, act } from '@testing-library/react';
+import { renderHook } from '@testing-library/react';
 import { useFormSecurity } from '../useFormSecurity';
-import { AuthContext, SubGoalFormData, ActionFormData } from '../../services/form-security';
+import { AuthContext, SubGoalFormData } from '../../services/form-security';
 
 // テスト用のコンポーネント
 const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {

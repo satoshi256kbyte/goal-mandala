@@ -4,7 +4,7 @@
  * サブ目標・アクションAPIクライアントと下書き保存APIの統合動作をテスト
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { subGoalApiService } from './subgoal-api';
 import { actionApiService } from './action-api';
 import { draftApiClient } from './draft-api';

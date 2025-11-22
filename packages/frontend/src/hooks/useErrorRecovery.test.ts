@@ -1,6 +1,7 @@
-import { renderHook, act } from '@testing-library/react';
-import { useErrorRecovery, RecoveryStrategy, RecoveryAction } from './useErrorRecovery';
-import { ApiError, NetworkErrorType } from '../services/api';
+import { renderHook } from '@testing-library/react';
+import { vi } from 'vitest';
+import { useErrorRecovery, RecoveryStrategy } from './useErrorRecovery';
+import { ApiError } from '../services/api';
 
 // navigator.onLineをモック
 Object.defineProperty(navigator, 'onLine', {
@@ -11,7 +12,7 @@ Object.defineProperty(navigator, 'onLine', {
 // window.location.reloadをモック
 Object.defineProperty(window, 'location', {
   value: {
-    reload: jest.fn(),
+    reload: vi.fn(),
   },
   writable: true,
 });
@@ -19,21 +20,21 @@ Object.defineProperty(window, 'location', {
 // cachesをモック
 Object.defineProperty(window, 'caches', {
   value: {
-    keys: jest.fn().mockResolvedValue(['cache1', 'cache2']),
-    delete: jest.fn().mockResolvedValue(true),
+    keys: vi.fn().mockResolvedValue(['cache1', 'cache2']),
+    delete: vi.fn().mockResolvedValue(true),
   },
   writable: true,
 });
 
 describe('useErrorRecovery', () => {
   beforeEach(() => {
-    jest.useFakeTimers();
-    jest.clearAllMocks();
+    vi.useFakeTimers();
+    vi.clearAllMocks();
     (navigator as any).onLine = true;
   });
 
   afterEach(() => {
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   describe('基本機能', () => {
@@ -96,8 +97,8 @@ describe('useErrorRecovery', () => {
 
   describe('自動回復', () => {
     it('自動回復が成功する', async () => {
-      const mockRetryFunction = jest.fn().mockResolvedValue('success');
-      const mockOnRecoverySuccess = jest.fn();
+      const mockRetryFunction = vi.fn().mockResolvedValue('success');
+      const mockOnRecoverySuccess = vi.fn();
 
       const { result } = renderHook(() =>
         useErrorRecovery({
@@ -122,7 +123,7 @@ describe('useErrorRecovery', () => {
 
       // 遅延時間を進める
       act(() => {
-        jest.advanceTimersByTime(100);
+        vi.advanceTimersByTime(100);
       });
 
       const success = await recoveryPromise;
@@ -134,8 +135,8 @@ describe('useErrorRecovery', () => {
     });
 
     it('自動回復が失敗する', async () => {
-      const mockRetryFunction = jest.fn().mockRejectedValue(new Error('再試行失敗'));
-      const mockOnRecoveryFailure = jest.fn();
+      const mockRetryFunction = vi.fn().mockRejectedValue(new Error('再試行失敗'));
+      const mockOnRecoveryFailure = vi.fn();
 
       const { result } = renderHook(() =>
         useErrorRecovery({
@@ -160,7 +161,7 @@ describe('useErrorRecovery', () => {
 
       // 遅延時間を進める
       act(() => {
-        jest.advanceTimersByTime(100);
+        vi.advanceTimersByTime(100);
       });
 
       const success = await recoveryPromise;
@@ -173,7 +174,7 @@ describe('useErrorRecovery', () => {
 
   describe('オフライン回復', () => {
     it('オンライン復帰を待つ', async () => {
-      const mockOnRecoverySuccess = jest.fn();
+      const mockOnRecoverySuccess = vi.fn();
 
       const { result } = renderHook(() =>
         useErrorRecovery({
@@ -198,7 +199,7 @@ describe('useErrorRecovery', () => {
 
       // しばらく待つ
       act(() => {
-        jest.advanceTimersByTime(500);
+        vi.advanceTimersByTime(500);
       });
 
       // オンライン復帰
@@ -206,7 +207,7 @@ describe('useErrorRecovery', () => {
 
       // さらに待つ
       act(() => {
-        jest.advanceTimersByTime(1000);
+        vi.advanceTimersByTime(1000);
       });
 
       const success = await recoveryPromise;
@@ -218,7 +219,7 @@ describe('useErrorRecovery', () => {
 
   describe('手動回復アクション', () => {
     it('再試行アクションが機能する', async () => {
-      const mockRetryFunction = jest.fn().mockResolvedValue('success');
+      const mockRetryFunction = vi.fn().mockResolvedValue('success');
 
       const { result } = renderHook(() => useErrorRecovery());
 
@@ -267,8 +268,8 @@ describe('useErrorRecovery', () => {
     });
 
     it('ストレージクリアアクションが機能する', async () => {
-      const mockLocalStorageClear = jest.fn();
-      const mockSessionStorageClear = jest.fn();
+      const mockLocalStorageClear = vi.fn();
+      const mockSessionStorageClear = vi.fn();
 
       Object.defineProperty(window, 'localStorage', {
         value: { clear: mockLocalStorageClear },
@@ -292,7 +293,7 @@ describe('useErrorRecovery', () => {
     });
 
     it('代替手段の提案アクションが機能する', async () => {
-      const mockFallbackFunction = jest.fn().mockResolvedValue('fallback success');
+      const mockFallbackFunction = vi.fn().mockResolvedValue('fallback success');
 
       const { result } = renderHook(() => useErrorRecovery());
 
@@ -378,7 +379,7 @@ describe('useErrorRecovery', () => {
 
   describe('コールバック', () => {
     it('回復開始時のコールバックが実行される', async () => {
-      const mockOnRecoveryStart = jest.fn();
+      const mockOnRecoveryStart = vi.fn();
 
       const { result } = renderHook(() =>
         useErrorRecovery({
@@ -399,8 +400,8 @@ describe('useErrorRecovery', () => {
     });
 
     it('回復進捗のコールバックが実行される', async () => {
-      const mockOnRecoveryProgress = jest.fn();
-      const mockRetryFunction = jest.fn().mockResolvedValue('success');
+      const mockOnRecoveryProgress = vi.fn();
+      const mockRetryFunction = vi.fn().mockResolvedValue('success');
 
       const { result } = renderHook(() =>
         useErrorRecovery({
@@ -422,7 +423,7 @@ describe('useErrorRecovery', () => {
       });
 
       act(() => {
-        jest.advanceTimersByTime(100);
+        vi.advanceTimersByTime(100);
       });
 
       await recoveryPromise;

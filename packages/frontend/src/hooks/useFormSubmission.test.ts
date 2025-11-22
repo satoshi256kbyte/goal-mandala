@@ -1,4 +1,5 @@
-import { renderHook, act } from '@testing-library/react';
+import { renderHook } from '@testing-library/react';
+import { vi, beforeEach } from 'vitest';
 import {
   useFormSubmission,
   useGoalFormSubmission,
@@ -7,22 +8,24 @@ import {
 } from './useFormSubmission';
 
 // fetchをモック化
-global.fetch = jest.fn();
-const mockFetch = fetch as jest.MockedFunction<typeof fetch>;
-
-// タイマーをモック化
-jest.useFakeTimers();
+global.fetch = vi.fn();
+const mockFetch = fetch as Mock<typeof fetch>;
 
 describe('useFormSubmission', () => {
   beforeEach(() => {
     mockFetch.mockClear();
-    jest.clearAllTimers();
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.runOnlyPendingTimers();
+    vi.useRealTimers();
   });
 
   describe('基本的な送信機能', () => {
     it('有効なデータで送信が成功する', async () => {
       const { result } = renderHook(() => useFormSubmission());
-      const mockSubmitFunction = jest.fn().mockResolvedValue({ id: '123' });
+      const mockSubmitFunction = vi.fn().mockResolvedValue({ id: '123' });
 
       const validData = {
         title: 'テスト目標',
@@ -46,7 +49,7 @@ describe('useFormSubmission', () => {
 
     it('無効なデータで送信が失敗する', async () => {
       const { result } = renderHook(() => useFormSubmission());
-      const mockSubmitFunction = jest.fn();
+      const mockSubmitFunction = vi.fn();
 
       const invalidData = {
         title: '', // 必須項目が空
@@ -70,7 +73,7 @@ describe('useFormSubmission', () => {
 
     it('バリデーションを無効にした場合は無効なデータでも送信される', async () => {
       const { result } = renderHook(() => useFormSubmission({ validateBeforeSubmit: false }));
-      const mockSubmitFunction = jest.fn().mockResolvedValue({ id: '123' });
+      const mockSubmitFunction = vi.fn().mockResolvedValue({ id: '123' });
 
       const invalidData = {
         title: '', // 必須項目が空
@@ -90,7 +93,7 @@ describe('useFormSubmission', () => {
   describe('重複送信防止', () => {
     it('短時間での重複送信を防止する', async () => {
       const { result } = renderHook(() => useFormSubmission({ preventDuplicateMs: 1000 }));
-      const mockSubmitFunction = jest.fn().mockResolvedValue({ id: '123' });
+      const mockSubmitFunction = vi.fn().mockResolvedValue({ id: '123' });
 
       const validData = {
         title: 'テスト目標',
@@ -122,7 +125,7 @@ describe('useFormSubmission', () => {
 
     it('十分な時間が経過した後は再送信可能', async () => {
       const { result } = renderHook(() => useFormSubmission({ preventDuplicateMs: 1000 }));
-      const mockSubmitFunction = jest.fn().mockResolvedValue({ id: '123' });
+      const mockSubmitFunction = vi.fn().mockResolvedValue({ id: '123' });
 
       const validData = {
         title: 'テスト目標',
@@ -139,7 +142,7 @@ describe('useFormSubmission', () => {
 
       // 時間を進める
       act(() => {
-        jest.advanceTimersByTime(1100);
+        vi.advanceTimersByTime(1100);
       });
 
       // 2回目の送信
@@ -156,7 +159,7 @@ describe('useFormSubmission', () => {
   describe('エラーハンドリング', () => {
     it('ネットワークエラーを適切に処理する', async () => {
       const { result } = renderHook(() => useFormSubmission());
-      const mockSubmitFunction = jest.fn().mockRejectedValue(new Error('fetch failed'));
+      const mockSubmitFunction = vi.fn().mockRejectedValue(new Error('fetch failed'));
 
       const validData = {
         title: 'テスト目標',
@@ -178,7 +181,7 @@ describe('useFormSubmission', () => {
 
     it('予期しないエラーを適切に処理する', async () => {
       const { result } = renderHook(() => useFormSubmission());
-      const mockSubmitFunction = jest.fn().mockRejectedValue('unexpected error');
+      const mockSubmitFunction = vi.fn().mockRejectedValue('unexpected error');
 
       const validData = {
         title: 'テスト目標',
@@ -203,7 +206,7 @@ describe('useFormSubmission', () => {
       const { result } = renderHook(() => useFormSubmission({ maxRetries: 2, retryDelayMs: 100 }));
 
       let callCount = 0;
-      const mockSubmitFunction = jest.fn().mockImplementation(() => {
+      const mockSubmitFunction = vi.fn().mockImplementation(() => {
         callCount++;
         if (callCount < 3) {
           return Promise.reject(new Error('temporary error'));
@@ -231,7 +234,7 @@ describe('useFormSubmission', () => {
     it('最大リトライ回数を超えた場合はエラーになる', async () => {
       const { result } = renderHook(() => useFormSubmission({ maxRetries: 1, retryDelayMs: 100 }));
 
-      const mockSubmitFunction = jest.fn().mockRejectedValue(new Error('persistent error'));
+      const mockSubmitFunction = vi.fn().mockRejectedValue(new Error('persistent error'));
 
       const validData = {
         title: 'テスト目標',
@@ -317,7 +320,7 @@ describe('useFormSubmission', () => {
   describe('状態管理', () => {
     it('送信状態をリセットできる', async () => {
       const { result } = renderHook(() => useFormSubmission());
-      const mockSubmitFunction = jest.fn().mockResolvedValue({ id: '123' });
+      const mockSubmitFunction = vi.fn().mockResolvedValue({ id: '123' });
 
       const validData = {
         title: 'テスト目標',
@@ -343,7 +346,7 @@ describe('useFormSubmission', () => {
 
     it('バリデーションエラーをクリアできる', async () => {
       const { result } = renderHook(() => useFormSubmission());
-      const mockSubmitFunction = jest.fn();
+      const mockSubmitFunction = vi.fn();
 
       const invalidData = {
         title: '',
@@ -368,7 +371,7 @@ describe('useFormSubmission', () => {
 describe('useGoalFormSubmission', () => {
   it('目標フォーム専用の送信フックが正常に動作する', async () => {
     const { result } = renderHook(() => useGoalFormSubmission());
-    const mockSubmitFunction = jest.fn().mockResolvedValue({ id: '123' });
+    const mockSubmitFunction = vi.fn().mockResolvedValue({ id: '123' });
 
     const validData = {
       title: 'テスト目標',
@@ -390,7 +393,7 @@ describe('useGoalFormSubmission', () => {
 describe('useDraftSubmission', () => {
   it('下書き保存専用の送信フックが正常に動作する', async () => {
     const { result } = renderHook(() => useDraftSubmission());
-    const mockSubmitFunction = jest.fn().mockResolvedValue({ draftId: '456' });
+    const mockSubmitFunction = vi.fn().mockResolvedValue({ draftId: '456' });
 
     // 部分的なデータ（必須項目が不完全でもOK）
     const partialData = {

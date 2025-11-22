@@ -1,13 +1,9 @@
-import { render, screen, cleanup } from '@testing-library/react';
-import { describe, it, expect, afterEach, vi } from 'vitest';
+import { render } from '@testing-library/react';
+import { describe, it, expect } from 'vitest';
 import userEvent from '@testing-library/user-event';
 import { Pagination } from '../Pagination';
 
 describe('Pagination', () => {
-  afterEach(() => {
-    cleanup();
-  });
-
   describe('表示内容', () => {
     it('ページ番号ボタンが正しく表示される', () => {
       const onPageChange = vi.fn();
