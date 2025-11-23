@@ -19,8 +19,8 @@ export default defineConfig({
     testTimeout: 10000,
     hookTimeout: 8000,
     teardownTimeout: 5000,
-    // E2Eテストとspecファイルを除外
-    exclude: ['**/node_modules/**', '**/dist/**', '**/e2e/**', '**/*.spec.ts', '**/*.spec.tsx'],
+    // E2Eテストのみ除外
+    exclude: ['**/node_modules/**', '**/dist/**', '**/e2e/**'],
     // 並列実行の制限
     maxConcurrency: 4,
     // レポーター設定
@@ -29,8 +29,8 @@ export default defineConfig({
     coverage: {
       enabled: false, // デフォルトで無効（test:coverageコマンドで有効化）
       provider: 'v8',
-      reporter: ['text', 'json', 'html'],
-      exclude: ['**/node_modules/**', '**/dist/**', '**/e2e/**', '**/*.spec.ts', '**/*.spec.tsx'],
+      reporter: ['json'],
+      exclude: ['**/node_modules/**', '**/dist/**', '**/e2e/**'],
     },
   },
 });
