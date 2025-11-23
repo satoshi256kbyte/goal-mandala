@@ -1,6 +1,13 @@
 import React, { useRef, useState, useCallback } from 'react';
 import { useTouch } from '../../hooks/useTouch';
 
+// TODO: SwipeEvent型を適切な場所に移動
+interface SwipeEvent {
+  direction: 'left' | 'right' | 'up' | 'down';
+  velocity: number;
+  distance: number;
+}
+
 interface SwipeableContainerProps {
   children: React.ReactNode;
   onSwipeLeft?: () => void;

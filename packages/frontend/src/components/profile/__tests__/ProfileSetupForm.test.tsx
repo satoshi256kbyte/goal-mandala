@@ -579,7 +579,7 @@ describe('ProfileSetupForm', () => {
         formData,
       });
 
-      render(<ProfileSetupForm onSubmit={mockOnSubmit} />);
+      render(<ProfileSetupForm />);
 
       // フィールドに入力
       const industrySelect = screen.getByTestId('industry-select');

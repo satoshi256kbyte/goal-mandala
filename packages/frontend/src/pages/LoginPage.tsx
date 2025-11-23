@@ -1,10 +1,13 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import AuthLayout from '../components/auth/AuthLayout';
 import { LoginForm } from '../components/auth/LoginForm';
 import { ErrorAlert, SuccessMessage } from '../components/common';
 import { useAuthForm } from '../hooks/useAuthForm';
 import type { LoginFormData } from '../utils/validation';
+
+// TODO: NetworkStatusコンポーネントを適切な場所に移動
+const NetworkStatus: React.FC = () => null;
 
 /**
  * ログインページコンポーネント

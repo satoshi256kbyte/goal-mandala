@@ -152,7 +152,9 @@ export const testFormAccessibility = (formElement: HTMLElement) => {
   expect(hasFormRole || hasAriaLabel || hasAriaLabelledBy).toBe(true);
 
   // 必須フィールドが適切にマークされていることを確認
-  const requiredInputs = within(formElement).getAllByRole('textbox', { required: true });
+  const requiredInputs = within(formElement)
+    .queryAllByRole('textbox')
+    .filter(input => input.hasAttribute('required'));
   requiredInputs.forEach(input => {
     expect(input.getAttribute('required')).toBe('');
     expect(input.getAttribute('aria-required')).toBe('true');

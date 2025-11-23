@@ -10,7 +10,7 @@ import {
   getErrorMessage,
 } from '../services/goalFormService';
 import { GoalFormData } from '../schemas/goal-form';
-import { useAuth } from '../components/auth/AuthProvider';
+import { useAuth } from '../hooks/useAuth';
 
 /**
  * 目標入力ページのプロパティ

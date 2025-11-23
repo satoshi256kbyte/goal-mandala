@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen, waitFor, act } from '@testing-library/react';
 import { fireEvent } from '@testing-library/react';
 import { vi } from 'vitest';
-import { SubmitButton } from './SubmitButton';
+import { SubmitButton, MemoizedSubmitButton } from './SubmitButton';
 
 describe('SubmitButton', () => {
   describe('基本表示', () => {

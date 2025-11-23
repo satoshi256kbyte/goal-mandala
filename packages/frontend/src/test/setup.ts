@@ -6,8 +6,6 @@ import { afterEach, beforeEach, afterAll } from 'vitest';
 configure({
   // デフォルトのwaitForタイムアウトを短縮
   asyncUtilTimeout: 1000,
-  // DOM要素の検索タイムアウトを短縮
-  getByTimeout: 1000,
   // React Strict Modeを無効化して警告を抑制
   reactStrictMode: false,
 });
@@ -140,44 +138,14 @@ if (typeof Element !== 'undefined') {
       currentTime: 0,
       playbackRate: 1,
       playState: 'running' as AnimationPlayState,
-      ready: Promise.resolve(animation as Animation),
-      finished: Promise.resolve(animation as Animation),
+      ready: Promise.resolve({} as Animation),
+      finished: Promise.resolve({} as Animation),
       pending: false,
       replaceState: 'active' as AnimationReplaceState,
-      cancel: vi.fn(function (this: Animation) {
-        this.playState = 'idle';
-        // cancelイベントを発火
-        const listeners = eventListeners.get('cancel');
-        if (listeners) {
-          listeners.forEach(listener => {
-            try {
-              listener(new Event('cancel'));
-            } catch (error) {
-              console.error('Error in cancel listener:', error);
-            }
-          });
-        }
-      }),
-      finish: vi.fn(function (this: Animation) {
-        this.playState = 'finished';
-        // finishイベントを発火
-        const listeners = eventListeners.get('finish');
-        if (listeners) {
-          listeners.forEach(listener => {
-            try {
-              listener(new Event('finish'));
-            } catch (error) {
-              console.error('Error in finish listener:', error);
-            }
-          });
-        }
-      }),
-      pause: vi.fn(function (this: Animation) {
-        this.playState = 'paused';
-      }),
-      play: vi.fn(function (this: Animation) {
-        this.playState = 'running';
-      }),
+      cancel: vi.fn(),
+      finish: vi.fn(),
+      pause: vi.fn(),
+      play: vi.fn(),
       reverse: vi.fn(),
       updatePlaybackRate: vi.fn(),
       persist: vi.fn(),

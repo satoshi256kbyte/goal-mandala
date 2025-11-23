@@ -3,6 +3,25 @@ import { ProfileFormData, UseProfileFormOptions } from '../types/profile';
 import { updateProfile } from '../services/profileService';
 import { debounce } from '../utils/debounce';
 
+// TODO: UseProfileFormReturn型を適切な場所に移動
+interface UseProfileFormReturn {
+  formData: ProfileFormData;
+  errors: Record<string, string>;
+  touched: Record<string, boolean>;
+  isLoading: boolean;
+  isSubmitting: boolean;
+  error: string | null;
+  successMessage: string | null;
+  setFieldValue: (field: keyof ProfileFormData, value: string) => void;
+  setFieldTouched: (field: keyof ProfileFormData, isTouched: boolean) => void;
+  validateField: (field: string) => string | undefined;
+  validateForm: () => boolean;
+  handleSubmit: () => Promise<void>;
+  resetForm: () => void;
+  clearError: () => void;
+  clearSuccess: () => void;
+}
+
 /**
  * プロフィールフォーム管理カスタムフック
  *

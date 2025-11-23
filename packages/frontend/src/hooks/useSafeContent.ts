@@ -1,6 +1,17 @@
 import { useMemo } from 'react';
 import { sanitizeForDisplay, sanitizeFormValue } from '../utils/xss-protection';
 
+// TODO: logXSSAttempt関数を適切な場所に移動
+const logXSSAttempt = (content: string, source?: string) => {
+  // XSS攻撃パターンの検出
+  const xssPatterns = [/<script/i, /javascript:/i, /onerror=/i, /onclick=/i];
+  const hasXSS = xssPatterns.some(pattern => pattern.test(content));
+
+  if (hasXSS) {
+    console.warn('XSS attempt detected:', { content, source });
+  }
+};
+
 /**
  * 安全なコンテンツ表示のためのカスタムフック
  */

@@ -6,7 +6,7 @@ import { vi } from 'vitest';
 import { InlineEditor } from '../InlineEditor';
 import { EditModal } from '../EditModal';
 import MandalaCell from '../MandalaCell';
-import { CellData } from '../../../types';
+import { CellData, Goal, GoalStatus } from '../../../types';
 
 describe('キーボード操作テスト', () => {
   describe('InlineEditor', () => {
@@ -68,16 +68,14 @@ describe('キーボード操作テスト', () => {
   describe('EditModal', () => {
     const mockGoal = {
       id: 'goal-1',
-      user_id: 'user-1',
+
       title: 'テスト目標',
       description: 'テスト説明',
       deadline: new Date('2025-12-31'),
       background: 'テスト背景',
       constraints: 'テスト制約',
-      status: 'active' as const,
+      status: GoalStatus.ACTIVE,
       progress: 0,
-      created_at: new Date(),
-      updated_at: new Date(),
     };
 
     it('Escキーでモーダルが閉じる', async () => {
@@ -179,6 +177,7 @@ describe('キーボード操作テスト', () => {
     const mockCellData: CellData = {
       id: 'cell-1',
       type: 'action',
+      position: { row: 0, col: 0 },
       title: 'テストアクション',
       description: 'テスト説明',
       progress: 50,
@@ -269,6 +268,7 @@ describe('キーボード操作テスト', () => {
       const mockCellData: CellData = {
         id: 'cell-1',
         type: 'action',
+        position: { row: 0, col: 0 },
         title: 'テストアクション',
         description: 'テスト説明',
         progress: 50,

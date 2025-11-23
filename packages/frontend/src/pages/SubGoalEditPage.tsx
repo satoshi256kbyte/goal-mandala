@@ -8,7 +8,7 @@ import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { ErrorAlert } from '../components/common/ErrorAlert';
 import { SuccessMessage } from '../components/common/SuccessMessage';
 import { SubGoal } from '../types/mandala';
-import { useAuth } from '../components/auth/AuthProvider';
+import { useAuth } from '../hooks/useAuth';
 import { useKeyboardNavigation, useLiveRegion } from '../hooks/useAccessibility';
 
 /**

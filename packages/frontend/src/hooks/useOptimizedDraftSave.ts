@@ -157,6 +157,11 @@ export const useOptimizedDraftSave = (
   /**
    * 差分検出関数
    */
+  // TODO: deepEqual関数を適切な場所に移動
+  const deepEqual = (a: unknown, b: unknown): boolean => {
+    return JSON.stringify(a) === JSON.stringify(b);
+  };
+
   const detectChanges = useStableCallback((newData: unknown, oldData: unknown): boolean => {
     if (!opts.enableDiffDetection) {
       return true; // 差分検出無効の場合は常に変更ありとみなす

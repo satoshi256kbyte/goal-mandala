@@ -648,7 +648,9 @@ describe('HistoryPanel', () => {
 
     it('ロールバック実行中はローディング状態が表示される', async () => {
       const user = userEvent.setup();
-      const slowRollback = vi.fn(() => new Promise(resolve => setTimeout(resolve, 100)));
+      const slowRollback = vi.fn<[historyId: string], Promise<void>>(
+        () => new Promise(resolve => setTimeout(resolve, 100))
+      );
 
       render(
         <HistoryPanel

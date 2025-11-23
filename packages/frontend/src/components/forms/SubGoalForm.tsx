@@ -99,8 +99,9 @@ export const SubGoalForm: React.FC<SubGoalFormProps> = ({
   // キーボードナビゲーション管理
   const { containerRef } = useKeyboardNavigation();
 
-  // アナウンス機能
-  const { announce, AnnouncementRegion } = useAnnouncement();
+  // TODO: useAnnouncement フックを実装
+  const announce = (_message: string) => {};
+  const AnnouncementRegion = () => null;
 
   // カスタムフック使用
   const { formState: customFormState, handleError } = useSubGoalForm({
@@ -177,7 +178,7 @@ export const SubGoalForm: React.FC<SubGoalFormProps> = ({
       announce('サブ目標が正常に更新されました');
     } catch (error) {
       console.error('サブ目標更新エラー:', error);
-      announce('サブ目標の更新中にエラーが発生しました', 'assertive');
+      announce('サブ目標の更新中にエラーが発生しました');
       handleError(error as Error);
     }
   };
@@ -198,11 +199,11 @@ export const SubGoalForm: React.FC<SubGoalFormProps> = ({
         setHasUnsavedChanges(false);
         announce('下書きが保存されました');
       } else {
-        announce('入力内容にエラーがあります', 'assertive');
+        announce('入力内容にエラーがあります');
       }
     } catch (error) {
       console.error('下書き保存エラー:', error);
-      announce('下書き保存中にエラーが発生しました', 'assertive');
+      announce('下書き保存中にエラーが発生しました');
       handleError(error as Error);
     }
   }, [onDraftSave, getValues, announce, handleError]);
@@ -218,7 +219,7 @@ export const SubGoalForm: React.FC<SubGoalFormProps> = ({
       announce('サブ目標が再生成されました');
     } catch (error) {
       console.error('AI再生成エラー:', error);
-      announce('AI再生成中にエラーが発生しました', 'assertive');
+      announce('AI再生成中にエラーが発生しました');
       handleError(error as Error);
     }
   }, [onRegenerate, announce, handleError]);

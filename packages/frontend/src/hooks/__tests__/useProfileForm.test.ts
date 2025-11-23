@@ -1,7 +1,7 @@
 import { renderHook, act } from '@testing-library/react';
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { useProfileForm } from '../useProfileForm';
-import { updateProfile } from '../../services/profileService';
+import { updateProfile, ProfileUpdateResponse } from '../../services/profileService';
 
 // Mock the profile service
 vi.mock('../../services/profileService');
@@ -280,8 +280,8 @@ describe('useProfileForm', () => {
 
     it('handleSubmit中はisSubmittingがtrueになる', async () => {
       let resolvePromise: () => void;
-      const promise = new Promise<void>(resolve => {
-        resolvePromise = resolve;
+      const promise = new Promise<ProfileUpdateResponse>(resolve => {
+        resolvePromise = resolve as () => void;
       });
 
       mockUpdateProfile.mockReturnValue(promise);

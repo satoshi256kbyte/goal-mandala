@@ -9,8 +9,7 @@ import {
   FIELD_LIMITS,
   dateUtils,
 } from '../../schemas/goal-form';
-import { FormField, TextInput, TextArea, DatePicker } from './index';
-import { ErrorDisplay } from '../common/ErrorDisplay';
+import { FormField, TextInput, TextArea, DatePicker, ErrorDisplay } from './index';
 import { useResponsiveLayout } from '../../hooks/useResponsiveLayout';
 import { useKeyboardNavigation } from '../../hooks/useKeyboardNavigation';
 

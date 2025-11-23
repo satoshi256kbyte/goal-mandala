@@ -36,6 +36,9 @@ export function basicUsageExample() {
   // 同期機能を開始
   storageSync.startSync();
 
+  // TODO: User型を適切な場所に移動
+  type User = { id: string; email: string; name: string };
+
   // ログイン時の処理
   function handleLogin(user: User) {
     const authState: AuthState = {

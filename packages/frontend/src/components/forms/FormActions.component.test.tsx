@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen, waitFor, act } from '@testing-library/react';
 import { fireEvent } from '@testing-library/react';
 import { vi } from 'vitest';
-import { FormActions } from './FormActions';
+import { FormActions, MemoizedFormActions } from './FormActions';
 import { PartialGoalFormData } from '../../schemas/goal-form';
 import { useFormActions } from '../../hooks/useFormActions';
 
@@ -28,11 +28,6 @@ describe('FormActions', () => {
     deadline: '2024-12-31',
     background: 'テスト背景',
     constraints: 'テスト制約',
-  };
-
-  const validFormData: PartialGoalFormData = {
-    background: '',
-    constraints: '',
   };
 
   const mockFormActionsReturn = {

@@ -36,8 +36,12 @@ describe('ErrorDisplay', () => {
         code: 'VALIDATION_ERROR',
         retryable: false,
         timestamp: new Date(),
-        displayStrategy: 'inline' as const,
-        displayStrategy: 'inline' as const,
+        displayStrategy: {
+          inline: true,
+          toast: false,
+          modal: false,
+          summary: false,
+        },
       };
 
       render(<ErrorDisplay error={error} />);
@@ -104,7 +108,12 @@ describe('ErrorSummary', () => {
         code: 'VALIDATION_ERROR',
         retryable: false,
         timestamp: new Date(),
-        displayStrategy: 'inline' as const,
+        displayStrategy: {
+          inline: true,
+          toast: false,
+          modal: false,
+          summary: false,
+        },
       },
       {
         message: '説明エラー',
@@ -114,7 +123,12 @@ describe('ErrorSummary', () => {
         code: 'VALIDATION_ERROR',
         retryable: false,
         timestamp: new Date(),
-        displayStrategy: 'inline' as const,
+        displayStrategy: {
+          inline: true,
+          toast: false,
+          modal: false,
+          summary: false,
+        },
       },
     ];
 

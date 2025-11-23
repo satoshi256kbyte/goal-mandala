@@ -5,11 +5,11 @@ import userEvent from '@testing-library/user-event';
 import { InlineEditor } from './InlineEditor';
 
 describe('InlineEditor', () => {
-  let mockOnSave: ReturnType<typeof vi.fn>;
+  let mockOnSave: ReturnType<typeof vi.fn<[value: string], Promise<void>>>;
   let mockOnCancel: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
-    mockOnSave = vi.fn();
+    mockOnSave = vi.fn<[value: string], Promise<void>>().mockResolvedValue(undefined);
     mockOnCancel = vi.fn();
   });
 

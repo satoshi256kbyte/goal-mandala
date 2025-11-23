@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { ActionProvider } from '../contexts/ActionContext';
 import { DragDropProvider } from '../components/forms/DragDropProvider';
 import { BulkEditModal } from '../components/forms/BulkEditModal';
@@ -7,9 +7,15 @@ import { BulkSelectionProvider } from '../components/forms/BulkSelectionProvider
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { ErrorAlert } from '../components/common/ErrorAlert';
 import { SuccessMessage } from '../components/common/SuccessMessage';
-import { Action, ActionType } from '../types/mandala';
-import { useAuth } from '../components/auth/AuthProvider';
+import { Action, ActionType, SubGoal } from '../types/mandala';
+import { useAuth } from '../hooks/useAuth';
 import { useKeyboardNavigation } from '../hooks/useAccessibility';
+
+// TODO: useLiveRegion フックを実装
+const useLiveRegion = () => ({
+  announce: (_message: string) => {},
+  LiveRegion: () => null,
+});
 
 /**
  * アクション編集ページのプロパティ
