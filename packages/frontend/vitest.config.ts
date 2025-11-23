@@ -19,7 +19,7 @@ export default defineConfig({
     testTimeout: 10000,
     hookTimeout: 8000,
     teardownTimeout: 5000,
-    // 段階的テスト追加: ステップ14 - 次のテストファイルを追加
+    // 段階的テスト追加: ステップ15 - フォームコンポーネントテストを追加
     include: [
       'src/schemas/goal-form.test.ts',
       'src/utils/__tests__/animation-utils.test.ts',
@@ -46,6 +46,9 @@ export default defineConfig({
       'src/hooks/useTimeout.test.ts',
       // 修正完了: useAuth.test.tsx
       'src/hooks/useAuth.test.tsx',
+      // フォームコンポーネント
+      'src/components/forms/ErrorDisplay.test.tsx',
+      'src/components/forms/BulkEditModal.test.tsx',
     ],
     // E2Eテストのみ除外
     exclude: [

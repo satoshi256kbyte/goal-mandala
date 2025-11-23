@@ -1,8 +1,8 @@
 import React from 'react';
 import { render, screen, waitFor, fireEvent, act } from '@testing-library/react';
 import { vi, beforeEach } from 'vitest';
-import { ErrorDisplay, InlineError } from './ErrorDisplay';
-import { FormErrorSeverity } from '../../types/form-error';
+import { ErrorDisplay, InlineError, ErrorSummary } from './ErrorDisplay';
+import { FormErrorSeverity, FormErrorType } from '../../types/form-error';
 
 describe('ErrorDisplay', () => {
   beforeEach(() => {
