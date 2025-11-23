@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { TaskFilter } from '../TaskFilter';
-import { TaskFilters } from '@goal-mandala/shared';
+import { TaskFilters, TaskStatus } from '@goal-mandala/shared';
 
 describe('TaskFilter', () => {
   const mockActions = [

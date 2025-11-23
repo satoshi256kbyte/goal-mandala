@@ -12,6 +12,7 @@
 import { vi } from 'vitest';
 import { FormSecurity, SubGoalFormData } from '../form-security';
 import { ActionFormData } from '../../contexts/ActionContext';
+import { ActionType } from '@goal-mandala/shared';
 
 describe('FormSecurity', () => {
   let formSecurity: FormSecurity;
@@ -79,7 +80,7 @@ describe('FormSecurity', () => {
         title: '&#x3C;script&#x3E;alert(&#x22;XSS&#x22;)&#x3C;/script&#x3E;',
         description: '%3Cscript%3Ealert%28%22XSS%22%29%3C%2Fscript%3E',
         background: '&lt;img src=x onerror=alert(1)&gt;',
-        type: 'execution',
+        type: ActionType.EXECUTION,
         position: 0,
       };
 
@@ -114,7 +115,7 @@ describe('FormSecurity', () => {
         title: 'data:text/html,<script>alert("XSS")</script>',
         description: '正常な説明',
         background: '正常な背景',
-        type: 'execution',
+        type: ActionType.EXECUTION,
         position: 0,
       };
 
@@ -256,7 +257,7 @@ describe('FormSecurity', () => {
         title: 'テストアクション',
         description: 'テスト説明',
         background: 'テスト背景',
-        type: 'execution',
+        type: ActionType.EXECUTION,
         position: 0,
       };
 

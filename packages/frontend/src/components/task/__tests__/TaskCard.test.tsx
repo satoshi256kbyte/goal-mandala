@@ -1,13 +1,13 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { TaskCard } from '../TaskCard';
-import { generateMockTask } from '@goal-mandala/shared';
+import { generateMockTask, TaskStatus } from '@goal-mandala/shared';
 
 describe('TaskCard', () => {
   it('should render task information correctly', () => {
     const task = generateMockTask({
       title: 'Test Task',
       description: 'Test Description',
-      status: 'not_started',
+      status: TaskStatus.NOT_STARTED,
       estimatedMinutes: 30,
     });
 
@@ -19,7 +19,7 @@ describe('TaskCard', () => {
   });
 
   it('should call onStatusChange when status is changed', () => {
-    const task = generateMockTask({ status: 'not_started' });
+    const task = generateMockTask({ status: TaskStatus.NOT_STARTED });
     const onStatusChange = vi.fn();
 
     render(
@@ -56,7 +56,7 @@ describe('TaskCard', () => {
   it('should display deadline warning for overdue tasks', () => {
     const task = generateMockTask({
       deadline: new Date(Date.now() - 24 * 60 * 60 * 1000), // 昨日
-      status: 'not_started',
+      status: TaskStatus.NOT_STARTED,
     });
 
     render(<TaskCard task={task} onStatusChange={() => {}} onSelect={() => {}} selected={false} />);
