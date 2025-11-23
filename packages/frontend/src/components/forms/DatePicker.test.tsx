@@ -9,6 +9,9 @@ import { GoalFormData } from '../../types/goal-form';
 import { getDefaultDateRange } from '../../utils/date-validation';
 import { formatDateToISO } from '../../utils/date-formatter';
 
+// userEventのセットアップ
+const user = userEvent.setup();
+
 // テスト用のラッパーコンポーネント
 const TestWrapper: React.FC<{
   initialValue?: string;

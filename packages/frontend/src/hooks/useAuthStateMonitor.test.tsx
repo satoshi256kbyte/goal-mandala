@@ -24,15 +24,15 @@ vi.mock('../services/auth-state-monitor', () => ({
 
 describe('useAuthStateMonitor', () => {
   const mockAuthStateMonitor = authStateMonitor as {
-    getCurrentState: Mock;
-    isActive: Mock;
-    getListenerCount: Mock;
-    addListener: Mock;
-    removeListener: Mock;
-    startMonitoring: Mock;
-    stopMonitoring: Mock;
-    updateConfig: Mock;
-    checkAuthState: Mock;
+    getCurrentState: ReturnType<typeof vi.fn>;
+    isActive: ReturnType<typeof vi.fn>;
+    getListenerCount: ReturnType<typeof vi.fn>;
+    addListener: ReturnType<typeof vi.fn>;
+    removeListener: ReturnType<typeof vi.fn>;
+    startMonitoring: ReturnType<typeof vi.fn>;
+    stopMonitoring: ReturnType<typeof vi.fn>;
+    updateConfig: ReturnType<typeof vi.fn>;
+    checkAuthState: ReturnType<typeof vi.fn>;
   };
 
   const mockState: AuthState = {
@@ -346,9 +346,9 @@ describe('useAuthStateMonitor', () => {
 
 describe('useSimpleAuthStateMonitor', () => {
   const mockAuthStateMonitor = authStateMonitor as {
-    getCurrentState: Mock;
-    isActive: Mock;
-    addListener: Mock;
+    getCurrentState: ReturnType<typeof vi.fn>;
+    isActive: ReturnType<typeof vi.fn>;
+    addListener: ReturnType<typeof vi.fn>;
   };
 
   const mockState: AuthState = {
