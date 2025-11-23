@@ -5,12 +5,12 @@ import { vi } from 'vitest';
 import { DynamicFormField } from './DynamicFormField';
 // Mock dependencies
 const mockOnChange = vi.fn();
-const mockRegister = vi.fn(() => ({
+const mockRegister = vi.fn((name: string) => ({
   onChange: vi.fn(),
   onBlur: vi.fn(),
-  name: 'test',
+  name,
   ref: vi.fn(),
-}));
+})) as any;
 // Test field configurations
 const textField = {
   name: 'title',
