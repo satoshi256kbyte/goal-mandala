@@ -13,6 +13,7 @@
 import React, { useEffect, useState } from 'react';
 import { useFormSecurity } from '../../hooks/useFormSecurity';
 import { AuthContext } from '../../services/form-security';
+import { FormErrorSeverity } from '../../types/form-error';
 import { ErrorDisplay } from './ErrorDisplay';
 import { FormError, FormErrorType } from '../../types/form-error';
 

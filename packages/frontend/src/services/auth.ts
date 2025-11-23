@@ -16,6 +16,10 @@ import {
 export interface AuthError {
   code: string;
   message: string;
+  category?: string;
+  severity?: string;
+  timestamp?: Date;
+  retryable?: boolean;
 }
 
 /**
