@@ -19,6 +19,24 @@ export default defineConfig({
     testTimeout: 10000,
     hookTimeout: 8000,
     teardownTimeout: 5000,
+    // 段階的テスト追加: ステップ9 - AnimationSettingsContextを追加
+    include: [
+      'src/schemas/goal-form.test.ts',
+      'src/utils/__tests__/animation-utils.test.ts',
+      'src/utils/__tests__/csrf-protection.test.ts',
+      'src/utils/__tests__/input-sanitizer.test.ts',
+      'src/utils/__tests__/error-classifier.test.ts',
+      'src/utils/__tests__/xss-protection.test.ts',
+      'src/utils/validation.test.ts',
+      'src/utils/__tests__/progress-colors.test.ts',
+      'src/contexts/ActionContext.test.tsx',
+      'src/contexts/SubGoalContext.test.tsx',
+      'src/test/__tests__/**/*.test.ts',
+      'src/utils/authUtils.test.ts',
+      'src/utils/permissions.test.ts',
+      'src/utils/date-formatter.test.ts',
+      'src/contexts/__tests__/AnimationSettingsContext.test.tsx',
+    ],
     // E2Eテストのみ除外
     exclude: [
       '**/node_modules/**',

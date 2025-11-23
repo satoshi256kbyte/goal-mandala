@@ -1,5 +1,5 @@
 import { render, screen, waitFor, fireEvent, act } from '@testing-library/react';
-import { canEditGoal, canEditSubGoal, canEditAction } from './permissions';
+import { canEditGoal, canEditSubGoal, canEditAction, hasEditPermission } from './permissions';
 
 describe('Frontend 権限チェック', () => {
   describe('canEditGoal', () => {

@@ -6,6 +6,7 @@ import {
   formatAuthError,
   isValidEmail,
   sanitizeUserInput,
+  isRetryableError,
 } from './authUtils';
 
 describe('認証ユーティリティ関数', () => {
