@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import { PartialGoalFormData } from '../schemas/goal-form';
 import { useNavigate } from 'react-router-dom';
 import { GoalInputForm } from '../components/forms/GoalInputForm';
 import { GoalFormProvider } from '../contexts/GoalFormContext';

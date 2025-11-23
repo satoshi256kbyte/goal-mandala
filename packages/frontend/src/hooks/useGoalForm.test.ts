@@ -1,4 +1,5 @@
 import { act } from '@testing-library/react';
+import { PartialGoalFormData } from '../schemas/goal-form';
 import { vi } from 'vitest';
 import { renderHookWithProviders } from '../test/test-utils';
 import { useGoalForm, useFieldValidation } from './useGoalForm';
