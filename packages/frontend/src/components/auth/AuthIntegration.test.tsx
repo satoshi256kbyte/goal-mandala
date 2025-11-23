@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, act } from '@testing-library/react';
+import { render, screen, fireEvent, act, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { vi } from 'vitest';
@@ -18,7 +18,7 @@ vi.mock('aws-amplify/auth', () => ({
   fetchAuthSession: vi.fn(),
 }));
 
-import { signIn, signUp } from 'aws-amplify/auth';
+import { signIn, signUp, getCurrentUser } from 'aws-amplify/auth';
 
 // テスト用のダッシュボードコンポーネント
 const Dashboard = () => <div>ダッシュボード</div>;

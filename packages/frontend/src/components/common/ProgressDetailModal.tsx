@@ -8,8 +8,8 @@ import React, { useEffect, useMemo } from 'react';
 import { format } from 'date-fns';
 import { ja } from 'date-fns/locale';
 import { cn } from '../../utils/cn';
-import { ProgressHistoryEntry } from '../../services/progress-history-service';
-import { useFocusTrap } from '../../hooks/useAccessibility';
+import { ProgressHistoryEntry, SignificantChange } from '../../services/progress-history-service';
+import { useFocusTrap, useLiveRegion } from '../../hooks/useAccessibility';
 import { getDialogAria } from '../../utils/screen-reader';
 
 export interface ProgressDetailModalProps {

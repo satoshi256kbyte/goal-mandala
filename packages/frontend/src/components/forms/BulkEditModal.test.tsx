@@ -140,27 +140,30 @@ describe('BulkEditModal', () => {
   });
 
   describe('編集モード切り替え', () => {
-    // TODO: モード切り替えの実装を修正する必要がある
-    // 現在、クリックイベントは発火するが、状態変更が反映されない
-    // 原因: FormProviderの外側で状態管理が行われているため、再レンダリングがトリガーされない可能性
+    // TODO: BulkEditModalの実装を修正する必要がある
+    // 問題: setEditMode()が呼ばれても、コンポーネントが再レンダリングされない
+    // 原因: 状態管理がFormProviderの外側にあり、react-hook-formの再レンダリングトリガーと連携していない
+    // 解決策: editModeをuseFormのwatchと連携させるか、useStateの更新を強制的にトリガーする
     it.skip('個別項目編集モードに切り替えできる', async () => {
       const user = userEvent.setup();
-      const { container } = render(<BulkEditModal {...defaultProps} />);
+      render(<BulkEditModal {...defaultProps} />);
 
+      // 初期状態では共通フィールド編集がアクティブ
+      const commonButton = screen.getByRole('tab', { name: '共通フィールド編集' });
       const individualButton = screen.getByRole('tab', { name: '個別項目編集' });
 
-      // 初期状態では一括編集モード
-      expect(individualButton).not.toHaveClass('bg-blue-100');
+      expect(commonButton).toHaveClass('bg-blue-100');
       expect(individualButton).toHaveClass('bg-gray-100');
 
       // 個別項目編集モードに切り替え
-      await user.click(individualButton);
+      await act(async () => {
+        await user.click(individualButton);
+      });
 
       // ボタンのスタイルが変更されることを確認
       await waitFor(() => {
-        const updatedButton = screen.getByRole('tab', { name: '個別項目編集' });
-        expect(updatedButton).toHaveClass('bg-blue-100');
-        expect(updatedButton).not.toHaveClass('bg-gray-100');
+        expect(screen.getByRole('tab', { name: '個別項目編集' })).toHaveClass('bg-blue-100');
+        expect(screen.getByRole('tab', { name: '共通フィールド編集' })).toHaveClass('bg-gray-100');
       });
     });
   });

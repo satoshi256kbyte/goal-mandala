@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { useFocusManagement } from '../../hooks/useAccessibility';
+import { useFocusManagement, useLiveRegion } from '../../hooks/useAccessibility';
 
 interface AuthLayoutProps {
   children: React.ReactNode;
