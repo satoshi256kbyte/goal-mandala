@@ -11,6 +11,7 @@ export interface ActionFormData {
   constraints?: string;
   type: ActionType;
   position: number;
+  subGoalId?: string;
 }
 
 /**

@@ -2,7 +2,7 @@ import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useTasks, useUpdateTaskStatus, useAddNote } from '../useTasks';
 import { taskApi } from '../../services/taskApi';
-import { generateMockTask, generateMockTaskNote } from '@goal-mandala/shared';
+import { generateMockTask, generateMockTaskNote, TaskStatus } from '@goal-mandala/shared';
 
 // taskApiをモック
 vi.mock('../../services/taskApi');
@@ -46,7 +46,7 @@ describe('useTasks', () => {
   });
 
   it('should pass filters and search query to API', async () => {
-    const filters = { statuses: ['completed'] };
+    const filters = { statuses: [TaskStatus.COMPLETED] };
     const searchQuery = 'test';
     mockTaskApi.getTasks.mockResolvedValue({ tasks: [] });
 
@@ -76,20 +76,20 @@ describe('useTasks', () => {
 
 describe('useUpdateTaskStatus', () => {
   it('should update task status successfully', async () => {
-    const mockTask = generateMockTask({ status: 'completed' });
+    const mockTask = generateMockTask({ status: TaskStatus.COMPLETED });
     mockTaskApi.updateTaskStatus.mockResolvedValue({ task: mockTask });
 
     const { result } = renderHook(() => useUpdateTaskStatus(), {
       wrapper: createWrapper(),
     });
 
-    result.current.mutate({ taskId: 'task-1', status: 'completed' });
+    result.current.mutate({ taskId: 'task-1', status: TaskStatus.COMPLETED });
 
     await waitFor(() => {
       expect(result.current.isSuccess).toBe(true);
     });
 
-    expect(mockTaskApi.updateTaskStatus).toHaveBeenCalledWith('task-1', 'completed');
+    expect(mockTaskApi.updateTaskStatus).toHaveBeenCalledWith('task-1', TaskStatus.COMPLETED);
   });
 
   it('should handle update errors', async () => {
@@ -99,7 +99,7 @@ describe('useUpdateTaskStatus', () => {
       wrapper: createWrapper(),
     });
 
-    result.current.mutate({ taskId: 'task-1', status: 'completed' });
+    result.current.mutate({ taskId: 'task-1', status: TaskStatus.COMPLETED });
 
     await waitFor(() => {
       expect(result.current.isError).toBe(true);

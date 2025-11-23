@@ -28,7 +28,7 @@ describe('TaskFilter', () => {
     fireEvent.click(completedCheckbox);
 
     expect(onChange).toHaveBeenCalledWith({
-      statuses: ['completed'],
+      statuses: [TaskStatus.COMPLETED],
     });
   });
 
@@ -62,7 +62,7 @@ describe('TaskFilter', () => {
 
   it('should display current filter values', () => {
     const filters: TaskFilters = {
-      statuses: ['completed'],
+      statuses: [TaskStatus.COMPLETED],
       deadlineRange: 'today',
       actionIds: ['action-1'],
     };
@@ -76,7 +76,7 @@ describe('TaskFilter', () => {
 
   it('should handle multiple status selections', () => {
     const onChange = vi.fn();
-    const filters: TaskFilters = { statuses: ['completed'] };
+    const filters: TaskFilters = { statuses: [TaskStatus.COMPLETED] };
 
     render(<TaskFilter filters={filters} onChange={onChange} actions={mockActions} />);
 
@@ -84,7 +84,7 @@ describe('TaskFilter', () => {
     fireEvent.click(inProgressCheckbox);
 
     expect(onChange).toHaveBeenCalledWith({
-      statuses: ['completed', 'in_progress'],
+      statuses: [TaskStatus.COMPLETED, TaskStatus.IN_PROGRESS],
     });
   });
 });
