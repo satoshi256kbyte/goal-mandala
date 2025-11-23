@@ -19,18 +19,8 @@ export default defineConfig({
     testTimeout: 10000,
     hookTimeout: 8000,
     teardownTimeout: 5000,
-    // E2Eテストを除外
-    exclude: [
-      '**/node_modules/**',
-      '**/dist/**',
-      '**/e2e/**',
-      '**/*.spec.ts',
-      '**/*.e2e.test.ts',
-      '**/__tests__/**/*.e2e.test.ts',
-      '**/__tests__/**/*.e2e.test.tsx',
-      '**/src/test/e2e/**',
-      '**/src/__tests__/e2e/**',
-    ],
+    // E2Eテストとspecファイルを除外
+    exclude: ['**/node_modules/**', '**/dist/**', '**/e2e/**', '**/*.spec.ts', '**/*.spec.tsx'],
     // 並列実行の制限
     maxConcurrency: 4,
     // レポーター設定
@@ -40,17 +30,7 @@ export default defineConfig({
       enabled: false, // デフォルトで無効（test:coverageコマンドで有効化）
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
-      exclude: [
-        '**/node_modules/**',
-        '**/dist/**',
-        '**/e2e/**',
-        '**/*.spec.ts',
-        '**/*.e2e.test.ts',
-        '**/test/**',
-        '**/src/test/**',
-        '**/__tests__/**',
-        '**/src/__tests__/**',
-      ],
+      exclude: ['**/node_modules/**', '**/dist/**', '**/e2e/**', '**/*.spec.ts', '**/*.spec.tsx'],
     },
   },
 });
