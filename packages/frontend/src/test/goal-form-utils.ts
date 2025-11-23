@@ -209,8 +209,8 @@ export const assertions = {
  */
 export const createMockHandlers = () => {
   return {
-    onSubmit: jest.fn().mockResolvedValue(undefined),
-    onDraftSave: jest.fn().mockResolvedValue(undefined),
+    onSubmit: vi.fn().mockResolvedValue(undefined),
+    onDraftSave: vi.fn().mockResolvedValue(undefined),
   };
 };
 

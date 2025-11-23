@@ -20,7 +20,7 @@ describe('TaskCard', () => {
 
   it('should call onStatusChange when status is changed', () => {
     const task = generateMockTask({ status: 'not_started' });
-    const onStatusChange = jest.fn();
+    const onStatusChange = vi.fn();
 
     render(
       <TaskCard task={task} onStatusChange={onStatusChange} onSelect={() => {}} selected={false} />
@@ -34,7 +34,7 @@ describe('TaskCard', () => {
 
   it('should call onSelect when checkbox is clicked', () => {
     const task = generateMockTask();
-    const onSelect = jest.fn();
+    const onSelect = vi.fn();
 
     render(<TaskCard task={task} onStatusChange={() => {}} onSelect={onSelect} selected={false} />);
 

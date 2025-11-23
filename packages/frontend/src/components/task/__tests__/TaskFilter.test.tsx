@@ -19,7 +19,7 @@ describe('TaskFilter', () => {
   });
 
   it('should call onChange when status filter is changed', () => {
-    const onChange = jest.fn();
+    const onChange = vi.fn();
     const filters: TaskFilters = {};
 
     render(<TaskFilter filters={filters} onChange={onChange} actions={mockActions} />);
@@ -33,7 +33,7 @@ describe('TaskFilter', () => {
   });
 
   it('should call onChange when deadline filter is changed', () => {
-    const onChange = jest.fn();
+    const onChange = vi.fn();
     const filters: TaskFilters = {};
 
     render(<TaskFilter filters={filters} onChange={onChange} actions={mockActions} />);
@@ -47,7 +47,7 @@ describe('TaskFilter', () => {
   });
 
   it('should call onChange when action filter is changed', () => {
-    const onChange = jest.fn();
+    const onChange = vi.fn();
     const filters: TaskFilters = {};
 
     render(<TaskFilter filters={filters} onChange={onChange} actions={mockActions} />);
@@ -75,7 +75,7 @@ describe('TaskFilter', () => {
   });
 
   it('should handle multiple status selections', () => {
-    const onChange = jest.fn();
+    const onChange = vi.fn();
     const filters: TaskFilters = { statuses: ['completed'] };
 
     render(<TaskFilter filters={filters} onChange={onChange} actions={mockActions} />);

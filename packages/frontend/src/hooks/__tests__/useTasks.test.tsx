@@ -5,8 +5,8 @@ import { taskApi } from '../../services/taskApi';
 import { generateMockTask, generateMockTaskNote } from '@goal-mandala/shared';
 
 // taskApiをモック
-jest.mock('../../services/taskApi');
-const mockTaskApi = taskApi as jest.Mocked<typeof taskApi>;
+vi.mock('../../services/taskApi');
+const mockTaskApi = taskApi as unknown as ReturnType<typeof vi.fn>;
 
 // テスト用のQueryClientProvider
 const createWrapper = () => {
@@ -26,7 +26,7 @@ const createWrapper = () => {
 
 describe('useTasks', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('should fetch tasks successfully', async () => {

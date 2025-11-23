@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { TokenManager } from './tokenManager';
+import { TokenManager, STORAGE_KEYS } from './tokenManager';
 import { AuthService } from './auth';
 
 // AuthServiceをモック

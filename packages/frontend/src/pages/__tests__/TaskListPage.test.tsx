@@ -5,11 +5,11 @@ import { TaskListPage } from '../TaskListPage';
 import { taskApi } from '../../services/taskApi';
 
 // Mock the taskApi
-jest.mock('../../services/taskApi');
-const mockTaskApi = taskApi as jest.Mocked<typeof taskApi>;
+vi.mock('../../services/taskApi');
+const mockTaskApi = taskApi as unknown as ReturnType<typeof vi.fn>;
 
 // Mock components
-jest.mock('../../components/task/TaskCard', () => ({
+vi.mock('../../components/task/TaskCard', () => ({
   TaskCard: ({ task, onStatusChange, onSelect, selected }: any) => (
     <div data-testid={`task-card-${task.id}`}>
       <span>{task.title}</span>
@@ -24,7 +24,7 @@ jest.mock('../../components/task/TaskCard', () => ({
   ),
 }));
 
-jest.mock('../../components/task/TaskFilter', () => ({
+vi.mock('../../components/task/TaskFilter', () => ({
   TaskFilter: ({ filters, onChange }: any) => (
     <div data-testid="task-filter">
       <button onClick={() => onChange({ statuses: ['completed'] })}>Filter Completed</button>
@@ -32,7 +32,7 @@ jest.mock('../../components/task/TaskFilter', () => ({
   ),
 }));
 
-jest.mock('../../components/task/TaskSearch', () => ({
+vi.mock('../../components/task/TaskSearch', () => ({
   TaskSearch: ({ query, onChange, onSaveView }: any) => (
     <div data-testid="task-search">
       <input value={query} onChange={e => onChange(e.target.value)} placeholder="Search tasks" />
@@ -41,7 +41,7 @@ jest.mock('../../components/task/TaskSearch', () => ({
   ),
 }));
 
-jest.mock('../../components/task/ProgressBar', () => ({
+vi.mock('../../components/task/ProgressBar', () => ({
   ProgressBar: ({ progress, label }: any) => (
     <div data-testid="progress-bar">
       {label}: {progress}%
@@ -49,11 +49,11 @@ jest.mock('../../components/task/ProgressBar', () => ({
   ),
 }));
 
-jest.mock('../../components/common/LoadingSpinner', () => ({
+vi.mock('../../components/common/LoadingSpinner', () => ({
   LoadingSpinner: () => <div data-testid="loading-spinner">Loading...</div>,
 }));
 
-jest.mock('../../components/common/ErrorAlert', () => ({
+vi.mock('../../components/common/ErrorAlert', () => ({
   ErrorAlert: ({ message, onRetry }: any) => (
     <div data-testid="error-alert">
       <span>{message}</span>
@@ -126,7 +126,7 @@ describe('TaskListPage', () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('タスク一覧が正常に表示される', async () => {

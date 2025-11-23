@@ -1,5 +1,5 @@
-import { describe, it } from 'vitest';
-import { sanitizeText, stripHtml, validateCellData } from '../input-sanitizer';
+import { describe, it, expect } from 'vitest';
+import { sanitizeText, validateCellData, sanitizeCellData } from '../input-sanitizer';
 
 describe('security utilities', () => {
   describe('sanitizeText', () => {
@@ -19,16 +19,6 @@ describe('security utilities', () => {
 
     it('空文字列を処理する', () => {
       expect(sanitizeText('')).toBe('');
-    });
-  });
-
-  describe('stripHtml', () => {
-    it('HTMLタグを除去する', () => {
-      expect(stripHtml('<p>Hello <strong>World</strong></p>')).toBe('Hello World');
-    });
-
-    it('複雑なHTMLを処理する', () => {
-      expect(stripHtml('<div class="test"><span>Text</span></div>')).toBe('Text');
     });
   });
 

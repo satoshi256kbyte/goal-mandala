@@ -7,15 +7,15 @@ import { taskApi } from '../../services/taskApi';
 import { Task, TaskStatus, TaskNote, TaskHistory } from '@goal-mandala/shared';
 
 // Mock the taskApi
-jest.mock('../../services/taskApi');
-const mockTaskApi = taskApi as jest.Mocked<typeof taskApi>;
+vi.mock('../../services/taskApi');
+const mockTaskApi = taskApi as unknown as ReturnType<typeof vi.fn>;
 
 // Mock components
-jest.mock('../../components/common/LoadingSpinner', () => ({
+vi.mock('../../components/common/LoadingSpinner', () => ({
   LoadingSpinner: () => <div data-testid="loading-spinner" />,
 }));
 
-jest.mock('../../components/common/ErrorAlert', () => ({
+vi.mock('../../components/common/ErrorAlert', () => ({
   ErrorAlert: () => <div data-testid="error-alert" />,
 }));
 
@@ -78,7 +78,7 @@ describe('TaskDetailPage Property Tests', () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   /**

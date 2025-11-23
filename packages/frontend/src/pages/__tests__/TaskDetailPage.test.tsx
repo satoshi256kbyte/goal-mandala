@@ -6,15 +6,15 @@ import { TaskDetailPage } from '../TaskDetailPage';
 import { taskApi } from '../../services/taskApi';
 
 // Mock the taskApi
-jest.mock('../../services/taskApi');
-const mockTaskApi = taskApi as jest.Mocked<typeof taskApi>;
+vi.mock('../../services/taskApi');
+const mockTaskApi = taskApi as unknown as ReturnType<typeof vi.fn>;
 
 // Mock components
-jest.mock('../../components/common/LoadingSpinner', () => ({
+vi.mock('../../components/common/LoadingSpinner', () => ({
   LoadingSpinner: () => <div data-testid="loading-spinner">Loading...</div>,
 }));
 
-jest.mock('../../components/common/ErrorAlert', () => ({
+vi.mock('../../components/common/ErrorAlert', () => ({
   ErrorAlert: ({ message, onRetry }: any) => (
     <div data-testid="error-alert">
       <span>{message}</span>
@@ -93,7 +93,7 @@ describe('TaskDetailPage', () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('タスク詳細が正常に表示される', async () => {

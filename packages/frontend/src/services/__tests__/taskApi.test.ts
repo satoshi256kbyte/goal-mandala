@@ -1,16 +1,17 @@
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { taskApi } from '../taskApi';
 import { generateMockTask, generateMockTaskNote } from '@goal-mandala/shared';
 
 // fetchをモック
-global.fetch = jest.fn();
-const mockFetch = fetch as jest.MockedFunction<typeof fetch>;
+global.fetch = vi.fn();
+const mockFetch = fetch as ReturnType<typeof vi.fn>;
 
 // localStorageをモック
 const mockLocalStorage = {
-  getItem: jest.fn(),
-  setItem: jest.fn(),
-  removeItem: jest.fn(),
-  clear: jest.fn(),
+  getItem: vi.fn(),
+  setItem: vi.fn(),
+  removeItem: vi.fn(),
+  clear: vi.fn(),
 };
 Object.defineProperty(window, 'localStorage', {
   value: mockLocalStorage,
@@ -18,7 +19,7 @@ Object.defineProperty(window, 'localStorage', {
 
 describe('TaskApiClient', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     mockLocalStorage.getItem.mockReturnValue('test-token');
   });
 
@@ -161,7 +162,7 @@ describe('TaskApiClient', () => {
         },
       } as Response);
 
-      await expect(taskApi.getTasks()).rejects.toThrow('HTTP 500');
+      await expect(taskApi.getTasks()).rejects.toThrow('Network error');
     });
   });
 

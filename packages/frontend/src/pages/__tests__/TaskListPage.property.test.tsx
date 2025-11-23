@@ -6,11 +6,11 @@ import { taskApi } from '../../services/taskApi';
 import { Task, TaskStatus } from '@goal-mandala/shared';
 
 // Mock the taskApi
-jest.mock('../../services/taskApi');
-const mockTaskApi = taskApi as jest.Mocked<typeof taskApi>;
+vi.mock('../../services/taskApi');
+const mockTaskApi = taskApi as unknown as ReturnType<typeof vi.fn>;
 
 // Mock components to simplify testing
-jest.mock('../../components/task/TaskCard', () => ({
+vi.mock('../../components/task/TaskCard', () => ({
   TaskCard: ({ task }: { task: Task }) => (
     <div data-testid={`task-card-${task.id}`}>
       <span data-testid={`task-title-${task.id}`}>{task.title}</span>
@@ -26,25 +26,25 @@ jest.mock('../../components/task/TaskCard', () => ({
   ),
 }));
 
-jest.mock('../../components/task/TaskFilter', () => ({
+vi.mock('../../components/task/TaskFilter', () => ({
   TaskFilter: () => <div data-testid="task-filter" />,
 }));
 
-jest.mock('../../components/task/TaskSearch', () => ({
+vi.mock('../../components/task/TaskSearch', () => ({
   TaskSearch: () => <div data-testid="task-search" />,
 }));
 
-jest.mock('../../components/task/ProgressBar', () => ({
+vi.mock('../../components/task/ProgressBar', () => ({
   ProgressBar: ({ progress }: { progress: number }) => (
     <div data-testid="progress-bar" data-progress={progress} />
   ),
 }));
 
-jest.mock('../../components/common/LoadingSpinner', () => ({
+vi.mock('../../components/common/LoadingSpinner', () => ({
   LoadingSpinner: () => <div data-testid="loading-spinner" />,
 }));
 
-jest.mock('../../components/common/ErrorAlert', () => ({
+vi.mock('../../components/common/ErrorAlert', () => ({
   ErrorAlert: () => <div data-testid="error-alert" />,
 }));
 
@@ -94,7 +94,7 @@ describe('TaskListPage Property Tests', () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   /**

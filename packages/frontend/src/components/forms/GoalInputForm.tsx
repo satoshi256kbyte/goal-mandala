@@ -12,6 +12,7 @@ import {
 import { FormField, TextInput, TextArea, DatePicker } from './index';
 import { useResponsiveLayout } from '../../hooks/useResponsiveLayout';
 import { useKeyboardNavigation } from '../../hooks/useKeyboardNavigation';
+import { useAnnouncement } from '../../hooks/useAnnouncement';
 /**
  * GoalInputFormのプロパティ
  */
