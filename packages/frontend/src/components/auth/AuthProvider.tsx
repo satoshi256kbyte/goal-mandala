@@ -1,5 +1,5 @@
 import React from 'react';
-import { AuthContext } from '../../hooks/useAuth';
+import { AuthContext, useAuth as useAuthHook } from '../../hooks/useAuth';
 
 /**
  * 認証プロバイダーのプロパティ
@@ -18,12 +18,9 @@ interface AuthProviderProps {
  * 要件: 1.2, 2.2, 3.5
  */
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const auth = useAuth();
+  const auth = useAuthHook();
 
   return <AuthContext.Provider value={auth}>{children}</AuthContext.Provider>;
 };
-
-// useAuthフックを再エクスポート
-export { useAuth } from '../../hooks/useAuth';
 
 export default AuthProvider;

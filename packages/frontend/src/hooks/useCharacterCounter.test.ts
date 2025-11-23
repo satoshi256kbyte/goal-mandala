@@ -1,4 +1,4 @@
-import { renderHook } from '@testing-library/react';
+import { renderHook, act, waitFor } from '@testing-library/react';
 import { vi } from 'vitest';
 import { useCharacterCounter } from './useCharacterCounter';
 
@@ -18,14 +18,16 @@ describe('useCharacterCounter', () => {
       expect(result.current.isError).toBe(false);
     });
 
-    it('文字数が正しく更新される', () => {
+    it('文字数が正しく更新される', async () => {
       const { result } = renderHook(() => useCharacterCounter({ maxLength: 100 }));
 
       act(() => {
         result.current.updateLength('hello world');
       });
 
-      expect(result.current.currentLength).toBe(11);
+      await waitFor(() => {
+        expect(result.current.currentLength).toBe(11);
+      });
       expect(result.current.currentValue).toBe('hello world');
       expect(result.current.remainingLength).toBe(89);
       expect(result.current.percentage).toBe(11);
@@ -33,14 +35,16 @@ describe('useCharacterCounter', () => {
   });
 
   describe('制限処理', () => {
-    it('制限を超える入力が切り詰められる', () => {
+    it('制限を超える入力が切り詰められる', async () => {
       const { result } = renderHook(() => useCharacterCounter({ maxLength: 5 }));
 
       act(() => {
         result.current.updateLength('hello world');
       });
 
-      expect(result.current.currentLength).toBe(5);
+      await waitFor(() => {
+        expect(result.current.currentLength).toBe(5);
+      });
       expect(result.current.currentValue).toBe('hello');
       expect(result.current.isAtLimit).toBe(true);
       expect(result.current.remainingLength).toBe(0);
@@ -64,32 +68,36 @@ describe('useCharacterCounter', () => {
   });
 
   describe('警告・エラー状態', () => {
-    it('80%を超えると警告状態になる', () => {
+    it('80%を超えると警告状態になる', async () => {
       const { result } = renderHook(() => useCharacterCounter({ maxLength: 100 }));
 
       act(() => {
         result.current.updateLength('a'.repeat(81));
       });
 
-      expect(result.current.isWarning).toBe(true);
+      await waitFor(() => {
+        expect(result.current.isWarning).toBe(true);
+      });
       expect(result.current.isError).toBe(false);
       expect(result.current.percentage).toBe(81);
     });
 
-    it('100%に達するとエラー状態になる', () => {
+    it('100%に達するとエラー状態になる', async () => {
       const { result } = renderHook(() => useCharacterCounter({ maxLength: 100 }));
 
       act(() => {
         result.current.updateLength('a'.repeat(100));
       });
 
+      await waitFor(() => {
+        expect(result.current.isError).toBe(true);
+      });
       expect(result.current.isWarning).toBe(false);
-      expect(result.current.isError).toBe(true);
       expect(result.current.isAtLimit).toBe(true);
       expect(result.current.percentage).toBe(100);
     });
 
-    it('カスタム警告しきい値が適用される', () => {
+    it('カスタム警告しきい値が適用される', async () => {
       const { result } = renderHook(() =>
         useCharacterCounter({
           maxLength: 100,
@@ -101,13 +109,15 @@ describe('useCharacterCounter', () => {
         result.current.updateLength('a'.repeat(71));
       });
 
-      expect(result.current.isWarning).toBe(true);
+      await waitFor(() => {
+        expect(result.current.isWarning).toBe(true);
+      });
       expect(result.current.percentage).toBe(71);
     });
   });
 
   describe('コールバック', () => {
-    it('onChange コールバックが呼ばれる', () => {
+    it('onChange コールバックが呼ばれる', async () => {
       const onChange = vi.fn();
       const { result } = renderHook(() =>
         useCharacterCounter({
@@ -116,14 +126,14 @@ describe('useCharacterCounter', () => {
         })
       );
 
-      act(() => {
-        result.current.updateLength('test');
-      });
+      result.current.updateLength('test');
 
-      expect(onChange).toHaveBeenCalledWith(4, 'test');
+      await waitFor(() => {
+        expect(onChange).toHaveBeenCalledWith(4, 'test');
+      });
     });
 
-    it('制限内での変更時はonLimitReachedが呼ばれない', () => {
+    it('制限内での変更時はonLimitReachedが呼ばれない', async () => {
       const onLimitReached = vi.fn();
       const { result } = renderHook(() =>
         useCharacterCounter({
@@ -136,46 +146,54 @@ describe('useCharacterCounter', () => {
         result.current.updateLength('test');
       });
 
+      await waitFor(() => {
+        expect(result.current.currentLength).toBe(4);
+      });
+
       expect(onLimitReached).not.toHaveBeenCalled();
     });
   });
 
   describe('エッジケース', () => {
-    it('maxLengthが0の場合でも動作する', () => {
+    it('maxLengthが0の場合でも動作する', async () => {
       const { result } = renderHook(() => useCharacterCounter({ maxLength: 0 }));
 
       act(() => {
         result.current.updateLength('test');
       });
 
-      expect(result.current.currentLength).toBe(4);
-      expect(result.current.remainingLength).toBe(Infinity);
-      expect(result.current.percentage).toBe(0);
+      await waitFor(() => {
+        expect(result.current.currentLength).toBe(4);
+        expect(result.current.remainingLength).toBe(Infinity);
+        expect(result.current.percentage).toBe(0);
+      });
     });
 
-    it('maxLengthが未設定の場合でも動作する', () => {
+    it('maxLengthが未設定の場合でも動作する', async () => {
       const { result } = renderHook(() => useCharacterCounter());
 
       act(() => {
         result.current.updateLength('test');
       });
 
-      expect(result.current.currentLength).toBe(4);
-      expect(result.current.remainingLength).toBe(Infinity);
-      expect(result.current.percentage).toBe(0);
+      await waitFor(() => {
+        expect(result.current.currentLength).toBe(4);
+        expect(result.current.remainingLength).toBe(Infinity);
+        expect(result.current.percentage).toBe(0);
+      });
     });
 
-    it('空文字列の処理が正しく行われる', () => {
+    it('空文字列の処理が正しく行われる', async () => {
       const { result } = renderHook(() => useCharacterCounter({ maxLength: 100 }));
 
-      act(() => {
-        result.current.updateLength('');
-      });
+      result.current.updateLength('');
 
-      expect(result.current.currentLength).toBe(0);
-      expect(result.current.currentValue).toBe('');
-      expect(result.current.remainingLength).toBe(100);
-      expect(result.current.percentage).toBe(0);
+      await waitFor(() => {
+        expect(result.current.currentLength).toBe(0);
+        expect(result.current.currentValue).toBe('');
+        expect(result.current.remainingLength).toBe(100);
+        expect(result.current.percentage).toBe(0);
+      });
     });
   });
 

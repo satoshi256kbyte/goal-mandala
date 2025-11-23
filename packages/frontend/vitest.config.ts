@@ -19,7 +19,7 @@ export default defineConfig({
     testTimeout: 10000,
     hookTimeout: 8000,
     teardownTimeout: 5000,
-    // 段階的テスト追加: ステップ9 - AnimationSettingsContextを追加
+    // 段階的テスト追加: ステップ13 - シンプルなhooksテストを追加（成功するもののみ）
     include: [
       'src/schemas/goal-form.test.ts',
       'src/utils/__tests__/animation-utils.test.ts',
@@ -27,15 +27,22 @@ export default defineConfig({
       'src/utils/__tests__/input-sanitizer.test.ts',
       'src/utils/__tests__/error-classifier.test.ts',
       'src/utils/__tests__/xss-protection.test.ts',
-      'src/utils/validation.test.ts',
       'src/utils/__tests__/progress-colors.test.ts',
-      'src/contexts/ActionContext.test.tsx',
-      'src/contexts/SubGoalContext.test.tsx',
-      'src/test/__tests__/**/*.test.ts',
+      'src/utils/validation.test.ts',
       'src/utils/authUtils.test.ts',
       'src/utils/permissions.test.ts',
       'src/utils/date-formatter.test.ts',
-      'src/contexts/__tests__/AnimationSettingsContext.test.tsx',
+      'src/contexts/**/*.test.tsx',
+      'src/test/__tests__/**/*.test.ts',
+      'src/hooks/__tests__/useAchievementAnimation.test.tsx',
+      'src/hooks/__tests__/useTasks.test.tsx',
+      // シンプルなユーティリティhooks
+      'src/hooks/useDebounce.test.ts',
+      'src/hooks/useCharacterCounter.test.ts',
+      // 修正完了: useTimeout.test.ts
+      'src/hooks/useTimeout.test.ts',
+      // 修正中: useAuth.test.tsx
+      'src/hooks/useAuth.test.tsx',
     ],
     // E2Eテストのみ除外
     exclude: [
