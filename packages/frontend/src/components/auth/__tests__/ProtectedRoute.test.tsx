@@ -1,7 +1,7 @@
 import React from 'react';
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { vi } from 'vitest';
-import { BrowserRouter, Routes } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { ProtectedRoute } from '../ProtectedRoute';
 import { useAuth } from '../../../hooks/useAuth';
 
@@ -45,9 +45,6 @@ const renderWithRouter = (_initialEntries: string[] = ['/']) => {
 describe('ProtectedRoute', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // Mock window.location for navigation tests
-    delete (window as any).location;
-    window.location = { ...window.location, pathname: '/' };
   });
 
   it('should show loading while checking authentication', () => {

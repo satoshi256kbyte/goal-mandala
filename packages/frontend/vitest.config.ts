@@ -19,7 +19,7 @@ export default defineConfig({
     testTimeout: 10000,
     hookTimeout: 8000,
     teardownTimeout: 5000,
-    // 段階的テスト追加: ステップ13 - シンプルなhooksテストを追加（成功するもののみ）
+    // 段階的テスト追加: ステップ14 - 次のテストファイルを追加
     include: [
       'src/schemas/goal-form.test.ts',
       'src/utils/__tests__/animation-utils.test.ts',
@@ -28,10 +28,13 @@ export default defineConfig({
       'src/utils/__tests__/error-classifier.test.ts',
       'src/utils/__tests__/xss-protection.test.ts',
       'src/utils/__tests__/progress-colors.test.ts',
+      'src/utils/__tests__/security.test.ts',
+      'src/utils/__tests__/mandala.test.ts',
       'src/utils/validation.test.ts',
       'src/utils/authUtils.test.ts',
       'src/utils/permissions.test.ts',
       'src/utils/date-formatter.test.ts',
+      'src/utils/sanitize.test.ts',
       'src/contexts/**/*.test.tsx',
       'src/test/__tests__/**/*.test.ts',
       'src/hooks/__tests__/useAchievementAnimation.test.tsx',
@@ -41,7 +44,7 @@ export default defineConfig({
       'src/hooks/useCharacterCounter.test.ts',
       // 修正完了: useTimeout.test.ts
       'src/hooks/useTimeout.test.ts',
-      // 修正中: useAuth.test.tsx
+      // 修正完了: useAuth.test.tsx
       'src/hooks/useAuth.test.tsx',
     ],
     // E2Eテストのみ除外

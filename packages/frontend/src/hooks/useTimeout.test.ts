@@ -341,11 +341,11 @@ describe('useFormTimeout', () => {
     });
 
     it('デフォルトコールバックが機能する', () => {
-      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation();
+      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
       const { result } = renderHook(() => useFormTimeout({ defaultTimeout: 1000 }));
 
       act(() => {
-        result.current.startSubmissionTimeout();
+        result.current.startSubmissionTimeout(undefined);
       });
 
       act(() => {

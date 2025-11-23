@@ -74,7 +74,7 @@ describe('ProfileSetup Integration Tests', () => {
       );
 
       // Fill in all required fields
-      const industrySelect = await screen.findByLabelText(/業種/, { timeout: 3000 });
+      const industrySelect = await screen.findByLabelText(/業種/);
       await user.selectOptions(industrySelect, 'it-communication');
 
       const companySizeSelect = await screen.findByLabelText(/組織規模/);

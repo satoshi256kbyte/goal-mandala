@@ -1,5 +1,10 @@
 import { ProfileFormData, ProfileFormErrors } from '../types/profile';
-import { INDUSTRIES } from '../constants/profile';
+import { INDUSTRIES, COMPANY_SIZES } from '../constants/profile';
+
+interface ValidationResult {
+  isValid: boolean;
+  errors: ProfileFormErrors;
+}
 
 export const validateProfileForm = (data: ProfileFormData): ValidationResult => {
   const errors: ProfileFormErrors = {};
