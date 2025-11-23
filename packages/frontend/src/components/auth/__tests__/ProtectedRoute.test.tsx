@@ -7,7 +7,7 @@ import { useAuth } from '../../../hooks/useAuth';
 
 // Mock the auth hook
 vi.mock('../../../hooks/useAuth');
-const mockUseAuth = useAuth as ReturnType<typeof vi.fn>;
+const mockUseAuth = useAuth as any;
 
 const TestComponent = () => <div>Protected Content</div>;
 const LoginPage = () => <div>Login Page</div>;

@@ -9,7 +9,7 @@ import {
 
 // fetchをモック化
 global.fetch = vi.fn();
-const mockFetch = fetch as Mock<typeof fetch>;
+const mockFetch = fetch as unknown as any;
 
 describe('useFormSubmission', () => {
   beforeEach(() => {

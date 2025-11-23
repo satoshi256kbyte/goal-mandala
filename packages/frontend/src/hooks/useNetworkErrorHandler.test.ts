@@ -1,4 +1,5 @@
 import { renderHook, act } from '@testing-library/react';
+import { NetworkErrorType } from '../services/api';
 import { vi } from 'vitest';
 import { useNetworkErrorHandler } from './useNetworkErrorHandler';
 import { ApiError } from '../services/api';

@@ -4,7 +4,7 @@ import { generateMockTask, generateMockTaskNote } from '@goal-mandala/shared';
 
 // fetchをモック
 global.fetch = vi.fn();
-const mockFetch = fetch as ReturnType<typeof vi.fn>;
+const mockFetch = fetch as any;
 
 // localStorageをモック
 const mockLocalStorage = {

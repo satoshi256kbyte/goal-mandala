@@ -19,8 +19,8 @@ vi.mock('../../hooks/useAuth');
 vi.mock('../../hooks/useAuthStateMonitor');
 
 describe('AuthStateMonitorProvider', () => {
-  const mockUseAuthContext = useAuthContext as unknown as ReturnType<typeof vi.fn>;
-  const mockUseAuthStateMonitor = useAuthStateMonitor as unknown as ReturnType<typeof vi.fn>;
+  const mockUseAuthContext = useAuthContext as unknown as any;
+  const mockUseAuthStateMonitor = useAuthStateMonitor as unknown as any;
 
   const mockAuthContext = {
     isAuthenticated: false,

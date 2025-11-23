@@ -196,13 +196,13 @@ describe('AuthStateMonitor', () => {
 
   describe('認証状態チェック', () => {
     beforeEach(() => {
-      (tokenManager.getToken as Mock).mockReturnValue('valid-token');
-      (tokenManager.isTokenExpired as Mock).mockReturnValue(false);
-      (tokenManager.getTokenExpirationTime as Mock).mockReturnValue(new Date(Date.now() + 3600000));
-      (tokenManager.getLastActivity as Mock).mockReturnValue(new Date());
-      (tokenManager.getSessionId as Mock).mockReturnValue('session-123');
-      (AuthService.checkAuthState as Mock).mockResolvedValue(true);
-      (AuthService.getCurrentUser as Mock).mockResolvedValue({
+      (tokenManager.getToken as any).mockReturnValue('valid-token');
+      (tokenManager.isTokenExpired as any).mockReturnValue(false);
+      (tokenManager.getTokenExpirationTime as any).mockReturnValue(new Date(Date.now() + 3600000));
+      (tokenManager.getLastActivity as any).mockReturnValue(new Date());
+      (tokenManager.getSessionId as any).mockReturnValue('session-123');
+      (AuthService.checkAuthState as any).mockResolvedValue(true);
+      (AuthService.getCurrentUser as any).mockResolvedValue({
         id: '1',
         email: 'test@example.com',
       });
@@ -217,7 +217,7 @@ describe('AuthStateMonitor', () => {
     });
 
     it('トークンがない場合は未認証状態を返す', async () => {
-      (tokenManager.getToken as Mock).mockReturnValue(null);
+      (tokenManager.getToken as any).mockReturnValue(null);
 
       const state = await monitor.checkAuthState();
 
@@ -226,7 +226,7 @@ describe('AuthStateMonitor', () => {
     });
 
     it('トークンが期限切れの場合は期限切れ通知を送る', async () => {
-      (tokenManager.isTokenExpired as Mock).mockReturnValue(true);
+      (tokenManager.isTokenExpired as any).mockReturnValue(true);
       monitor.addListener(mockListener);
 
       const state = await monitor.checkAuthState();
@@ -237,7 +237,7 @@ describe('AuthStateMonitor', () => {
     });
 
     it('Cognitoの認証チェックが失敗した場合は未認証状態を返す', async () => {
-      (AuthService.checkAuthState as Mock).mockResolvedValue(false);
+      (AuthService.checkAuthState as any).mockResolvedValue(false);
 
       const state = await monitor.checkAuthState();
 
@@ -246,7 +246,7 @@ describe('AuthStateMonitor', () => {
     });
 
     it('エラーが発生した場合はエラー状態を返す', async () => {
-      (AuthService.checkAuthState as Mock).mockRejectedValue(new Error('Network error'));
+      (AuthService.checkAuthState as any).mockRejectedValue(new Error('Network error'));
       monitor.addListener(mockListener);
 
       const state = await monitor.checkAuthState();
@@ -377,10 +377,10 @@ describe('AuthStateMonitor', () => {
 
   describe('定期チェック', () => {
     beforeEach(() => {
-      (tokenManager.getToken as Mock).mockReturnValue('valid-token');
-      (tokenManager.isTokenExpired as Mock).mockReturnValue(false);
-      (AuthService.checkAuthState as Mock).mockResolvedValue(true);
-      (AuthService.getCurrentUser as Mock).mockResolvedValue({
+      (tokenManager.getToken as any).mockReturnValue('valid-token');
+      (tokenManager.isTokenExpired as any).mockReturnValue(false);
+      (AuthService.checkAuthState as any).mockResolvedValue(true);
+      (AuthService.getCurrentUser as any).mockResolvedValue({
         id: '1',
         email: 'test@example.com',
       });
@@ -391,7 +391,7 @@ describe('AuthStateMonitor', () => {
 
       // 初回チェック
       await monitor.checkAuthState();
-      const initialCallCount = (AuthService.checkAuthState as Mock).mock.calls.length;
+      const initialCallCount = (AuthService.checkAuthState as any).mock.calls.length;
 
       // 1分後（デフォルトの間隔）
       vi.advanceTimersByTime(60000);
@@ -449,7 +449,7 @@ describe('AuthStateMonitor', () => {
 
   describe('トークンリフレッシュ', () => {
     beforeEach(() => {
-      (tokenManager.refreshToken as Mock).mockResolvedValue(undefined);
+      (tokenManager.refreshToken as any).mockResolvedValue(undefined);
     });
 
     it('トークン期限前にリフレッシュをスケジュールする', () => {
@@ -473,7 +473,7 @@ describe('AuthStateMonitor', () => {
     });
 
     it('トークンリフレッシュ失敗時にエラー通知する', async () => {
-      (tokenManager.refreshToken as Mock).mockRejectedValue(new Error('Refresh failed'));
+      (tokenManager.refreshToken as any).mockRejectedValue(new Error('Refresh failed'));
 
       const expirationTime = new Date(Date.now() + 10 * 60 * 1000);
       const state: AuthState = {

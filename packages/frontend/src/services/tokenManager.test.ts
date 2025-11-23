@@ -295,7 +295,7 @@ describe('TokenManager', () => {
       mockLocalStorage.getItem.mockReturnValue(refreshToken);
 
       // AuthService.getCurrentSessionTypedをモック
-      (AuthService.getCurrentSessionTyped as Mock).mockResolvedValue({
+      (AuthService.getCurrentSessionTyped as any).mockResolvedValue({
         tokens: {
           idToken: {
             toString: () => newToken,
@@ -318,7 +318,7 @@ describe('TokenManager', () => {
       // モックストアに直接設定
       mockLocalStorage.store[STORAGE_KEYS.REFRESH_TOKEN] = refreshToken;
 
-      (AuthService.getCurrentSessionTyped as Mock).mockResolvedValue(null);
+      (AuthService.getCurrentSessionTyped as any).mockResolvedValue(null);
 
       await expect(tokenManager.refreshToken()).rejects.toThrow('Token refresh failed');
       expect(mockLocalStorage.removeItem).toHaveBeenCalledWith(STORAGE_KEYS.ACCESS_TOKEN);

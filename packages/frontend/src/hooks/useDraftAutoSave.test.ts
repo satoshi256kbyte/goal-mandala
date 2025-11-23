@@ -7,7 +7,7 @@ import { PartialGoalFormData } from '../schemas/goal-form';
 
 // DraftServiceのモック
 vi.mock('../services/draftService');
-const mockDraftService = DraftService as Mock<typeof DraftService>;
+const mockDraftService = DraftService as unknown as any;
 
 describe('useDraftAutoSave', () => {
   const mockFormData: PartialGoalFormData = {

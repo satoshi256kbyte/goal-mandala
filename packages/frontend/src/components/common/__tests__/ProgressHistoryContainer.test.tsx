@@ -60,7 +60,7 @@ vi.mock('../ErrorMessage', () => ({
   ErrorMessage: ({ message }: any) => <div data-testid="error-message">{message}</div>,
 }));
 
-const mockProgressHistoryService = progressHistoryService as ReturnType<typeof vi.fn>;
+const mockProgressHistoryService = progressHistoryService as any;
 
 describe('ProgressHistoryContainer', () => {
   const mockHistoryData = [

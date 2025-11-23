@@ -7,7 +7,7 @@ import { useResponsive } from '../../../hooks/useResponsive';
 
 // useResponsiveフックのモック
 vi.mock('../../../hooks/useResponsive');
-const mockUseResponsive = useResponsive as ReturnType<typeof vi.fn>;
+const mockUseResponsive = useResponsive as any;
 
 describe('TabletLayout', () => {
   beforeEach(() => {

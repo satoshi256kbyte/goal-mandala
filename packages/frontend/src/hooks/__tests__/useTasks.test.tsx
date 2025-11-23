@@ -6,7 +6,7 @@ import { generateMockTask, generateMockTaskNote } from '@goal-mandala/shared';
 
 // taskApiをモック
 vi.mock('../../services/taskApi');
-const mockTaskApi = taskApi as unknown as ReturnType<typeof vi.fn>;
+const mockTaskApi = taskApi as unknown as any;
 
 // テスト用のQueryClientProvider
 const createWrapper = () => {

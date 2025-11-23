@@ -1,4 +1,5 @@
 import React from 'react';
+import { NetworkErrorType } from '../services/api';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { waitFor } from '@testing-library/react';
 import { vi } from 'vitest';

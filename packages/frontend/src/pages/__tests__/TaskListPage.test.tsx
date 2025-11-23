@@ -6,7 +6,7 @@ import { taskApi } from '../../services/taskApi';
 
 // Mock the taskApi
 vi.mock('../../services/taskApi');
-const mockTaskApi = taskApi as unknown as ReturnType<typeof vi.fn>;
+const mockTaskApi = taskApi as unknown as any;
 
 // Mock components
 vi.mock('../../components/task/TaskCard', () => ({

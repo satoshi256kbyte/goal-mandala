@@ -47,22 +47,22 @@ describe('AuthStateMonitor Integration Tests', () => {
     vi.clearAllMocks();
 
     // デフォルトのモック設定
-    (tokenManager.getToken as Mock).mockReturnValue('valid-token');
-    (tokenManager.isTokenExpired as Mock).mockReturnValue(false);
-    (tokenManager.getTokenExpirationTime as Mock).mockReturnValue(new Date(Date.now() + 3600000));
-    (tokenManager.getLastActivity as Mock).mockReturnValue(new Date());
-    (tokenManager.getSessionId as Mock).mockReturnValue('session-123');
-    (tokenManager.refreshToken as Mock).mockResolvedValue(undefined);
-    (tokenManager.updateLastActivity as Mock).mockImplementation(() => {});
-    (AuthService.checkAuthState as Mock).mockResolvedValue(true);
-    (AuthService.getCurrentUser as Mock).mockResolvedValue({
+    (tokenManager.getToken as any).mockReturnValue('valid-token');
+    (tokenManager.isTokenExpired as any).mockReturnValue(false);
+    (tokenManager.getTokenExpirationTime as any).mockReturnValue(new Date(Date.now() + 3600000));
+    (tokenManager.getLastActivity as any).mockReturnValue(new Date());
+    (tokenManager.getSessionId as any).mockReturnValue('session-123');
+    (tokenManager.refreshToken as any).mockResolvedValue(undefined);
+    (tokenManager.updateLastActivity as any).mockImplementation(() => {});
+    (AuthService.checkAuthState as any).mockResolvedValue(true);
+    (AuthService.getCurrentUser as any).mockResolvedValue({
       id: '1',
       email: 'test@example.com',
     });
-    (storageSync.startSync as Mock).mockImplementation(() => {});
-    (storageSync.stopSync as Mock).mockImplementation(() => {});
-    (storageSync.onAuthStateChange as Mock).mockImplementation(() => {});
-    (storageSync.removeAuthStateListener as Mock).mockImplementation(() => {});
+    (storageSync.startSync as any).mockImplementation(() => {});
+    (storageSync.stopSync as any).mockImplementation(() => {});
+    (storageSync.onAuthStateChange as any).mockImplementation(() => {});
+    (storageSync.removeAuthStateListener as any).mockImplementation(() => {});
   });
 
   afterEach(() => {
@@ -167,7 +167,7 @@ describe('AuthStateMonitor Integration Tests', () => {
 
     it('トークンリフレッシュのスケジューリングが正常に動作する', async () => {
       const expirationTime = new Date(Date.now() + 10 * 60 * 1000); // 10分後
-      (tokenManager.getTokenExpirationTime as Mock).mockReturnValue(expirationTime);
+      (tokenManager.getTokenExpirationTime as any).mockReturnValue(expirationTime);
 
       monitor.addListener(mockListener1);
 
@@ -231,7 +231,7 @@ describe('AuthStateMonitor Integration Tests', () => {
 
       // 初回チェック
       await monitor.checkAuthState();
-      const initialCallCount = (AuthService.checkAuthState as Mock).mock.calls.length;
+      const initialCallCount = (AuthService.checkAuthState as any).mock.calls.length;
 
       monitor.notifyError(error);
 
@@ -257,7 +257,7 @@ describe('AuthStateMonitor Integration Tests', () => {
 
       // 初回チェック
       await monitor.checkAuthState();
-      const initialCallCount = (AuthService.checkAuthState as Mock).mock.calls.length;
+      const initialCallCount = (AuthService.checkAuthState as any).mock.calls.length;
 
       // 1回目のエラー
       monitor.notifyError(error);
@@ -303,7 +303,7 @@ describe('AuthStateMonitor Integration Tests', () => {
 
       // 初回チェック
       await monitor.checkAuthState();
-      const initialCallCount = (AuthService.checkAuthState as Mock).mock.calls.length;
+      const initialCallCount = (AuthService.checkAuthState as any).mock.calls.length;
 
       // 5秒後に定期チェックが実行されることを確認
       vi.advanceTimersByTime(5000);

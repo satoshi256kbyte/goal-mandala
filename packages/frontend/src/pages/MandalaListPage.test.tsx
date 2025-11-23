@@ -8,7 +8,7 @@ import { useAuth } from '../hooks/useAuth';
 
 // Mock the auth hook
 vi.mock('../hooks/useAuth');
-const mockUseAuth = useAuth as ReturnType<typeof vi.fn>;
+const mockUseAuth = useAuth as any;
 
 // Mock react-router-dom
 const mockNavigate = vi.fn();

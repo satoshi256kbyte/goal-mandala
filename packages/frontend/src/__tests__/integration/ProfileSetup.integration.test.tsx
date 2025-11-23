@@ -16,8 +16,8 @@ import {
 vi.mock('../../hooks/useAuth');
 vi.mock('../../services/profileService');
 
-const mockUseAuth = useAuth as ReturnType<typeof vi.fn>;
-const mockUpdateProfile = updateProfile as ReturnType<typeof vi.fn>;
+const mockUseAuth = useAuth as any;
+const mockUpdateProfile = updateProfile as any;
 
 // Mock react-router-dom
 const mockNavigate = vi.fn();

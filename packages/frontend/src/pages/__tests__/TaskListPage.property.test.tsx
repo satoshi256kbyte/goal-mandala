@@ -7,7 +7,7 @@ import { Task, TaskStatus } from '@goal-mandala/shared';
 
 // Mock the taskApi
 vi.mock('../../services/taskApi');
-const mockTaskApi = taskApi as unknown as ReturnType<typeof vi.fn>;
+const mockTaskApi = taskApi as unknown as any;
 
 // Mock components to simplify testing
 vi.mock('../../components/task/TaskCard', () => ({

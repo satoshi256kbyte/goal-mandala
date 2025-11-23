@@ -1,4 +1,5 @@
 import { renderHook, act } from '@testing-library/react';
+import { RecoveryAction } from '../hooks/useErrorRecovery';
 import { vi } from 'vitest';
 import { useErrorRecovery, RecoveryStrategy } from './useErrorRecovery';
 import { ApiError, NetworkErrorType } from '../services/api';
