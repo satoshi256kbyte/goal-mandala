@@ -3,6 +3,7 @@
  */
 
 import { describe, test, expect, beforeEach, afterEach } from 'vitest';
+import { AuthState } from '../types/storage-sync';
 import { StorageSync } from './storage-sync';
 
 describe('StorageSync', () => {

@@ -1,6 +1,6 @@
 import React from 'react';
-import { RecoveryAction } from '../hooks/useErrorRecovery';
-import { NetworkErrorType } from '../services/api';
+import { RecoveryAction } from '../../hooks/useErrorRecovery';
+import { NetworkErrorType } from '../../services/api';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { waitFor } from '@testing-library/react';
 import { vi } from 'vitest';

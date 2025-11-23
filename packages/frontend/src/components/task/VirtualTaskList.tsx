@@ -1,5 +1,5 @@
 import React from 'react';
-import { FixedSizeList as List } from 'react-window';
+import { FixedSizeList } from 'react-window';
 import { Task, TaskStatus } from '@goal-mandala/shared';
 import { TaskCard } from './TaskCard';
 
@@ -53,7 +53,7 @@ export const VirtualTaskList: React.FC<VirtualTaskListProps> = ({
   };
 
   return (
-    <List
+    <FixedSizeList
       height={height}
       itemCount={tasks.length}
       itemSize={120} // Approximate height of TaskCard
@@ -61,6 +61,6 @@ export const VirtualTaskList: React.FC<VirtualTaskListProps> = ({
       overscanCount={5}
     >
       {TaskItem}
-    </List>
+    </FixedSizeList>
   );
 };
