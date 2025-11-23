@@ -34,6 +34,8 @@ vi.mock('../../../hooks/useFormSecurity', () => ({
     })),
     getCSRFToken: vi.fn(() => 'test-csrf-token'),
     clearSecurityErrors: vi.fn(),
+    validateSubGoalData: vi.fn(() => Promise.resolve({ isValid: true, errors: [], warnings: [] })),
+    validateActionData: vi.fn(() => Promise.resolve({ isValid: true, errors: [], warnings: [] })),
   }),
 }));
 
@@ -120,6 +122,12 @@ describe('SecureFormWrapper', () => {
           Promise.resolve({ isValid: true, errors: [], warnings: [] })
         ),
         clearSecurityErrors: vi.fn(),
+        validateSubGoalData: vi.fn(() =>
+          Promise.resolve({ isValid: true, errors: [], warnings: [] })
+        ),
+        validateActionData: vi.fn(() =>
+          Promise.resolve({ isValid: true, errors: [], warnings: [] })
+        ),
       });
 
       render(
@@ -145,6 +153,12 @@ describe('SecureFormWrapper', () => {
         generateSecureHeaders: vi.fn(() => ({})),
         getCSRFToken: vi.fn(() => 'test-csrf-token'),
         clearSecurityErrors: vi.fn(),
+        validateSubGoalData: vi.fn(() =>
+          Promise.resolve({ isValid: true, errors: [], warnings: [] })
+        ),
+        validateActionData: vi.fn(() =>
+          Promise.resolve({ isValid: true, errors: [], warnings: [] })
+        ),
       });
 
       render(
@@ -183,6 +197,12 @@ describe('SecureFormWrapper', () => {
         generateSecureHeaders: vi.fn(() => ({})),
         getCSRFToken: vi.fn(() => 'test-csrf-token'),
         clearSecurityErrors: vi.fn(),
+        validateSubGoalData: vi.fn(() =>
+          Promise.resolve({ isValid: true, errors: [], warnings: [] })
+        ),
+        validateActionData: vi.fn(() =>
+          Promise.resolve({ isValid: true, errors: [], warnings: [] })
+        ),
       });
 
       render(
@@ -208,6 +228,12 @@ describe('SecureFormWrapper', () => {
         generateSecureHeaders: vi.fn(() => ({})),
         getCSRFToken: vi.fn(() => 'test-csrf-token'),
         clearSecurityErrors: vi.fn(),
+        validateSubGoalData: vi.fn(() =>
+          Promise.resolve({ isValid: true, errors: [], warnings: [] })
+        ),
+        validateActionData: vi.fn(() =>
+          Promise.resolve({ isValid: true, errors: [], warnings: [] })
+        ),
       });
 
       render(
@@ -235,6 +261,12 @@ describe('SecureFormWrapper', () => {
         generateSecureHeaders: vi.fn(() => ({})),
         getCSRFToken: vi.fn(() => 'test-csrf-token'),
         clearSecurityErrors: vi.fn(),
+        validateSubGoalData: vi.fn(() =>
+          Promise.resolve({ isValid: true, errors: [], warnings: [] })
+        ),
+        validateActionData: vi.fn(() =>
+          Promise.resolve({ isValid: true, errors: [], warnings: [] })
+        ),
       });
 
       render(
@@ -278,6 +310,12 @@ describe('SecureFormWrapper', () => {
         })),
         getCSRFToken: vi.fn(() => 'test-csrf-token'),
         clearSecurityErrors: vi.fn(),
+        validateSubGoalData: vi.fn(() =>
+          Promise.resolve({ isValid: true, errors: [], warnings: [] })
+        ),
+        validateActionData: vi.fn(() =>
+          Promise.resolve({ isValid: true, errors: [], warnings: [] })
+        ),
       });
 
       render(
@@ -323,6 +361,12 @@ describe('SecureFormWrapper', () => {
         generateSecureHeaders: vi.fn(() => ({})),
         getCSRFToken: mockGetCSRFToken,
         clearSecurityErrors: vi.fn(),
+        validateSubGoalData: vi.fn(() =>
+          Promise.resolve({ isValid: true, errors: [], warnings: [] })
+        ),
+        validateActionData: vi.fn(() =>
+          Promise.resolve({ isValid: true, errors: [], warnings: [] })
+        ),
       });
 
       const mockSubmit = vi.fn();
@@ -362,6 +406,12 @@ describe('SecureFormWrapper', () => {
         generateSecureHeaders: vi.fn(() => ({})),
         getCSRFToken: vi.fn(() => 'test-csrf-token'),
         clearSecurityErrors: vi.fn(),
+        validateSubGoalData: vi.fn(() =>
+          Promise.resolve({ isValid: true, errors: [], warnings: [] })
+        ),
+        validateActionData: vi.fn(() =>
+          Promise.resolve({ isValid: true, errors: [], warnings: [] })
+        ),
       });
 
       render(
@@ -389,6 +439,12 @@ describe('SecureFormWrapper', () => {
         generateSecureHeaders: vi.fn(() => ({})),
         getCSRFToken: vi.fn(() => 'test-csrf-token'),
         clearSecurityErrors: vi.fn(),
+        validateSubGoalData: vi.fn(() =>
+          Promise.resolve({ isValid: true, errors: [], warnings: [] })
+        ),
+        validateActionData: vi.fn(() =>
+          Promise.resolve({ isValid: true, errors: [], warnings: [] })
+        ),
       });
 
       render(
