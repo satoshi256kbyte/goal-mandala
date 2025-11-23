@@ -1,5 +1,6 @@
 import React from 'react';
 import { render } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import { describe, it } from 'vitest';
 import { ErrorMessage } from './ErrorMessage';
 

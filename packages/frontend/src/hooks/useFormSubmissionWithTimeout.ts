@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useFormTimeout } from './useTimeout';
 import { useNetworkErrorHandler } from './useNetworkErrorHandler';
 import { ApiError } from '../services/api';

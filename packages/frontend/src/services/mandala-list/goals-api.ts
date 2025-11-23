@@ -9,7 +9,7 @@ import type {
   GoalsListResponse,
   MandalaChartSummary,
 } from '../../types/mandala-list';
-import { API } from '../../constants/mandala-list';
+import { API, MANDALA_LIST_ERROR_MESSAGES } from '../../constants/mandala-list';
 
 /**
  * APIエラークラス

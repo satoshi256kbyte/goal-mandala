@@ -1,6 +1,7 @@
 import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
+import { act } from '@testing-library/react';
 import { AuthProvider } from '../components/auth/AuthProvider';
 import { useAuth } from './useAuth';
 

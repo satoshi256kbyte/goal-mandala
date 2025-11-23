@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import ReactDatePicker from 'react-datepicker';
-import { UseFormRegister, UseFormSetValue } from 'react-hook-form';
+import { UseFormRegister, UseFormSetValue, FieldError } from 'react-hook-form';
 import { GoalFormData } from '../../types/goal-form';
 import { format } from 'date-fns';
 

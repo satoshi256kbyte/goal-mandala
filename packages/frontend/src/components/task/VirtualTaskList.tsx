@@ -1,6 +1,6 @@
 import React from 'react';
 import { FixedSizeList as List } from 'react-window';
-import { Task } from '@goal-mandala/shared';
+import { Task, TaskStatus } from '@goal-mandala/shared';
 import { TaskCard } from './TaskCard';
 
 interface VirtualTaskListProps {

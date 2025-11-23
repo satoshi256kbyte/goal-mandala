@@ -1,5 +1,6 @@
 import React from 'react';
 import { UseFormRegister } from 'react-hook-form';
+import type { FieldError } from 'react-hook-form';
 import { CharacterCounter } from './CharacterCounter';
 import { CharacterLimitWarning } from './CharacterLimitWarning';
 import { useCharacterCounter } from '../../hooks/useCharacterCounter';

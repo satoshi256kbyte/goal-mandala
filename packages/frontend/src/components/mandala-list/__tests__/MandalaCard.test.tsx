@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
+import { fireEvent } from '@testing-library/react';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { MandalaCard } from '../MandalaCard';
 import { MandalaChartSummary } from '../../../types/mandala-list';

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Task } from '@goal-mandala/shared';
+import { Task, TaskStatus } from '@goal-mandala/shared';
 
 interface TaskCardProps {
   task: Task;

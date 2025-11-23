@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
+import { waitFor } from '@testing-library/react';
 import { describe, it } from 'vitest';
 import { Tooltip } from './Tooltip';
 

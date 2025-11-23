@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Goal, SubGoal } from '../../types/mandala';
+import { Goal, SubGoal, Action } from '../../types/mandala';
 import './ConflictDialog.css';
 
 export interface ConflictDialogProps {

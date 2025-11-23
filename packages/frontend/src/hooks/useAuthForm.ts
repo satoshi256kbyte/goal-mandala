@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { AuthService } from '../services/auth';
 import { useErrorHandler } from './useErrorHandler';
 import { useNetworkStatus } from './useNetworkStatus';

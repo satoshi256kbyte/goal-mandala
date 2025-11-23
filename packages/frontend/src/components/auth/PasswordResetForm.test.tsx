@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent, act } from '@testing-library/react';
+import { waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { PasswordResetForm } from './PasswordResetForm';
 import type { PasswordResetFormData } from '../../utils/validation';
@@ -30,7 +31,7 @@ describe('PasswordResetForm', () => {
   });
 
   it('有効なメールアドレスでフォーム送信が成功する', async () => {
-    mockOnSubmit.mockResolvedValue();
+    mockOnSubmit.mockResolvedValue(undefined);
     renderWithRouter(<PasswordResetForm onSubmit={mockOnSubmit} />);
 
     const formData: PasswordResetFormData = {

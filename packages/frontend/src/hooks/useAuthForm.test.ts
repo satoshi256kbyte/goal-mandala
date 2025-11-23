@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { renderHook } from '@testing-library/react';
+import { act } from '@testing-library/react';
 import { useAuthForm } from './useAuthForm';
 import { loginSchema, signupSchema } from '../utils/validation';
 

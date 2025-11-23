@@ -723,7 +723,9 @@ describe('アニメーションコンポーネントのテスト', () => {
                 type="glow"
                 intensity="normal"
                 animationId="no-children"
-              />
+              >
+                <div>Test Content</div>
+              </AchievementAnimation>
             </TestWrapper>
           );
         }).not.toThrow();

@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent, act } from '@testing-library/react';
+import { waitFor } from '@testing-library/react';
 import { vi } from 'vitest';
 import { EnhancedErrorDisplay } from './EnhancedErrorDisplay';
 import { ApiError } from '../../services/api';

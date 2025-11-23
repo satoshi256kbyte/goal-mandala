@@ -1,4 +1,5 @@
 import { renderHook } from '@testing-library/react';
+import { act } from '@testing-library/react';
 import { vi } from 'vitest';
 import { useDraftRestore } from './useDraftRestore';
 import { DraftService } from '../services/draftService';

@@ -84,6 +84,7 @@ describe('認証統合テスト', () => {
       // 認証済み状態をモック
       const mockUser = {
         username: 'test@example.com',
+        userId: 'test-user-id',
         attributes: { email: 'test@example.com' },
       };
       vi.mocked(getCurrentUser).mockResolvedValue(mockUser);
@@ -127,6 +128,7 @@ describe('認証統合テスト', () => {
       // ログイン成功後の状態をモック
       const mockUser = {
         username: 'test@example.com',
+        userId: 'test-user-id',
         attributes: { email: 'test@example.com' },
       };
       vi.mocked(getCurrentUser).mockResolvedValue(mockUser);
@@ -291,6 +293,7 @@ describe('認証統合テスト', () => {
       // 認証済み状態をモック
       const mockUser = {
         username: 'test@example.com',
+        userId: 'test-user-id',
         attributes: { email: 'test@example.com' },
       };
       vi.mocked(getCurrentUser).mockResolvedValue(mockUser);

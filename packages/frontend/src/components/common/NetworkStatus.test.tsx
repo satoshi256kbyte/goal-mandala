@@ -1,5 +1,6 @@
 import React from 'react';
 import { render } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import { vi } from 'vitest';
 import { NetworkStatus } from './NetworkStatus';
 import * as useNetworkStatusModule from '../../hooks/useNetworkStatus';

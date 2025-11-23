@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, screen, waitFor, act } from '@testing-library/react';
+import { fireEvent } from '@testing-library/react';
 import { vi } from 'vitest';
 import { FormActions } from './FormActions';
 import { PartialGoalFormData } from '../../schemas/goal-form';

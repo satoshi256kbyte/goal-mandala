@@ -1,5 +1,8 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
+import { act } from '@testing-library/react';
+import { waitFor } from '@testing-library/react';
+import { act } from '@testing-library/react';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { BrowserRouter } from 'react-router-dom';
 import { GoalInputPage } from './GoalInputPage';

@@ -4,7 +4,7 @@
  * マンダラチャート一覧の取得、検索、フィルター、ソート、ページネーション機能を提供します。
  */
 
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import type {
   MandalaChartSummary,
   GoalStatus,

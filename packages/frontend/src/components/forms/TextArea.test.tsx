@@ -1,4 +1,5 @@
 import { render, screen, fireEvent, act } from '@testing-library/react';
+import { waitFor } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
 import { useForm } from 'react-hook-form';
 import { TextArea } from './TextArea';

@@ -19,8 +19,8 @@ vi.mock('../../hooks/useAuth');
 vi.mock('../../hooks/useAuthStateMonitor');
 
 describe('AuthStateMonitorProvider', () => {
-  const mockUseAuthContext = useAuthContext as Mock;
-  const mockUseAuthStateMonitor = useAuthStateMonitor as Mock;
+  const mockUseAuthContext = useAuthContext as unknown as ReturnType<typeof vi.fn>;
+  const mockUseAuthStateMonitor = useAuthStateMonitor as unknown as ReturnType<typeof vi.fn>;
 
   const mockAuthContext = {
     isAuthenticated: false,
@@ -344,6 +344,8 @@ describe('AuthStateMonitorProvider', () => {
         message: 'テストエラー',
         timestamp: new Date(),
         retryable: false,
+        category: 'system',
+        severity: 'error',
       };
 
       act(() => {
@@ -373,6 +375,8 @@ describe('AuthStateMonitorProvider', () => {
         message: 'トークンリフレッシュ失敗',
         timestamp: new Date(),
         retryable: false,
+        category: 'system',
+        severity: 'error',
       };
 
       act(() => {
@@ -412,6 +416,8 @@ describe('AuthStateMonitorProvider', () => {
         message: 'テストエラー',
         timestamp: new Date(),
         retryable: false,
+        category: 'system',
+        severity: 'error',
       };
 
       act(() => {

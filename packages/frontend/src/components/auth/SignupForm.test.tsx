@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent, act } from '@testing-library/react';
+import { waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { SignupForm } from './SignupForm';
 import type { SignupFormData } from '../../utils/validation';
@@ -29,7 +30,7 @@ describe('SignupForm', () => {
   });
 
   it('有効な情報でフォーム送信が成功する', async () => {
-    mockOnSubmit.mockResolvedValue();
+    mockOnSubmit.mockResolvedValue(undefined);
     renderWithRouter(<SignupForm onSubmit={mockOnSubmit} />);
 
     const formData: SignupFormData = {

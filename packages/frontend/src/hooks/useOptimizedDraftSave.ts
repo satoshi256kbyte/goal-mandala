@@ -2,7 +2,7 @@
  * 最適化された下書き保存フック
  */
 
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { useDebounce, /* useThrottle, */ useStableCallback } from '../utils/performance';
 import { draftService } from '../services/draftService';
 

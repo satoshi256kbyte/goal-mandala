@@ -4,6 +4,18 @@ import { ApiError } from '../../services/api';
 import { ValidationMessage } from './ValidationMessage';
 
 /**
+ * 回復アクションの種類
+ */
+export enum RecoveryAction {
+  RETRY = 'RETRY',
+  RELOAD = 'RELOAD',
+  CLEAR_CACHE = 'CLEAR_CACHE',
+  CLEAR_STORAGE = 'CLEAR_STORAGE',
+  SUGGEST_ALTERNATIVE = 'SUGGEST_ALTERNATIVE',
+  CONTACT_SUPPORT = 'CONTACT_SUPPORT',
+}
+
+/**
  * エラー回復パネルのプロパティ
  */
 export interface ErrorRecoveryPanelProps {

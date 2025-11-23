@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { UseFormRegister, UseFormSetValue } from 'react-hook-form';
+import { UseFormRegister, UseFormSetValue, FieldError } from 'react-hook-form';
 import { GoalFormData } from '../../types/goal-form';
 import {
   validateDate,

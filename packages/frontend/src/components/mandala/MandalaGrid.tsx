@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { GridData, CellData } from '../../types';
+import { GridData, CellData, Position } from '../../types';
 import MandalaCell from './MandalaCell';
 
 interface MandalaGridProps {

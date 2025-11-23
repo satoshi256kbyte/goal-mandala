@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import { waitFor } from '@testing-library/react';
 import { MemoryRouter, Routes } from 'react-router-dom';
 import { ProtectedRoute } from '../../components/auth/ProtectedRoute';
 import ProfileSetupPage from '../../pages/ProfileSetupPage';
