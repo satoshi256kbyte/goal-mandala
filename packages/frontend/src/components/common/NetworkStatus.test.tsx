@@ -1,15 +1,13 @@
 import React from 'react';
 import { render } from '@testing-library/react';
 import { screen } from '@testing-library/react';
-import { vi } from 'vitest';
+import { vi, Mock } from 'vitest';
 import { NetworkStatus } from './NetworkStatus';
 import * as useNetworkStatusModule from '../../hooks/useNetworkStatus';
 
 // useNetworkStatusフックをモック
 vi.mock('../../hooks/useNetworkStatus');
-const mockUseNetworkStatus = useNetworkStatusModule.useNetworkStatus as vi.MockedFunction<
-  typeof useNetworkStatusModule.useNetworkStatus
->;
+const mockUseNetworkStatus = useNetworkStatusModule.useNetworkStatus as Mock;
 
 describe('NetworkStatus', () => {
   beforeEach(() => {

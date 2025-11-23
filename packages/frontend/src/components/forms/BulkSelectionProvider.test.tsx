@@ -48,7 +48,7 @@ const TestComponent: React.FC = () => {
       </div>
 
       <div data-testid="selected-items">
-        {selectedItems.map(item => (
+        {(selectedItems as Array<{ id: string; title: string }>).map(item => (
           <span key={item.id} data-testid={`selected-${item.id}`}>
             {item.title}
           </span>

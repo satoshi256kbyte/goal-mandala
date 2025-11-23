@@ -311,7 +311,7 @@ export const DateInput: React.FC<DateInputProps> = ({
                 }}
               >
                 <div className="text-sm font-medium text-gray-900">{suggestion}</div>
-                {date && <div className="text-xs text-gray-500">{formatDateForDisplay(date)}</div>}
+                {date && <div className="text-xs text-gray-500">{formatDateToISO(date)}</div>}
               </div>
             );
           })}

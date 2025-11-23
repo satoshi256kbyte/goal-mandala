@@ -113,6 +113,12 @@ describe('SecureFormWrapper', () => {
         })),
         generateSecureHeaders: vi.fn(() => ({})),
         getCSRFToken: vi.fn(() => ''),
+        validateSubGoalData: vi.fn(() =>
+          Promise.resolve({ isValid: true, errors: [], warnings: [] })
+        ),
+        validateActionData: vi.fn(() =>
+          Promise.resolve({ isValid: true, errors: [], warnings: [] })
+        ),
         clearSecurityErrors: vi.fn(),
       });
 

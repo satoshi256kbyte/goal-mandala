@@ -243,7 +243,7 @@ describe('DateInput', () => {
       await user.keyboard('{Enter}');
 
       // 候補が選択されることを確認
-      expect(input.value).toMatch(/2024-\d{2}-\d{2}/);
+      expect((input as HTMLInputElement).value).toMatch(/2024-\d{2}-\d{2}/);
     });
 
     it('Escapeキーで候補を閉じることができる', async () => {
