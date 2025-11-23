@@ -21,7 +21,12 @@ vi.mock('./api-client', () => ({
   },
 }));
 
-const mockApiClient = vi.mocked(apiClient);
+const mockApiClient = {
+  get: vi.fn(),
+  put: vi.fn(),
+  post: vi.fn(),
+  delete: vi.fn(),
+};
 
 describe('API統合テスト', () => {
   beforeEach(() => {
