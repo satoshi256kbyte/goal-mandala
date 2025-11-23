@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
@@ -10,6 +10,7 @@ import {
   dateUtils,
 } from '../../schemas/goal-form';
 import { FormField, TextInput, TextArea, DatePicker } from './index';
+import { ErrorDisplay } from '../common/ErrorDisplay';
 import { useResponsiveLayout } from '../../hooks/useResponsiveLayout';
 import { useKeyboardNavigation } from '../../hooks/useKeyboardNavigation';
 
@@ -63,8 +64,10 @@ export const GoalInputForm: React.FC<GoalInputFormProps> = ({
   // フォーカス管理（将来使用予定）
   // const { focusFirstError } = useFocusManagement();
 
-  // アナウンス機能（useLiveRegionを使用）
-  const announce = (..._args: any[]) => {};
+  // アナウンス機能（将来実装予定）
+  const announce = (_message: string, _priority?: 'polite' | 'assertive') => {
+    // TODO: useLiveRegionフックを実装後に置き換え
+  };
   const AnnouncementRegion = () => null;
 
   // フォーム状態管理
@@ -91,7 +94,6 @@ export const GoalInputForm: React.FC<GoalInputFormProps> = ({
 
   // 内部状態
   const [lastSavedData, setLastSavedData] = useState<PartialGoalFormData | null>(null);
-  const [autoSaveTimer, setAutoSaveTimer] = useState<NodeJS.Timeout | null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   // フォームの値を監視
@@ -128,7 +130,7 @@ export const GoalInputForm: React.FC<GoalInputFormProps> = ({
   }, [watchedValues, lastSavedData, isDirty]);
 
   // 自動保存の実装
-  const performAutoSave = useCallback(async () => {
+  const performAutoSave = async () => {
     if (!onDraftSave || !hasUnsavedChanges || isDraftSaving) {
       return;
     }
@@ -145,31 +147,20 @@ export const GoalInputForm: React.FC<GoalInputFormProps> = ({
     } catch (error) {
       console.warn('自動保存に失敗しました:', error);
     }
-  }, [onDraftSave, hasUnsavedChanges, isDraftSaving]);
+  };
 
   // 自動保存タイマーの設定
   useEffect(() => {
-    if (!enableAutoSave || !onDraftSave) {
+    if (!enableAutoSave || !onDraftSave || !hasUnsavedChanges) {
       return;
     }
 
-    // 既存のタイマーをクリア
-    if (autoSaveTimer) {
-      clearTimeout(autoSaveTimer);
-    }
-
-    // 変更がある場合のみ新しいタイマーを設定
-    if (hasUnsavedChanges) {
-      const timer = setTimeout(performAutoSave, autoSaveInterval);
-      setAutoSaveTimer(timer);
-    }
+    const timer = setTimeout(performAutoSave, autoSaveInterval);
 
     return () => {
-      if (autoSaveTimer) {
-        clearTimeout(autoSaveTimer);
-      }
+      clearTimeout(timer);
     };
-  }, [hasUnsavedChanges, enableAutoSave, autoSaveInterval]);
+  }, [hasUnsavedChanges, enableAutoSave, autoSaveInterval, onDraftSave, performAutoSave]);
 
   // フォーム送信ハンドラー
   const handleFormSubmit: SubmitHandler<GoalFormData> = async data => {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { ValidationMessage } from './ValidationMessage';
-import { InlineError } from './ErrorDisplay';
+import { InlineError, ErrorSummary } from './ErrorDisplay';
 import { ApiError } from '../../services/api';
 
 /**

@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { UseFormRegister, FieldError } from 'react-hook-form';
+import { UseFormRegister, UseFormWatch, FieldError } from 'react-hook-form';
 import { TextInput } from './TextInput';
 import { TextArea } from './TextArea';
 import { FormField } from './FormField';
@@ -14,6 +14,15 @@ import {
   generateScreenReaderText,
   SR_ONLY_CLASS,
 } from '../../utils/screen-reader';
+
+/**
+ * バリデーション状態の型定義
+ */
+export interface ValidationState {
+  isValidating: boolean;
+  isValid: boolean;
+  errors: string[];
+}
 
 /**
  * バリデーションルールの型定義
