@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { PartialGoalFormData } from '../../schemas/goal-form';
 import { DraftService } from '../../services/draftService';
+import { draftUtils } from '../../utils/draft-utils';
 
 /**
  * 下書き保存ボタンのプロパティ

@@ -1,6 +1,7 @@
 /**
  * useMandalaList フックのユニットテスト
  */
+import { GoalsApiError } from '../../../services/mandala-list/goals-api';
 
 import { waitFor } from '@testing-library/react';
 import { act } from 'react';
