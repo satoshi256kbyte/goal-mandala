@@ -1,5 +1,4 @@
 /**
-import { ActionFormData } from '../../contexts/ActionContext';
  * フォームセキュリティサービスのテスト
  *
  * テスト内容:
@@ -12,6 +11,7 @@ import { ActionFormData } from '../../contexts/ActionContext';
 
 import { vi } from 'vitest';
 import { FormSecurity, SubGoalFormData } from '../form-security';
+import { ActionFormData } from '../../contexts/ActionContext';
 
 describe('FormSecurity', () => {
   let formSecurity: FormSecurity;

@@ -8,8 +8,10 @@ import { ErrorRecoveryPanel } from './ErrorRecoveryPanel';
 import { ApiError } from '../../services/api';
 
 // useErrorRecoveryをモック
+const mockUseErrorRecovery = vi.fn();
+
 vi.mock('../../hooks/useErrorRecovery', () => ({
-  useErrorRecovery: vi.fn(),
+  useErrorRecovery: mockUseErrorRecovery,
   RecoveryStrategy: {
     AUTO_RETRY: 'auto_retry',
     MANUAL_RETRY: 'manual_retry',

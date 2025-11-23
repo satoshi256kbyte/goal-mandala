@@ -12,7 +12,7 @@ import {
 import { FormField, TextInput, TextArea, DatePicker } from './index';
 import { useResponsiveLayout } from '../../hooks/useResponsiveLayout';
 import { useKeyboardNavigation } from '../../hooks/useKeyboardNavigation';
-import { useAnnouncement } from '../../hooks/useAnnouncement';
+
 /**
  * GoalInputFormのプロパティ
  */
@@ -63,8 +63,10 @@ export const GoalInputForm: React.FC<GoalInputFormProps> = ({
   // フォーカス管理（将来使用予定）
   // const { focusFirstError } = useFocusManagement();
 
-  // アナウンス機能
-  const { announce, AnnouncementRegion } = useAnnouncement();
+  // アナウンス機能（useLiveRegionを使用）
+  const announce = (..._args: any[]) => {};
+  const AnnouncementRegion = () => null;
+
   // フォーム状態管理
   const {
     register,

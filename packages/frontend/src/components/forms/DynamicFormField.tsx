@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { UseFormRegister, FieldError } from 'react-hook-form';
 import { TextInput } from './TextInput';
 import { TextArea } from './TextArea';
@@ -80,7 +80,7 @@ export interface DynamicFormFieldProps {
  *
  * パフォーマンス最適化:
  * - React.memo による不要な再レンダリング防止
- * - useStableCallback/useStableMemo による安定した参照
+ * - useStableCallback/useMemo による安定した参照
  * - useDeepMemo による深い比較でのメモ化
  */
 const DynamicFormFieldComponent: React.FC<DynamicFormFieldProps> = ({
@@ -175,13 +175,13 @@ const DynamicFormFieldComponent: React.FC<DynamicFormFieldProps> = ({
   });
 
   // リアルタイムバリデーション（最適化版）
-  const realtimeError = useStableMemo(() => {
+  const realtimeError = useMemo(() => {
     if (!value) return undefined;
     return validateField(value);
   }, [value, validateField]);
 
   // 表示するエラーメッセージ（最適化版）
-  const displayError = useStableMemo(() => error || realtimeError, [error, realtimeError]);
+  const displayError = useMemo(() => error || realtimeError, [error, realtimeError]);
 
   // フォーカスイベントハンドラー（最適化版）
   const handleFocus = useStableCallback(() => {
@@ -237,7 +237,7 @@ const DynamicFormFieldComponent: React.FC<DynamicFormFieldProps> = ({
   });
 
   // ARIA属性を生成（最適化版）
-  const ariaAttributes = useStableMemo(() => {
+  const ariaAttributes = useMemo(() => {
     const describedBy = [];
 
     if (field.helpText) {
@@ -278,7 +278,7 @@ const DynamicFormFieldComponent: React.FC<DynamicFormFieldProps> = ({
   ]);
 
   // スクリーンリーダー用のステータステキスト（最適化版）
-  const screenReaderStatus = useStableMemo(() => {
+  const screenReaderStatus = useMemo(() => {
     return generateScreenReaderText.fieldStatus({
       fieldName: field.label,
       isRequired: field.required,

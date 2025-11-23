@@ -26,7 +26,7 @@ export const MemoizedTaskCard = memo<MemoizedTaskCardProps>(
         estimatedMinutes: task.estimatedMinutes,
         deadline: task.deadline,
         completedAt: task.completedAt,
-        action: task.action,
+        actionId: task.actionId,
       }),
       [
         task.id,
@@ -37,10 +37,7 @@ export const MemoizedTaskCard = memo<MemoizedTaskCardProps>(
         task.estimatedMinutes,
         task.deadline,
         task.completedAt,
-        task.action?.id,
-        task.action?.title,
-        task.action?.subGoal?.id,
-        task.action?.subGoal?.title,
+        task.actionId,
       ]
     );
 
@@ -96,7 +93,7 @@ export const MemoizedTaskCard = memo<MemoizedTaskCardProps>(
       prevProps.task.status === nextProps.task.status &&
       prevProps.task.deadline === nextProps.task.deadline &&
       prevProps.selected === nextProps.selected &&
-      prevProps.task.action?.id === nextProps.task.action?.id
+      prevProps.task.actionId === nextProps.task.actionId
     );
   }
 );

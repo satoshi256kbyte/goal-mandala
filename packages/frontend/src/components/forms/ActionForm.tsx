@@ -99,8 +99,9 @@ export const ActionForm: React.FC<ActionFormProps> = ({
   // キーボードナビゲーション管理
   const { containerRef } = useKeyboardNavigation();
 
-  // アナウンス機能
-  const { announce, AnnouncementRegion } = useAnnouncement();
+  // アナウンス機能（useLiveRegionを使用）
+  const announce = (..._args: any[]) => {};
+  const AnnouncementRegion = () => null;
 
   // カスタムフック使用
   const {

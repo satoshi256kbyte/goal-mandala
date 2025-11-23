@@ -1,5 +1,4 @@
 /**
-import { ActionFormData } from '../../contexts/ActionContext';
  * フォームセキュリティフックのテスト
  *
  * テスト内容:
@@ -13,6 +12,7 @@ import { ActionFormData } from '../../contexts/ActionContext';
 import React from 'react';
 import { vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
+import { ActionFormData } from '../../contexts/ActionContext';
 import { useFormSecurity } from '../useFormSecurity';
 import { AuthContext, SubGoalFormData } from '../../services/form-security';
 

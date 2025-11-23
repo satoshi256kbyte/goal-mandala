@@ -9,6 +9,18 @@ import { AuthProvider } from '../components/auth/AuthProvider';
 import { ProtectedRoute } from '../components/auth/ProtectedRoute';
 import { createMockAuthUser } from '../test/types/mock-types';
 
+// createMockAuthSessionヘルパー関数
+const createMockAuthSession = () => ({
+  tokens: {
+    accessToken: { toString: () => 'mock-access-token' },
+    idToken: { toString: () => 'mock-id-token' },
+  },
+  credentials: {
+    accessKeyId: 'mock-access-key',
+    secretAccessKey: 'mock-secret-key',
+  },
+});
+
 // Amplifyのモック
 vi.mock('aws-amplify', () => ({
   Amplify: {
@@ -96,8 +108,8 @@ describe('AppRouter', () => {
   describe('ルート遷移のテスト', () => {
     it('TOP画面（/）にアクセスできる', async () => {
       const { getCurrentUser, fetchAuthSession } = await import('aws-amplify/auth');
-      vi.mocked(getCurrentUser).mockResolvedValue(createMockAuthUser());
-      vi.mocked(fetchAuthSession).mockResolvedValue(createMockAuthSession());
+      vi.mocked(getCurrentUser).mockResolvedValue(createMockAuthUser() as any);
+      vi.mocked(fetchAuthSession).mockResolvedValue(createMockAuthSession() as any);
 
       render(
         <MemoryRouter initialEntries={['/']}>
@@ -112,8 +124,8 @@ describe('AppRouter', () => {
 
     it('マンダラ詳細画面（/mandala/:id）にアクセスできる', async () => {
       const { getCurrentUser, fetchAuthSession } = await import('aws-amplify/auth');
-      vi.mocked(getCurrentUser).mockResolvedValue(createMockAuthUser());
-      vi.mocked(fetchAuthSession).mockResolvedValue(createMockAuthSession());
+      vi.mocked(getCurrentUser).mockResolvedValue(createMockAuthUser() as any);
+      vi.mocked(fetchAuthSession).mockResolvedValue(createMockAuthSession() as any);
 
       render(
         <MemoryRouter initialEntries={['/mandala/test-id']}>
@@ -128,8 +140,8 @@ describe('AppRouter', () => {
 
     it('目標入力画面（/mandala/create/goal）にアクセスできる', async () => {
       const { getCurrentUser, fetchAuthSession } = await import('aws-amplify/auth');
-      vi.mocked(getCurrentUser).mockResolvedValue(createMockAuthUser());
-      vi.mocked(fetchAuthSession).mockResolvedValue(createMockAuthSession());
+      vi.mocked(getCurrentUser).mockResolvedValue(createMockAuthUser() as any);
+      vi.mocked(fetchAuthSession).mockResolvedValue(createMockAuthSession() as any);
 
       render(
         <MemoryRouter initialEntries={['/mandala/create/goal']}>
@@ -174,8 +186,8 @@ describe('AppRouter', () => {
 
     it('認証済みユーザーは保護されたルートにアクセスできる', async () => {
       const { getCurrentUser, fetchAuthSession } = await import('aws-amplify/auth');
-      vi.mocked(getCurrentUser).mockResolvedValue(createMockAuthUser());
-      vi.mocked(fetchAuthSession).mockResolvedValue(createMockAuthSession());
+      vi.mocked(getCurrentUser).mockResolvedValue(createMockAuthUser() as any);
+      vi.mocked(fetchAuthSession).mockResolvedValue(createMockAuthSession() as any);
 
       render(
         <MemoryRouter initialEntries={['/']}>
@@ -190,8 +202,8 @@ describe('AppRouter', () => {
 
     it('認証済みユーザーがログイン画面にアクセスするとリダイレクトされる', async () => {
       const { getCurrentUser, fetchAuthSession } = await import('aws-amplify/auth');
-      vi.mocked(getCurrentUser).mockResolvedValue(createMockAuthUser());
-      vi.mocked(fetchAuthSession).mockResolvedValue(createMockAuthSession());
+      vi.mocked(getCurrentUser).mockResolvedValue(createMockAuthUser() as any);
+      vi.mocked(fetchAuthSession).mockResolvedValue(createMockAuthSession() as any);
 
       render(
         <MemoryRouter initialEntries={['/login']}>
@@ -209,8 +221,8 @@ describe('AppRouter', () => {
   describe('プロフィール設定チェックのテスト', () => {
     it('プロフィール未設定ユーザーはプロフィール設定画面にリダイレクトされる', async () => {
       const { getCurrentUser, fetchAuthSession } = await import('aws-amplify/auth');
-      vi.mocked(getCurrentUser).mockResolvedValue(createMockAuthUser());
-      vi.mocked(fetchAuthSession).mockResolvedValue(createMockAuthSession());
+      vi.mocked(getCurrentUser).mockResolvedValue(createMockAuthUser() as any);
+      vi.mocked(fetchAuthSession).mockResolvedValue(createMockAuthSession() as any);
 
       // useAuthフックをモックしてプロフィール未設定状態をシミュレート
       vi.mock('../hooks/useAuth', () => ({
@@ -246,8 +258,8 @@ describe('AppRouter', () => {
 
     it('プロフィール設定済みユーザーは通常のルートにアクセスできる', async () => {
       const { getCurrentUser, fetchAuthSession } = await import('aws-amplify/auth');
-      vi.mocked(getCurrentUser).mockResolvedValue(createMockAuthUser());
-      vi.mocked(fetchAuthSession).mockResolvedValue(createMockAuthSession());
+      vi.mocked(getCurrentUser).mockResolvedValue(createMockAuthUser() as any);
+      vi.mocked(fetchAuthSession).mockResolvedValue(createMockAuthSession() as any);
 
       render(
         <MemoryRouter initialEntries={['/']}>

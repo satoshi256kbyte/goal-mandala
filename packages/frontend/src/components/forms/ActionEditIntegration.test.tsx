@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, waitFor, fireEvent, act } from '@testing-library/react';
 import { ActionProvider } from '../../contexts/ActionContext';
-import { ActionType } from '../../types/mandala';
+import { ActionType, Action } from '../../types/mandala';
 
 // テスト用のアクションデータ
 const mockActions: Action[] = [

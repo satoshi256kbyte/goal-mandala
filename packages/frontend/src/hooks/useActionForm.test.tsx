@@ -4,7 +4,7 @@ import { vi } from 'vitest';
 import React from 'react';
 import { useActionForm, useActionFieldValidation } from './useActionForm';
 import { ActionProvider } from '../contexts/ActionContext';
-import { ActionType } from '../types/mandala';
+import { ActionType, Action } from '../types/mandala';
 import { ActionFormData } from '../schemas/action-form';
 
 // テスト用のアクションデータ

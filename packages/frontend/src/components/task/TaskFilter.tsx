@@ -1,5 +1,5 @@
 import React from 'react';
-import { TaskStatus } from '@goal-mandala/shared';
+import { TaskStatus, TaskFilters } from '@goal-mandala/shared';
 
 interface TaskFilterProps {
   filters: TaskFilters;
