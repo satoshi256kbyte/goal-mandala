@@ -31,7 +31,7 @@ const TestApp = () => (
         <Route
           path="/login"
           element={
-            <PublicRoute>
+            <PublicRoute redirectIfAuthenticated={true} redirectTo="/dashboard">
               <LoginPage />
             </PublicRoute>
           }
@@ -39,7 +39,7 @@ const TestApp = () => (
         <Route
           path="/signup"
           element={
-            <PublicRoute>
+            <PublicRoute redirectIfAuthenticated={true} redirectTo="/dashboard">
               <SignupPage />
             </PublicRoute>
           }
@@ -73,7 +73,7 @@ describe('認証統合テスト', () => {
       render(<TestApp />);
 
       await waitFor(() => {
-        expect(screen.getByText('ログイン')).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'ログイン' })).toBeInTheDocument();
       });
 
       // ダッシュボードは表示されない
@@ -99,7 +99,7 @@ describe('認証統合テスト', () => {
       });
 
       // ログインページは表示されない
-      expect(screen.queryByText('ログイン')).not.toBeInTheDocument();
+      expect(screen.queryByRole('heading', { name: 'ログイン' })).not.toBeInTheDocument();
     });
 
     it('ログイン成功後にダッシュボードにリダイレクトされる', async () => {
@@ -114,7 +114,7 @@ describe('認証統合テスト', () => {
 
       // ログインフォームが表示されることを確認
       await waitFor(() => {
-        expect(screen.getByText('ログイン')).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'ログイン' })).toBeInTheDocument();
       });
 
       // ログイン情報を入力
@@ -175,7 +175,8 @@ describe('認証統合テスト', () => {
       await waitFor(
         () => {
           expect(
-            screen.getByText(/アカウントが作成されました/) || screen.getByText('ログイン')
+            screen.getByText(/アカウントが作成されました/) ||
+              screen.getByRole('heading', { name: 'ログイン' })
           ).toBeInTheDocument();
         },
         { timeout: 3000 }
@@ -194,7 +195,7 @@ describe('認証統合テスト', () => {
       render(<TestApp />);
 
       await waitFor(() => {
-        expect(screen.getByText('ログイン')).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'ログイン' })).toBeInTheDocument();
       });
 
       // 無効な認証情報を入力
@@ -254,7 +255,7 @@ describe('認証統合テスト', () => {
       render(<TestApp />);
 
       await waitFor(() => {
-        expect(screen.getByText('ログイン')).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'ログイン' })).toBeInTheDocument();
       });
 
       // サインアップリンクをクリック
@@ -283,7 +284,7 @@ describe('認証統合テスト', () => {
 
       // ログインページに遷移することを確認
       await waitFor(() => {
-        expect(screen.getByText('ログイン')).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'ログイン' })).toBeInTheDocument();
       });
     });
   });
@@ -324,7 +325,7 @@ describe('認証統合テスト', () => {
       render(<TestApp />);
 
       await waitFor(() => {
-        expect(screen.getByText('ログイン')).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'ログイン' })).toBeInTheDocument();
       });
 
       // Tabキーでフォーカス移動
@@ -348,7 +349,7 @@ describe('認証統合テスト', () => {
       render(<TestApp />);
 
       await waitFor(() => {
-        expect(screen.getByText('ログイン')).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'ログイン' })).toBeInTheDocument();
       });
 
       // 無効な認証情報でログインを試行

@@ -1,73 +1,104 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
-import { fireEvent } from '@testing-library/react';
-import { vi } from 'vitest';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ErrorAlert } from './ErrorAlert';
 
 describe('ErrorAlert', () => {
-  it('エラーがない場合は何も表示しない', () => {
-    render(<ErrorAlert />);
-    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  beforeEach(() => {
+    vi.clearAllMocks();
   });
 
-  it('エラーメッセージを正しく表示する', () => {
+  it('エラーメッセージが表示される', () => {
     render(<ErrorAlert error="テストエラー" />);
 
     expect(screen.getByRole('alert')).toBeInTheDocument();
     expect(screen.getByText('テストエラー')).toBeInTheDocument();
   });
 
-  it('ネットワークエラーの場合は適切なスタイルとアイコンを表示する', () => {
-    render(<ErrorAlert error="ネットワークエラー" isNetworkError={true} title="接続エラー" />);
+  it('messageプロパティが優先される', () => {
+    render(<ErrorAlert error="エラー1" message="エラー2" />);
 
-    expect(screen.getByText('接続エラー')).toBeInTheDocument();
-    expect(screen.getByText('ネットワークエラー')).toBeInTheDocument();
+    expect(screen.getByText('エラー2')).toBeInTheDocument();
+    expect(screen.queryByText('エラー1')).not.toBeInTheDocument();
   });
 
-  it('再試行可能な場合は再試行ボタンを表示する', () => {
-    const mockRetry = vi.fn();
+  it('エラーがない場合は何も表示されない', () => {
+    const { container } = render(<ErrorAlert error={null} />);
 
-    render(<ErrorAlert error="再試行可能なエラー" isRetryable={true} onRetry={mockRetry} />);
-
-    const retryButton = screen.getByText('再試行');
-    expect(retryButton).toBeInTheDocument();
-
-    fireEvent.click(retryButton);
-    expect(mockRetry).toHaveBeenCalledTimes(1);
+    expect(container.firstChild).toBeNull();
   });
 
-  it('再試行中はローディング状態を表示する', () => {
-    render(<ErrorAlert error="エラー" isRetryable={true} isRetrying={true} onRetry={vi.fn()} />);
+  it('タイトルが表示される', () => {
+    render(<ErrorAlert error="テストエラー" title="エラータイトル" />);
 
-    expect(screen.getByText('再試行中...')).toBeInTheDocument();
+    expect(screen.getByText('エラータイトル')).toBeInTheDocument();
   });
 
-  it('閉じるボタンをクリックするとonCloseが呼ばれる', () => {
-    const mockClose = vi.fn();
-
-    render(<ErrorAlert error="テストエラー" onClose={mockClose} />);
+  it('閉じるボタンが機能する', () => {
+    const onClose = vi.fn();
+    render(<ErrorAlert error="テストエラー" onClose={onClose} />);
 
     const closeButton = screen.getByLabelText('エラーメッセージを閉じる');
     fireEvent.click(closeButton);
 
-    expect(mockClose).toHaveBeenCalledTimes(1);
+    expect(onClose).toHaveBeenCalledTimes(1);
   });
 
-  it.skip('自動クローズが設定されている場合は指定時間後に閉じる', async () => {
-    // このテストは複雑なタイマー処理のため一旦スキップ
-    // 実際の動作は手動テストで確認
+  it('再試行ボタンが表示され機能する', () => {
+    const onRetry = vi.fn();
+    render(<ErrorAlert error="テストエラー" isRetryable={true} onRetry={onRetry} />);
+
+    const retryButton = screen.getByText('再試行');
+    fireEvent.click(retryButton);
+
+    expect(onRetry).toHaveBeenCalledTimes(1);
   });
 
-  it('タイトルが設定されている場合は表示する', () => {
-    render(<ErrorAlert error="テストエラー" title="カスタムタイトル" />);
+  it('再試行中はローディング状態になる', () => {
+    render(
+      <ErrorAlert error="テストエラー" isRetryable={true} isRetrying={true} onRetry={vi.fn()} />
+    );
 
-    expect(screen.getByText('カスタムタイトル')).toBeInTheDocument();
+    expect(screen.getByText('再試行中...')).toBeInTheDocument();
+  });
+
+  it('ネットワークエラーの場合は警告アイコンが表示される', () => {
+    const { container } = render(<ErrorAlert error="ネットワークエラー" isNetworkError={true} />);
+
+    const alert = container.querySelector('[role="alert"]');
+    expect(alert).toHaveClass('bg-orange-50', 'border-orange-200');
+  });
+
+  it('通常エラーの場合はエラーアイコンが表示される', () => {
+    const { container } = render(<ErrorAlert error="通常エラー" isNetworkError={false} />);
+
+    const alert = container.querySelector('[role="alert"]');
+    expect(alert).toHaveClass('bg-red-50', 'border-red-200');
   });
 
   it('カスタムクラス名が適用される', () => {
-    render(<ErrorAlert error="テストエラー" className="custom-class" />);
+    const { container } = render(<ErrorAlert error="テストエラー" className="custom-class" />);
+
+    const alert = container.querySelector('[role="alert"]');
+    expect(alert).toHaveClass('custom-class');
+  });
+
+  it('閉じるボタンをクリックするとエラーが非表示になる', async () => {
+    const onClose = vi.fn();
+    render(<ErrorAlert error="テストエラー" onClose={onClose} />);
+
+    const closeButton = screen.getByLabelText('エラーメッセージを閉じる');
+    fireEvent.click(closeButton);
+
+    await waitFor(() => {
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    });
+  });
+
+  it('アクセシビリティ属性が正しく設定される', () => {
+    render(<ErrorAlert error="テストエラー" />);
 
     const alert = screen.getByRole('alert');
-    expect(alert).toHaveClass('custom-class');
+    expect(alert).toHaveAttribute('aria-live', 'assertive');
   });
 });

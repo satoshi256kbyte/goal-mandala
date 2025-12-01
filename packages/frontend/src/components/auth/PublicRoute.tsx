@@ -1,6 +1,6 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { useAuthContext } from '../../hooks/useAuth';
+import { useAuth } from '../../hooks/useAuth';
 
 /**
  * パブリックルートのプロパティ
@@ -27,7 +27,7 @@ export const PublicRoute: React.FC<PublicRouteProps> = ({
   redirectTo = '/',
   redirectIfAuthenticated = false,
 }) => {
-  const { isAuthenticated, isLoading } = useAuthContext();
+  const { isAuthenticated, isLoading } = useAuth();
   const location = useLocation();
 
   // ローディング中はスピナーを表示
