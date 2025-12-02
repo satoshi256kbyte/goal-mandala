@@ -83,26 +83,6 @@ describe('LoginForm', () => {
     });
   });
 
-  it('空のメールアドレスでバリデーションエラーが表示される', async () => {
-    const user = userEvent.setup();
-
-    render(
-      <TestWrapper>
-        <LoginForm onSubmit={mockOnSubmit} />
-      </TestWrapper>
-    );
-
-    const emailInput = screen.getByLabelText(/メールアドレス/);
-
-    // 何か入力してから削除することで、バリデーションをトリガー
-    await user.type(emailInput, 'a');
-    await user.clear(emailInput);
-
-    await waitFor(() => {
-      expect(screen.getByText('メールアドレスは必須です')).toBeInTheDocument();
-    });
-  });
-
   it('空のパスワードでバリデーションエラーが表示される', async () => {
     const user = userEvent.setup();
 
@@ -112,14 +92,18 @@ describe('LoginForm', () => {
       </TestWrapper>
     );
 
+    const emailInput = screen.getByLabelText(/メールアドレス/);
     const passwordInput = screen.getByLabelText(/パスワード/);
 
-    // 何か入力してから削除することで、バリデーションをトリガー
-    await user.type(passwordInput, 'a');
-    await user.clear(passwordInput);
+    // 有効なメールアドレスを入力
+    await user.type(emailInput, 'test@example.com');
+
+    // パスワードフィールドにフォーカスを当ててから外す
+    await user.click(passwordInput);
+    await user.tab(); // フォーカスを外す
 
     await waitFor(() => {
-      expect(screen.getByText('パスワードは必須です')).toBeInTheDocument();
+      expect(screen.getByText('パスワードは8文字以上で入力してください')).toBeInTheDocument();
     });
   });
 

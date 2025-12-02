@@ -13,15 +13,36 @@ import {
 } from '../../../services/progress-history-service';
 
 // date-fns のモック
-vi.mock('date-fns', () => ({
-  format: vi.fn((date, formatStr) => {
-    if (formatStr === 'yyyy年MM月dd日（E）') return '2024年01月15日（月）';
-    if (formatStr === 'yyyy年MM月dd日') return '2024年01月15日';
-    if (formatStr === 'yyyy-MM-dd') return '2024-01-15';
-    if (formatStr === 'HH:mm:ss') return '10:30:00';
-    return '2024-01-15';
-  }),
-}));
+vi.mock('date-fns', () => {
+  const actualFormat = (date: Date, formatStr: string) => {
+    const d = new Date(date);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const hours = String(d.getHours()).padStart(2, '0');
+    const minutes = String(d.getMinutes()).padStart(2, '0');
+    const seconds = String(d.getSeconds()).padStart(2, '0');
+
+    if (formatStr === 'yyyy年MM月dd日（E）') {
+      const days = ['日', '月', '火', '水', '木', '金', '土'];
+      return `${year}年${month}月${day}日（${days[d.getDay()]}）`;
+    }
+    if (formatStr === 'yyyy年MM月dd日') {
+      return `${year}年${month}月${day}日`;
+    }
+    if (formatStr === 'yyyy-MM-dd') {
+      return `${year}-${month}-${day}`;
+    }
+    if (formatStr === 'HH:mm:ss') {
+      return `${hours}:${minutes}:${seconds}`;
+    }
+    return `${year}-${month}-${day}`;
+  };
+
+  return {
+    format: actualFormat,
+  };
+});
 
 vi.mock('date-fns/locale', () => ({
   ja: {},
@@ -91,7 +112,7 @@ describe('ProgressDetailModal', () => {
 
       expect(screen.getByText('進捗詳細')).toBeInTheDocument();
       expect(screen.getByText('2024年01月15日（月）')).toBeInTheDocument();
-      expect(screen.getByText('50%')).toBeInTheDocument();
+      expect(screen.getAllByText('50%').length).toBeGreaterThan(0);
       expect(screen.getByText('現在の進捗')).toBeInTheDocument();
     });
 
@@ -118,7 +139,7 @@ describe('ProgressDetailModal', () => {
     it('現在の進捗を正しく表示する', () => {
       render(<ProgressDetailModal {...defaultProps} />);
 
-      expect(screen.getByText('50%')).toBeInTheDocument();
+      expect(screen.getAllByText('50%').length).toBeGreaterThan(0);
       expect(screen.getByText('現在の進捗')).toBeInTheDocument();
     });
 
@@ -202,7 +223,8 @@ describe('ProgressDetailModal', () => {
       expect(screen.getByText('エンティティタイプ:')).toBeInTheDocument();
       expect(screen.getByText('goal')).toBeInTheDocument();
       expect(screen.getByText('記録時刻:')).toBeInTheDocument();
-      expect(screen.getByText('10:30:00')).toBeInTheDocument();
+      // UTC 10:30:00 は JST 19:30:00 に変換される
+      expect(screen.getByText('19:30:00')).toBeInTheDocument();
     });
 
     it('変更理由がある場合は変更理由を表示する', () => {

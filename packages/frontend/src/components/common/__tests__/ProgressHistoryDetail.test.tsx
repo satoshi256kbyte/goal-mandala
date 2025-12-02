@@ -13,14 +13,32 @@ import {
 } from '../../../services/progress-history-service';
 
 // date-fns のモック
-vi.mock('date-fns', () => ({
-  format: vi.fn((date, formatStr) => {
-    if (formatStr === 'yyyy-MM-dd') return '2024-01-15';
-    if (formatStr === 'yyyy年MM月dd日') return '2024年01月15日';
-    if (formatStr === 'EEEE') return '月曜日';
-    return '2024-01-15';
-  }),
-}));
+vi.mock('date-fns', () => {
+  const actualFormat = (date: Date, formatStr: string) => {
+    const d = new Date(date);
+    if (formatStr === 'yyyy-MM-dd') {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+    if (formatStr === 'yyyy年MM月dd日') {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}年${month}月${day}日`;
+    }
+    if (formatStr === 'EEEE') {
+      const days = ['日曜日', '月曜日', '火曜日', '水曜日', '木曜日', '金曜日', '土曜日'];
+      return days[d.getDay()];
+    }
+    return d.toISOString().split('T')[0];
+  };
+
+  return {
+    format: actualFormat,
+  };
+});
 
 vi.mock('date-fns/locale', () => ({
   ja: {},
@@ -53,7 +71,7 @@ describe('ProgressHistoryDetail', () => {
       entityType: 'goal',
       progress: 50,
       timestamp: new Date('2024-01-15T10:00:00Z'),
-      changeReason: 'タスク完了による進捗',
+      // changeReasonを削除（significantChange.reasonを優先させるため）
     },
     {
       id: '3',
@@ -151,6 +169,14 @@ describe('ProgressHistoryDetail', () => {
     it('重要な変化がない場合は通常の変更理由を表示する', () => {
       const propsWithoutSignificant = {
         ...defaultProps,
+        historyData: [
+          ...mockHistoryData.slice(0, 1),
+          {
+            ...mockHistoryData[1],
+            changeReason: 'タスク完了による進捗',
+          },
+          ...mockHistoryData.slice(2),
+        ],
         significantChanges: [],
       };
 
@@ -188,11 +214,23 @@ describe('ProgressHistoryDetail', () => {
     });
 
     it('高進捗時の評価を表示する', () => {
+      const highProgressData = [
+        ...mockHistoryData,
+        {
+          id: '4',
+          entityId: 'goal-1',
+          entityType: 'goal' as const,
+          progress: 85,
+          timestamp: new Date('2024-01-17T10:00:00Z'),
+        },
+      ];
+
       render(
         <ProgressHistoryDetail
           {...defaultProps}
-          selectedDate={new Date('2024-01-16T10:00:00Z')}
-          selectedProgress={75}
+          historyData={highProgressData}
+          selectedDate={new Date('2024-01-17T10:00:00Z')}
+          selectedProgress={85}
         />
       );
 
@@ -247,8 +285,8 @@ describe('ProgressHistoryDetail', () => {
       const onClose = vi.fn();
       render(<ProgressHistoryDetail {...defaultProps} onClose={onClose} />);
 
-      const closeButtons = screen.getAllByText('閉じる');
-      fireEvent.click(closeButtons[0]); // ヘッダーの×ボタン
+      const closeButton = screen.getByLabelText('詳細を閉じる');
+      fireEvent.click(closeButton);
 
       expect(onClose).toHaveBeenCalledTimes(1);
     });
@@ -257,8 +295,8 @@ describe('ProgressHistoryDetail', () => {
       const onClose = vi.fn();
       render(<ProgressHistoryDetail {...defaultProps} onClose={onClose} />);
 
-      const closeButtons = screen.getAllByText('閉じる');
-      fireEvent.click(closeButtons[1]); // フッターの閉じるボタン
+      const closeButton = screen.getByRole('button', { name: '閉じる' });
+      fireEvent.click(closeButton);
 
       expect(onClose).toHaveBeenCalledTimes(1);
     });

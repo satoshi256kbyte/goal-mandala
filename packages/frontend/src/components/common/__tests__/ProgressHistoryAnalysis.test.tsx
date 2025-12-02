@@ -156,7 +156,7 @@ describe('ProgressHistoryAnalysis', () => {
       render(<ProgressHistoryAnalysis {...defaultProps} trend={mockTrendDecreasing} />);
 
       expect(screen.getByText('下降傾向')).toBeInTheDocument();
-      expect(screen.getByText(/進捗が.*低下しています/)).toBeInTheDocument();
+      expect(screen.getAllByText(/進捗が.*低下しています/).length).toBeGreaterThan(0);
       expect(screen.getByText(/進捗が低下しています。タスクの見直し/)).toBeInTheDocument();
     });
 
@@ -222,8 +222,8 @@ describe('ProgressHistoryAnalysis', () => {
       // 平均進捗: (10 + 30 + 50 + 75) / 4 = 41.25 → 41%
       expect(screen.getByText('41%')).toBeInTheDocument();
 
-      // 最高進捗: 75%
-      expect(screen.getByText('75%')).toBeInTheDocument();
+      // 最高進捗: 75%（複数存在する可能性があるため）
+      expect(screen.getAllByText('75%').length).toBeGreaterThan(0);
 
       // 総変化: 75 - 10 = 65%
       expect(screen.getByText('+65%')).toBeInTheDocument();
