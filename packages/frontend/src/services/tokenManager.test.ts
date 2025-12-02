@@ -69,6 +69,9 @@ describe('TokenManager', () => {
     mockLocalStorage.store = {};
     vi.clearAllMocks();
 
+    // LocalStorageをクリア
+    mockLocalStorage.store = {};
+
     // シングルトンインスタンスをリセット
     (TokenManager as any).instance = undefined;
 
@@ -162,6 +165,9 @@ describe('TokenManager', () => {
     });
 
     it('トークンが存在しない場合はnullを返すこと', () => {
+      // モックをリセット
+      mockLocalStorage.getItem.mockReturnValue(null);
+
       const result = tokenManager.getToken();
 
       expect(result).toBeNull();
@@ -197,6 +203,9 @@ describe('TokenManager', () => {
     });
 
     it('リフレッシュトークンが存在しない場合はnullを返すこと', () => {
+      // モックをリセット
+      mockLocalStorage.getItem.mockReturnValue(null);
+
       const result = tokenManager.getRefreshToken();
 
       expect(result).toBeNull();
@@ -310,6 +319,9 @@ describe('TokenManager', () => {
     });
 
     it('リフレッシュトークンがない場合はエラーを投げること', async () => {
+      // モックをリセット
+      mockLocalStorage.getItem.mockReturnValue(null);
+
       await expect(tokenManager.refreshToken()).rejects.toThrow('Token refresh failed');
     });
 
@@ -375,6 +387,9 @@ describe('TokenManager', () => {
     });
 
     it('最終アクティビティが存在しない場合はnullを返すこと', () => {
+      // モックをリセット
+      mockLocalStorage.getItem.mockReturnValue(null);
+
       const result = tokenManager.getLastActivity();
 
       expect(result).toBeNull();
@@ -396,6 +411,9 @@ describe('TokenManager', () => {
     });
 
     it('セッションIDが存在しない場合はnullを返すこと', () => {
+      // モックをリセット
+      mockLocalStorage.getItem.mockReturnValue(null);
+
       const result = tokenManager.getSessionId();
 
       expect(result).toBeNull();
