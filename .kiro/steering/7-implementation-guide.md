@@ -50,32 +50,32 @@ goal-mandala/
 
 ### ブレークポイント
 
-- **Mobile**: < 768px
-- **Tablet**: 768px - 1024px
-- **Desktop**: > 1024px
+- Mobile: < 768px
+- Tablet: 768px - 1024px
+- Desktop: > 1024px
 
 ### 画面別対応
 
 #### マンダラチャート画面
 
-- **Mobile**: 縦スクロール、タップで詳細表示
-- **Tablet**: 横スクロール対応、サイドパネル
-- **Desktop**: 全体表示、ホバー効果
+- Mobile: 縦スクロール、タップで詳細表示
+- Tablet: 横スクロール対応、サイドパネル
+- Desktop: 全体表示、ホバー効果
 
 #### タスクリスト
 
-- **Mobile**: カード形式、スワイプ操作
-- **Tablet**: リスト形式、フィルター常時表示
-- **Desktop**: テーブル形式、ソート機能
+- Mobile: カード形式、スワイプ操作
+- Tablet: リスト形式、フィルター常時表示
+- Desktop: テーブル形式、ソート機能
 
 ## アクセシビリティ対応
 
 ### 基本要件
 
-- **キーボード操作**: 全機能をキーボードで操作可能
-- **スクリーンリーダー**: 適切なARIAラベル設定
-- **色覚対応**: 色以外の情報でも判別可能
-- **フォントサイズ**: 拡大表示対応
+- キーボード操作: 全機能をキーボードで操作可能
+- スクリーンリーダー: 適切なARIAラベル設定
+- 色覚対応: 色以外の情報でも判別可能
+- フォントサイズ: 拡大表示対応
 
 ### 具体的対応
 
@@ -88,75 +88,75 @@ goal-mandala/
 
 ### ページロード時間
 
-- **初回ロード**: < 3秒
-- **画面遷移**: < 1秒
-- **AI処理**: < 30秒（進捗表示付き）
+- 初回ロード: < 3秒
+- 画面遷移: < 1秒
+- AI処理: < 30秒（進捗表示付き）
 
 ### 最適化手法
 
-- **Code Splitting**: ページ単位での分割
-- **Lazy Loading**: 画像・コンポーネントの遅延読み込み
-- **Caching**: APIレスポンスのキャッシュ
-- **Compression**: 静的ファイルの圧縮
+- Code Splitting: ページ単位での分割
+- Lazy Loading: 画像・コンポーネントの遅延読み込み
+- Caching: APIレスポンスのキャッシュ
+- Compression: 静的ファイルの圧縮
 
 ## エラーハンドリング
 
 ### エラー画面
 
-- **404 Not Found**: ページが見つからない
-- **500 Server Error**: サーバーエラー
-- **Network Error**: ネットワークエラー
-- **AI Processing Error**: AI処理エラー
+- 404 Not Found: ページが見つからない
+- 500 Server Error: サーバーエラー
+- Network Error: ネットワークエラー
+- AI Processing Error: AI処理エラー
 
 ### エラー表示方針
 
-- **Toast通知**: 軽微なエラー
-- **モーダル**: 重要なエラー
-- **インライン**: フォーム入力エラー
-- **専用ページ**: システムエラー
+- Toast通知: 軽微なエラー
+- モーダル: 重要なエラー
+- インライン: フォーム入力エラー
+- 専用ページ: システムエラー
 
 ## セキュリティ考慮事項
 
 ### 認証・認可
 
-- **JWT Token**: 有効期限付きトークン
-- **CSRF Protection**: CSRFトークンの実装
-- **XSS Prevention**: 入力値のサニタイズ
+- JWT Token: 有効期限付きトークン
+- CSRF Protection: CSRFトークンの実装
+- XSS Prevention: 入力値のサニタイズ
 
 ### データ保護
 
-- **HTTPS**: 全通信の暗号化
-- **Input Validation**: 入力値検証
-- **SQL Injection Prevention**: パラメータ化クエリ
+- HTTPS: 全通信の暗号化
+- Input Validation: 入力値検証
+- SQL Injection Prevention: パラメータ化クエリ
 
 ## パフォーマンス最適化
 
 ### フロントエンド最適化
 
-- **React最適化**: memo、useMemo、useCallbackの適切な使用
-- **バンドル最適化**: Code Splitting、Tree Shaking
-- **キャッシュ戦略**: React Queryによるデータキャッシュ
-- **画像最適化**: WebP形式、遅延読み込み
+- React最適化: memo、useMemo、useCallbackの適切な使用
+- バンドル最適化: Code Splitting、Tree Shaking
+- キャッシュ戦略: React Queryによるデータキャッシュ
+- 画像最適化: WebP形式、遅延読み込み
 
 ### バックエンド最適化
 
-- **データベース最適化**: 適切なインデックス設計
-- **Lambda最適化**: コールドスタート対策
-- **キャッシュ戦略**: CloudFrontによる静的コンテンツキャッシュ
-- **接続プール**: Prismaの接続プール設定
+- データベース最適化: 適切なインデックス設計
+- Lambda最適化: コールドスタート対策
+- キャッシュ戦略: CloudFrontによる静的コンテンツキャッシュ
+- 接続プール: Prismaの接続プール設定
 
 ### 監視・ログ
 
-- **アプリケーションログ**: CloudWatch Logs
-- **パフォーマンス監視**: CloudWatch Metrics
-- **エラー追跡**: X-Ray トレーシング
-- **アラート設定**: 異常検知とSlack通知
+- アプリケーションログ: CloudWatch Logs
+- パフォーマンス監視: CloudWatch Metrics
+- エラー追跡: X-Ray トレーシング
+- アラート設定: 異常検知とSlack通知
 
 ### 入力検証
 
-- **フロントエンド**: React Hook Formによる検証
-- **バックエンド**: Zodによるスキーマ検証
-- **SQLインジェクション対策**: Prismaによるパラメータ化クエリ
+- フロントエンド: React Hook Formによる検証
+- バックエンド: Zodによるスキーマ検証
+- SQLインジェクション対策: Prismaによるパラメータ化クエリ
 
 ## Docker環境
 
@@ -164,8 +164,8 @@ goal-mandala/
 
 ローカル開発環境では以下のサービスがDocker Composeで起動されます：
 
-- **PostgreSQL**: メインデータベース
-- **cognito-local**: Amazon Cognitoのローカルエミュレータ
+- PostgreSQL: メインデータベース
+- cognito-local: Amazon Cognitoのローカルエミュレータ
 
 #### 前提条件
 
@@ -205,13 +205,13 @@ docker-compose up -d
 
 #### サービス詳細
 
-**PostgreSQL**:
+PostgreSQL:
 - ポート: 5432
 - データベース名: goal_mandala_dev, goal_mandala_test
 - ユーザー名: goal_mandala_user
 - データ永続化: `postgres-data` ボリューム
 
-**cognito-local**:
+cognito-local:
 - ポート: 9229
 - エンドポイント: <http://localhost:9229>
 - 設定ファイル: `tools/docker/cognito-local/config.json`
@@ -248,17 +248,17 @@ make -C tools/docker clean
 
 各サービスに適切なリソース制限を設定し、システムリソースの効率的な利用を実現します。
 
-**PostgreSQL**:
+PostgreSQL:
 - 制限: メモリ512MB、CPU 0.5コア
 - 予約: メモリ256MB、CPU 0.25コア
 
-**Cognito Local**:
+Cognito Local:
 - 制限: メモリ256MB、CPU 0.25コア
 - 予約: メモリ128MB、CPU 0.1コア
 
 #### ヘルスチェック設定
 
-**PostgreSQL**:
+PostgreSQL:
 ```yaml
 healthcheck:
   test: ["CMD-SHELL", "pg_isready -U goal_mandala_user -d goal_mandala_dev"]
@@ -268,7 +268,7 @@ healthcheck:
   start_period: 30s
 ```
 
-**Cognito Local**:
+Cognito Local:
 ```yaml
 healthcheck:
   test: ["CMD-SHELL", "curl -f http://localhost:9229/health || exit 1"]
@@ -302,7 +302,7 @@ default_statistics_target = 100
 
 #### よくある問題と解決方法
 
-**ポート競合**:
+ポート競合:
 ```bash
 # 使用中のポートを確認
 lsof -i :5432  # PostgreSQL
@@ -312,7 +312,7 @@ lsof -i :9229  # cognito-local
 sudo kill -9 [PID]
 ```
 
-**データベースに接続できない**:
+データベースに接続できない:
 ```bash
 # PostgreSQLコンテナの状態確認
 docker-compose ps postgres
@@ -324,7 +324,7 @@ docker-compose logs postgres
 ./tools/scripts/test-postgres-connection.sh
 ```
 
-**cognito-localが起動しない**:
+cognito-localが起動しない:
 ```bash
 # コンテナログの確認
 docker-compose logs cognito-local
@@ -336,7 +336,7 @@ cat tools/docker/cognito-local/config.json
 ./tools/scripts/validate-cognito-local.sh
 ```
 
-**動作が重い**:
+動作が重い:
 ```bash
 # リソース使用量確認
 docker stats
@@ -345,7 +345,7 @@ docker stats
 # CPU: 4コア以上、メモリ: 8GB以上推奨
 ```
 
-**完全リセット**:
+完全リセット:
 ```bash
 # 全コンテナとボリュームを削除
 docker-compose down -v
@@ -379,41 +379,41 @@ docker-compose up -d
 
 #### mainブランチの保護設定
 
-GitHubリポジトリの **Settings** > **Branches** で以下の設定を行います：
+GitHubリポジトリの Settings > Branches で以下の設定を行います：
 
-**必須設定項目**:
+必須設定項目:
 
-- ✅ **Require a pull request before merging**
+- ✅ Require a pull request before merging
   - Required approving reviews: 1
   - Dismiss stale reviews when new commits are pushed
   - Require review from code owners
   
-- ✅ **Require status checks to pass before merging**
+- ✅ Require status checks to pass before merging
   - Require branches to be up to date before merging
   - Status checks: `CI / lint-and-test`, `CI / type-check`, `CI / build`, `CI / test-coverage`
   
-- ✅ **Require conversation resolution before merging**
-- ✅ **Require signed commits**
-- ✅ **Require linear history**
-- ✅ **Include administrators**
-- ❌ **Allow force pushes** (禁止)
-- ❌ **Allow deletions** (禁止)
+- ✅ Require conversation resolution before merging
+- ✅ Require signed commits
+- ✅ Require linear history
+- ✅ Include administrators
+- ❌ Allow force pushes (禁止)
+- ❌ Allow deletions (禁止)
 
 #### developブランチの保護設定
 
 mainブランチより緩和された設定：
 
-- ✅ **Require a pull request before merging** (1承認)
-- ✅ **Require status checks to pass before merging**
-- ✅ **Require conversation resolution before merging**
-- ❌ **Require signed commits** (緩和)
-- ❌ **Require linear history** (緩和)
+- ✅ Require a pull request before merging (1承認)
+- ✅ Require status checks to pass before merging
+- ✅ Require conversation resolution before merging
+- ❌ Require signed commits (緩和)
+- ❌ Require linear history (緩和)
 
 ### GitHub Secrets設定
 
 CI/CDパイプラインで必要なシークレットを設定します。
 
-**Settings** > **Secrets and variables** > **Actions** で以下を設定：
+Settings > Secrets and variables > Actions で以下を設定：
 
 #### AWS関連シークレット
 
@@ -464,8 +464,8 @@ Pre-commit Hookを使用してコード品質を保証します。
 
 `.husky/pre-commit`で以下のチェックを実行：
 
-1. **Lint-staged**: ESLint + Prettier
-2. **Type Checking**: TypeScript型チェック
+1. Lint-staged: ESLint + Prettier
+2. Type Checking: TypeScript型チェック
 
 #### テスト方法
 
@@ -527,7 +527,7 @@ nodejs 23.10.0
 python 3.13.3
 ```
 
-**注意**: pnpmは`package.json`の`packageManager`フィールドで管理されており、asdfでは管理していません。
+注意: pnpmは`package.json`の`packageManager`フィールドで管理されており、asdfでは管理していません。
 
 #### package.json engines設定
 
@@ -606,13 +606,13 @@ npx pnpm --version
 
 ### バージョン更新手順
 
-1. **`.tool-versions`ファイルの更新**:
+1. `.tool-versions`ファイルの更新:
    ```bash
    echo "nodejs 23.11.0" > .tool-versions
    echo "python 3.13.4" >> .tool-versions
    ```
 
-2. **`package.json`の`engines`フィールド更新**:
+2. `package.json`の`engines`フィールド更新:
    ```json
    {
      "engines": {
@@ -623,9 +623,9 @@ npx pnpm --version
    }
    ```
 
-3. **CI/CDワークフローの更新**: GitHub ActionsやDockerfileの該当箇所を更新
+3. CI/CDワークフローの更新: GitHub ActionsやDockerfileの該当箇所を更新
 
-4. **依存関係の再インストール**:
+4. 依存関係の再インストール:
    ```bash
    rm -rf node_modules pnpm-lock.yaml
    pnpm install
@@ -675,9 +675,9 @@ cp .env.example .env
 
 #### セキュリティ上の注意
 
-- **JWT_SECRET**: 32文字以上の安全な文字列を設定
-- **POSTGRES_PASSWORD**: デフォルト値から変更
-- **本番環境**: より強固なパスワードと秘密鍵を使用
+- JWT_SECRET: 32文字以上の安全な文字列を設定
+- POSTGRES_PASSWORD: デフォルト値から変更
+- 本番環境: より強固なパスワードと秘密鍵を使用
 
 ### 環境変数検証
 
@@ -696,13 +696,13 @@ pnpm run env:validate:node
 
 #### 検証内容
 
-1. **必須環境変数の存在確認**: すべての必須環境変数が設定されているかチェック
-2. **データベースURL形式の検証**: PostgreSQL接続URLの形式が正しいかチェック
-3. **ポート番号の検証**: ポート番号が1-65535の範囲内かチェック
-4. **URL形式の検証**: フロントエンドURLやAPIのURL形式をチェック
-5. **NODE_ENV値の検証**: 標準的な値（development/test/production）かチェック
-6. **セキュリティ設定の検証**: JWT_SECRETの長さと安全性をチェック
-7. **Docker環境の確認**: DockerとDocker Composeがインストールされているかチェック
+1. 必須環境変数の存在確認: すべての必須環境変数が設定されているかチェック
+2. データベースURL形式の検証: PostgreSQL接続URLの形式が正しいかチェック
+3. ポート番号の検証: ポート番号が1-65535の範囲内かチェック
+4. URL形式の検証: フロントエンドURLやAPIのURL形式をチェック
+5. NODE_ENV値の検証: 標準的な値（development/test/production）かチェック
+6. セキュリティ設定の検証: JWT_SECRETの長さと安全性をチェック
+7. Docker環境の確認: DockerとDocker Composeがインストールされているかチェック
 
 #### 検証結果の例
 
@@ -771,27 +771,27 @@ JWT_SECRET=very_long_and_secure_secret_key_for_production_64_chars_min
 
 #### よくあるエラーと対処法
 
-**1. .envファイルが見つからない**:
+1. .envファイルが見つからない:
 ```bash
 cp .env.example .env
 ```
 
-**2. JWT_SECRETがデフォルト値のまま**:
+2. JWT_SECRETがデフォルト値のまま:
 .envファイルでJWT_SECRETを32文字以上の安全な値に変更
 
-**3. データベースURL形式エラー**:
+3. データベースURL形式エラー:
 正しい形式: `postgresql://username:password@host:port/database`
 
-**4. ポート番号エラー**:
+4. ポート番号エラー:
 PORTを1-65535の範囲内の数値に設定
 
 ### Docker環境での特別な考慮事項
 
 #### Docker Composeでの環境変数
 
-1. **データベース接続**: ホスト名は `localhost` を使用（Docker Composeがポートフォワーディングを行う）
-2. **cognito-local接続**: エンドポイントは `http://localhost:9229` を使用
-3. **ポート設定**: Docker Composeがポートマッピングを行うため、標準ポートを使用可能
+1. データベース接続: ホスト名は `localhost` を使用（Docker Composeがポートフォワーディングを行う）
+2. cognito-local接続: エンドポイントは `http://localhost:9229` を使用
+3. ポート設定: Docker Composeがポートマッピングを行うため、標準ポートを使用可能
 
 #### Docker環境の検証
 
