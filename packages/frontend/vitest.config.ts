@@ -28,18 +28,14 @@ export default defineConfig({
       '**/e2e/**',
       // 統合テストでエラーがあるファイルを除外
       '**/src/services/__tests__/progress-calculation-engine.integration.test.ts',
-      // SubGoalEditPage.test.tsxを一時的に除外（Worker予期せぬ終了エラーの原因調査）
-      '**/src/pages/SubGoalEditPage.test.tsx',
     ],
     // 並列実行を無効化（メモリ不足対策）
     maxConcurrency: 1,
     pool: 'forks',
     poolOptions: {
       forks: {
-        singleFork: true, // 単一ワーカーで実行（安定性優先）
-        // メモリ最適化: 各テストファイル実行後にワーカーを再起動
+        singleFork: false, // 各テストファイル後にワーカーを再起動（メモリ最適化）
         isolate: true,
-        // メモリ制限を設定
         execArgv: ['--max-old-space-size=2048'],
       },
     },

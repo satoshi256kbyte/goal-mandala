@@ -34,6 +34,11 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({ progress, label, size 
 
       <div className={`w-full bg-gray-200 rounded-full ${sizeClasses[size]}`}>
         <div
+          role="progressbar"
+          aria-valuenow={progress}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-label={label}
           className={`${sizeClasses[size]} rounded-full transition-all duration-300 ${getColor(progress)}`}
           style={{ width: `${Math.min(progress, 100)}%` }}
         />

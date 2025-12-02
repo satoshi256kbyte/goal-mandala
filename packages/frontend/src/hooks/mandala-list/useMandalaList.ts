@@ -157,8 +157,9 @@ export function useMandalaList(options?: UseMandalaListOptions): UseMandalaListR
       setMandalas(response.data);
       setTotalItems(response.total);
     } catch (err) {
-      // エラーオブジェクトをそのまま保存（エラー分類は表示側で行う）
-      setError(err);
+      // エラーを文字列に変換
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      setError(errorMessage);
       // エラー時はデータをクリア
       setMandalas([]);
       setTotalItems(0);
@@ -179,6 +180,7 @@ export function useMandalaList(options?: UseMandalaListOptions): UseMandalaListR
   useEffect(() => {
     setIsLoading(true);
     fetchMandalas();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearchKeyword, statusFilter, sortOption, currentPage, itemsPerPage]);
 
   return {

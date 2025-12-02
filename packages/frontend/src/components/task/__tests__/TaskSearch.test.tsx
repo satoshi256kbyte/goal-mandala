@@ -37,6 +37,7 @@ describe('TaskSearch', () => {
 
     // 300ms経過後に呼ばれる
     vi.advanceTimersByTime(300);
+    await vi.runAllTimersAsync();
 
     await waitFor(() => {
       expect(onChange).toHaveBeenCalledWith('test');
@@ -58,6 +59,7 @@ describe('TaskSearch', () => {
 
     // 300ms経過後に最後の値のみで呼ばれる
     vi.advanceTimersByTime(300);
+    await vi.runAllTimersAsync();
 
     await waitFor(() => {
       expect(onChange).toHaveBeenCalledTimes(1);
@@ -82,7 +84,16 @@ describe('TaskSearch', () => {
 
     render(<TaskSearch query="test query" onChange={() => {}} onSaveView={onSaveView} />);
 
-    const saveButton = screen.getByText('ビューを保存');
+    // ビューを保存ボタンをクリック
+    const saveViewButton = screen.getByText('ビューを保存');
+    fireEvent.click(saveViewButton);
+
+    // ダイアログが表示される
+    const viewNameInput = screen.getByPlaceholderText('ビュー名を入力...');
+    fireEvent.change(viewNameInput, { target: { value: 'My View' } });
+
+    // 保存ボタンをクリック
+    const saveButton = screen.getByRole('button', { name: '保存' });
     fireEvent.click(saveButton);
 
     expect(onSaveView).toHaveBeenCalledWith('test query');

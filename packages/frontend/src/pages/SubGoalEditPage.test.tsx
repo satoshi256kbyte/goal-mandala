@@ -19,9 +19,9 @@ vi.mock('react-router-dom', async () => {
   };
 });
 
-// 認証プロバイダーのモック
+// 認証フックのモック
 const mockUseAuth = vi.fn();
-vi.mock('../components/auth/AuthProvider', () => ({
+vi.mock('../hooks/useAuth', () => ({
   useAuth: () => mockUseAuth(),
 }));
 
@@ -86,6 +86,10 @@ describe('SubGoalEditPage', () => {
 
   afterEach(() => {
     vi.clearAllTimers();
+    vi.clearAllMocks();
+    mockNavigate.mockClear();
+    mockUseParams.mockClear();
+    mockUseAuth.mockClear();
   });
 
   describe('ページ表示', () => {

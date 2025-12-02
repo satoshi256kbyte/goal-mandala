@@ -336,11 +336,15 @@ describe('useMandalaList', () => {
   });
 
   describe('エラーハンドリング', () => {
+    beforeEach(() => {
+      // エラーテスト用にモックをクリア
+      vi.mocked(GoalsService.getGoals).mockReset();
+    });
+
     it('API エラー時にエラーメッセージを設定する', async () => {
       const errorMessage = 'データの取得に失敗しました';
 
-      // 新しいモックを設定（beforeEachのモックを上書き）
-      vi.mocked(GoalsService.getGoals).mockReset();
+      // エラーを返すモックを設定
       vi.mocked(GoalsService.getGoals).mockRejectedValue(
         new GoalsApiError(errorMessage, 500, 'SERVER_ERROR')
       );
@@ -357,7 +361,6 @@ describe('useMandalaList', () => {
     });
 
     it('ネットワークエラー時にエラーメッセージを設定する', async () => {
-      vi.mocked(GoalsService.getGoals).mockReset();
       vi.mocked(GoalsService.getGoals).mockRejectedValue(new TypeError('Network error'));
 
       const { result } = renderHookWithProviders(() => useMandalaList());

@@ -54,6 +54,11 @@ describe('ProtectedRoute', () => {
     vi.clearAllMocks();
   });
 
+  afterEach(() => {
+    vi.clearAllMocks();
+    mockUseAuth.mockReset();
+  });
+
   it('should show loading while checking authentication', () => {
     mockUseAuth.mockReturnValue({
       user: null,
