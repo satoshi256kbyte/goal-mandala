@@ -4,8 +4,8 @@ import { afterEach, beforeEach, afterAll } from 'vitest';
 
 // Testing Libraryの設定を最適化
 configure({
-  // デフォルトのwaitForタイムアウトを短縮
-  asyncUtilTimeout: 1000,
+  // デフォルトのwaitForタイムアウトを短縮（高速化）
+  asyncUtilTimeout: 500,
   // React Strict Modeを無効化して警告を抑制
   reactStrictMode: false,
 });
@@ -315,128 +315,27 @@ beforeEach(() => {
 });
 
 afterEach(async () => {
-  try {
-    // 1. 非同期処理の完了を待機
-    await new Promise(resolve => {
-      if (typeof setTimeout !== 'undefined') {
-        setTimeout(resolve, 0);
-      } else {
-        resolve(undefined);
-      }
-    });
-  } catch (error) {
-    console.error('async wait failed:', error);
-  }
+  // 1. React Testing Libraryのクリーンアップ
+  cleanup();
 
-  try {
-    // 2. React Testing Libraryのクリーンアップ
-    cleanup();
-  } catch (error) {
-    console.error('cleanup() failed:', error);
-  }
+  // 2. すべてのタイマーをクリア
+  vi.clearAllTimers();
 
-  try {
-    // 3. すべてのタイマーをクリア
-    vi.clearAllTimers();
-  } catch (error) {
-    console.error('vi.clearAllTimers() failed:', error);
-  }
+  // 3. requestAnimationFrameタイマーをクリア
+  rafTimers.forEach(timer => clearTimeout(timer));
+  rafTimers.clear();
+  rafIdCounter = 0;
 
-  try {
-    // 4. すべてのrequestAnimationFrameタイマーをクリア
-    rafTimers.forEach(timer => clearTimeout(timer));
-    rafTimers.clear();
-    rafIdCounter = 0;
-  } catch (error) {
-    console.error('rafTimers cleanup failed:', error);
-  }
+  // 4. ストレージのクリア
+  localStorageMock.clear();
+  sessionStorageMock.clear();
 
-  try {
-    // 5. ストレージのクリア
-    localStorageMock.clear();
-    sessionStorageMock.clear();
-  } catch (error) {
-    console.error('storage cleanup failed:', error);
-  }
+  // 5. すべてのモックをクリア
+  vi.clearAllMocks();
 
-  try {
-    // 6. すべてのモックをクリア
-    vi.clearAllMocks();
-    vi.resetAllMocks();
-  } catch (error) {
-    console.error('vi.clearAllMocks() failed:', error);
-  }
-
-  try {
-    // 7. fetchモックのリセット
-    if (global.fetch && typeof global.fetch === 'function') {
-      (global.fetch as any).mockClear?.();
-    }
-  } catch (error) {
-    console.error('fetch mock cleanup failed:', error);
-  }
-
-  try {
-    // 8. DOMイベントリスナーのクリーンアップ
-    if (typeof document !== 'undefined') {
-      // すべてのイベントリスナーを削除
-      const events = ['click', 'change', 'input', 'submit', 'keydown', 'keyup', 'focus', 'blur'];
-      events.forEach(event => {
-        document.removeEventListener(event, () => {});
-      });
-    }
-  } catch (error) {
-    console.error('DOM event cleanup failed:', error);
-  }
-
-  try {
-    // 9. グローバル変数のクリーンアップ
-    if (typeof window !== 'undefined') {
-      // AchievementManagerのクリーンアップ
-      if ((window as any).achievementManager) {
-        (window as any).achievementManager.cleanup();
-        delete (window as any).achievementManager;
-      }
-
-      // その他のグローバル変数をクリーンアップ
-      const globalKeys = ['__REACT_DEVTOOLS_GLOBAL_HOOK__', '__REDUX_DEVTOOLS_EXTENSION__'];
-      globalKeys.forEach(key => {
-        if ((window as any)[key]) {
-          delete (window as any)[key];
-        }
-      });
-    }
-  } catch (error) {
-    console.error('global variables cleanup failed:', error);
-  }
-
-  try {
-    // 10. DOMの完全クリーンアップ
-    if (typeof document !== 'undefined' && document.body) {
-      // すべての子要素を削除
-      while (document.body.firstChild) {
-        document.body.removeChild(document.body.firstChild);
-      }
-      // bodyの属性をクリア
-      Array.from(document.body.attributes).forEach(attr => {
-        document.body.removeAttribute(attr.name);
-      });
-    }
-  } catch (error) {
-    console.error('DOM cleanup failed:', error);
-  }
-
-  try {
-    // 11. 非同期処理の完了を再度待機
-    await new Promise(resolve => {
-      if (typeof setTimeout !== 'undefined') {
-        setTimeout(resolve, 0);
-      } else {
-        resolve(undefined);
-      }
-    });
-  } catch (error) {
-    console.error('final async wait failed:', error);
+  // 6. グローバル変数のクリーンアップ
+  if (typeof window !== 'undefined' && (window as any).achievementManager) {
+    delete (window as any).achievementManager;
   }
 });
 

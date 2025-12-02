@@ -1579,6 +1579,92 @@ it('should handle API error', async () => {
 - 実施手順を定義
 
 
+## DOM クエリエラーのベストプラクティス（2025年12月追加）
+
+### 複数要素が存在する場合
+
+**問題**: 同じテキストが複数存在する場合、`getByText`がエラーになる
+
+**解決方法**: `getAllByText`を使用
+
+```typescript
+// ❌ 悪い例：複数要素が存在する場合にエラー
+expect(screen.getByText('50%')).toBeInTheDocument();
+
+// ✅ 良い例：複数要素を取得
+expect(screen.getAllByText('50%').length).toBeGreaterThan(0);
+```
+
+### date-fnsモックの正しい実装
+
+**問題**: `vi.fn()`でラップすると動作しない
+
+**解決方法**: 実際の関数として実装
+
+```typescript
+// ❌ 悪い例：vi.fn()でラップ
+vi.mock('date-fns', () => ({
+  format: vi.fn((date, formatStr) => '2024-01-15'),
+}));
+
+// ✅ 良い例：実際の関数として実装
+vi.mock('date-fns', () => {
+  const actualFormat = (date: Date, formatStr: string) => {
+    const d = new Date(date);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    
+    if (formatStr === 'yyyy年MM月dd日') {
+      return `${year}年${month}月${day}日`;
+    }
+    // 他のフォーマットも実装
+    return `${year}-${month}-${day}`;
+  };
+  
+  return {
+    format: actualFormat, // vi.fn()でラップしない
+  };
+});
+```
+
+### 時刻フォーマットの注意点
+
+**問題**: UTC時刻がJST（UTC+9）に変換される
+
+**解決方法**: 期待値をJSTに合わせる
+
+```typescript
+// テストデータ: new Date('2024-01-15T10:30:00Z') (UTC)
+// 表示される時刻: 19:30:00 (JST = UTC+9)
+
+// ❌ 悪い例：UTC時刻を期待
+expect(screen.getByText('10:30:00')).toBeInTheDocument();
+
+// ✅ 良い例：JST時刻を期待
+expect(screen.getByText('19:30:00')).toBeInTheDocument();
+```
+
+### バリデーションメッセージの確認
+
+**問題**: テストの期待値が実際のバリデーションメッセージと異なる
+
+**解決方法**: 実際のZodスキーマを確認して期待値を修正
+
+```typescript
+// Zodスキーマ
+export const loginZodSchema = z.object({
+  email: z.string().email('有効なメールアドレスを入力してください'),
+  password: z.string().min(8, 'パスワードは8文字以上で入力してください'),
+});
+
+// ❌ 悪い例：推測したメッセージ
+expect(screen.getByText('メールアドレスは必須です')).toBeInTheDocument();
+
+// ✅ 良い例：実際のメッセージ
+expect(screen.getByText('有効なメールアドレスを入力してください')).toBeInTheDocument();
+```
+
 ## テストエラー修正のベストプラクティス（2025年11月追加）
 
 ### インポート文の記述

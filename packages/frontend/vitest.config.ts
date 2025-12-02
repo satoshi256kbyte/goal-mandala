@@ -15,10 +15,10 @@ export default defineConfig({
     setupFiles: ['./src/test/setup.ts'],
     // テスト分離を無効化（メモリ効率優先）
     isolate: false,
-    // タイムアウト設定
-    testTimeout: 10000,
-    hookTimeout: 8000,
-    teardownTimeout: 5000,
+    // タイムアウト設定（高速化）
+    testTimeout: 5000,
+    hookTimeout: 3000,
+    teardownTimeout: 2000,
     // 全ユニットテストと統合テストを含める
     include: ['src/**/*.test.{ts,tsx}'],
     // E2Eテストのみ除外
