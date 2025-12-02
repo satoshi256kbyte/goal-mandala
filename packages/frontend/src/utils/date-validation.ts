@@ -72,6 +72,16 @@ export const parseISODateString = (dateString: string): Date | null => {
     return null;
   }
 
+  // 日付コンポーネントが入力と一致するか検証（例: 2024-02-30は無効）
+  const [year, month, day] = dateString.split('-').map(Number);
+  const utcYear = date.getUTCFullYear();
+  const utcMonth = date.getUTCMonth() + 1; // 0-indexed
+  const utcDay = date.getUTCDate();
+
+  if (utcYear !== year || utcMonth !== month || utcDay !== day) {
+    return null;
+  }
+
   return date;
 };
 
@@ -191,7 +201,9 @@ export const getDaysDifference = (date1: Date, date2: Date): number => {
  */
 export const isPastDate = (date: Date): boolean => {
   const today = getToday();
-  return date < today;
+  const compareDate = new Date(date);
+  compareDate.setHours(0, 0, 0, 0);
+  return compareDate.getTime() < today.getTime();
 };
 
 /**
@@ -199,7 +211,9 @@ export const isPastDate = (date: Date): boolean => {
  */
 export const isFutureDate = (date: Date): boolean => {
   const today = getToday();
-  return date > today;
+  const compareDate = new Date(date);
+  compareDate.setHours(0, 0, 0, 0);
+  return compareDate.getTime() > today.getTime();
 };
 
 /**
@@ -207,7 +221,12 @@ export const isFutureDate = (date: Date): boolean => {
  */
 export const isToday = (date: Date): boolean => {
   const today = getToday();
-  return date.getTime() === today.getTime();
+
+  // UTC日付として比較（タイムゾーンの影響を排除）
+  const todayUTC = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
+  const dateUTC = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+
+  return todayUTC === dateUTC;
 };
 
 /**
