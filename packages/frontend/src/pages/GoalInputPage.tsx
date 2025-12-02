@@ -255,7 +255,7 @@ export const GoalInputPage: React.FC<GoalInputPageProps> = ({ className }) => {
   return (
     <div className={`min-h-screen bg-gray-50 ${className || ''}`}>
       {/* ヘッダー */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
+      <header role="banner" className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-4xl md:max-w-4xl lg:max-w-6xl mx-auto px-4 sm:px-6 md:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 md:h-18 lg:h-20">
             <div className="flex items-center">
@@ -282,7 +282,10 @@ export const GoalInputPage: React.FC<GoalInputPageProps> = ({ className }) => {
       </header>
 
       {/* メインコンテンツ */}
-      <main className="max-w-4xl md:max-w-4xl lg:max-w-6xl mx-auto px-4 sm:px-6 md:px-6 lg:px-8 py-8 md:py-10 lg:py-12">
+      <main
+        role="main"
+        className="max-w-4xl md:max-w-4xl lg:max-w-6xl mx-auto px-4 sm:px-6 md:px-6 lg:px-8 py-8 md:py-10 lg:py-12"
+      >
         {/* ページ説明 */}
         <div className="mb-8 md:mb-10 lg:mb-12">
           <h2 className="text-2xl md:text-2xl lg:text-3xl font-bold text-gray-900 mb-2 md:mb-3 lg:mb-4">

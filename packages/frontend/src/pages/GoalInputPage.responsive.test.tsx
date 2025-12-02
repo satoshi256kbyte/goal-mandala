@@ -32,9 +32,8 @@ const mockAuthProvider = {
   resetPassword: vi.fn(),
 };
 
-// AuthProviderをモック
-vi.mock('../components/auth/AuthProvider', () => ({
-  AuthProvider: ({ children }: { children: React.ReactNode }) => children,
+// useAuthをモック
+vi.mock('../hooks/useAuth', () => ({
   useAuth: () => mockAuthProvider,
 }));
 
