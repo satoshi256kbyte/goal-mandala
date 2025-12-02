@@ -225,7 +225,14 @@ export const DragDropProvider: React.FC<DragDropProviderProps> = ({
       const dragItemData = event.dataTransfer.getData('application/json');
       if (!dragItemData) return;
 
-      const dragItem: DraggableItem = JSON.parse(dragItemData);
+      let dragItem: DraggableItem;
+      try {
+        dragItem = JSON.parse(dragItemData);
+      } catch (error) {
+        console.error('Invalid drag data:', error);
+        endDrag();
+        return;
+      }
 
       // 制約チェック
       if (!canDrop(dragItem, targetItem)) {
