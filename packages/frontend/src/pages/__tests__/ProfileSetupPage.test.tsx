@@ -48,7 +48,6 @@ const renderWithRouter = (component: React.ReactElement) => {
 describe('ProfileSetupPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.useFakeTimers();
     mockUseAuth.mockReturnValue({
       user: { id: 'user-1', email: 'test@example.com', profileSetup: false },
       isAuthenticated: true,
@@ -57,7 +56,7 @@ describe('ProfileSetupPage', () => {
   });
 
   afterEach(() => {
-    vi.useRealTimers();
+    vi.clearAllMocks();
   });
 
   describe('基本表示', () => {
@@ -101,16 +100,14 @@ describe('ProfileSetupPage', () => {
 
   describe('リダイレクト処理のテスト', () => {
     it('送信成功後、1秒後にTOP画面にリダイレクトする', async () => {
-      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+      const user = userEvent.setup();
       renderWithRouter(<ProfileSetupPage />);
 
       const successButton = screen.getByTestId('success-button');
       await user.click(successButton);
 
       // 1秒後にリダイレクトされることを確認
-      act(() => {
-        vi.advanceTimersByTime(1000);
-      });
+      await new Promise(resolve => setTimeout(resolve, 1100));
 
       await waitFor(() => {
         expect(mockNavigate).toHaveBeenCalledWith('/');
@@ -118,16 +115,14 @@ describe('ProfileSetupPage', () => {
     });
 
     it('エラー時はリダイレクトしない', async () => {
-      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+      const user = userEvent.setup();
       renderWithRouter(<ProfileSetupPage />);
 
       const errorButton = screen.getByTestId('error-button');
       await user.click(errorButton);
 
       // 1秒経過してもリダイレクトされないことを確認
-      act(() => {
-        vi.advanceTimersByTime(1000);
-      });
+      await new Promise(resolve => setTimeout(resolve, 1100));
 
       // リダイレクトされないことを確認
       expect(mockNavigate).not.toHaveBeenCalled();

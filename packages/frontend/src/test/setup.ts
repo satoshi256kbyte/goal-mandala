@@ -296,7 +296,31 @@ afterEach(async () => {
   localStorageMock.clear();
   sessionStorageMock.clear();
 
-  // 4. 強制的にガベージコレクションを促す（Node.js環境）
+  // 4. モックのクリア
+  vi.clearAllMocks();
+
+  // 5. fetchモックのリセット
+  if (global.fetch && typeof global.fetch === 'function') {
+    (global.fetch as any).mockClear?.();
+  }
+
+  // 6. DOMイベントリスナーのクリーンアップ
+  if (typeof document !== 'undefined') {
+    const events = ['click', 'change', 'input', 'submit', 'keydown', 'keyup', 'focus', 'blur'];
+    events.forEach(event => {
+      document.body.removeEventListener(event, () => {});
+    });
+  }
+
+  // 7. グローバル変数のリセット
+  if (typeof window !== 'undefined') {
+    // @ts-ignore
+    delete window.__REACT_ROUTER_CONTEXT__;
+    // @ts-ignore
+    delete window.__INITIAL_STATE__;
+  }
+
+  // 8. 強制的にガベージコレクションを促す（Node.js環境）
   if (typeof global !== 'undefined' && global.gc) {
     global.gc();
   }

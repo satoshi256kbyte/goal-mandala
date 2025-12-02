@@ -29,13 +29,13 @@ Object.defineProperty(window, 'caches', {
 
 describe('useErrorRecovery', () => {
   beforeEach(() => {
-    vi.useFakeTimers();
+    vi.useRealTimers();
     vi.clearAllMocks();
     (navigator as any).onLine = true;
   });
 
   afterEach(() => {
-    vi.useRealTimers();
+    vi.clearAllMocks();
   });
 
   describe('基本機能', () => {
@@ -116,18 +116,11 @@ describe('useErrorRecovery', () => {
         timestamp: new Date(),
       };
 
-      const recoveryPromise = act(async () => {
+      const success = await act(async () => {
         return await result.current.startRecovery(error, {
           retryFunction: mockRetryFunction,
         });
       });
-
-      // 遅延時間を進める
-      act(() => {
-        vi.advanceTimersByTime(100);
-      });
-
-      const success = await recoveryPromise;
 
       expect(success).toBe(true);
       expect(mockRetryFunction).toHaveBeenCalledTimes(1);
@@ -154,18 +147,11 @@ describe('useErrorRecovery', () => {
         timestamp: new Date(),
       };
 
-      const recoveryPromise = act(async () => {
+      const success = await act(async () => {
         return await result.current.startRecovery(error, {
           retryFunction: mockRetryFunction,
         });
       });
-
-      // 遅延時間を進める
-      act(() => {
-        vi.advanceTimersByTime(100);
-      });
-
-      const success = await recoveryPromise;
 
       expect(success).toBe(false);
       expect(mockOnRecoveryFailure).toHaveBeenCalled();
@@ -199,17 +185,13 @@ describe('useErrorRecovery', () => {
       });
 
       // しばらく待つ
-      act(() => {
-        vi.advanceTimersByTime(500);
-      });
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       // オンライン復帰
       (navigator as any).onLine = true;
 
       // さらに待つ
-      act(() => {
-        vi.advanceTimersByTime(1000);
-      });
+      await new Promise(resolve => setTimeout(resolve, 200));
 
       const success = await recoveryPromise;
 

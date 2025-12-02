@@ -1,12 +1,13 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { TaskSearch } from '../TaskSearch';
 
-// デバウンス処理のテスト用にタイマーをモック
-vi.useFakeTimers();
-
 describe('TaskSearch', () => {
+  beforeEach(() => {
+    vi.useRealTimers();
+  });
+
   afterEach(() => {
-    vi.clearAllTimers();
+    vi.clearAllMocks();
   });
 
   it('should render search input field', () => {
@@ -36,8 +37,7 @@ describe('TaskSearch', () => {
     expect(onChange).not.toHaveBeenCalled();
 
     // 300ms経過後に呼ばれる
-    vi.advanceTimersByTime(300);
-    await vi.runAllTimersAsync();
+    await new Promise(resolve => setTimeout(resolve, 350));
 
     await waitFor(() => {
       expect(onChange).toHaveBeenCalledWith('test');
@@ -58,8 +58,7 @@ describe('TaskSearch', () => {
     fireEvent.change(input, { target: { value: 'test' } });
 
     // 300ms経過後に最後の値のみで呼ばれる
-    vi.advanceTimersByTime(300);
-    await vi.runAllTimersAsync();
+    await new Promise(resolve => setTimeout(resolve, 350));
 
     await waitFor(() => {
       expect(onChange).toHaveBeenCalledTimes(1);
