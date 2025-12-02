@@ -275,67 +275,30 @@ Object.defineProperty(window, 'sessionStorage', {
 
 // タイムアウトハンドラーの設定
 beforeEach(() => {
-  // 1. すべてのモックをリセット
-  vi.clearAllMocks();
-  vi.resetAllMocks();
-
-  // 2. タイマーをリセット
-  vi.clearAllTimers();
-
-  // 3. ストレージをクリア
+  // ストレージをクリア
   localStorageMock.clear();
   sessionStorageMock.clear();
 
-  // 4. デフォルトの認証トークンを設定（APIテスト用）
+  // デフォルトの認証トークンを設定
   localStorageMock.setItem('auth_token', 'mock-auth-token');
-
-  // 5. fetchモックをリセット
-  if (global.fetch && typeof global.fetch === 'function') {
-    (global.fetch as any).mockClear?.();
-    (global.fetch as any).mockReset?.();
-  }
-
-  // 6. animationFrameカウンターをリセット
-  rafIdCounter = 0;
-  rafTimers.clear();
-
-  // 7. DOMをクリーンアップ
-  if (typeof document !== 'undefined' && document.body) {
-    while (document.body.firstChild) {
-      document.body.removeChild(document.body.firstChild);
-    }
-  }
-
-  // 8. グローバル変数をクリーンアップ
-  if (typeof window !== 'undefined') {
-    if ((window as any).achievementManager) {
-      delete (window as any).achievementManager;
-    }
-  }
 });
 
 afterEach(async () => {
   // 1. React Testing Libraryのクリーンアップ
   cleanup();
 
-  // 2. すべてのタイマーをクリア
+  // 2. タイマーをクリア
   vi.clearAllTimers();
-
-  // 3. requestAnimationFrameタイマーをクリア
   rafTimers.forEach(timer => clearTimeout(timer));
   rafTimers.clear();
-  rafIdCounter = 0;
 
-  // 4. ストレージのクリア
+  // 3. ストレージのクリア
   localStorageMock.clear();
   sessionStorageMock.clear();
 
-  // 5. すべてのモックをクリア
-  vi.clearAllMocks();
-
-  // 6. グローバル変数のクリーンアップ
-  if (typeof window !== 'undefined' && (window as any).achievementManager) {
-    delete (window as any).achievementManager;
+  // 4. 強制的にガベージコレクションを促す（Node.js環境）
+  if (typeof global !== 'undefined' && global.gc) {
+    global.gc();
   }
 });
 

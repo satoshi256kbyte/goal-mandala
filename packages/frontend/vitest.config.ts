@@ -13,7 +13,7 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: ['./src/test/setup.ts'],
-    // テスト分離を有効化（安定性優先）
+    // テスト分離を有効化（メモリ最適化のため各テストファイル後にプロセスをリセット）
     isolate: true,
     // タイムアウト設定（高速化）
     testTimeout: 5000,
@@ -36,17 +36,25 @@ export default defineConfig({
     pool: 'forks',
     poolOptions: {
       forks: {
-        singleFork: true,
+        singleFork: false, // 各テストファイル後にワーカーを再起動
+        // メモリ最適化: 各テストファイル実行後にワーカーを再起動
+        isolate: true,
+        // メモリ制限を設定
+        execArgv: ['--max-old-space-size=2048'],
       },
     },
     // レポーター設定
     reporter: ['dot'],
     // カバレッジ設定
     coverage: {
-      enabled: false, // デフォルトで無効（test:coverageコマンドで有効化）
+      enabled: false,
       provider: 'v8',
       reporter: ['json'],
       exclude: ['**/node_modules/**', '**/dist/**', '**/e2e/**'],
+    },
+    // メモリ最適化: テストファイルを順次実行
+    sequence: {
+      shuffle: false,
     },
   },
 });
