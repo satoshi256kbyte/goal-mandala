@@ -536,6 +536,83 @@ const getRefreshToken = (): string | null => {
 - テストの期待値と実装の戻り値を一致させる
 - `??`演算子を活用してundefinedをnullに統一する
 
+#### 日付バリデーションのベストプラクティス
+
+**重要**: テストデータの日付は常に未来の日付を使用する必要があります。
+
+**問題例**:
+```typescript
+// ❌ 悪い例：過去の日付を使用
+const testData = {
+  title: 'テスト目標',
+  deadline: '2024-12-31', // 過去の日付
+};
+
+// バリデーションエラーが発生
+expect(() => goalFormSchema.parse(testData)).toThrow();
+```
+
+**解決方法**:
+```typescript
+// ✅ 良い例：未来の日付を使用
+const testData = {
+  title: 'テスト目標',
+  deadline: '2025-12-31', // 未来の日付
+};
+
+// バリデーション成功
+expect(goalFormSchema.parse(testData)).toBeDefined();
+```
+
+**ベストプラクティス**:
+- テストデータの日付は常に未来の日付を使用
+- 相対的な日付（今日から+30日など）を使用すると保守性が向上
+- 日付バリデーションのテストでは、明示的に過去/未来を指定
+
+#### vi.useFakeTimers()とsetTimeoutの注意点
+
+**重要**: `vi.useFakeTimers()`を使用している場合、`setTimeout`は自動的に進まないため、リトライ機能などのテストでは`vi.useRealTimers()`を使用する必要があります。
+
+**問題例**:
+```typescript
+// ❌ 悪い例：vi.useFakeTimers()でsetTimeoutが動作しない
+beforeEach(() => {
+  vi.useFakeTimers();
+});
+
+it('リトライ機能のテスト', async () => {
+  // setTimeoutが動作せず、タイムアウトエラーが発生
+  await waitFor(() => {
+    expect(retryCount).toBe(3);
+  });
+});
+```
+
+**解決方法**:
+```typescript
+// ✅ 良い例：リトライテストではvi.useRealTimers()を使用
+describe('リトライ機能', () => {
+  beforeEach(() => {
+    vi.useRealTimers(); // 実際のタイマーを使用
+  });
+
+  afterEach(() => {
+    vi.useFakeTimers(); // 他のテストのために戻す
+  });
+
+  it('リトライ機能のテスト', async () => {
+    await waitFor(() => {
+      expect(retryCount).toBe(3);
+    }, { timeout: 5000 });
+  });
+});
+```
+
+**ベストプラクティス**:
+- デフォルトは`vi.useFakeTimers()`で高速化
+- リトライ、遅延、タイムアウトのテストでは`vi.useRealTimers()`を使用
+- テスト後は元の設定に戻す
+
 #### モック設定の順序と明示性
 
 **重要**: モックの設定は順序と明示性が重要です。特にlocalStorageのモックでは、値の設定とmockReturnValueの両方が必要な場合があります。
@@ -573,6 +650,131 @@ beforeEach(() => {
 - モックの戻り値は明示的に設定する
 - 複数回の呼び出しがある場合は`mockReturnValueOnce()`を使用
 - テストの独立性を保つため、beforeEachで適切にリセットする
+
+#### モック設定の順序と明示性
+
+**重要**: モックの設定は順序と明示性が重要です。特にlocalStorageのモックでは、値の設定とmockReturnValueの両方が必要な場合があります。
+
+**問題例**:
+```typescript
+// ❌ mockReturnValueが設定されていない
+beforeEach(() => {
+  mockLocalStorage.clear();
+  mockLocalStorage.setItem('accessToken', 'test-token');
+  // mockReturnValueが未設定のため、getItemがundefinedを返す
+});
+```
+
+**解決方法**:
+```typescript
+// ✅ 明示的なmockReturnValue設定
+beforeEach(() => {
+  mockLocalStorage.clear();
+  mockLocalStorage.setItem('accessToken', 'test-token');
+  mockLocalStorage.getItem.mockReturnValue('test-token'); // 明示的に設定
+});
+
+// または、連続した呼び出しに対応
+beforeEach(() => {
+  mockLocalStorage.clear();
+  mockLocalStorage.getItem
+    .mockReturnValueOnce('test-access-token')    // 1回目の呼び出し
+    .mockReturnValueOnce('test-refresh-token')   // 2回目の呼び出し
+    .mockReturnValue(null);                      // それ以降の呼び出し
+});
+```
+
+**ベストプラクティス**:
+- モックの戻り値は明示的に設定する
+- 複数回の呼び出しがある場合は`mockReturnValueOnce()`を使用
+- テストの独立性を保つため、beforeEachで適切にリセットする
+
+#### data-testidの適用とDOM要素クエリ
+
+**重要**: コンポーネントが`data-testid`プロパティを受け取っても、実際のDOMに適用されていない場合があります。
+
+**問題例**:
+```typescript
+// ❌ 悪い例：data-testidが実際のDOMに適用されていない
+const DragDropItem = ({ id, children, ...props }: Props) => {
+  return <div {...props}>{children}</div>; // data-testidが適用されない
+};
+
+// テストで失敗
+const item = screen.getByTestId('item-1'); // エラー: 要素が見つからない
+```
+
+**解決方法**:
+```typescript
+// ✅ 良い例：getByTextやgetByRoleを使用
+const item = screen.getByText('item-1');
+// または
+const item = screen.getByRole('button', { name: 'item-1' });
+```
+
+**ベストプラクティス**:
+- `getByRole`を最優先（アクセシビリティ対応）
+- `getByText`を次点（テキストベースのクエリ）
+- `getByTestId`は最終手段（実装依存を避ける）
+
+#### スタイルテストの脆弱性
+
+**重要**: `toHaveStyle`は実装依存で脆弱です。スタイルではなく、機能や状態を確認する方が安定します。
+
+**問題例**:
+```typescript
+// ❌ 悪い例：スタイルの計算値をテスト
+expect(dragItem).toHaveStyle({ opacity: '0.5' });
+```
+
+**解決方法**:
+```typescript
+// ✅ 良い例：機能や状態を確認
+expect(dragItem.closest('[draggable="true"]')).toBeInTheDocument();
+// または
+expect(dragItem).toHaveAttribute('aria-grabbed', 'true');
+```
+
+**ベストプラクティス**:
+- スタイルではなく、機能や状態を確認
+- ARIA属性やdata属性を活用
+- 実装の詳細ではなく、ユーザーが体験する動作を確認
+
+#### 重複コードの削除
+
+**重要**: テストファイル内に重複したコードがあると、構文エラーが発生します。
+
+**問題例**:
+```typescript
+// ❌ 悪い例：重複したexpect文
+it('セッションIDが存在しない場合はnullを返すこと', () => {
+  mockLocalStorage.getItem.mockReturnValue(null);
+  
+  const result = tokenManager.getSessionId();
+
+  expect(result).toBeNull();
+});
+
+  expect(result).toBeNull(); // 重複
+});
+```
+
+**解決方法**:
+```typescript
+// ✅ 良い例：重複を削除
+it('セッションIDが存在しない場合はnullを返すこと', () => {
+  mockLocalStorage.getItem.mockReturnValue(null);
+  
+  const result = tokenManager.getSessionId();
+
+  expect(result).toBeNull();
+});
+```
+
+**ベストプラクティス**:
+- コピー&ペースト時は重複に注意
+- 構文エラーが発生したら、重複コードを確認
+- エディタのフォーマット機能を活用
 
 #### 5. テストの構造
 
@@ -1583,6 +1785,77 @@ it('should handle API error', async () => {
 - 復活計画を策定
 - 実施手順を定義
 
+
+## Worker予期せぬ終了エラーのベストプラクティス（2025年12月追加）
+
+### JSON.parseは常にtry-catchで囲む
+
+**問題**: 不正なデータでJSON.parseがクラッシュし、Workerが予期せず終了する
+
+**解決方法**: try-catchで囲み、エラーを適切にハンドリング
+
+```typescript
+// ❌ 悪い例：不正なデータでクラッシュ
+const dragItem: DraggableItem = JSON.parse(dragItemData);
+
+// ✅ 良い例：try-catchで囲む
+let dragItem: DraggableItem;
+try {
+  dragItem = JSON.parse(dragItemData);
+} catch (error) {
+  console.error('Invalid drag data:', error);
+  endDrag();
+  return;
+}
+```
+
+### aria-labelは必須
+
+**問題**: aria-labelがないボタンをgetByLabelTextでクエリするとエラー
+
+**解決方法**: すべてのインタラクティブ要素にaria-labelを追加
+
+```typescript
+// ❌ 悪い例：aria-labelがない
+<button onClick={() => onChange('')} className="text-blue-600">
+  クリア
+</button>
+
+// ✅ 良い例：aria-labelを追加
+<button
+  onClick={() => onChange('')}
+  className="text-blue-600"
+  aria-label="検索をクリア"
+>
+  クリア
+</button>
+```
+
+### タイムアウト問題は個別に対処
+
+**問題**: 複雑な非同期処理でタイムアウトが多発し、全体のテスト実行をブロック
+
+**解決方法**: 問題のあるテストファイルを一時的に除外し、個別に修正
+
+```typescript
+// vitest.config.ts
+export default defineConfig({
+  test: {
+    exclude: [
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/e2e/**',
+      // タイムアウト多発のため一時的に除外
+      '**/src/components/forms/DateInput.test.tsx',
+    ],
+  },
+});
+```
+
+**修正方法**:
+1. 非同期処理の最適化
+2. waitFor()のタイムアウト延長
+3. テストの簡素化
 
 ## DOM クエリエラーのベストプラクティス（2025年12月追加）
 
