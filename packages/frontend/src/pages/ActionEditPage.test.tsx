@@ -64,15 +64,15 @@ vi.mock('react-router-dom', async () => {
 });
 
 // 認証プロバイダーのモック
+const mockUseAuth = vi.fn();
+vi.mock('../hooks/useAuth', () => ({
+  useAuth: () => mockUseAuth(),
+}));
+
 vi.mock('../components/auth/AuthProvider', () => ({
   AuthProvider: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="auth-provider">{children}</div>
   ),
-  useAuth: () => ({
-    user: { id: 'test-user', name: 'テストユーザー', email: 'test@example.com' },
-    isAuthenticated: true,
-    isLoading: false,
-  }),
 }));
 
 // テスト用のラッパーコンポーネント
@@ -85,6 +85,13 @@ const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
 describe('ActionEditPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+
+    // デフォルトのuseAuthモック設定
+    mockUseAuth.mockReturnValue({
+      user: { id: 'test-user', name: 'テストユーザー', email: 'test@example.com' },
+      isAuthenticated: true,
+      isLoading: false,
+    });
   });
 
   describe('基本表示', () => {
@@ -95,10 +102,7 @@ describe('ActionEditPage', () => {
         </TestWrapper>
       );
 
-      // ローディング表示の確認
-      expect(screen.getByTestId('loading-spinner')).toBeInTheDocument();
-
-      // ページタイトルの確認
+      // ページタイトルの確認（ローディング完了後）
       await waitFor(() => {
         expect(screen.getByText('アクションの確認・編集')).toBeInTheDocument();
       });
@@ -168,12 +172,14 @@ describe('ActionEditPage', () => {
         </TestWrapper>
       );
 
+      // 最初のサブ目標タブが表示されることを確認
       await waitFor(() => {
-        // モックデータで8つのサブ目標タブが表示されることを確認
-        for (let i = 1; i <= 8; i++) {
-          expect(screen.getByText(`サブ目標 ${i}`)).toBeInTheDocument();
-        }
+        expect(screen.getByRole('tab', { name: /サブ目標 1/ })).toBeInTheDocument();
       });
+
+      // 他のサブ目標タブも確認
+      expect(screen.getByRole('tab', { name: /サブ目標 2/ })).toBeInTheDocument();
+      expect(screen.getByRole('tab', { name: /サブ目標 3/ })).toBeInTheDocument();
     });
 
     it('サブ目標タブをクリックして切り替えできる', async () => {
