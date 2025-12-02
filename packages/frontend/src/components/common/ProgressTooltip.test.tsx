@@ -1,17 +1,16 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { waitFor } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { ProgressTooltip } from './ProgressTooltip';
 
 describe('ProgressTooltip', () => {
   beforeEach(() => {
-    vi.useFakeTimers();
+    // リアルタイマーを使用（コンポーネントが複雑なタイマー処理を行うため）
   });
 
   afterEach(() => {
-    vi.runOnlyPendingTimers();
-    vi.useRealTimers();
+    // クリーンアップ
   });
 
   describe('基本的な進捗表示', () => {

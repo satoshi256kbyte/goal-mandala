@@ -1,10 +1,18 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { waitFor } from '@testing-library/react';
-import { describe, it } from 'vitest';
+import { describe, it, beforeEach, afterEach } from 'vitest';
 import { Tooltip } from './Tooltip';
 
 describe('Tooltip', () => {
+  beforeEach(() => {
+    // リアルタイマーを使用
+  });
+
+  afterEach(() => {
+    // クリーンアップ
+  });
+
   describe('基本的な表示機能', () => {
     it('子要素が正しく表示される', () => {
       render(
@@ -78,10 +86,12 @@ describe('Tooltip', () => {
       expect(screen.queryByText('テストツールチップ')).not.toBeInTheDocument();
 
       // 遅延時間経過後に表示される
-
-      await waitFor(() => {
-        expect(screen.getByText('テストツールチップ')).toBeInTheDocument();
-      });
+      await waitFor(
+        () => {
+          expect(screen.getByText('テストツールチップ')).toBeInTheDocument();
+        },
+        { timeout: 1000 }
+      );
     });
 
     it('遅延中にホバーが終了した場合、ツールチップが表示されない', async () => {
