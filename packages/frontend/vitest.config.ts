@@ -13,8 +13,8 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: ['./src/test/setup.ts'],
-    // テスト分離を無効化（メモリ効率優先）
-    isolate: false,
+    // テスト分離を有効化（安定性優先）
+    isolate: true,
     // タイムアウト設定（高速化）
     testTimeout: 5000,
     hookTimeout: 3000,
