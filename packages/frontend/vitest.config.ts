@@ -13,23 +13,15 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: ['./src/test/setup.ts'],
-    // テスト分離を有効化（メモリ最適化のため各テストファイル後にプロセスをリセット）
     isolate: true,
-    // タイムアウト設定（高速化）
     testTimeout: 5000,
     hookTimeout: 3000,
     teardownTimeout: 2000,
     // 全ユニットテストと統合テストを含める
     include: ['src/**/*.test.{ts,tsx}'],
     // E2Eテストのみ除外
-    exclude: [
-      '**/node_modules/**',
-      '**/dist/**',
-      '**/e2e/**',
-      // 統合テストでエラーがあるファイルを除外
-      '**/src/services/__tests__/progress-calculation-engine.integration.test.ts',
-    ],
-    // 並列実行を無効化（メモリ不足対策）
+    exclude: ['**/node_modules/**', '**/dist/**', '**/e2e/**'],
+    // 並列実行を完全に無効化（メモリ不足対策）
     maxConcurrency: 1,
     pool: 'forks',
     poolOptions: {
