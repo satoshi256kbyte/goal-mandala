@@ -71,7 +71,7 @@ describe('useErrorRecovery', () => {
       };
 
       expect(result.current.isRecoverable(recoverableError)).toBe(true);
-      expect(result.current.isRecoverable(unrecoverableError)).toBe(true); // CLIENT_ERRORも回復可能として扱う
+      expect(result.current.isRecoverable(unrecoverableError)).toBe(false); // retryable: falseは回復不可能
     });
 
     it('推奨回復戦略を正しく取得する', () => {
@@ -383,6 +383,8 @@ describe('useErrorRecovery', () => {
     });
 
     it('回復進捗のコールバックが実行される', async () => {
+      vi.useFakeTimers(); // タイマーモックを有効化
+
       const mockOnRecoveryProgress = vi.fn();
       const mockRetryFunction = vi.fn().mockResolvedValue('success');
 
@@ -414,6 +416,8 @@ describe('useErrorRecovery', () => {
       expect(mockOnRecoveryProgress).toHaveBeenCalledWith(0.3);
       expect(mockOnRecoveryProgress).toHaveBeenCalledWith(0.6);
       expect(mockOnRecoveryProgress).toHaveBeenCalledWith(1);
+
+      vi.useRealTimers(); // 元に戻す
     });
   });
 
