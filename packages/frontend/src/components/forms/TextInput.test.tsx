@@ -96,7 +96,7 @@ describe('TextInput', () => {
 
       await waitFor(() => {
         const counter = screen.getByText('8/10');
-        expect(counter).toHaveClass('text-yellow-600');
+        expect(counter.parentElement).toHaveClass('text-yellow-600');
       });
     });
 
@@ -108,7 +108,7 @@ describe('TextInput', () => {
 
       await waitFor(() => {
         const counter = screen.getByText('10/10');
-        expect(counter).toHaveClass('text-red-600');
+        expect(counter.parentElement).toHaveClass('text-red-600');
       });
     });
   });

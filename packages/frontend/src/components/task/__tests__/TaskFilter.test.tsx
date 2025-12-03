@@ -38,8 +38,8 @@ describe('TaskFilter', () => {
 
     render(<TaskFilter filters={filters} onChange={onChange} actions={mockActions} />);
 
-    const todayOption = screen.getByLabelText('今日');
-    fireEvent.click(todayOption);
+    const deadlineSelect = screen.getByLabelText('期限フィルター');
+    fireEvent.change(deadlineSelect, { target: { value: 'today' } });
 
     expect(onChange).toHaveBeenCalledWith({
       deadlineRange: 'today',
@@ -70,7 +70,7 @@ describe('TaskFilter', () => {
     render(<TaskFilter filters={filters} onChange={() => {}} actions={mockActions} />);
 
     expect(screen.getByLabelText('完了')).toBeChecked();
-    expect(screen.getByLabelText('今日')).toBeChecked();
+    expect(screen.getByLabelText('期限フィルター')).toHaveValue('today');
     expect(screen.getByLabelText('Action 1')).toBeChecked();
   });
 
