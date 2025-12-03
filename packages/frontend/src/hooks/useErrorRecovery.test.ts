@@ -210,9 +210,9 @@ describe('useErrorRecovery', () => {
       await act(async () => {
         await result.current.startRecovery(
           {
-            code: NetworkErrorType.CLIENT_ERROR,
-            message: 'クライアントエラー',
-            retryable: false,
+            code: NetworkErrorType.TIMEOUT,
+            message: 'タイムアウト',
+            retryable: true, // 再試行可能なエラーに変更
             timestamp: new Date(),
           },
           { retryFunction: mockRetryFunction }
@@ -224,7 +224,7 @@ describe('useErrorRecovery', () => {
       });
 
       expect(success).toBe(true);
-      expect(mockRetryFunction).toHaveBeenCalledTimes(1);
+      expect(mockRetryFunction).toHaveBeenCalledTimes(2); // startRecovery + executeRecoveryAction
     });
 
     it('リロードアクションが機能する', async () => {

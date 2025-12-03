@@ -174,12 +174,12 @@ describe('InlineEditor', () => {
 
       await user.clear(input);
 
-      // デバウンスが完了するまで短時間待つ
+      // デバウンスが完了するまで待つ（300ms + マージン）
       await waitFor(
         () => {
           expect(screen.getByRole('alert')).toBeInTheDocument();
         },
-        { timeout: 100 }
+        { timeout: 500 }
       );
 
       await user.keyboard('{Enter}');
@@ -469,7 +469,14 @@ describe('InlineEditor', () => {
       });
       mockOnSave.mockReturnValue(savePromise);
 
-      render(<InlineEditor value="テスト値" maxLength={100} onSave={vi.fn()} onCancel={vi.fn()} />);
+      render(
+        <InlineEditor
+          value="テスト値"
+          maxLength={100}
+          onSave={mockOnSave}
+          onCancel={mockOnCancel}
+        />
+      );
       const input = screen.getByRole('textbox');
 
       await user.clear(input);
@@ -488,7 +495,9 @@ describe('InlineEditor', () => {
     it('保存失敗時、元の値に戻る', async () => {
       const user = userEvent.setup();
       mockOnSave.mockRejectedValue(new Error('保存失敗'));
-      render(<InlineEditor value="元の値" maxLength={100} onSave={vi.fn()} onCancel={vi.fn()} />);
+      render(
+        <InlineEditor value="元の値" maxLength={100} onSave={mockOnSave} onCancel={mockOnCancel} />
+      );
       const input = screen.getByRole('textbox');
 
       await user.clear(input);
