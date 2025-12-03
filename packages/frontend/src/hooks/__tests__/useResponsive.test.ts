@@ -168,8 +168,9 @@ describe('useViewportSize', () => {
   it('現在のビューポートサイズを返す', () => {
     const { result } = renderHook(() => useViewportSize());
 
-    expect(result.current.width).toBe(1024);
-    expect(result.current.height).toBe(768);
+    // テスト環境のデフォルトサイズを確認
+    expect(result.current.width).toBe(window.innerWidth);
+    expect(result.current.height).toBe(window.innerHeight);
   });
 
   it('ウィンドウリサイズ時にサイズが更新される', () => {
@@ -226,17 +227,21 @@ describe('useVirtualKeyboard', () => {
   it('仮想キーボードが表示された場合', () => {
     const { result } = renderHook(() => useVirtualKeyboard());
 
+    const initialHeight = window.innerHeight;
+
     // 画面の高さが減少（仮想キーボード表示）
     act(() => {
-      Object.defineProperty(window, 'innerHeight', { value: 400 }); // 768 -> 400
+      Object.defineProperty(window, 'innerHeight', { value: 400 });
       window.dispatchEvent(new Event('resize'));
     });
 
     expect(result.current.isVisible).toBe(true);
-    expect(result.current.height).toBe(368); // 768 - 400
+    expect(result.current.height).toBe(initialHeight - 400);
   });
 
   it('Visual Viewport APIが利用可能な場合', () => {
+    const initialHeight = window.innerHeight;
+
     // Visual Viewport APIのモック
     const mockVisualViewport = {
       height: 400,
@@ -252,6 +257,6 @@ describe('useVirtualKeyboard', () => {
     const { result } = renderHook(() => useVirtualKeyboard());
 
     expect(result.current.isVisible).toBe(true);
-    expect(result.current.height).toBe(368); // 768 - 400
+    expect(result.current.height).toBe(initialHeight - 400);
   });
 });

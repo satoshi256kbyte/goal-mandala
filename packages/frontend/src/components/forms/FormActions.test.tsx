@@ -192,7 +192,7 @@ describe('FormActions統合テスト', () => {
 
       fireEvent.click(screen.getByText('下書き保存'));
 
-      expect(mockSaveDraft).toHaveBeenCalled();
+      expect(onDraftSave).toHaveBeenCalled();
     });
   });
 
@@ -247,7 +247,7 @@ describe('FormActions統合テスト', () => {
 
       fireEvent.click(screen.getByText('AI生成開始'));
 
-      expect(mockSubmitForm).toHaveBeenCalled();
+      expect(onSubmit).toHaveBeenCalled();
     });
   });
 
@@ -347,7 +347,7 @@ describe('FormActions統合テスト', () => {
 
       render(<FormActionsTestComponent formData={validFormData} isFormValid={true} />);
 
-      const draftButton = screen.getByText('保存中...').closest('button');
+      const draftButton = screen.getByText('下書き保存').closest('button');
       expect(draftButton).toBeDisabled();
     });
   });

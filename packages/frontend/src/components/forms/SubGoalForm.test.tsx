@@ -94,7 +94,7 @@ describe('SubGoalForm', () => {
 
       render(<SubGoalForm subGoalId="subgoal-1" onSubmit={mockOnSubmit} />);
 
-      const submitButton = screen.getByTestId('loading-button');
+      const submitButton = screen.getByRole('button');
       await user.click(submitButton);
 
       // フォーム送信が試行されることを確認
@@ -127,7 +127,7 @@ describe('SubGoalForm', () => {
       );
 
       // ローディング状態でボタンが無効になることを確認
-      const submitButton = screen.getByTestId('loading-button');
+      const submitButton = screen.getByRole('button');
       expect(submitButton).toBeDisabled();
     });
 
