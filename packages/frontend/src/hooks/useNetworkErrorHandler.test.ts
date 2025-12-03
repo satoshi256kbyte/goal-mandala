@@ -183,8 +183,7 @@ describe('useNetworkErrorHandler', () => {
       expect(result.current.retryCount).toBe(0);
 
       await act(async () => {
-        result.current.retry();
-        vi.advanceTimersByTime(1000);
+        await result.current.retry();
       });
 
       expect(result.current.retryCount).toBe(1);

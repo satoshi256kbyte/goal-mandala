@@ -8,6 +8,25 @@ import { LoginPage } from './LoginPage';
 import { AuthService } from '../services/auth';
 import { useAuthForm } from '../hooks/useAuthForm';
 
+// AuthLayoutをモック化
+vi.mock('../components/auth/AuthLayout', () => ({
+  default: ({
+    children,
+    title,
+    subtitle,
+  }: {
+    children: React.ReactNode;
+    title: string;
+    subtitle: string;
+  }) => (
+    <div>
+      <h1>{title}</h1>
+      <p>{subtitle}</p>
+      {children}
+    </div>
+  ),
+}));
+
 // AuthServiceをモック化
 vi.mock('../services/auth');
 const mockAuthService = AuthService as any;
@@ -32,6 +51,8 @@ const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
 );
 
 describe('LoginPage', () => {
+  const mockSignIn = vi.fn();
+
   beforeEach(() => {
     vi.clearAllMocks();
 
@@ -43,7 +64,7 @@ describe('LoginPage', () => {
       isNetworkError: false,
       isRetryable: false,
       isOnline: true,
-      signIn: vi.fn(),
+      signIn: mockSignIn,
       clearError: vi.fn(),
       clearSuccess: vi.fn(),
       retry: vi.fn(),
@@ -59,9 +80,9 @@ describe('LoginPage', () => {
 
     expect(screen.getByRole('heading', { name: 'ログイン' })).toBeInTheDocument();
     expect(screen.getByText('アカウントにサインインしてください')).toBeInTheDocument();
-    expect(screen.getByLabelText('メールアドレス')).toBeInTheDocument();
-    expect(screen.getByLabelText('パスワード')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'ログイン' })).toBeInTheDocument();
+    expect(screen.getByLabelText(/メールアドレス/)).toBeInTheDocument();
+    expect(screen.getByLabelText(/パスワード/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'ログインボタン' })).toBeInTheDocument();
   });
 
   it('有効な認証情報でログインが成功し、TOP画面にリダイレクトされる', async () => {
@@ -74,9 +95,9 @@ describe('LoginPage', () => {
       </TestWrapper>
     );
 
-    const emailInput = screen.getByLabelText('メールアドレス');
-    const passwordInput = screen.getByLabelText('パスワード');
-    const submitButton = screen.getByRole('button', { name: 'ログイン' });
+    const emailInput = screen.getByLabelText(/メールアドレス/);
+    const passwordInput = screen.getByLabelText(/パスワード/);
+    const submitButton = screen.getByRole('button', { name: 'ログインボタン' });
 
     await user.type(emailInput, 'test@example.com');
     await user.type(passwordInput, 'password123');
@@ -108,9 +129,9 @@ describe('LoginPage', () => {
       </TestWrapper>
     );
 
-    const emailInput = screen.getByLabelText('メールアドレス');
-    const passwordInput = screen.getByLabelText('パスワード');
-    const submitButton = screen.getByRole('button', { name: 'ログイン' });
+    const emailInput = screen.getByLabelText(/メールアドレス/);
+    const passwordInput = screen.getByLabelText(/パスワード/);
+    const submitButton = screen.getByRole('button', { name: 'ログインボタン' });
 
     await user.type(emailInput, 'test@example.com');
     await user.type(passwordInput, 'wrongpassword');
@@ -138,9 +159,9 @@ describe('LoginPage', () => {
       </TestWrapper>
     );
 
-    const emailInput = screen.getByLabelText('メールアドレス');
-    const passwordInput = screen.getByLabelText('パスワード');
-    const submitButton = screen.getByRole('button', { name: 'ログイン' });
+    const emailInput = screen.getByLabelText(/メールアドレス/);
+    const passwordInput = screen.getByLabelText(/パスワード/);
+    const submitButton = screen.getByRole('button', { name: 'ログインボタン' });
 
     await user.type(emailInput, 'test@example.com');
     await user.type(passwordInput, 'password123');
@@ -171,9 +192,9 @@ describe('LoginPage', () => {
       </TestWrapper>
     );
 
-    const emailInput = screen.getByLabelText('メールアドレス');
-    const passwordInput = screen.getByLabelText('パスワード');
-    const submitButton = screen.getByRole('button', { name: 'ログイン' });
+    const emailInput = screen.getByLabelText(/メールアドレス/);
+    const passwordInput = screen.getByLabelText(/パスワード/);
+    const submitButton = screen.getByRole('button', { name: 'ログインボタン' });
 
     await user.type(emailInput, 'test@example.com');
     await user.type(passwordInput, 'password123');
@@ -192,7 +213,7 @@ describe('LoginPage', () => {
 
     // ローディング完了まで待機
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'ログイン' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'ログインボタン' })).toBeInTheDocument();
     });
   });
 
@@ -210,9 +231,9 @@ describe('LoginPage', () => {
       </TestWrapper>
     );
 
-    const emailInput = screen.getByLabelText('メールアドレス');
-    const passwordInput = screen.getByLabelText('パスワード');
-    const submitButton = screen.getByRole('button', { name: 'ログイン' });
+    const emailInput = screen.getByLabelText(/メールアドレス/);
+    const passwordInput = screen.getByLabelText(/パスワード/);
+    const submitButton = screen.getByRole('button', { name: 'ログインボタン' });
 
     await user.type(emailInput, 'test@example.com');
     await user.type(passwordInput, 'password123');

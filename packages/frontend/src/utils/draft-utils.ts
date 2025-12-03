@@ -33,7 +33,13 @@ export const parseDraft = (data: string): unknown => {
 export const getDraftSummary = (data: unknown): string => {
   if (!data || typeof data !== 'object') return '';
   const obj = data as Record<string, unknown>;
-  return obj.title ? String(obj.title) : '';
+  if (obj.title && String(obj.title).trim()) {
+    return String(obj.title);
+  }
+  if (obj.description && String(obj.description).trim()) {
+    return String(obj.description);
+  }
+  return '下書きデータ';
 };
 
 /**

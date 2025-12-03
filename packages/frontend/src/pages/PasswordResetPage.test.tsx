@@ -8,6 +8,25 @@ import { useAuthForm } from '../hooks/useAuthForm';
 
 import { vi } from 'vitest';
 
+// AuthLayoutをモック化
+vi.mock('../components/auth/AuthLayout', () => ({
+  default: ({
+    children,
+    title,
+    subtitle,
+  }: {
+    children: React.ReactNode;
+    title: string;
+    subtitle: string;
+  }) => (
+    <div>
+      <h1>{title}</h1>
+      <p>{subtitle}</p>
+      {children}
+    </div>
+  ),
+}));
+
 // AuthServiceをモック化
 vi.mock('../services/auth');
 const mockAuthService = AuthService as any;
@@ -61,7 +80,7 @@ describe('PasswordResetPage', () => {
 
     expect(screen.getByRole('heading', { name: 'パスワードリセット' })).toBeInTheDocument();
     expect(screen.getByText('登録されたメールアドレスを入力してください')).toBeInTheDocument();
-    expect(screen.getByLabelText('メールアドレス')).toBeInTheDocument();
+    expect(screen.getByLabelText(/メールアドレス/)).toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: 'パスワードリセットメールを送信' })
     ).toBeInTheDocument();
@@ -73,7 +92,7 @@ describe('PasswordResetPage', () => {
     renderWithRouter(<PasswordResetPage />);
 
     // メールアドレスを入力
-    fireEvent.change(screen.getByLabelText('メールアドレス'), {
+    fireEvent.change(screen.getByLabelText(/メールアドレス/), {
       target: { value: 'test@example.com' },
     });
 
@@ -99,7 +118,7 @@ describe('PasswordResetPage', () => {
     renderWithRouter(<PasswordResetPage />);
 
     // メールアドレスを入力
-    fireEvent.change(screen.getByLabelText('メールアドレス'), {
+    fireEvent.change(screen.getByLabelText(/メールアドレス/), {
       target: { value: 'test@example.com' },
     });
 
@@ -186,10 +205,10 @@ describe('PasswordResetPage', () => {
     expect(submitButton).toBeDisabled();
 
     // 無効なメールアドレスを入力
-    fireEvent.change(screen.getByLabelText('メールアドレス'), {
+    fireEvent.change(screen.getByLabelText(/メールアドレス/), {
       target: { value: 'invalid-email' },
     });
-    fireEvent.blur(screen.getByLabelText('メールアドレス'));
+    fireEvent.blur(screen.getByLabelText(/メールアドレス/));
 
     await waitFor(() => {
       expect(screen.getByText('有効なメールアドレスを入力してください')).toBeInTheDocument();

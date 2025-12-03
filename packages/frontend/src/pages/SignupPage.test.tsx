@@ -8,6 +8,25 @@ import { useAuthForm } from '../hooks/useAuthForm';
 
 import { vi } from 'vitest';
 
+// AuthLayoutをモック化
+vi.mock('../components/auth/AuthLayout', () => ({
+  default: ({
+    children,
+    title,
+    subtitle,
+  }: {
+    children: React.ReactNode;
+    title: string;
+    subtitle: string;
+  }) => (
+    <div>
+      <h1>{title}</h1>
+      <p>{subtitle}</p>
+      {children}
+    </div>
+  ),
+}));
+
 // AuthServiceをモック化
 vi.mock('../services/auth');
 const mockAuthService = AuthService as any;
@@ -55,9 +74,9 @@ describe('SignupPage', () => {
 
     expect(screen.getByRole('heading', { name: '新規登録' })).toBeInTheDocument();
     expect(screen.getByText('アカウントを作成してください')).toBeInTheDocument();
-    expect(screen.getByLabelText('名前')).toBeInTheDocument();
-    expect(screen.getByLabelText('メールアドレス')).toBeInTheDocument();
-    expect(screen.getByLabelText('パスワード')).toBeInTheDocument();
+    expect(screen.getByLabelText(/名前/)).toBeInTheDocument();
+    expect(screen.getByLabelText(/メールアドレス/)).toBeInTheDocument();
+    expect(screen.getByLabelText('パスワード', { selector: '#password' })).toBeInTheDocument();
     expect(screen.getByLabelText('パスワード確認')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'アカウント作成' })).toBeInTheDocument();
   });
@@ -68,13 +87,13 @@ describe('SignupPage', () => {
     renderWithRouter(<SignupPage />);
 
     // フォームに入力
-    fireEvent.change(screen.getByLabelText('名前'), {
+    fireEvent.change(screen.getByLabelText(/名前/), {
       target: { value: 'テストユーザー' },
     });
-    fireEvent.change(screen.getByLabelText('メールアドレス'), {
+    fireEvent.change(screen.getByLabelText(/メールアドレス/), {
       target: { value: 'test@example.com' },
     });
-    fireEvent.change(screen.getByLabelText('パスワード'), {
+    fireEvent.change(screen.getByLabelText('パスワード', { selector: '#password' }), {
       target: { value: 'Password123' },
     });
     fireEvent.change(screen.getByLabelText('パスワード確認'), {
@@ -107,13 +126,13 @@ describe('SignupPage', () => {
     renderWithRouter(<SignupPage />);
 
     // フォームに入力
-    fireEvent.change(screen.getByLabelText('名前'), {
+    fireEvent.change(screen.getByLabelText(/名前/), {
       target: { value: 'テストユーザー' },
     });
-    fireEvent.change(screen.getByLabelText('メールアドレス'), {
+    fireEvent.change(screen.getByLabelText(/メールアドレス/), {
       target: { value: 'existing@example.com' },
     });
-    fireEvent.change(screen.getByLabelText('パスワード'), {
+    fireEvent.change(screen.getByLabelText('パスワード', { selector: '#password' }), {
       target: { value: 'Password123' },
     });
     fireEvent.change(screen.getByLabelText('パスワード確認'), {
@@ -145,17 +164,17 @@ describe('SignupPage', () => {
     expect(submitButton).toBeDisabled();
 
     // 無効なメールアドレスを入力
-    fireEvent.change(screen.getByLabelText('メールアドレス'), {
+    fireEvent.change(screen.getByLabelText(/メールアドレス/), {
       target: { value: 'invalid-email' },
     });
-    fireEvent.blur(screen.getByLabelText('メールアドレス'));
+    fireEvent.blur(screen.getByLabelText(/メールアドレス/));
 
     await waitFor(() => {
       expect(screen.getByText('有効なメールアドレスを入力してください')).toBeInTheDocument();
     });
 
     // パスワードが一致しない場合
-    fireEvent.change(screen.getByLabelText('パスワード'), {
+    fireEvent.change(screen.getByLabelText('パスワード', { selector: '#password' }), {
       target: { value: 'Password123' },
     });
     fireEvent.change(screen.getByLabelText('パスワード確認'), {

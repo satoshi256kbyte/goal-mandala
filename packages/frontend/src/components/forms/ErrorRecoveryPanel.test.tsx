@@ -5,13 +5,29 @@ import { render, screen, fireEvent, act } from '@testing-library/react';
 import { waitFor } from '@testing-library/react';
 import { vi } from 'vitest';
 import { ErrorRecoveryPanel } from './ErrorRecoveryPanel';
-import { ApiError } from '../../services/api';
+
+// ApiErrorをモック
+vi.mock('../../services/api', () => ({
+  ApiError: class ApiError extends Error {
+    constructor(
+      message: string,
+      public statusCode?: number,
+      public errorType?: string
+    ) {
+      super(message);
+      this.name = 'ApiError';
+    }
+  },
+  NetworkErrorType: {
+    TIMEOUT: 'timeout',
+    NO_CONNECTION: 'no_connection',
+    SERVER_ERROR: 'server_error',
+  },
+}));
 
 // useErrorRecoveryをモック
-const mockUseErrorRecovery = vi.fn();
-
 vi.mock('../../hooks/useErrorRecovery', () => ({
-  useErrorRecovery: mockUseErrorRecovery,
+  useErrorRecovery: vi.fn(),
   RecoveryStrategy: {
     AUTO_RETRY: 'auto_retry',
     MANUAL_RETRY: 'manual_retry',
@@ -29,6 +45,9 @@ vi.mock('../../hooks/useErrorRecovery', () => ({
     CONTACT_SUPPORT: 'contact_support',
   },
 }));
+
+import { useErrorRecovery } from '../../hooks/useErrorRecovery';
+const mockUseErrorRecovery = useErrorRecovery as ReturnType<typeof vi.fn>;
 
 describe('ErrorRecoveryPanel', () => {
   const mockStartRecovery = vi.fn();

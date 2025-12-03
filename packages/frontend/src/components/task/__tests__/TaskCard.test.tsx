@@ -26,8 +26,8 @@ describe('TaskCard', () => {
       <TaskCard task={task} onStatusChange={onStatusChange} onSelect={() => {}} selected={false} />
     );
 
-    const statusButton = screen.getByRole('button', { name: /状態を変更/ });
-    fireEvent.click(statusButton);
+    const statusSelect = screen.getByRole('combobox', { name: /状態を変更/ });
+    fireEvent.change(statusSelect, { target: { value: 'in_progress' } });
 
     expect(onStatusChange).toHaveBeenCalledWith('in_progress');
   });
