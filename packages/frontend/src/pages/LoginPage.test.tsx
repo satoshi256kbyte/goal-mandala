@@ -6,10 +6,15 @@ import { BrowserRouter } from 'react-router-dom';
 import { vi } from 'vitest';
 import { LoginPage } from './LoginPage';
 import { AuthService } from '../services/auth';
+import { useAuthForm } from '../hooks/useAuthForm';
 
 // AuthServiceをモック化
 vi.mock('../services/auth');
 const mockAuthService = AuthService as any;
+
+// useAuthFormをモック化
+vi.mock('../hooks/useAuthForm');
+const mockUseAuthForm = useAuthForm as any;
 
 // React Routerのナビゲーションをモック化
 const mockNavigate = vi.fn();
@@ -29,6 +34,20 @@ const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
 describe('LoginPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+
+    // useAuthFormのデフォルトモック
+    mockUseAuthForm.mockReturnValue({
+      isLoading: false,
+      successMessage: null,
+      error: null,
+      isNetworkError: false,
+      isRetryable: false,
+      isOnline: true,
+      signIn: vi.fn(),
+      clearError: vi.fn(),
+      clearSuccess: vi.fn(),
+      retry: vi.fn(),
+    });
   });
 
   it('正常にレンダリングされる', () => {

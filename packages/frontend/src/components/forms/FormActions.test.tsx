@@ -12,6 +12,14 @@ import { DraftService } from '../../services/draftService';
 vi.mock('../../services/draftService');
 const mockDraftService = DraftService as any;
 
+// draft-utilsのモック
+vi.mock('../../utils/draft-utils', () => ({
+  draftUtils: {
+    isWorthSaving: vi.fn(() => true),
+    getTimeSinceSave: vi.fn(() => '1分前'),
+  },
+}));
+
 // useFormActionsフックのモック
 vi.mock('../../hooks/useFormActions');
 const mockUseFormActions = useFormActions as any;

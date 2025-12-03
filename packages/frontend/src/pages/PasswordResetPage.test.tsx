@@ -4,12 +4,17 @@ import { waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { PasswordResetPage } from './PasswordResetPage';
 import { AuthService } from '../services/auth';
+import { useAuthForm } from '../hooks/useAuthForm';
 
 import { vi } from 'vitest';
 
 // AuthServiceをモック化
 vi.mock('../services/auth');
 const mockAuthService = AuthService as any;
+
+// useAuthFormをモック化
+vi.mock('../hooks/useAuthForm');
+const mockUseAuthForm = useAuthForm as any;
 
 // react-router-domのuseNavigateとuseSearchParamsをモック化
 const mockNavigate = vi.fn();
@@ -34,6 +39,21 @@ describe('PasswordResetPage', () => {
     mockAuthService.confirmResetPassword = vi.fn();
     mockSearchParams.delete('code');
     mockSearchParams.delete('email');
+
+    // useAuthFormのデフォルトモック
+    mockUseAuthForm.mockReturnValue({
+      isLoading: false,
+      successMessage: null,
+      error: null,
+      isNetworkError: false,
+      isRetryable: false,
+      isOnline: true,
+      resetPassword: vi.fn(),
+      confirmResetPassword: vi.fn(),
+      clearError: vi.fn(),
+      clearSuccess: vi.fn(),
+      retry: vi.fn(),
+    });
   });
 
   it('パスワードリセットページが正常にレンダリングされる', () => {

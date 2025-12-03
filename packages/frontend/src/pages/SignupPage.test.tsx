@@ -4,12 +4,17 @@ import { waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { SignupPage } from './SignupPage';
 import { AuthService } from '../services/auth';
+import { useAuthForm } from '../hooks/useAuthForm';
 
 import { vi } from 'vitest';
 
 // AuthServiceをモック化
 vi.mock('../services/auth');
 const mockAuthService = AuthService as any;
+
+// useAuthFormをモック化
+vi.mock('../hooks/useAuthForm');
+const mockUseAuthForm = useAuthForm as any;
 
 // react-router-domのuseNavigateをモック化
 const mockNavigate = vi.fn();
@@ -29,6 +34,20 @@ describe('SignupPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockAuthService.signUp = vi.fn();
+
+    // useAuthFormのデフォルトモック
+    mockUseAuthForm.mockReturnValue({
+      isLoading: false,
+      successMessage: null,
+      error: null,
+      isNetworkError: false,
+      isRetryable: false,
+      isOnline: true,
+      signUp: vi.fn(),
+      clearError: vi.fn(),
+      clearSuccess: vi.fn(),
+      retry: vi.fn(),
+    });
   });
 
   it('サインアップページが正常にレンダリングされる', () => {
