@@ -180,8 +180,7 @@ export function useMandalaList(options?: UseMandalaListOptions): UseMandalaListR
   useEffect(() => {
     setIsLoading(true);
     fetchMandalas();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedSearchKeyword, statusFilter, sortOption, currentPage, itemsPerPage]);
+  }, [debouncedSearchKeyword, statusFilter, sortOption, currentPage, itemsPerPage, fetchMandalas]);
 
   return {
     // データ

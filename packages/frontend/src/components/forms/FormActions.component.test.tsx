@@ -5,6 +5,7 @@ import { vi } from 'vitest';
 import { FormActions, MemoizedFormActions } from './FormActions';
 import { PartialGoalFormData } from '../../schemas/goal-form';
 import { useFormActions } from '../../hooks/useFormActions';
+import { DraftService } from '../../services/draftService';
 
 // useFormActionsフックのモック
 vi.mock('../../hooks/useFormActions');
@@ -15,6 +16,10 @@ vi.mock('../../services/draftService', () => ({
   DraftService: {
     saveDraft: vi.fn(),
   },
+}));
+
+// draft-utilsのモック
+vi.mock('../../utils/draft-utils', () => ({
   draftUtils: {
     isWorthSaving: vi.fn(() => true),
     getTimeSinceSave: vi.fn(() => '1分前'),
@@ -48,6 +53,7 @@ describe('FormActions', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockUseFormActions.mockReturnValue(mockFormActionsReturn);
+    (DraftService.saveDraft as any).mockResolvedValue(undefined);
   });
 
   describe('基本表示', () => {
@@ -164,9 +170,13 @@ describe('FormActions', () => {
 
       render(<FormActions formData={validFormData} isFormValid={true} />);
 
-      fireEvent.click(screen.getByText('下書き保存'));
+      await act(async () => {
+        fireEvent.click(screen.getByText('下書き保存'));
+      });
 
-      expect(mockSaveDraft).toHaveBeenCalledTimes(1);
+      await waitFor(() => {
+        expect(DraftService.saveDraft).toHaveBeenCalledWith(validFormData);
+      });
     });
 
     it('送信ボタンクリックで送信処理が実行される', async () => {

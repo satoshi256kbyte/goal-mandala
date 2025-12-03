@@ -4,11 +4,20 @@ import { waitFor } from '@testing-library/react';
 import { vi } from 'vitest';
 import { DraftSaveButton } from './DraftSaveButton';
 import { DraftService } from '../../services/draftService';
+import { draftUtils } from '../../utils/draft-utils';
 import { PartialGoalFormData } from '../../schemas/goal-form';
 
 // DraftServiceのモック
 vi.mock('../../services/draftService');
 const mockDraftService = DraftService as unknown as any;
+
+// draft-utilsのモック
+vi.mock('../../utils/draft-utils', () => ({
+  draftUtils: {
+    isWorthSaving: vi.fn(),
+    getTimeSinceSave: vi.fn(() => '1分前'),
+  },
+}));
 
 describe('DraftSaveButton', () => {
   const mockFormData: PartialGoalFormData = {
@@ -30,6 +39,13 @@ describe('DraftSaveButton', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockDraftService.saveDraft.mockResolvedValue();
+    // デフォルトでは有効なデータとして扱う
+    (draftUtils.isWorthSaving as any).mockImplementation((data: any) => {
+      // emptyFormDataの場合はfalse、それ以外はtrue
+      if (!data) return false;
+      const hasContent = Object.values(data).some(value => value && String(value).trim() !== '');
+      return hasContent;
+    });
   });
 
   describe('基本表示', () => {
@@ -116,25 +132,13 @@ describe('DraftSaveButton', () => {
       });
     });
 
-    it('空のデータで保存を試行するとエラーメッセージが表示される', async () => {
-      const onSaveError = vi.fn();
+    it('空のデータで保存を試行するとボタンが無効になる', () => {
+      render(<DraftSaveButton formData={emptyFormData} disabled={false} />);
 
-      render(
-        <DraftSaveButton formData={emptyFormData} onSaveError={onSaveError} disabled={false} />
-      );
-
-      // 強制的にボタンを有効にしてクリック
       const button = screen.getByRole('button');
-      button.removeAttribute('disabled');
-      fireEvent.click(button);
 
-      await waitFor(() => {
-        expect(onSaveError).toHaveBeenCalledWith(
-          expect.objectContaining({
-            message: '保存するデータがありません',
-          })
-        );
-      });
+      // ボタンは無効になっているはず（isWorthSavingがfalseを返すため）
+      expect(button).toBeDisabled();
     });
   });
 

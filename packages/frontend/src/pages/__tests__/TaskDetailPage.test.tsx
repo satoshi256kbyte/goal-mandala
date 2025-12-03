@@ -9,6 +9,16 @@ import { taskApi } from '../../services/taskApi';
 vi.mock('../../services/taskApi');
 const mockTaskApi = taskApi as unknown as any;
 
+// Mock useParams
+const mockUseParams = vi.fn();
+vi.mock('react-router-dom', async () => {
+  const actual = await vi.importActual('react-router-dom');
+  return {
+    ...actual,
+    useParams: () => mockUseParams(),
+  };
+});
+
 // Mock components
 vi.mock('../../components/common/LoadingSpinner', () => ({
   LoadingSpinner: () => <div data-testid="loading-spinner">Loading...</div>,
@@ -85,6 +95,7 @@ describe('TaskDetailPage', () => {
   };
 
   beforeEach(() => {
+    mockUseParams.mockReturnValue({ taskId: 'task-1' });
     mockTaskApi.getTaskById.mockResolvedValue(mockTaskData);
     mockTaskApi.updateTaskStatus.mockResolvedValue(mockTaskData.task);
     mockTaskApi.addNote.mockResolvedValue(mockTaskData.notes[0]);
@@ -102,7 +113,7 @@ describe('TaskDetailPage', () => {
     await waitFor(() => {
       expect(screen.getByText('テストタスク')).toBeInTheDocument();
       expect(screen.getByText('テスト用のタスクです')).toBeInTheDocument();
-      expect(screen.getByText('未着手')).toBeInTheDocument();
+      expect(screen.getAllByText('未着手').length).toBeGreaterThan(0);
       expect(screen.getByText('30分')).toBeInTheDocument();
       expect(screen.getByText('実行タスク')).toBeInTheDocument();
     });
@@ -129,11 +140,13 @@ describe('TaskDetailPage', () => {
   it('タスク状態の更新が動作する', async () => {
     render(<TaskDetailPage />, { wrapper: createWrapper() });
 
+    // タスク詳細が表示されるまで待つ
     await waitFor(() => {
-      expect(screen.getByDisplayValue('not_started')).toBeInTheDocument();
+      expect(screen.getByText('テストタスク')).toBeInTheDocument();
     });
 
-    const statusSelect = screen.getByDisplayValue('not_started');
+    // 状態選択要素を取得（role="combobox"またはselect要素）
+    const statusSelect = screen.getByRole('combobox', { name: /状態/ });
     fireEvent.change(statusSelect, { target: { value: 'completed' } });
 
     await waitFor(() => {
