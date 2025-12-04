@@ -71,8 +71,10 @@ Object.defineProperty(window, 'innerHeight', {
 describe('useResponsive', () => {
   beforeEach(() => {
     // デフォルト値にリセット
-    Object.defineProperty(window, 'innerWidth', { value: 1024 });
-    Object.defineProperty(window, 'innerHeight', { value: 768 });
+    Object.defineProperty(window, 'innerWidth', { value: 1024, configurable: true });
+    Object.defineProperty(window, 'innerHeight', { value: 768, configurable: true });
+    // matchMediaのモックをリセット
+    window.matchMedia = vi.fn().mockImplementation((query: string) => mockMatchMedia(query));
   });
 
   it('デスクトップサイズで正しい状態を返す', () => {
@@ -142,10 +144,29 @@ describe('useResponsive', () => {
   it('タッチデバイスを正しく検出する', () => {
     // タッチデバイスのモック
     window.matchMedia = vi.fn().mockImplementation(query => {
-      if (query === '(pointer: coarse)') {
-        return mockMatchMedia(true);
+      const queryStr = String(query || '');
+      if (queryStr.includes('pointer: coarse')) {
+        return {
+          matches: true,
+          media: queryStr,
+          onchange: null,
+          addListener: vi.fn(),
+          removeListener: vi.fn(),
+          addEventListener: vi.fn(),
+          removeEventListener: vi.fn(),
+          dispatchEvent: vi.fn(),
+        };
       }
-      return mockMatchMedia(false);
+      return {
+        matches: false,
+        media: queryStr,
+        onchange: null,
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+      };
     });
 
     const { result } = renderHook(() => useResponsive());
@@ -156,8 +177,13 @@ describe('useResponsive', () => {
 });
 
 describe('useBreakpoint', () => {
+  beforeEach(() => {
+    // matchMediaのモックをリセット
+    window.matchMedia = vi.fn().mockImplementation((query: string) => mockMatchMedia(query));
+  });
+
   it('指定されたブレークポイント以上の場合にtrueを返す', () => {
-    Object.defineProperty(window, 'innerWidth', { value: 1024 });
+    Object.defineProperty(window, 'innerWidth', { value: 1024, configurable: true });
 
     const { result } = renderHook(() => useBreakpoint('lg'));
 
@@ -165,7 +191,7 @@ describe('useBreakpoint', () => {
   });
 
   it('指定されたブレークポイント未満の場合にfalseを返す', () => {
-    Object.defineProperty(window, 'innerWidth', { value: 640 });
+    Object.defineProperty(window, 'innerWidth', { value: 640, configurable: true });
 
     const { result } = renderHook(() => useBreakpoint('lg'));
 
@@ -175,7 +201,16 @@ describe('useBreakpoint', () => {
 
 describe('useMediaQuery', () => {
   it('メディアクエリにマッチする場合にtrueを返す', () => {
-    window.matchMedia = vi.fn().mockImplementation(() => mockMatchMedia(true));
+    window.matchMedia = vi.fn().mockImplementation((query: string) => ({
+      matches: true,
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    }));
 
     const { result } = renderHook(() => useMediaQuery('(min-width: 768px)'));
 
@@ -183,7 +218,16 @@ describe('useMediaQuery', () => {
   });
 
   it('メディアクエリにマッチしない場合にfalseを返す', () => {
-    window.matchMedia = vi.fn().mockImplementation(() => mockMatchMedia(false));
+    window.matchMedia = vi.fn().mockImplementation((query: string) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    }));
 
     const { result } = renderHook(() => useMediaQuery('(min-width: 768px)'));
 

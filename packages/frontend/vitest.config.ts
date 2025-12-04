@@ -28,7 +28,7 @@ export default defineConfig({
       forks: {
         singleFork: false, // 各テストファイル後にワーカーを再起動（メモリ最適化）
         isolate: true,
-        // ワーカープロセスのメモリ制限を削減（親プロセスのメモリを節約）
+        // ワーカープロセスのメモリ制限（親プロセスのメモリを節約）
         execArgv: ['--max-old-space-size=1024', '--expose-gc'],
       },
     },
