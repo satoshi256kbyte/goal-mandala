@@ -178,7 +178,7 @@ describe('TabletSplitView', () => {
       />
     );
 
-    let leftPanel = screen.getByText('左パネル').closest('div');
+    let leftPanel = screen.getByText('左パネル').parentElement;
     expect(leftPanel).toHaveClass('w-1/3');
 
     rerender(
@@ -189,7 +189,7 @@ describe('TabletSplitView', () => {
       />
     );
 
-    leftPanel = screen.getByText('左パネル').closest('div');
+    leftPanel = screen.getByText('左パネル').parentElement;
     expect(leftPanel).toHaveClass('w-1/2');
   });
 });

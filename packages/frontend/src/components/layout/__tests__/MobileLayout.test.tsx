@@ -200,7 +200,7 @@ describe('MobileCard', () => {
       </MobileCard>
     );
 
-    let card = screen.getByText('小パディング').closest('div');
+    let card = screen.getByText('小パディング').parentElement;
     expect(card).toHaveClass('p-3');
 
     rerender(
@@ -209,7 +209,7 @@ describe('MobileCard', () => {
       </MobileCard>
     );
 
-    card = screen.getByText('大パディング').closest('div');
+    card = screen.getByText('大パディング').parentElement;
     expect(card).toHaveClass('p-6');
   });
 });

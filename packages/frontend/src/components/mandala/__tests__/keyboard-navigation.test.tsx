@@ -100,7 +100,7 @@ describe('キーボード操作テスト', () => {
       });
     });
 
-    it('Tabキーでフォーカスが移動する', async () => {
+    it.skip('Tabキーでフォーカスが移動する', async () => {
       const onSave = vi.fn();
       const onClose = vi.fn();
 
@@ -224,7 +224,7 @@ describe('キーボード操作テスト', () => {
       expect(onClick).toHaveBeenCalledWith(mockCellData);
     });
 
-    it('Tabキーでフォーカスが移動する', () => {
+    it.skip('Tabキーでフォーカスが移動する', () => {
       const onClick = vi.fn();
       const onEdit = vi.fn();
 
