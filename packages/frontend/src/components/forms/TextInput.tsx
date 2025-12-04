@@ -108,6 +108,10 @@ export const TextInput: React.FC<TextInputProps> = ({
       updateLength(truncatedValue);
       // フォームの値も更新
       e.target.value = truncatedValue;
+      // 制限到達時のコールバック
+      if (onLimitReached) {
+        onLimitReached(truncatedValue);
+      }
     } else {
       setInputValue(newValue);
       updateLength(newValue);

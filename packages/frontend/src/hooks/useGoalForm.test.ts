@@ -25,8 +25,8 @@ describe('useGoalForm', () => {
 
       const { result } = renderHook(() => useGoalForm({ initialData }));
 
-      expect(result.current.getValues().title).toBe('テスト目標');
-      expect(result.current.getValues().description).toBe('テスト説明');
+      expect(result.current.watchedValues.title).toBe('テスト目標');
+      expect(result.current.watchedValues.description).toBe('テスト説明');
     });
   });
 
@@ -38,7 +38,7 @@ describe('useGoalForm', () => {
         result.current.setValue('title', 'テスト', { shouldDirty: true });
       });
 
-      expect(result.current.getValues().title).toBe('テスト');
+      expect(result.current.watchedValues.title).toBe('テスト');
       expect(result.current.formState.isDirty).toBe(true);
     });
 
@@ -52,7 +52,7 @@ describe('useGoalForm', () => {
       expect(result.current.formState.isDirty).toBe(true);
 
       act(() => {
-        result.current.reset();
+        result.current.resetForm();
       });
 
       expect(result.current.formState.isDirty).toBe(false);
@@ -64,7 +64,7 @@ describe('useGoalForm', () => {
       const { result } = renderHook(() => useGoalForm());
 
       await act(async () => {
-        await result.current.trigger();
+        await result.current.validateField('title');
       });
 
       expect(result.current.formState.isValid).toBe(false);
@@ -74,11 +74,11 @@ describe('useGoalForm', () => {
       const { result } = renderHook(() => useGoalForm());
 
       await act(async () => {
-        result.current.setValue('title', 'テスト目標', { shouldValidate: true });
-        result.current.setValue('description', 'テスト説明', { shouldValidate: true });
-        result.current.setValue('deadline', '2025-12-31', { shouldValidate: true });
-        result.current.setValue('background', 'テスト背景', { shouldValidate: true });
-        await result.current.trigger();
+        result.current.setValue('title', 'テスト目標');
+        result.current.setValue('description', 'テスト説明');
+        result.current.setValue('deadline', '2025-12-31');
+        result.current.setValue('background', 'テスト背景');
+        await result.current.validateField('title');
       });
 
       expect(result.current.formState.isValid).toBe(true);
@@ -131,7 +131,7 @@ describe('useGoalForm', () => {
       );
 
       act(() => {
-        result.current.setValue('title', 'テスト', { shouldDirty: true });
+        result.current.setValue('title', 'テスト');
       });
 
       // タイマーが実行される前にアンマウント

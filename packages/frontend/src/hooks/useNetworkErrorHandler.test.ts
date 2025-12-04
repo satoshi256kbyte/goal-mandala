@@ -1,4 +1,4 @@
-import { renderHook, act } from '@testing-library/react';
+import { renderHook, act, waitFor } from '@testing-library/react';
 import { NetworkErrorType } from '../services/api';
 import { vi } from 'vitest';
 import { useNetworkErrorHandler } from './useNetworkErrorHandler';
@@ -28,7 +28,9 @@ describe('useNetworkErrorHandler', () => {
   });
 
   afterEach(() => {
-    vi.runOnlyPendingTimers();
+    if (vi.isFakeTimers()) {
+      vi.runOnlyPendingTimers();
+    }
     vi.useRealTimers();
   });
 
@@ -166,6 +168,7 @@ describe('useNetworkErrorHandler', () => {
 
   describe('再試行機能', () => {
     it('再試行可能なエラーで再試行できる', async () => {
+      vi.useRealTimers(); // 実際のタイマーを使用
       const mockOnRetry = vi.fn().mockResolvedValue(undefined);
       const { result } = renderHook(() => useNetworkErrorHandler({ onRetry: mockOnRetry }));
 
@@ -186,8 +189,11 @@ describe('useNetworkErrorHandler', () => {
         await result.current.retry();
       });
 
-      expect(result.current.retryCount).toBe(1);
+      await waitFor(() => {
+        expect(result.current.retryCount).toBe(1);
+      });
       expect(mockOnRetry).toHaveBeenCalledTimes(1);
+      vi.useFakeTimers(); // 元に戻す
     });
 
     it('最大再試行回数に達すると再試行しない', () => {

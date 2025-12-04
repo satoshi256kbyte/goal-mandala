@@ -1,4 +1,4 @@
-import { renderHook, act } from '@testing-library/react';
+import { renderHook, act, waitFor } from '@testing-library/react';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { useProfileForm } from '../useProfileForm';
 import { updateProfile, ProfileUpdateResponse } from '../../services/profileService';
@@ -42,7 +42,7 @@ describe('useProfileForm', () => {
       expect(result.current.formData.industry).toBe('it-communication');
     });
 
-    it('setFieldValueでエラーがクリアされる', () => {
+    it('setFieldValueでエラーがクリアされる', async () => {
       const { result } = renderHook(() => useProfileForm());
 
       // まずエラーを発生させる
@@ -65,7 +65,9 @@ describe('useProfileForm', () => {
         result.current.validateField('jobTitle');
       });
 
-      expect(result.current.errors.jobTitle).toBeUndefined();
+      await waitFor(() => {
+        expect(result.current.errors.jobTitle).toBeUndefined();
+      });
     });
 
     it('setFieldTouchedでタッチ状態を設定できる', () => {

@@ -192,7 +192,9 @@ describe('FormActions統合テスト', () => {
 
       fireEvent.click(screen.getByText('下書き保存'));
 
-      expect(onDraftSave).toHaveBeenCalled();
+      await waitFor(() => {
+        expect(onDraftSave).toHaveBeenCalled();
+      });
     });
   });
 
@@ -247,7 +249,9 @@ describe('FormActions統合テスト', () => {
 
       fireEvent.click(screen.getByText('AI生成開始'));
 
-      expect(onSubmit).toHaveBeenCalled();
+      await waitFor(() => {
+        expect(onSubmit).toHaveBeenCalled();
+      });
     });
   });
 

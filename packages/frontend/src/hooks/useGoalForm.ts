@@ -72,7 +72,11 @@ export interface UseGoalFormReturn {
   /** フィールドの値を監視 */
   watchedValues: GoalFormData;
   /** フィールドの値を設定 */
-  setValue: (fieldName: keyof GoalFormData, value: unknown) => void;
+  setValue: (
+    fieldName: keyof GoalFormData,
+    value: unknown,
+    options?: { shouldDirty?: boolean; shouldValidate?: boolean; shouldTouch?: boolean }
+  ) => void;
   /** 手動でバリデーションを実行 */
   validateField: (fieldName: keyof GoalFormData) => Promise<boolean>;
   /** 手動で下書き保存を実行 */

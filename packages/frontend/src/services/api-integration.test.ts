@@ -21,6 +21,14 @@ vi.mock('./api-client', () => ({
   },
 }));
 
+// モックされたapiClientの型定義
+const mockApiClient = apiClient as unknown as {
+  get: ReturnType<typeof vi.fn>;
+  put: ReturnType<typeof vi.fn>;
+  post: ReturnType<typeof vi.fn>;
+  delete: ReturnType<typeof vi.fn>;
+};
+
 describe('API統合テスト', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -56,7 +64,7 @@ describe('API統合テスト', () => {
 
     it('サブ目標の取得→更新→並び替えの一連のフローが正常に動作する', async () => {
       // 1. サブ目標一覧を取得
-      apiClient.get.mockResolvedValueOnce({
+      mockApiClient.get.mockResolvedValueOnce({
         data: {
           subGoals: mockSubGoals,
           total: 2,
@@ -65,11 +73,11 @@ describe('API統合テスト', () => {
 
       const subGoals = await subGoalApiService.getSubGoals(goalId);
       expect(subGoals.subGoals).toHaveLength(2);
-      expect(apiClient.get).toHaveBeenCalledWith(`/goals/${goalId}/subgoals`);
+      expect(mockApiClient.get).toHaveBeenCalledWith(`/goals/${goalId}/subgoals`);
 
       // 2. サブ目標を更新
       const updatedSubGoal = { ...mockSubGoals[0], title: '更新されたタイトル' };
-      apiClient.put.mockResolvedValueOnce({
+      mockApiClient.put.mockResolvedValueOnce({
         data: {
           success: true,
           subGoal: updatedSubGoal,
@@ -85,7 +93,7 @@ describe('API統合テスト', () => {
 
       expect(updateResult.success).toBe(true);
       expect(updateResult.subGoal.title).toBe('更新されたタイトル');
-      expect(apiClient.put).toHaveBeenCalledWith(`/subgoals/${mockSubGoals[0].id}`, {
+      expect(mockApiClient.put).toHaveBeenCalledWith(`/subgoals/${mockSubGoals[0].id}`, {
         title: '更新されたタイトル',
         description: mockSubGoals[0].description,
         background: mockSubGoals[0].background,
@@ -98,7 +106,7 @@ describe('API統合テスト', () => {
         { ...mockSubGoals[0], position: 1 },
       ];
 
-      apiClient.put.mockResolvedValueOnce({
+      mockApiClient.put.mockResolvedValueOnce({
         data: {
           success: true,
           subGoals: reorderedSubGoals,
@@ -118,7 +126,7 @@ describe('API統合テスト', () => {
       ];
       const deletes = ['subgoal-3'];
 
-      apiClient.post.mockResolvedValueOnce({
+      mockApiClient.post.mockResolvedValueOnce({
         data: {
           success: true,
           updated: [
@@ -134,7 +142,7 @@ describe('API統合テスト', () => {
       expect(result.success).toBe(true);
       expect(result.updated).toHaveLength(2);
       expect(result.deleted).toEqual(deletes);
-      expect(apiClient.post).toHaveBeenCalledWith(`/goals/${goalId}/subgoals/bulk-update`, {
+      expect(mockApiClient.post).toHaveBeenCalledWith(`/goals/${goalId}/subgoals/bulk-update`, {
         updates,
         deletes,
       });
@@ -169,7 +177,7 @@ describe('API統合テスト', () => {
 
     it('アクションの取得→更新→並び替えの一連のフローが正常に動作する', async () => {
       // 1. アクション一覧を取得
-      apiClient.get.mockResolvedValueOnce({
+      mockApiClient.get.mockResolvedValueOnce({
         data: {
           actions: mockActions,
           total: 2,
@@ -185,7 +193,7 @@ describe('API統合テスト', () => {
 
       // 2. アクションを更新
       const updatedAction = { ...mockActions[0], title: '更新されたアクション' };
-      apiClient.put.mockResolvedValueOnce({
+      mockApiClient.put.mockResolvedValueOnce({
         data: {
           success: true,
           action: updatedAction,
@@ -209,7 +217,7 @@ describe('API統合テスト', () => {
         { ...mockActions[0], position: 1 },
       ];
 
-      apiClient.put.mockResolvedValueOnce({
+      mockApiClient.put.mockResolvedValueOnce({
         data: {
           success: true,
           actions: reorderedActions,
@@ -223,7 +231,7 @@ describe('API統合テスト', () => {
     });
 
     it('サブ目標別アクション取得が正常に動作する', async () => {
-      apiClient.get.mockResolvedValueOnce({
+      mockApiClient.get.mockResolvedValueOnce({
         data: {
           actions: mockActions,
         },
@@ -231,7 +239,7 @@ describe('API統合テスト', () => {
 
       const actions = await actionApiService.getActionsBySubGoal(subGoalId);
       expect(actions).toHaveLength(2);
-      expect(apiClient.get).toHaveBeenCalledWith(`/subgoals/${subGoalId}/actions`);
+      expect(mockApiClient.get).toHaveBeenCalledWith(`/subgoals/${subGoalId}/actions`);
     });
   });
 
@@ -249,7 +257,7 @@ describe('API統合テスト', () => {
       ];
 
       // 1. 下書きを保存
-      apiClient.post.mockResolvedValueOnce({
+      mockApiClient.post.mockResolvedValueOnce({
         data: {
           success: true,
           draftId: 'draft-123',
@@ -258,13 +266,13 @@ describe('API統合テスト', () => {
       });
 
       await draftApiClient.saveSubGoalDraft(goalId, draftSubGoals);
-      expect(apiClient.post).toHaveBeenCalledWith('/drafts/subgoals', {
+      expect(mockApiClient.post).toHaveBeenCalledWith('/drafts/subgoals', {
         goalId,
         subGoals: draftSubGoals,
       });
 
       // 2. 下書きを取得
-      apiClient.get.mockResolvedValueOnce({
+      mockApiClient.get.mockResolvedValueOnce({
         data: {
           success: true,
           draftData: draftSubGoals,
@@ -274,15 +282,15 @@ describe('API統合テスト', () => {
 
       const retrievedDraft = await draftApiClient.getSubGoalDraft(goalId);
       expect(retrievedDraft).toEqual(draftSubGoals);
-      expect(apiClient.get).toHaveBeenCalledWith(`/drafts/subgoals/${goalId}`);
+      expect(mockApiClient.get).toHaveBeenCalledWith(`/drafts/subgoals/${goalId}`);
 
       // 3. 下書きを削除
-      apiClient.delete.mockResolvedValueOnce({
+      mockApiClient.delete.mockResolvedValueOnce({
         data: { success: true },
       });
 
       await draftApiClient.deleteDraft(goalId, 'subgoals');
-      expect(apiClient.delete).toHaveBeenCalledWith(`/drafts/subgoals/${goalId}`);
+      expect(mockApiClient.delete).toHaveBeenCalledWith(`/drafts/subgoals/${goalId}`);
     });
 
     it('アクションの下書き保存→取得→削除の一連のフローが正常に動作する', async () => {
@@ -297,7 +305,7 @@ describe('API統合テスト', () => {
       ];
 
       // 1. 下書きを保存
-      apiClient.post.mockResolvedValueOnce({
+      mockApiClient.post.mockResolvedValueOnce({
         data: {
           success: true,
           draftId: 'draft-456',
@@ -306,13 +314,13 @@ describe('API統合テスト', () => {
       });
 
       await draftApiClient.saveActionDraft(goalId, draftActions);
-      expect(apiClient.post).toHaveBeenCalledWith('/drafts/actions', {
+      expect(mockApiClient.post).toHaveBeenCalledWith('/drafts/actions', {
         goalId,
         actions: draftActions,
       });
 
       // 2. 下書きを取得
-      apiClient.get.mockResolvedValueOnce({
+      mockApiClient.get.mockResolvedValueOnce({
         data: {
           success: true,
           draftData: draftActions,
@@ -324,12 +332,12 @@ describe('API統合テスト', () => {
       expect(retrievedDraft).toEqual(draftActions);
 
       // 3. 下書きを削除
-      apiClient.delete.mockResolvedValueOnce({
+      mockApiClient.delete.mockResolvedValueOnce({
         data: { success: true },
       });
 
       await draftApiClient.deleteDraft(goalId, 'actions');
-      expect(apiClient.delete).toHaveBeenCalledWith(`/drafts/actions/${goalId}`);
+      expect(mockApiClient.delete).toHaveBeenCalledWith(`/drafts/actions/${goalId}`);
     });
   });
 
@@ -338,7 +346,7 @@ describe('API統合テスト', () => {
       const goalId = 'goal-123';
 
       // ネットワークエラーをモック
-      apiClient.get.mockRejectedValueOnce({
+      mockApiClient.get.mockRejectedValueOnce({
         code: 'TIMEOUT',
         retryable: true,
         message: 'タイムアウト',
@@ -347,7 +355,7 @@ describe('API統合テスト', () => {
       await expect(subGoalApiService.getSubGoals(goalId)).rejects.toThrow(
         'ネットワークエラー: タイムアウト'
       );
-      expect(apiClient.get).toHaveBeenCalledTimes(1);
+      expect(mockApiClient.get).toHaveBeenCalledTimes(1);
     });
 
     it('バリデーションエラー時に適切なエラーメッセージを返す', async () => {
@@ -359,7 +367,7 @@ describe('API統合テスト', () => {
         position: 0,
       };
 
-      apiClient.put.mockRejectedValueOnce({
+      mockApiClient.put.mockRejectedValueOnce({
         response: {
           data: {
             success: false,
@@ -388,7 +396,7 @@ describe('API統合テスト', () => {
     it('サーバーエラー時に適切なエラーメッセージを返す', async () => {
       const goalId = 'goal-123';
 
-      apiClient.get.mockRejectedValueOnce({
+      mockApiClient.get.mockRejectedValueOnce({
         response: {
           data: {
             success: false,
@@ -414,7 +422,7 @@ describe('API統合テスト', () => {
       const getData = () => currentData;
 
       // 自動保存のモック
-      apiClient.post.mockResolvedValue({
+      mockApiClient.post.mockResolvedValue({
         data: {
           success: true,
           draftId: 'draft-123',
@@ -435,7 +443,7 @@ describe('API統合テスト', () => {
       draftApiClient.stopAutoSave(goalId, 'subgoals');
 
       // 自動保存が実行されたことを確認
-      expect(apiClient.post).toHaveBeenCalledWith('/drafts/subgoals', {
+      expect(mockApiClient.post).toHaveBeenCalledWith('/drafts/subgoals', {
         goalId,
         subGoals: currentData,
       });
@@ -457,7 +465,7 @@ describe('API統合テスト', () => {
       draftApiClient.stopAutoSave(goalId, 'subgoals');
 
       // 初回は保存されるが、その後は変更がないので保存されない
-      expect(apiClient.post).toHaveBeenCalledTimes(1);
+      expect(mockApiClient.post).toHaveBeenCalledTimes(1);
     });
   });
 });
