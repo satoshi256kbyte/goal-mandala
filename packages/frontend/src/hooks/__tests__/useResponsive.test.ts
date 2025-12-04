@@ -239,13 +239,24 @@ describe('useVirtualKeyboard', () => {
     expect(result.current.height).toBe(initialHeight - 400);
   });
 
-  it.skip('Visual Viewport APIが利用可能な場合', () => {
+  it('Visual Viewport APIが利用可能な場合', () => {
+    // window.innerHeightを明示的に設定
+    Object.defineProperty(window, 'innerHeight', {
+      value: 800,
+      configurable: true,
+    });
+
     const initialHeight = window.innerHeight;
+    let resizeHandler: (() => void) | null = null;
 
     // Visual Viewport APIのモック
     const mockVisualViewport = {
       height: 400,
-      addEventListener: vi.fn(),
+      addEventListener: vi.fn((event, handler) => {
+        if (event === 'resize') {
+          resizeHandler = handler;
+        }
+      }),
       removeEventListener: vi.fn(),
     };
 
@@ -255,6 +266,14 @@ describe('useVirtualKeyboard', () => {
     });
 
     const { result } = renderHook(() => useVirtualKeyboard());
+
+    // 初期状態は非表示
+    expect(result.current.isVisible).toBe(false);
+
+    // resizeイベントを発火
+    act(() => {
+      resizeHandler?.();
+    });
 
     expect(result.current.isVisible).toBe(true);
     expect(result.current.height).toBe(initialHeight - 400);

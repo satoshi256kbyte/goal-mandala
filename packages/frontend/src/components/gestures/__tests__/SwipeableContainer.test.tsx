@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { fireEvent } from '@testing-library/react';
 import { vi } from 'vitest';
 import {
@@ -405,6 +405,9 @@ describe('PullToRefresh', () => {
 
     fireEvent.touchEnd(container);
 
-    expect(onRefresh).toHaveBeenCalledTimes(1);
+    // 非同期処理を待つ
+    await waitFor(() => {
+      expect(onRefresh).toHaveBeenCalledTimes(1);
+    });
   });
 });
