@@ -420,10 +420,15 @@ export const SubGoalForm: React.FC<SubGoalFormProps> = ({
             {/* 下書き保存ボタン */}
             {onDraftSave && (
               <DraftSaveButton
+                formData={getValues()}
                 onClick={handleDraftSave}
                 disabled={!hasUnsavedChanges || isDraftSaving || disabled}
                 isLoading={isDraftSaving}
                 className={getButtonClasses('secondary')}
+                onSaveSuccess={() => {
+                  setLastSavedData(getValues());
+                  setHasUnsavedChanges(false);
+                }}
               />
             )}
 
