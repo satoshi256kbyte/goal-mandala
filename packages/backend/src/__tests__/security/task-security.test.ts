@@ -2,14 +2,30 @@ import { PrismaClient } from '../../generated/prisma-client';
 import { TaskService } from '../../services/task.service';
 import { AuthError } from '../../errors/auth-error';
 
+jest.mock('../../generated/prisma-client');
+
 describe('Task Management Security Tests', () => {
-  let prisma: PrismaClient;
+  let prisma: jest.Mocked<PrismaClient>;
   let taskService: TaskService;
 
   beforeAll(async () => {
-    prisma = new PrismaClient({
-      datasources: { db: { url: process.env.TEST_DATABASE_URL } },
-    });
+    prisma = {
+      $disconnect: jest.fn(),
+      taskHistory: { deleteMany: jest.fn() },
+      taskNote: { deleteMany: jest.fn() },
+      task: {
+        deleteMany: jest.fn(),
+        findMany: jest.fn(),
+        findUnique: jest.fn(),
+        create: jest.fn(),
+        update: jest.fn(),
+        delete: jest.fn(),
+      },
+      action: { deleteMany: jest.fn() },
+      subGoal: { deleteMany: jest.fn() },
+      goal: { deleteMany: jest.fn() },
+      user: { deleteMany: jest.fn(), findUnique: jest.fn() },
+    } as any;
 
     taskService = new TaskService(prisma);
   });
@@ -19,14 +35,7 @@ describe('Task Management Security Tests', () => {
   });
 
   beforeEach(async () => {
-    // Clean up test data
-    await prisma.taskHistory.deleteMany();
-    await prisma.taskNote.deleteMany();
-    await prisma.task.deleteMany();
-    await prisma.action.deleteMany();
-    await prisma.subGoal.deleteMany();
-    await prisma.goal.deleteMany();
-    await prisma.user.deleteMany();
+    jest.clearAllMocks();
   });
 
   describe('Authentication Tests', () => {

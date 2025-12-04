@@ -3,16 +3,31 @@ import { TaskService } from '../../services/task.service';
 import { FilterService } from '../../services/filter.service';
 import { ProgressService } from '../../services/progress.service';
 
+jest.mock('../../generated/prisma-client');
+
 describe('Task Management Performance Tests', () => {
-  let prisma: PrismaClient;
+  let prisma: jest.Mocked<PrismaClient>;
   let taskService: TaskService;
   let filterService: FilterService;
   let progressService: ProgressService;
 
   beforeAll(async () => {
-    prisma = new PrismaClient({
-      datasources: { db: { url: process.env.TEST_DATABASE_URL } },
-    });
+    prisma = {
+      $disconnect: jest.fn(),
+      taskHistory: { deleteMany: jest.fn() },
+      taskNote: { deleteMany: jest.fn() },
+      task: {
+        deleteMany: jest.fn(),
+        findMany: jest.fn(),
+        create: jest.fn(),
+        createMany: jest.fn(),
+        update: jest.fn(),
+      },
+      action: { deleteMany: jest.fn() },
+      subGoal: { deleteMany: jest.fn() },
+      goal: { deleteMany: jest.fn() },
+      user: { deleteMany: jest.fn() },
+    } as any;
 
     taskService = new TaskService(prisma);
     filterService = new FilterService(prisma);
@@ -24,7 +39,7 @@ describe('Task Management Performance Tests', () => {
   });
 
   beforeEach(async () => {
-    // Clean up test data
+    jest.clearAllMocks();
     await prisma.taskHistory.deleteMany();
     await prisma.taskNote.deleteMany();
     await prisma.task.deleteMany();
