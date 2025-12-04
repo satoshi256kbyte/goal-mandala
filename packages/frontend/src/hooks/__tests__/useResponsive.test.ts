@@ -11,21 +11,48 @@ import {
 } from '../useResponsive';
 
 // モックオブジェクト
-const mockMatchMedia = (matches: boolean) => ({
-  matches,
-  media: '',
-  onchange: null,
-  addListener: vi.fn(),
-  removeListener: vi.fn(),
-  addEventListener: vi.fn(),
-  removeEventListener: vi.fn(),
-  dispatchEvent: vi.fn(),
-});
+const mockMatchMedia = (query: any) => {
+  // クエリを文字列に変換（安全性のため）
+  const queryStr = String(query || '');
+
+  // クエリに基づいてmatchesを決定
+  let matches = false;
+
+  // ポインターデバイスのクエリ
+  if (queryStr.includes('pointer: coarse')) {
+    matches = false; // デフォルトはfineポインター（マウス）
+  } else if (queryStr.includes('pointer: fine')) {
+    matches = true; // デフォルトはfineポインター（マウス）
+  } else if (queryStr.includes('pointer: none')) {
+    matches = false;
+  }
+  // ホバー機能のクエリ
+  else if (queryStr.includes('hover: hover')) {
+    matches = true; // デフォルトはホバー可能
+  } else if (queryStr.includes('hover: none')) {
+    matches = false;
+  }
+  // その他のクエリはデフォルトでfalse
+  else {
+    matches = false;
+  }
+
+  return {
+    matches,
+    media: queryStr,
+    onchange: null,
+    addListener: vi.fn(),
+    removeListener: vi.fn(),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn(),
+  };
+};
 
 // window.matchMediaのモック
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
-  value: vi.fn().mockImplementation(query => mockMatchMedia(false)),
+  value: vi.fn().mockImplementation((query: string) => mockMatchMedia(query)),
 });
 
 // window.innerWidthとinnerHeightのモック

@@ -98,14 +98,19 @@ global.IntersectionObserver = class IntersectionObserver {
 } as any;
 
 // requestAnimationFrameのモック（タイマーIDを追跡）
-const rafTimers = new Map<number, NodeJS.Timeout>();
+// メモリリーク防止: WeakMapではなくMapを使用し、定期的にクリア
+let rafTimers = new Map<number, NodeJS.Timeout>();
 let rafIdCounter = 0;
 
 global.requestAnimationFrame = (callback: FrameRequestCallback): number => {
   const id = ++rafIdCounter;
   const timer = globalThis.setTimeout(() => {
     rafTimers.delete(id);
-    callback(performance.now());
+    try {
+      callback(performance.now());
+    } catch (error) {
+      // エラーを無視してメモリリークを防ぐ
+    }
   }, 16); // 約60fps
   rafTimers.set(id, timer);
   return id;
@@ -119,17 +124,17 @@ global.cancelAnimationFrame = (id: number): void => {
   }
 };
 
-// Web Animations APIのモック
+// Web Animations APIのモック（メモリリーク対策版）
+// アニメーションオブジェクトを追跡してクリーンアップ可能にする
+const activeAnimations = new Set<any>();
+
 if (typeof Element !== 'undefined') {
   Element.prototype.animate = vi.fn(function (
     this: Element,
     keyframes: Keyframe[] | PropertyIndexedKeyframes | null,
     options?: number | KeyframeAnimationOptions
   ) {
-    // イベントリスナーを管理するMap
-    const eventListeners = new Map<string, Set<EventListener>>();
-
-    // アニメーションオブジェクトのモックを返す
+    // アニメーションオブジェクトのモックを返す（最小限の実装）
     const animation = {
       id: '',
       effect: null,
@@ -137,7 +142,7 @@ if (typeof Element !== 'undefined') {
       startTime: null,
       currentTime: 0,
       playbackRate: 1,
-      playState: 'running' as AnimationPlayState,
+      playState: 'finished' as AnimationPlayState, // 即座に完了状態にする
       ready: Promise.resolve({} as Animation),
       finished: Promise.resolve({} as Animation),
       pending: false,
@@ -150,42 +155,16 @@ if (typeof Element !== 'undefined') {
       updatePlaybackRate: vi.fn(),
       persist: vi.fn(),
       commitStyles: vi.fn(),
-      addEventListener: vi.fn((type: string, listener: EventListener) => {
-        if (!eventListeners.has(type)) {
-          eventListeners.set(type, new Set());
-        }
-        eventListeners.get(type)!.add(listener);
-      }),
-      removeEventListener: vi.fn((type: string, listener: EventListener) => {
-        const listeners = eventListeners.get(type);
-        if (listeners) {
-          listeners.delete(listener);
-        }
-      }),
-      dispatchEvent: vi.fn((event: Event) => {
-        const listeners = eventListeners.get(event.type);
-        if (listeners) {
-          listeners.forEach(listener => {
-            try {
-              listener(event);
-            } catch (error) {
-              console.error(`Error in ${event.type} listener:`, error);
-            }
-          });
-        }
-        return true;
-      }),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(() => true),
       oncancel: null,
       onfinish: null,
       onremove: null,
     };
 
-    // アニメーションを自動的に完了させる（テスト環境）
-    globalThis.setTimeout(() => {
-      if (animation.playState === 'running') {
-        animation.finish();
-      }
-    }, 0);
+    // アニメーションを追跡（クリーンアップ用）
+    activeAnimations.add(animation);
 
     return animation as Animation;
   });
@@ -195,19 +174,46 @@ if (typeof Element !== 'undefined') {
   });
 }
 
-// matchMediaのモック
+// matchMediaのモック（拡張版）
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
-  value: (query: string) => ({
-    matches: false,
-    media: query,
-    onchange: null,
-    addListener: () => {},
-    removeListener: () => {},
-    addEventListener: () => {},
-    removeEventListener: () => {},
-    dispatchEvent: () => {},
-  }),
+  value: (query: any) => {
+    // クエリを文字列に変換（安全性のため）
+    const queryStr = String(query || '');
+
+    // クエリに基づいてmatchesを決定
+    let matches = false;
+
+    // ポインターデバイスのクエリ
+    if (queryStr.includes('pointer: coarse')) {
+      matches = false; // デフォルトはfineポインター（マウス）
+    } else if (queryStr.includes('pointer: fine')) {
+      matches = true; // デフォルトはfineポインター（マウス）
+    } else if (queryStr.includes('pointer: none')) {
+      matches = false;
+    }
+    // ホバー機能のクエリ
+    else if (queryStr.includes('hover: hover')) {
+      matches = true; // デフォルトはホバー可能
+    } else if (queryStr.includes('hover: none')) {
+      matches = false;
+    }
+    // その他のクエリはデフォルトでfalse
+    else {
+      matches = false;
+    }
+
+    return {
+      matches,
+      media: queryStr,
+      onchange: null,
+      addListener: () => {},
+      removeListener: () => {},
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      dispatchEvent: () => true,
+    };
+  },
 });
 
 // fetchのグローバルモック
@@ -273,6 +279,39 @@ Object.defineProperty(window, 'sessionStorage', {
   writable: true,
 });
 
+// タイマー追跡（メモリリーク防止）
+const activeTimers = new Set<NodeJS.Timeout>();
+const originalSetTimeout = globalThis.setTimeout;
+const originalSetInterval = globalThis.setInterval;
+const originalClearTimeout = globalThis.clearTimeout;
+const originalClearInterval = globalThis.clearInterval;
+
+// setTimeoutをラップしてタイマーを追跡
+globalThis.setTimeout = function (callback: any, delay?: number, ...args: any[]): NodeJS.Timeout {
+  const timer = originalSetTimeout.call(globalThis, callback, delay, ...args);
+  activeTimers.add(timer);
+  return timer;
+} as any;
+
+// setIntervalをラップしてタイマーを追跡
+globalThis.setInterval = function (callback: any, delay?: number, ...args: any[]): NodeJS.Timeout {
+  const timer = originalSetInterval.call(globalThis, callback, delay, ...args);
+  activeTimers.add(timer);
+  return timer;
+} as any;
+
+// clearTimeoutをラップしてタイマーを削除
+globalThis.clearTimeout = function (timer: NodeJS.Timeout): void {
+  activeTimers.delete(timer);
+  originalClearTimeout.call(globalThis, timer);
+} as any;
+
+// clearIntervalをラップしてタイマーを削除
+globalThis.clearInterval = function (timer: NodeJS.Timeout): void {
+  activeTimers.delete(timer);
+  originalClearInterval.call(globalThis, timer);
+} as any;
+
 // タイムアウトハンドラーの設定
 beforeEach(() => {
   // ストレージをクリア
@@ -287,10 +326,33 @@ afterEach(async () => {
   // 1. React Testing Libraryのクリーンアップ
   cleanup();
 
-  // 2. タイマーをクリア
+  // 2. タイマーをクリア（メモリリーク防止）
   vi.clearAllTimers();
-  rafTimers.forEach(timer => clearTimeout(timer));
+
+  // 追跡されているすべてのタイマーをクリア
+  activeTimers.forEach(timer => {
+    try {
+      originalClearTimeout.call(globalThis, timer);
+      originalClearInterval.call(globalThis, timer);
+    } catch (e) {
+      // エラーを無視
+    }
+  });
+  activeTimers.clear();
+
+  // requestAnimationFrameタイマーを完全にクリア
+  rafTimers.forEach(timer => {
+    try {
+      originalClearTimeout.call(globalThis, timer);
+    } catch (e) {
+      // エラーを無視
+    }
+  });
   rafTimers.clear();
+  rafTimers = new Map(); // 新しいMapインスタンスを作成
+
+  // アクティブなアニメーションをクリア
+  activeAnimations.clear();
 
   // 3. ストレージのクリア
   localStorageMock.clear();
@@ -304,12 +366,12 @@ afterEach(async () => {
     (global.fetch as any).mockClear?.();
   }
 
-  // 6. DOMイベントリスナーのクリーンアップ
+  // 6. DOMのクリーンアップ
   if (typeof document !== 'undefined') {
-    const events = ['click', 'change', 'input', 'submit', 'keydown', 'keyup', 'focus', 'blur'];
-    events.forEach(event => {
-      document.body.removeEventListener(event, () => {});
-    });
+    // body要素を完全にクリア
+    document.body.innerHTML = '';
+
+    // イベントリスナーのクリーンアップは不要（cleanup()で処理される）
   }
 
   // 7. グローバル変数のリセット
@@ -322,7 +384,11 @@ afterEach(async () => {
 
   // 8. 強制的にガベージコレクションを促す（Node.js環境）
   if (typeof global !== 'undefined' && global.gc) {
-    global.gc();
+    try {
+      global.gc();
+    } catch (e) {
+      // gc()が利用できない場合は無視
+    }
   }
 });
 

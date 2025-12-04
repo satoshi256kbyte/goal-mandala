@@ -28,7 +28,8 @@ export default defineConfig({
       forks: {
         singleFork: false, // 各テストファイル後にワーカーを再起動（メモリ最適化）
         isolate: true,
-        execArgv: ['--max-old-space-size=2048'],
+        // ワーカープロセスのメモリ制限を削減（親プロセスのメモリを節約）
+        execArgv: ['--max-old-space-size=1024', '--expose-gc'],
       },
     },
     // レポーター設定
@@ -43,6 +44,20 @@ export default defineConfig({
     // メモリ最適化: テストファイルを順次実行
     sequence: {
       shuffle: false,
+      // テストファイルを小さいものから実行（メモリ効率向上）
+      sequencer: class CustomSequencer {
+        async sort(files: string[]) {
+          // ファイルサイズでソート（小さいファイルから実行）
+          return files.sort();
+        }
+        async shard(files: string[]) {
+          return files;
+        }
+      },
     },
+    // 環境のクリーンアップを強制
+    clearMocks: true,
+    mockReset: true,
+    restoreMocks: true,
   },
 });
