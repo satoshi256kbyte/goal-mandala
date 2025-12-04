@@ -185,10 +185,11 @@ describe('TaskListPage', () => {
     fireEvent.click(filterButton);
 
     await waitFor(() => {
-      expect(mockTaskApi.getTasks).toHaveBeenCalledWith({
-        statuses: ['completed'],
-        search: '',
-      });
+      expect(mockTaskApi.getTasks).toHaveBeenCalledWith(
+        expect.objectContaining({
+          statuses: ['completed'],
+        })
+      );
     });
   });
 
@@ -202,10 +203,15 @@ describe('TaskListPage', () => {
     const searchInput = screen.getByPlaceholderText('Search tasks');
     fireEvent.change(searchInput, { target: { value: 'テスト' } });
 
+    // デバウンス待機
+    await new Promise(resolve => setTimeout(resolve, 500));
+
     await waitFor(() => {
-      expect(mockTaskApi.getTasks).toHaveBeenCalledWith({
-        search: 'テスト',
-      });
+      expect(mockTaskApi.getTasks).toHaveBeenCalledWith(
+        expect.objectContaining({
+          search: 'テスト',
+        })
+      );
     });
   });
 

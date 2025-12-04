@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import { ProfileFormData, UseProfileFormOptions } from '../types/profile';
 import { updateProfile } from '../services/profileService';
 import { debounce } from '../utils/debounce';
@@ -93,10 +93,33 @@ export function useProfileForm(options?: UseProfileFormOptions): UseProfileFormR
    * デバウンスされたバリデーション
    * 要件: 11.3 - バリデーションのデバウンス
    */
+  const formDataRef = useRef(formData);
+  useEffect(() => {
+    formDataRef.current = formData;
+  }, [formData]);
+
   const debouncedValidateField = useMemo(
     () =>
       debounce((field: string) => {
-        const fieldError = validateField(field);
+        const value = formDataRef.current[field as keyof ProfileFormData];
+        let fieldError: string | undefined;
+
+        switch (field) {
+          case 'industry':
+            if (!value) fieldError = '業種を選択してください';
+            break;
+          case 'companySize':
+            if (!value) fieldError = '組織規模を選択してください';
+            break;
+          case 'jobTitle':
+            if (!value) fieldError = '職種を入力してください';
+            else if (value.length > 100) fieldError = '職種は100文字以内で入力してください';
+            break;
+          case 'position':
+            if (value && value.length > 100) fieldError = '役職は100文字以内で入力してください';
+            break;
+        }
+
         if (fieldError) {
           setErrors(prev => ({ ...prev, [field]: fieldError }));
         } else {
@@ -107,7 +130,7 @@ export function useProfileForm(options?: UseProfileFormOptions): UseProfileFormR
           });
         }
       }, 300),
-    [validateField]
+    []
   );
 
   /**
@@ -142,12 +165,10 @@ export function useProfileForm(options?: UseProfileFormOptions): UseProfileFormR
     (field: string, value: string) => {
       setFormData(prev => ({ ...prev, [field]: value }));
 
-      // タッチされている場合はデバウンスされたバリデーションを実行
-      if (touched[field]) {
-        debouncedValidateField(field);
-      }
+      // 値を設定した後、常にバリデーションを実行
+      debouncedValidateField(field);
     },
-    [touched, debouncedValidateField]
+    [debouncedValidateField]
   );
 
   /**

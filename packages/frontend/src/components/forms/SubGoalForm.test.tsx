@@ -127,7 +127,7 @@ describe('SubGoalForm', () => {
       );
 
       // ローディング状態でボタンが無効になることを確認
-      const submitButton = screen.getByRole('button');
+      const submitButton = screen.getByRole('button', { name: /サブ目標を更新/ });
       expect(submitButton).toBeDisabled();
     });
 

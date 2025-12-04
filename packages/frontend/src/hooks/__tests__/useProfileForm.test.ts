@@ -60,9 +60,9 @@ describe('useProfileForm', () => {
       // 値が設定されたことを確認
       expect(result.current.formData.jobTitle).toBe('エンジニア');
 
-      // バリデーションを再実行してエラーをクリア
-      act(() => {
-        result.current.validateField('jobTitle');
+      // デバウンス待機（300ms）
+      await act(async () => {
+        await new Promise(resolve => setTimeout(resolve, 350));
       });
 
       await waitFor(() => {

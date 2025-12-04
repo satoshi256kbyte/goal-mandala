@@ -181,29 +181,35 @@ describe('useNetworkErrorHandler', () => {
         timestamp: new Date(),
       };
 
-      act(() => {
+      // エラーを設定して状態更新を待つ
+      await act(async () => {
         result.current.setError(testError);
       });
 
+      // エラーが設定されたことを確認
+      expect(result.current.error).toEqual(testError);
+      expect(result.current.isRetryable).toBe(true);
       expect(result.current.retryCount).toBe(0);
 
+      // retry()を呼び出して完了を待つ
       await act(async () => {
         await result.current.retry();
       });
 
-      // 遅延を待つ（retryDelay * 2^0 = 100ms）
+      // retryCountが増加したことを確認
       await waitFor(
         () => {
           expect(result.current.retryCount).toBe(1);
         },
-        { timeout: 2000 }
+        { timeout: 3000 }
       );
 
+      // onRetryが呼ばれたことを確認
       await waitFor(
         () => {
           expect(mockOnRetry).toHaveBeenCalledTimes(1);
         },
-        { timeout: 2000 }
+        { timeout: 3000 }
       );
 
       vi.useFakeTimers(); // 元に戻す

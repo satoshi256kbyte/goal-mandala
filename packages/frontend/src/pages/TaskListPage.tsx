@@ -29,7 +29,7 @@ export const TaskListPage: React.FC = () => {
     refetch,
   } = useQuery({
     queryKey: ['tasks', filters, searchQuery],
-    queryFn: () => taskApi.getTasks(filters),
+    queryFn: () => taskApi.getTasks({ ...filters, search: searchQuery }),
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 

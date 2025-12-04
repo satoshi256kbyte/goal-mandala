@@ -104,6 +104,11 @@ describe('FormActions統合テスト', () => {
     mockDraftService.saveDraft = vi.fn().mockResolvedValue(undefined);
   });
 
+  afterEach(() => {
+    vi.clearAllMocks();
+    vi.clearAllTimers();
+  });
+
   describe('初期状態', () => {
     it('有効なフォームデータで両方のボタンが有効になる', () => {
       render(<FormActionsTestComponent formData={validFormData} isFormValid={true} />);
