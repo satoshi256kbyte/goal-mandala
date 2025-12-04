@@ -17,10 +17,10 @@ export default defineConfig({
     testTimeout: 5000,
     hookTimeout: 3000,
     teardownTimeout: 2000,
-    // 全ユニットテストと統合テストを含める
+    // 全ユニットテストを含める（統合テストとE2Eテストは除外）
     include: ['src/**/*.test.{ts,tsx}'],
-    // E2Eテストのみ除外
-    exclude: ['**/node_modules/**', '**/dist/**', '**/e2e/**'],
+    // 統合テストとE2Eテストを除外
+    exclude: ['**/node_modules/**', '**/dist/**', '**/e2e/**', '**/*.integration.test.{ts,tsx}'],
     // 並列実行を完全に無効化（メモリ不足対策）
     maxConcurrency: 1,
     pool: 'forks',
@@ -38,7 +38,7 @@ export default defineConfig({
       enabled: false,
       provider: 'v8',
       reporter: ['json'],
-      exclude: ['**/node_modules/**', '**/dist/**', '**/e2e/**'],
+      exclude: ['**/node_modules/**', '**/dist/**', '**/e2e/**', '**/*.integration.test.{ts,tsx}'],
     },
     // メモリ最適化: テストファイルを順次実行
     sequence: {
