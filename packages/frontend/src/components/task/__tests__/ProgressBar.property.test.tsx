@@ -32,7 +32,9 @@ describe('Property 19: 進捗バーの色分け', () => {
 
           // ラベル表示の検証（空白のみの場合はスキップ）
           if (label.trim().length > 0) {
-            expect(screen.getByText(label)).toBeInTheDocument();
+            // 正規化されたテキストで検索
+            const normalizedLabel = label.trim();
+            expect(screen.getByText(normalizedLabel)).toBeInTheDocument();
           }
 
           // アクセシビリティ属性の検証

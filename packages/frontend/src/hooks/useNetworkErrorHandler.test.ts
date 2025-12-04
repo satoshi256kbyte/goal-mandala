@@ -170,7 +170,9 @@ describe('useNetworkErrorHandler', () => {
     it('再試行可能なエラーで再試行できる', async () => {
       vi.useRealTimers(); // 実際のタイマーを使用
       const mockOnRetry = vi.fn().mockResolvedValue(undefined);
-      const { result } = renderHook(() => useNetworkErrorHandler({ onRetry: mockOnRetry }));
+      const { result } = renderHook(() =>
+        useNetworkErrorHandler({ onRetry: mockOnRetry, retryDelay: 100 })
+      );
 
       const testError: ApiError = {
         code: NetworkErrorType.TIMEOUT,
@@ -189,10 +191,21 @@ describe('useNetworkErrorHandler', () => {
         await result.current.retry();
       });
 
-      await waitFor(() => {
-        expect(result.current.retryCount).toBe(1);
-      });
-      expect(mockOnRetry).toHaveBeenCalledTimes(1);
+      // 遅延を待つ（retryDelay * 2^0 = 100ms）
+      await waitFor(
+        () => {
+          expect(result.current.retryCount).toBe(1);
+        },
+        { timeout: 2000 }
+      );
+
+      await waitFor(
+        () => {
+          expect(mockOnRetry).toHaveBeenCalledTimes(1);
+        },
+        { timeout: 2000 }
+      );
+
       vi.useFakeTimers(); // 元に戻す
     });
 

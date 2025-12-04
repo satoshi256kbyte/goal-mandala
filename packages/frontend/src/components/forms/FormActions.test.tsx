@@ -53,6 +53,7 @@ const FormActionsTestComponent: React.FC<{
         disabled={!canSubmit}
         isFormValid={isFormValid}
         onSubmit={onSubmit}
+        type="button"
       />
       <div data-testid="form-state">
         <span data-testid="draft-saving">{state.isDraftSaving.toString()}</span>

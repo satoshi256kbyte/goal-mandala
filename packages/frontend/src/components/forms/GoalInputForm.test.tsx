@@ -193,13 +193,22 @@ describe('GoalInputForm', () => {
   describe('下書き保存', () => {
     it('下書き保存ボタンをクリックすると下書き保存が実行される', async () => {
       const user = userEvent.setup();
-      render(<GoalInputForm {...defaultProps} />);
+      render(<GoalInputForm {...defaultProps} onDraftSave={mockOnDraftSave} />);
 
       // 部分的なデータを入力
       await user.type(screen.getByLabelText(/目標タイトル/), 'テスト');
 
+      // ボタンが有効になるまで待つ
+      await waitFor(() => {
+        const draftSaveButton = screen.getByRole('button', { name: /下書き保存/ });
+        expect(draftSaveButton).not.toBeDisabled();
+      });
+
       const draftSaveButton = screen.getByRole('button', { name: /下書き保存/ });
-      await user.click(draftSaveButton);
+
+      await act(async () => {
+        await user.click(draftSaveButton);
+      });
 
       await waitFor(() => {
         expect(mockOnDraftSave).toHaveBeenCalled();
