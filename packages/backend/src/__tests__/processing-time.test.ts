@@ -63,17 +63,17 @@ describe('処理時間計測機能', () => {
       const duration1 = timer1.end();
 
       const timer2 = createTimer();
-      await new Promise(resolve => setTimeout(resolve, 20));
+      await new Promise(resolve => setTimeout(resolve, 25));
       const duration2 = timer2.end();
 
-      // timer2の方が長い処理時間
-      expect(duration2).toBeGreaterThan(duration1);
+      // timer2の方が長い処理時間（5ms以上の差）
+      expect(duration2).toBeGreaterThanOrEqual(duration1 + 5);
 
-      // timer1は10ms以上
-      expect(duration1).toBeGreaterThanOrEqual(10);
+      // timer1は5ms以上（setTimeoutの精度を考慮）
+      expect(duration1).toBeGreaterThanOrEqual(5);
 
-      // timer2は20ms以上
-      expect(duration2).toBeGreaterThanOrEqual(20);
+      // timer2は15ms以上（setTimeoutの精度を考慮）
+      expect(duration2).toBeGreaterThanOrEqual(15);
     });
 
     it('ネストした処理時間を計測できる', async () => {

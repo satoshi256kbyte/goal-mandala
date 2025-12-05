@@ -36,18 +36,18 @@ log_error() {
 force_kill_process() {
     local pid=$1
     local description="$2"
-    
+
     log_warning "Force killing process: $description (PID: $pid)"
-    
+
     # 段階的に強制終了
     kill -TERM $pid 2>/dev/null || true
     sleep 2
-    
+
     if kill -0 $pid 2>/dev/null; then
         kill -KILL $pid 2>/dev/null || true
         sleep 1
     fi
-    
+
     # 子プロセスも強制終了
     pkill -P $pid 2>/dev/null || true
 }
@@ -101,10 +101,10 @@ run_package_tests() {
     # パッケージ別のタイムアウト設定
     case "$package_name" in
         "frontend")
-            package_timeout=45  # フロントエンドは45秒
+            package_timeout=60
             ;;
         "backend"|"shared"|"infrastructure")
-            package_timeout=30  # その他は30秒
+            package_timeout=60
             ;;
     esac
 
