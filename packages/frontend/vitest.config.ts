@@ -14,22 +14,22 @@ export default defineConfig({
     globals: true,
     setupFiles: ['./src/test/setup.ts'],
     isolate: true,
-    testTimeout: 5000,
-    hookTimeout: 3000,
-    teardownTimeout: 2000,
+    testTimeout: 3000, // 短縮: 5000ms → 3000ms
+    hookTimeout: 2000, // 短縮: 3000ms → 2000ms
+    teardownTimeout: 1000, // 短縮: 2000ms → 1000ms
     // 全ユニットテストを含める（統合テストとE2Eテストは除外）
     include: ['src/**/*.test.{ts,tsx}'],
     // 統合テストとE2Eテストを除外
     exclude: ['**/node_modules/**', '**/dist/**', '**/e2e/**', '**/*.integration.test.{ts,tsx}'],
-    // 並列実行を完全に無効化（メモリ不足対策）
-    maxConcurrency: 1,
+    // 並列実行を制限（パフォーマンスとメモリのバランス）
+    maxConcurrency: 2, // 1 → 2（パフォーマンス向上）
     pool: 'forks',
     poolOptions: {
       forks: {
         singleFork: false, // 各テストファイル後にワーカーを再起動（メモリ最適化）
         isolate: true,
-        // ワーカープロセスのメモリ制限（親プロセスのメモリを節約）
-        execArgv: ['--max-old-space-size=1024', '--expose-gc'],
+        // ワーカープロセスのメモリ制限を増加（安定性向上）
+        execArgv: ['--max-old-space-size=2048', '--expose-gc'], // 1024MB → 2048MB
       },
     },
     // レポーター設定

@@ -25,6 +25,7 @@ Object.defineProperty(window, 'caches', {
     delete: vi.fn().mockResolvedValue(true),
   },
   writable: true,
+  configurable: true,
 });
 
 describe('useErrorRecovery', () => {
@@ -32,6 +33,16 @@ describe('useErrorRecovery', () => {
     vi.useRealTimers();
     vi.clearAllMocks();
     (navigator as any).onLine = true;
+
+    // cachesモックを再設定
+    Object.defineProperty(window, 'caches', {
+      value: {
+        keys: vi.fn().mockResolvedValue(['cache1', 'cache2']),
+        delete: vi.fn().mockResolvedValue(true),
+      },
+      writable: true,
+      configurable: true,
+    });
   });
 
   afterEach(() => {

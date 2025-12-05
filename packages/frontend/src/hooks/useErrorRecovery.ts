@@ -439,8 +439,10 @@ export const useErrorRecovery = (options: UseErrorRecoveryOptions = {}): UseErro
         case RecoveryAction.CLEAR_CACHE:
           if ('caches' in window) {
             setRecoveryProgress(0.3);
-            await caches.keys().then(names => Promise.all(names.map(name => caches.delete(name))));
+            const cacheNames = await caches.keys();
+            await Promise.all(cacheNames.map(name => caches.delete(name)));
             setRecoveryProgress(0.7);
+            return true;
           }
           break;
 
@@ -449,7 +451,7 @@ export const useErrorRecovery = (options: UseErrorRecoveryOptions = {}): UseErro
           localStorage.clear();
           sessionStorage.clear();
           setRecoveryProgress(0.7);
-          break;
+          return true;
 
         case RecoveryAction.SUGGEST_ALTERNATIVE:
           if (contextRef.current?.fallbackFunction) {
