@@ -29,7 +29,6 @@
     "clean": "turbo run clean",
     "install:all": "pnpm install",
     "build:all": "pnpm run build",
-    "test:all": "pnpm run test",
     "lint:all": "pnpm run lint",
     "type-check:all": "pnpm run type-check",
     "env:check": "node tools/scripts/validate-env.js",
