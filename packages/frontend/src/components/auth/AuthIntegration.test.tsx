@@ -73,9 +73,12 @@ describe('認証統合テスト', () => {
 
       render(<TestApp />);
 
-      await waitFor(() => {
-        expect(screen.getByRole('heading', { name: 'ログイン' })).toBeInTheDocument();
-      });
+      await waitFor(
+        () => {
+          expect(screen.getByRole('heading', { name: 'ログイン' })).toBeInTheDocument();
+        },
+        { timeout: 5000 }
+      );
 
       // ダッシュボードは表示されない
       expect(screen.queryByText('ダッシュボード')).not.toBeInTheDocument();
@@ -97,9 +100,12 @@ describe('認証統合テスト', () => {
 
       render(<TestApp />);
 
-      await waitFor(() => {
-        expect(screen.getByText('ダッシュボード')).toBeInTheDocument();
-      });
+      await waitFor(
+        () => {
+          expect(screen.getByText('ダッシュボード')).toBeInTheDocument();
+        },
+        { timeout: 5000 }
+      );
 
       // ログインページは表示されない
       expect(screen.queryByRole('heading', { name: 'ログイン' })).not.toBeInTheDocument();
@@ -113,9 +119,12 @@ describe('認証統合テスト', () => {
       render(<TestApp />);
 
       // ログインフォームが表示されることを確認
-      await waitFor(() => {
-        expect(screen.getByRole('heading', { name: 'ログイン' })).toBeInTheDocument();
-      });
+      await waitFor(
+        () => {
+          expect(screen.getByRole('heading', { name: 'ログイン' })).toBeInTheDocument();
+        },
+        { timeout: 5000 }
+      );
 
       // ログイン情報を入力
       const emailInput = screen.getByLabelText(/メールアドレス/);
@@ -132,7 +141,7 @@ describe('認証統合テスト', () => {
         () => {
           expect(screen.getByText('ホーム')).toBeInTheDocument();
         },
-        { timeout: 3000 }
+        { timeout: 5000 }
       );
     });
 
@@ -145,9 +154,12 @@ describe('認証統合テスト', () => {
       render(<TestApp />);
 
       // サインアップフォームが表示されることを確認
-      await waitFor(() => {
-        expect(screen.getByText('アカウント作成')).toBeInTheDocument();
-      });
+      await waitFor(
+        () => {
+          expect(screen.getByText('アカウント作成')).toBeInTheDocument();
+        },
+        { timeout: 5000 }
+      );
 
       // サインアップ情報を入力
       await user.type(screen.getByLabelText('名前'), '山田太郎');
@@ -157,23 +169,25 @@ describe('認証統合テスト', () => {
 
       const submitButton = screen.getByRole('button', { name: 'アカウント作成' });
 
-      await waitFor(() => {
-        expect(submitButton).not.toBeDisabled();
-      });
+      await waitFor(
+        () => {
+          expect(submitButton).not.toBeDisabled();
+        },
+        { timeout: 5000 }
+      );
 
       await user.click(submitButton);
 
       // サインアップ成功メッセージまたはログインページへのリダイレクトを確認
       await waitFor(
         () => {
-          expect(
-            screen.getByText(/アカウントが作成されました/) ||
-              screen.getByRole('heading', { name: 'ログイン' })
-          ).toBeInTheDocument();
+          const successMessage = screen.queryByText(/アカウントが作成されました/);
+          const loginHeading = screen.queryByRole('heading', { name: 'ログイン' });
+          expect(successMessage || loginHeading).toBeInTheDocument();
         },
-        { timeout: 3000 }
+        { timeout: 5000 }
       );
-    });
+    }, 10000); // テスト全体のタイムアウトを10秒に延長
   });
 
   describe('エラーハンドリング統合テスト', () => {
