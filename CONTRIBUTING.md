@@ -5,11 +5,186 @@
 ## 目次
 
 - [開発環境セットアップ](#開発環境セットアップ)
+- [よく使うコマンド](#よく使うコマンド)
+- [その他のコマンド](#その他のコマンド)
 - [プロジェクト構成詳細](#プロジェクト構成詳細)
 - [開発ワークフロー](#開発ワークフロー)
 - [テスト戦略](#テスト戦略)
 - [デプロイメント](#デプロイメント)
 - [トラブルシューティング](#トラブルシューティング)
+
+## よく使うコマンド
+
+```bash
+# 開発サーバー起動
+pnpm dev
+
+# ビルド
+pnpm build
+
+# テスト実行
+pnpm test                    # 全パッケージのユニットテスト
+pnpm test:integration        # 統合テスト
+pnpm test:coverage          # カバレッジ付きテスト
+
+# コード品質チェック
+pnpm lint                   # リント実行
+pnpm lint:fix              # リント自動修正
+pnpm type-check            # 型チェック
+pnpm format                # フォーマット
+pnpm format:check          # フォーマットチェック
+
+# クリーンアップ
+pnpm clean
+```
+
+## その他のコマンド
+
+### パッケージ別テスト
+
+```bash
+# 個別パッケージのテスト
+pnpm --filter @goal-mandala/backend test
+pnpm --filter @goal-mandala/frontend test
+pnpm --filter @goal-mandala/shared test
+```
+
+### 環境チェック
+
+```bash
+# 環境変数の検証
+node tools/scripts/validate-env.js
+```
+
+### SAM CLI
+
+```bash
+# SAM Local API起動
+bash tools/scripts/sam-local-start.sh
+```
+
+### Husky
+
+```bash
+# Huskyのインストール
+husky install
+
+# Pre-commitフックのテスト
+.husky/pre-commit
+
+# Lint-stagedのテスト
+lint-staged
+```
+
+### CI/CD関連
+
+```bash
+# CI/CDの検証（ローカル）
+pnpm run lint && pnpm run type-check && pnpm run test
+pnpm run build && pnpm run test:coverage && pnpm run lint && pnpm run type-check
+
+# GitHub Actionsのローカルテスト（actが必要）
+act pull_request -W .github/workflows/pr-check.yml
+act push -W .github/workflows/main-ci.yml
+```
+
+### 品質チェック
+
+```bash
+# 品質チェック
+pnpm run lint && pnpm run type-check && pnpm run format:check
+
+# 品質修正
+pnpm run lint:fix && pnpm run format
+```
+
+### CDK関連
+
+```bash
+# CDK基本コマンド
+cd packages/infrastructure
+npx cdk bootstrap
+npx cdk list
+npx cdk doctor
+npx cdk synth
+npx cdk deploy
+npx cdk destroy
+npx cdk diff
+
+# 環境別デプロイ
+pnpm run deploy:dev
+pnpm run deploy:stg
+pnpm run deploy:prod
+
+# 環境別diff
+pnpm run deploy:dev:diff
+pnpm run deploy:stg:diff
+pnpm run deploy:prod:diff
+
+# 環境別synth
+pnpm run cdk:synth:all
+pnpm run cdk:synth:dev
+pnpm run cdk:synth:stg
+pnpm run cdk:synth:prod
+
+# 環境別diff
+pnpm run cdk:diff:dev
+pnpm run cdk:diff:stg
+pnpm run cdk:diff:prod
+
+# セキュリティチェック
+pnpm run security:check
+
+# CDK CI検証
+pnpm run ci:validate
+```
+
+### フロントエンドデプロイ
+
+```bash
+cd packages/infrastructure
+
+# フロントエンドデプロイ
+pnpm run frontend:deploy
+pnpm run frontend:deploy:dev
+pnpm run frontend:deploy:stg
+pnpm run frontend:deploy:prod
+pnpm run frontend:deploy:build-only
+pnpm run frontend:deploy:dry-run
+
+# CloudFront無効化
+pnpm run frontend:invalidate
+pnpm run frontend:invalidate:dev
+pnpm run frontend:invalidate:stg
+pnpm run frontend:invalidate:prod
+```
+
+### Cognitoデプロイ
+
+```bash
+cd packages/infrastructure
+
+# Cognitoデプロイ
+pnpm run cognito:deploy:dev
+pnpm run cognito:deploy:stg
+pnpm run cognito:deploy:prod
+
+# Cognito diff
+pnpm run cognito:diff:dev
+pnpm run cognito:diff:stg
+pnpm run cognito:diff:prod
+
+# Cognito synth
+pnpm run cognito:synth:dev
+pnpm run cognito:synth:stg
+pnpm run cognito:synth:prod
+
+# Cognito検証
+pnpm run cognito:validate
+pnpm run cognito:validate:dev
+pnpm run cognito:validate:stg
+pnpm run cognito:validate:prod
+```
 
 ## 開発環境セットアップ
 
