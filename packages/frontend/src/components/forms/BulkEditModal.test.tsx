@@ -73,8 +73,8 @@ vi.mock('./DynamicFormField', () => ({
 }));
 
 vi.mock('../common/LoadingButton', () => ({
-  LoadingButton: ({ children, ...props }: any) => (
-    <button data-testid="loading-button" {...props}>
+  LoadingButton: ({ children, isLoading, ...props }: any) => (
+    <button data-testid="loading-button" aria-busy={isLoading} {...props}>
       {children}
     </button>
   ),

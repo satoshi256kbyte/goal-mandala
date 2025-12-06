@@ -22,14 +22,14 @@ export default defineConfig({
     // 統合テストとE2Eテストを除外
     exclude: ['**/node_modules/**', '**/dist/**', '**/e2e/**', '**/*.integration.test.{ts,tsx}'],
     // 並列実行を制限（パフォーマンスとメモリのバランス）
-    maxConcurrency: 2, // 1 → 2（パフォーマンス向上）
+    maxConcurrency: 1,
     pool: 'forks',
     poolOptions: {
       forks: {
         singleFork: false, // 各テストファイル後にワーカーを再起動（メモリ最適化）
         isolate: true,
         // ワーカープロセスのメモリ制限を増加（安定性向上）
-        execArgv: ['--max-old-space-size=2048', '--expose-gc'], // 1024MB → 2048MB
+        execArgv: ['--max-old-space-size=4096', '--expose-gc'], // 2048MB → 4096MB
       },
     },
     // レポーター設定

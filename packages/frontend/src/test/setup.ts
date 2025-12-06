@@ -36,6 +36,18 @@ console.error = (...args: any[]) => {
     return;
   }
 
+  // 意図的なエラーテストのログを抑制
+  if (
+    typeof args[0] === 'string' &&
+    (args[0].includes('Progress history error') ||
+      args[0].includes('Invalid drag data') ||
+      args[0].includes('回復アクション実行エラー') ||
+      args[0].includes('自動回復に失敗しました') ||
+      args[0].includes('Logout failed'))
+  ) {
+    return;
+  }
+
   // その他の重要なエラーは表示
   originalError.call(console, ...args);
 };
