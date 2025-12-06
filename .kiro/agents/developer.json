@@ -26,8 +26,7 @@
   "resources": [
     "file://AGENTS.md",
     "file://README.md",
-    "file://.kiro/steering/**/*",
-    "file://.kiro/specs/2.4.12-incremental-test-addition/**/*"
+    "file://.kiro/steering/**/*"
   ],
   "hooks": {},
   "toolsSettings": {},
