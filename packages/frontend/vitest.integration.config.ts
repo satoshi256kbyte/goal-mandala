@@ -19,12 +19,14 @@ export default defineConfig({
     poolOptions: {
       forks: {
         singleFork: false,
+        isolate: true,
         maxForks: 2,
         minForks: 1,
+        // メモリ制限を増加（安定性向上）
+        execArgv: ['--max-old-space-size=4096', '--expose-gc'],
       },
     },
     maxConcurrency: 2, // 統合テストは並列数を抑える
-    isolate: false,
     // レポーター設定
     reporters: ['dot'],
     // カバレッジは無効
