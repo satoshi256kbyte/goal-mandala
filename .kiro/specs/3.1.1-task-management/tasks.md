@@ -13,20 +13,21 @@
 - データベーススキーマ（tasks, task_notes, task_history, saved_views）
 - バックエンドサービス（TaskService, FilterService, ProgressService, NotificationService）
 - 基本的なフロントエンドコンポーネント（TaskCard, ProgressBar, TaskFilter, TaskSearch）
-- TaskServiceのユニットテスト
-- テストユーティリティ（generators, arbitraries）
-- Lambda Handlerの完全実装（認証・認可・入力検証・エラーハンドリング）
-- TaskAPIクライアントの実装（全エンドポイント対応）
-- React Queryの統合（キャッシュ戦略・楽観的更新）
-- フロントエンドページコンポーネント（TaskListPage, TaskDetailPage）
-- 通知機能の完全実装（ユニットテスト・プロパティテスト含む）
-- プロパティベーステスト（Property 2, 3, 4, 5, 6, 19, 20）
+- TaskServiceとFilterServiceのユニットテスト
+- フロントエンドページコンポーネント（TaskListPage, TaskDetailPage）の基本実装
+- フロントエンドページのユニットテスト
 
 ### 未完了
+- Lambda Handlerの完全実装（現在はスタブのみ）
+- TaskAPIクライアントの実装
+- React Queryの統合
+- 楽観的更新の実装
+- プロパティベーステスト（全20プロパティ）
+- 通知機能の実装
 - 統合テスト・E2Eテスト
 - CDKインフラ実装
 - パフォーマンス最適化
-- セキュリティ対策
+- セキュリティ対策の強化
 - ドキュメント作成
 
 ## タスクリスト
@@ -118,26 +119,26 @@
       - **Property 18: タスク履歴の記録**
       - **Validates: Requirements 13.1-13.5**
   
-  - [x] 2.8 Lambda Handlerの実装
-    - [x] 2.8.1 APIエンドポイントハンドラーの完成
-      - 既存のtask-management.tsハンドラーを確認・修正
+  - [-] 2.8 Lambda Handlerの実装
+    - [-] 2.8.1 APIエンドポイントハンドラーの実装
+      - task-management.tsハンドラーを実装（現在はスタブのみ）
       - GET /api/tasks、GET /api/tasks/:id
       - PATCH /api/tasks/:id/status
       - POST /api/tasks/:id/notes、PATCH /api/tasks/:id/notes/:noteId、DELETE /api/tasks/:id/notes/:noteId
       - POST /api/tasks/bulk/status、DELETE /api/tasks/bulk
       - GET /api/saved-views、POST /api/saved-views、DELETE /api/saved-views/:id
       - _Requirements: All_
-    - [x] 2.8.2 認証・認可ミドルウェアの統合
+    - [ ] 2.8.2 認証・認可ミドルウェアの統合
       - JWT検証ミドルウェアの適用
       - リソースアクセス制御ミドルウェアの適用
       - エラーハンドリングの統一
       - _Requirements: All_
-    - [x] 2.8.3 入力検証の完成
+    - [ ] 2.8.3 入力検証の実装
       - Zodスキーマによるバリデーション
       - エラーレスポンスの統一
       - バリデーションエラーメッセージの日本語化
       - _Requirements: All_
-    - [x] 2.8.4 Lambda Handlerのユニットテスト
+    - [ ]* 2.8.4 Lambda Handlerのユニットテスト
       - 各エンドポイントの正常系・異常系テスト
       - 認証・認可のテスト
       - エラーハンドリングのテスト
@@ -232,21 +233,21 @@
       - **Validates: Requirements 2.3-2.4**
 
 
-  - [x] 3.5 API統合の実装
-    - [x] 3.5.1 TaskAPIクライアントの実装
+  - [ ] 3.5 API統合の実装
+    - [ ] 3.5.1 TaskAPIクライアントの実装
       - 全APIエンドポイントのクライアント関数
       - エラーハンドリング
       - リトライロジック（exponential backoff）
       - 認証トークンの自動付与
       - _Requirements: All_
-    - [x] 3.5.2 React Queryの統合
+    - [ ] 3.5.2 React Queryの統合
       - useTasksフック（タスク一覧取得）
       - useTaskDetailフック（タスク詳細取得）
       - useMutationフック（状態更新、ノート操作、一括操作）
       - キャッシュ戦略（5分キャッシュ）
       - 楽観的更新の実装
       - _Requirements: All_
-    - [x] 3.5.3 API統合のユニットテスト
+    - [ ]* 3.5.3 API統合のユニットテスト
       - APIクライアントのテスト
       - React Queryフックのテスト
       - エラーハンドリングのテスト
