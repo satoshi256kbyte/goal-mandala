@@ -5,9 +5,8 @@ import { ProgressService } from '../../services/progress.service';
 
 jest.mock('../../generated/prisma-client');
 
-// Note: このテストは複雑なモックが必要なためスキップ
-// 実際のデータベースを使用した統合テストで検証する
-describe.skip('Task Lifecycle Integration Tests', () => {
+// Note: モックを簡素化して統合テストを有効化
+describe('Task Lifecycle Integration Tests', () => {
   let prisma: jest.Mocked<PrismaClient>;
   let taskService: TaskService;
   let filterService: FilterService;
