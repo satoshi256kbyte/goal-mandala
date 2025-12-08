@@ -1,13 +1,19 @@
 import React from 'react';
-import { render } from '@testing-library/react';
+import { render, cleanup } from '@testing-library/react';
 import { screen } from '@testing-library/react';
 import { SafeText } from '../SafeText';
 
-import { vi } from 'vitest';
+import { vi, afterEach } from 'vitest';
 
 // console.warn をモック
 const mockConsoleWarn = vi.fn();
 console.warn = mockConsoleWarn;
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('SafeText', () => {
   beforeEach(() => {

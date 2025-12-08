@@ -1,7 +1,7 @@
 import React from 'react';
-import { render, screen, waitFor, act } from '@testing-library/react';
+import { render, cleanup, screen, waitFor, act } from '@testing-library/react';
 import { fireEvent } from '@testing-library/react';
-import { vi } from 'vitest';
+import { vi, afterEach } from 'vitest';
 import { ActionForm } from './ActionForm';
 import { ActionProvider } from '../../contexts/ActionContext';
 import { ActionType } from '../../types/mandala';
@@ -67,6 +67,12 @@ const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
     {children}
   </ActionProvider>
 );
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('ActionForm', () => {
   const defaultProps = {

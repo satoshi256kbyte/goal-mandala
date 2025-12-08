@@ -1,6 +1,5 @@
-import { renderHook } from '@testing-library/react';
-import { act } from '@testing-library/react';
-import { vi } from 'vitest';
+import { renderHook, cleanup, act } from '@testing-library/react';
+import { vi, afterEach } from 'vitest';
 import { useFormActions } from './useFormActions';
 import { PartialGoalFormData } from '../schemas/goal-form';
 import { draftUtils } from '../services/draftService';
@@ -13,6 +12,12 @@ vi.mock('../services/draftService', () => ({
 }));
 
 const mockDraftUtils = draftUtils as any;
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('useFormActions', () => {
   const validFormData: PartialGoalFormData = {

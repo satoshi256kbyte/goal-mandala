@@ -1,6 +1,6 @@
 import React from 'react';
-import { render, screen, fireEvent, act, waitFor } from '@testing-library/react';
-import { describe, it, expect } from 'vitest';
+import { render, cleanup, screen, fireEvent, act, waitFor } from '@testing-library/react';
+import { describe, it, expect, afterEach } from 'vitest';
 import userEvent from '@testing-library/user-event';
 import { ProgressBar } from './ProgressBar';
 import { AnimationSettingsProvider } from '../../contexts/AnimationSettingsContext';
@@ -14,6 +14,12 @@ const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
 const renderWithProvider = (ui: React.ReactElement, options = {}) => {
   return render(ui, { wrapper: TestWrapper, ...options });
 };
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('ProgressBar', () => {
   describe('基本的な表示機能', () => {

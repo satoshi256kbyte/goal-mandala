@@ -4,8 +4,8 @@
  */
 
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
-import { vi } from 'vitest';
+import { render, cleanup, screen, fireEvent } from '@testing-library/react';
+import { vi, afterEach } from 'vitest';
 import { ProgressDetailModal } from '../ProgressDetailModal';
 import {
   ProgressHistoryEntry,
@@ -63,6 +63,12 @@ vi.mock('../../../utils/screen-reader', async importOriginal => {
   return {
     ...actual,
   };
+});
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
 });
 
 describe('ProgressDetailModal', () => {

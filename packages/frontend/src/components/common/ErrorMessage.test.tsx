@@ -1,8 +1,14 @@
 import React from 'react';
-import { render } from '@testing-library/react';
+import { render, cleanup } from '@testing-library/react';
 import { screen } from '@testing-library/react';
-import { describe, it } from 'vitest';
+import { describe, it, afterEach } from 'vitest';
 import { ErrorMessage } from './ErrorMessage';
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('ErrorMessage', () => {
   it('エラーメッセージが表示される', () => {

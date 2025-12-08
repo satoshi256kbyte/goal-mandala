@@ -3,9 +3,9 @@
  */
 
 import React from 'react';
-import { render } from '@testing-library/react';
+import { render, cleanup } from '@testing-library/react';
 import { screen } from '@testing-library/react';
-import { vi } from 'vitest';
+import { vi, afterEach } from 'vitest';
 import { ProgressHistoryAnalysis } from '../ProgressHistoryAnalysis';
 import {
   ProgressHistoryEntry,
@@ -24,6 +24,12 @@ vi.mock('date-fns', () => ({
 vi.mock('date-fns/locale', () => ({
   ja: {},
 }));
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('ProgressHistoryAnalysis', () => {
   const mockHistoryData: ProgressHistoryEntry[] = [

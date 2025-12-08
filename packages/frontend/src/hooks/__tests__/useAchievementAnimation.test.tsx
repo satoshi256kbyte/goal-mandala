@@ -1,6 +1,6 @@
 import React from 'react';
-import { render, screen, waitFor, act } from '@testing-library/react';
-import { vi } from 'vitest';
+import { render, cleanup, screen, waitFor, act } from '@testing-library/react';
+import { vi, afterEach } from 'vitest';
 import {
   useAchievementAnimation,
   useMultipleAchievementAnimation,
@@ -95,6 +95,12 @@ const MultipleTestComponent: React.FC<{
     </div>
   );
 };
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('useAchievementAnimation', () => {
   beforeEach(() => {

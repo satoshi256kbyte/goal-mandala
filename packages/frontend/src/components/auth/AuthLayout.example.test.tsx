@@ -1,6 +1,12 @@
-import { render, screen, waitFor, fireEvent, act } from '@testing-library/react';
-import { describe, it } from 'vitest';
+import { render, cleanup, screen, waitFor, fireEvent, act } from '@testing-library/react';
+import { describe, it, afterEach } from 'vitest';
 import AuthLayoutExample from './AuthLayout.example';
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('AuthLayoutExample', () => {
   it('完全なログインフォームが正しく表示される', () => {

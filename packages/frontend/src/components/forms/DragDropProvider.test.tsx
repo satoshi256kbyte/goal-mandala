@@ -1,7 +1,7 @@
 import React from 'react';
-import { render, screen, fireEvent, act } from '@testing-library/react';
+import { render, cleanup, screen, fireEvent, act } from '@testing-library/react';
 import { waitFor } from '@testing-library/react';
-import { vi } from 'vitest';
+import { vi, afterEach } from 'vitest';
 import userEvent from '@testing-library/user-event';
 import {
   DragDropProvider,
@@ -53,6 +53,12 @@ const TestWithHook: React.FC<{
     </DragDropProvider>
   );
 };
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('DragDropProvider', () => {
   const mockItems: DraggableItem[] = [

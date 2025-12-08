@@ -1,9 +1,9 @@
 import React from 'react';
 import { RecoveryAction } from '../../hooks/useErrorRecovery';
 import { NetworkErrorType } from '../../services/api';
-import { render, screen, fireEvent, act } from '@testing-library/react';
+import { render, cleanup, screen, fireEvent, act } from '@testing-library/react';
 import { waitFor } from '@testing-library/react';
-import { vi } from 'vitest';
+import { vi, afterEach } from 'vitest';
 import { ErrorRecoveryPanel } from './ErrorRecoveryPanel';
 
 // ApiError型定義
@@ -62,6 +62,12 @@ vi.mock('../../hooks/useErrorRecovery', () => ({
 
 import { useErrorRecovery } from '../../hooks/useErrorRecovery';
 const mockUseErrorRecovery = useErrorRecovery as ReturnType<typeof vi.fn>;
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('ErrorRecoveryPanel', () => {
   const mockStartRecovery = vi.fn();

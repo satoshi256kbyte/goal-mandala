@@ -3,9 +3,9 @@
  */
 
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, cleanup, screen } from '@testing-library/react';
 import { fireEvent } from '@testing-library/react';
-import { vi } from 'vitest';
+import { vi, afterEach } from 'vitest';
 import { ProgressHistoryDetail } from '../ProgressHistoryDetail';
 import {
   ProgressHistoryEntry,
@@ -55,6 +55,12 @@ vi.mock('../Tooltip', () => ({
     </div>
   ),
 }));
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('ProgressHistoryDetail', () => {
   const mockHistoryData: ProgressHistoryEntry[] = [

@@ -1,6 +1,12 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, cleanup, screen, fireEvent } from '@testing-library/react';
 import { TaskCard } from '../TaskCard';
 import { generateMockTask, TaskStatus } from '@goal-mandala/shared';
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('TaskCard', () => {
   it('should render task information correctly', () => {

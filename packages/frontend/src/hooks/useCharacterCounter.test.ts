@@ -1,6 +1,12 @@
-import { renderHook, act, waitFor } from '@testing-library/react';
-import { vi } from 'vitest';
+import { renderHook, cleanup, act, waitFor } from '@testing-library/react';
+import { vi, afterEach } from 'vitest';
 import { useCharacterCounter } from './useCharacterCounter';
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('useCharacterCounter', () => {
   describe('基本機能', () => {

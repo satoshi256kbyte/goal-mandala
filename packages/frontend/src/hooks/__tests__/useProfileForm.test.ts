@@ -1,11 +1,17 @@
-import { renderHook, act, waitFor } from '@testing-library/react';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { renderHook, cleanup, act, waitFor } from '@testing-library/react';
+import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { useProfileForm } from '../useProfileForm';
 import { updateProfile, ProfileUpdateResponse } from '../../services/profileService';
 
 // Mock the profile service
 vi.mock('../../services/profileService');
 const mockUpdateProfile = vi.mocked(updateProfile);
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('useProfileForm', () => {
   beforeEach(() => {

@@ -1,5 +1,10 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterEach } from 'vitest';
 import { sanitizeText, sanitizeGoalTitle, sanitizeDescription } from '../input-sanitizer';
+
+afterEach(() => {
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('security utilities', () => {
   describe('sanitizeText', () => {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor, fireEvent, act } from '@testing-library/react';
+import { render, cleanup, screen, waitFor, fireEvent, act } from '@testing-library/react';
 import { ActionProvider } from '../../contexts/ActionContext';
 import { ActionType, Action } from '../../types/mandala';
 
@@ -24,6 +24,12 @@ const mockActions: Action[] = [
     progress: 50,
   },
 ];
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('アクション編集機能統合テスト', () => {
   describe('ActionContext統合', () => {

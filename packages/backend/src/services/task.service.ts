@@ -59,6 +59,11 @@ export interface ITaskService {
    * タスク履歴を取得
    */
   getTaskHistory(taskId: string): Promise<TaskHistory[]>;
+
+  /**
+   * タスクのノート一覧を取得
+   */
+  getNotes(taskId: string): Promise<TaskNote[]>;
 }
 
 /**
@@ -441,6 +446,18 @@ export class TaskService implements ITaskService {
     });
 
     return history;
+  }
+
+  /**
+   * タスクのノート一覧を取得
+   */
+  async getNotes(taskId: string): Promise<TaskNote[]> {
+    const notes = await this.prisma.taskNote.findMany({
+      where: { taskId },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    return notes;
   }
 
   /**

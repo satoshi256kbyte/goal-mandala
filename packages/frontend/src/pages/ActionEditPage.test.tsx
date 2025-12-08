@@ -1,7 +1,7 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, cleanup, screen, fireEvent } from '@testing-library/react';
 import { waitFor } from '@testing-library/react';
-import { vi } from 'vitest';
+import { vi, afterEach } from 'vitest';
 import { BrowserRouter } from 'react-router-dom';
 import { ActionEditPage } from './ActionEditPage';
 import { AuthProvider } from '../components/auth/AuthProvider';
@@ -81,6 +81,12 @@ const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
     <AuthProvider>{children}</AuthProvider>
   </BrowserRouter>
 );
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('ActionEditPage', () => {
   beforeEach(() => {

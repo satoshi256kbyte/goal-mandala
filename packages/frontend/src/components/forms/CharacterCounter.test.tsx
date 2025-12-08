@@ -1,7 +1,13 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
-import { describe, it, expect } from 'vitest';
+import { render, cleanup, screen } from '@testing-library/react';
+import { describe, it, expect, afterEach } from 'vitest';
 import { CharacterCounter } from './CharacterCounter';
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('CharacterCounter', () => {
   it('文字数が表示される', () => {

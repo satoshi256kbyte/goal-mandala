@@ -1,5 +1,10 @@
 import { sanitizeInput, sanitizeHtml } from './sanitize';
 
+afterEach(() => {
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
+
 describe('Frontend sanitizeInput', () => {
   describe('XSS対策', () => {
     it('スクリプトタグを削除する', () => {

@@ -1,9 +1,15 @@
 import React from 'react';
-import { render, screen, waitFor, act } from '@testing-library/react';
+import { render, cleanup, screen, waitFor, act } from '@testing-library/react';
 import { fireEvent } from '@testing-library/react';
-import { vi } from 'vitest';
+import { vi, afterEach } from 'vitest';
 import { DraftRestoreNotification } from './DraftRestoreNotification';
 import { DraftData } from '../../services/draftService';
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('DraftRestoreNotification', () => {
   const mockDraftData: DraftData = {

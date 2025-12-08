@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, act } from '@testing-library/react';
+import { render, cleanup, screen, fireEvent, act } from '@testing-library/react';
 import { waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { PasswordResetForm } from './PasswordResetForm';
@@ -9,7 +9,13 @@ const renderWithRouter = (component: React.ReactElement) => {
   return render(<BrowserRouter>{component}</BrowserRouter>);
 };
 
-import { vi } from 'vitest';
+import { vi, afterEach } from 'vitest';
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('PasswordResetForm', () => {
   const mockOnSubmit = vi.fn();

@@ -1,6 +1,6 @@
 import React from 'react';
-import { renderHook, act } from '@testing-library/react';
-import { vi, beforeEach, describe, it, expect } from 'vitest';
+import { render, cleanup, act, renderHook } from '@testing-library/react';
+import { vi, beforeEach, describe, it, expect, afterEach } from 'vitest';
 import { useAuth } from './useAuth';
 import { AuthProvider } from '../components/auth/AuthProvider';
 
@@ -38,6 +38,12 @@ Object.defineProperty(window, 'localStorage', {
 const wrapper = ({ children }: { children: React.ReactNode }) => (
   <AuthProvider>{children}</AuthProvider>
 );
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('useAuth', () => {
   beforeEach(() => {

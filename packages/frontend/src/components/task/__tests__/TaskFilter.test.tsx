@@ -1,6 +1,12 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, cleanup, screen, fireEvent } from '@testing-library/react';
 import { TaskFilter } from '../TaskFilter';
 import { TaskFilters, TaskStatus } from '@goal-mandala/shared';
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('TaskFilter', () => {
   const mockActions = [

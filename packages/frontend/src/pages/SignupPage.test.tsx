@@ -1,12 +1,12 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, cleanup, screen, fireEvent } from '@testing-library/react';
 import { waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { SignupPage } from './SignupPage';
 import { AuthService } from '../services/auth';
 import { useAuthForm } from '../hooks/useAuthForm';
 
-import { vi } from 'vitest';
+import { vi, afterEach } from 'vitest';
 
 // AuthLayoutをモック化
 vi.mock('../components/auth/AuthLayout', () => ({
@@ -48,6 +48,12 @@ vi.mock('react-router-dom', async () => {
 const renderWithRouter = (component: React.ReactElement) => {
   return render(<BrowserRouter>{component}</BrowserRouter>);
 };
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('SignupPage', () => {
   beforeEach(() => {

@@ -1,8 +1,14 @@
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent, act } from '@testing-library/react';
+import { describe, it, expect, vi, afterEach } from 'vitest';
+import { render, cleanup, screen, fireEvent, act } from '@testing-library/react';
 import { waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { InlineEditor } from './InlineEditor';
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('InlineEditor', () => {
   let mockOnSave: ReturnType<typeof vi.fn<[value: string], Promise<void>>>;

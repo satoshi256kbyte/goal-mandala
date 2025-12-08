@@ -1,12 +1,18 @@
 import React from 'react';
-import { render, screen, fireEvent, act } from '@testing-library/react';
+import { render, cleanup, screen, fireEvent, act } from '@testing-library/react';
 import { waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { vi } from 'vitest';
+import { vi, afterEach } from 'vitest';
 import { InlineEditor } from '../InlineEditor';
 import { EditModal } from '../EditModal';
 import MandalaCell from '../MandalaCell';
 import { CellData, Goal, GoalStatus } from '../../../types';
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('キーボード操作テスト', () => {
   describe('InlineEditor', () => {

@@ -1,13 +1,19 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, cleanup, screen } from '@testing-library/react';
 import { fireEvent } from '@testing-library/react';
-import { vi } from 'vitest';
+import { vi, afterEach } from 'vitest';
 import { TabletLayout, TabletHeader, TabletSplitView } from '../TabletLayout';
 import { useResponsive } from '../../../hooks/useResponsive';
 
 // useResponsiveフックのモック
 vi.mock('../../../hooks/useResponsive');
 const mockUseResponsive = useResponsive as any;
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('TabletLayout', () => {
   beforeEach(() => {

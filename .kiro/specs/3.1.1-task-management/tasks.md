@@ -120,7 +120,7 @@
       - **Validates: Requirements 13.1-13.5**
   
   - [-] 2.8 Lambda Handlerの実装
-    - [-] 2.8.1 APIエンドポイントハンドラーの実装
+    - [ ] 2.8.1 APIエンドポイントハンドラーの実装
       - task-management.tsハンドラーを実装（現在はスタブのみ）
       - GET /api/tasks、GET /api/tasks/:id
       - PATCH /api/tasks/:id/status

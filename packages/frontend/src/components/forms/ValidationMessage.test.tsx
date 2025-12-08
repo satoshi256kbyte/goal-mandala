@@ -1,6 +1,12 @@
-import { render, screen, waitFor, fireEvent, act } from '@testing-library/react';
-import { describe, it } from 'vitest';
+import { render, cleanup, screen, waitFor, fireEvent, act } from '@testing-library/react';
+import { describe, it, afterEach } from 'vitest';
 import { ValidationMessage } from './ValidationMessage';
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('ValidationMessage', () => {
   it('メッセージがない場合は何も表示されない', () => {

@@ -1,5 +1,5 @@
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
-import { describe, it, expect } from 'vitest';
+import { render, cleanup, screen, fireEvent, waitFor, act } from '@testing-library/react';
+import { describe, it, expect, afterEach } from 'vitest';
 import { useForm } from 'react-hook-form';
 import { TextInput } from './TextInput';
 
@@ -38,6 +38,12 @@ const TestWrapper = ({
     />
   );
 };
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('TextInput', () => {
   describe('基本機能', () => {

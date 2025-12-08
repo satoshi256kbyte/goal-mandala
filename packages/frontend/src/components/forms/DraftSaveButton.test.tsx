@@ -1,7 +1,7 @@
 import React from 'react';
-import { render, screen, fireEvent, act } from '@testing-library/react';
+import { render, cleanup, screen, fireEvent, act } from '@testing-library/react';
 import { waitFor } from '@testing-library/react';
-import { vi } from 'vitest';
+import { vi, afterEach } from 'vitest';
 import { DraftSaveButton } from './DraftSaveButton';
 import { DraftService } from '../../services/draftService';
 import { draftUtils } from '../../utils/draft-utils';
@@ -18,6 +18,12 @@ vi.mock('../../utils/draft-utils', () => ({
     getTimeSinceSave: vi.fn(() => '1分前'),
   },
 }));
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('DraftSaveButton', () => {
   const mockFormData: PartialGoalFormData = {

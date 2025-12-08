@@ -1,5 +1,5 @@
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { describe, it, expect, vi, afterEach } from 'vitest';
+import { render, cleanup, screen } from '@testing-library/react';
 import { waitFor } from '@testing-library/react';
 import { MemoryRouter, Routes } from 'react-router-dom';
 import { Route } from 'react-router-dom';
@@ -22,6 +22,12 @@ vi.mock('../../components/common/LazyLoader', () => ({
 }));
 
 import { useAuth } from '../../hooks/useAuth';
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('ProfileSetup Routing', () => {
   const mockUseAuth = useAuth as any;

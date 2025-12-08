@@ -1,4 +1,4 @@
-import { describe, it } from 'vitest';
+import { describe, it, afterEach } from 'vitest';
 import {
   validatePasswordStrength,
   getPasswordStrengthScore,
@@ -8,6 +8,11 @@ import {
   sanitizeUserInput,
   isRetryableError,
 } from './authUtils';
+
+afterEach(() => {
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('認証ユーティリティ関数', () => {
   describe('validatePasswordStrength', () => {

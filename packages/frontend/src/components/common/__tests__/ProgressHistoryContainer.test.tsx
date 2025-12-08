@@ -3,9 +3,9 @@
  */
 
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, cleanup, screen, fireEvent } from '@testing-library/react';
 import { waitFor } from '@testing-library/react';
-import { vi } from 'vitest';
+import { vi, afterEach } from 'vitest';
 import { ProgressHistoryContainer } from '../ProgressHistoryContainer';
 import { progressHistoryService } from '../../../services/progress-history-service';
 
@@ -61,6 +61,12 @@ vi.mock('../ErrorMessage', () => ({
 }));
 
 const mockProgressHistoryService = progressHistoryService as any;
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('ProgressHistoryContainer', () => {
   const mockHistoryData = [

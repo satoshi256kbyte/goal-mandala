@@ -1,7 +1,7 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, cleanup, screen } from '@testing-library/react';
 import { waitFor } from '@testing-library/react';
-import { vi, describe, it, expect } from 'vitest';
+import { vi, describe, it, expect, afterEach } from 'vitest';
 import { MemoryRouter, Routes } from 'react-router-dom';
 import { Route } from 'react-router-dom';
 import { AppRoutes } from './AppRouter';
@@ -87,6 +87,12 @@ vi.mock('../components/common/LazyLoader', () => ({
 vi.mock('../components/auth/AuthStateMonitorProvider', () => ({
   AuthStateMonitorProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('AppRouter', () => {
   beforeEach(() => {

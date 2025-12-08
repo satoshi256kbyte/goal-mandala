@@ -1,7 +1,7 @@
 import React from 'react';
-import { render, screen, waitFor, fireEvent, act } from '@testing-library/react';
+import { render, cleanup, screen, waitFor, fireEvent, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { vi } from 'vitest';
+import { vi, afterEach } from 'vitest';
 import { DynamicFormField } from './DynamicFormField';
 // Mock dependencies
 const mockOnChange = vi.fn();
@@ -51,6 +51,13 @@ const radioField = {
     { value: 'low', label: '低' },
   ],
 };
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
+
 describe('DynamicFormField', () => {
   beforeEach(() => {
     vi.clearAllMocks();

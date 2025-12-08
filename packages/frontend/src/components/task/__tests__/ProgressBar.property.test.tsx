@@ -6,6 +6,13 @@ import { ProgressBar } from '../ProgressBar';
  * Feature: task-management, Property 19: 進捗バーの色分け
  * Validates: Requirements 14.4
  */
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
+
 describe('Property 19: 進捗バーの色分け', () => {
   it.skip('should use correct color coding for progress levels', () => {
     fc.assert(

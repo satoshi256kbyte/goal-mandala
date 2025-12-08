@@ -1,6 +1,12 @@
-import { render, screen, waitFor, fireEvent, act } from '@testing-library/react';
+import { render, cleanup, screen, waitFor, fireEvent, act } from '@testing-library/react';
 import { generateGridData, validateGridData } from '../mandala';
 import { Goal, SubGoal, Action, GoalStatus, ActionType } from '../../types';
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('mandala utilities', () => {
   const mockGoal: Goal = {

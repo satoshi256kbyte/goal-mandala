@@ -1,5 +1,11 @@
-import { render, screen, waitFor, fireEvent, act } from '@testing-library/react';
+import { render, cleanup, screen, waitFor, fireEvent, act } from '@testing-library/react';
 import { canEditGoal, canEditSubGoal, canEditAction, hasEditPermission } from './permissions';
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('Frontend 権限チェック', () => {
   describe('canEditGoal', () => {

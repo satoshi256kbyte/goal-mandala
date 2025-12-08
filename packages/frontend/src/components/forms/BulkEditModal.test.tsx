@@ -1,7 +1,7 @@
 import React from 'react';
-import { render, screen, waitFor, fireEvent, act } from '@testing-library/react';
+import { render, cleanup, screen, waitFor, fireEvent, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { vi, beforeEach, describe, it } from 'vitest';
+import { vi, beforeEach, describe, it, afterEach } from 'vitest';
 import { BulkEditModal, BulkEditableItem } from './BulkEditModal';
 
 // Mock all dependencies to prevent complex interactions
@@ -112,6 +112,12 @@ const mockSubGoals: BulkEditableItem[] = [
     position: 0,
   },
 ];
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('BulkEditModal', () => {
   const defaultProps = {

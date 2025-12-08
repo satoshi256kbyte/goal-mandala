@@ -1,7 +1,13 @@
-import { renderHook, act } from '@testing-library/react';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { renderHook, cleanup, act } from '@testing-library/react';
+import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { useGoalForm } from './useGoalForm';
 import { GoalFormData } from '../schemas/goal-form';
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('useGoalForm', () => {
   beforeEach(() => {

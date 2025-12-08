@@ -1,4 +1,4 @@
-import { render, screen, waitFor, fireEvent, act } from '@testing-library/react';
+import { render, cleanup, screen, waitFor, fireEvent, act } from '@testing-library/react';
 import {
   goalFormSchema,
   partialGoalFormSchema,
@@ -9,6 +9,12 @@ import {
   FIELD_LIMITS,
   WARNING_THRESHOLDS,
 } from './goal-form';
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('goalFormSchema', () => {
   describe('title validation', () => {

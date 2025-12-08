@@ -7,6 +7,11 @@ import { ProgressDataValidator } from '../progress-data-validator';
 import { TaskStatus } from '../../types/progress';
 import { ActionType } from '../../types/mandala';
 
+afterEach(() => {
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
+
 describe('ProgressDataValidator', () => {
   let validator: ProgressDataValidator;
 

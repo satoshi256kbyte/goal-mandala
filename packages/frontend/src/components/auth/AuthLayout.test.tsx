@@ -1,7 +1,13 @@
-import { render } from '@testing-library/react';
+import { render, cleanup } from '@testing-library/react';
 import { screen } from '@testing-library/react';
-import { describe, it } from 'vitest';
+import { describe, it, afterEach } from 'vitest';
 import AuthLayout from './AuthLayout';
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('AuthLayout', () => {
   it('タイトルが正しく表示される', () => {

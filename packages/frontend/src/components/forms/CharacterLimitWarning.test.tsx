@@ -1,7 +1,13 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
-import { describe, it, expect } from 'vitest';
+import { render, cleanup, screen } from '@testing-library/react';
+import { describe, it, expect, afterEach } from 'vitest';
 import { CharacterLimitWarning } from './CharacterLimitWarning';
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('CharacterLimitWarning', () => {
   it('80%未満では何も表示されない', () => {

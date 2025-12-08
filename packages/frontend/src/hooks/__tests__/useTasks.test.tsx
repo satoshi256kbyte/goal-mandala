@@ -1,4 +1,4 @@
-import { renderHook, waitFor } from '@testing-library/react';
+import { renderHook, cleanup, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useTasks, useUpdateTaskStatus, useAddNote } from '../useTasks';
 import { taskApi } from '../../services/taskApi';
@@ -23,6 +23,12 @@ const createWrapper = () => {
 
   return TestWrapper;
 };
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('useTasks', () => {
   beforeEach(() => {

@@ -1,6 +1,6 @@
-import { renderHook } from '@testing-library/react';
+import { renderHook, cleanup } from '@testing-library/react';
 import { act } from '@testing-library/react';
-import { vi } from 'vitest';
+import { vi, afterEach } from 'vitest';
 import {
   useResponsive,
   useBreakpoint,
@@ -66,6 +66,12 @@ Object.defineProperty(window, 'innerHeight', {
   writable: true,
   configurable: true,
   value: 768,
+});
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
 });
 
 describe('useResponsive', () => {

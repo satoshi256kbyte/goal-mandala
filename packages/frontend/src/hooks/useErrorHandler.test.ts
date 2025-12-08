@@ -1,7 +1,12 @@
-import { renderHook } from '@testing-library/react';
-import { act } from '@testing-library/react';
+import { renderHook, cleanup, act } from '@testing-library/react';
 import { useErrorHandler } from './useErrorHandler';
 import { AuthError } from '../services/auth';
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('useErrorHandler', () => {
   it('初期状態では エラーがnullである', () => {

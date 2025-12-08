@@ -1,8 +1,14 @@
-import { render } from '@testing-library/react';
+import { render, cleanup } from '@testing-library/react';
 import { screen } from '@testing-library/react';
-import { describe, it } from 'vitest';
+import { describe, it, afterEach } from 'vitest';
 import { StatusBadge } from '../StatusBadge';
 import { GoalStatus } from '../../../types/mandala';
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('StatusBadge', () => {
   describe('表示内容', () => {

@@ -1,8 +1,8 @@
 import React from 'react';
-import { render, screen, fireEvent, act } from '@testing-library/react';
+import { render, cleanup, screen, fireEvent, act } from '@testing-library/react';
 import { waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { vi } from 'vitest';
+import { vi, afterEach } from 'vitest';
 import {
   BulkSelectionProvider,
   useBulkSelection,
@@ -90,6 +90,12 @@ const TestWrapper: React.FC<{
     <TestComponent />
   </BulkSelectionProvider>
 );
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('BulkSelectionProvider', () => {
   describe('基本機能', () => {

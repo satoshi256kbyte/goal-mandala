@@ -1,7 +1,7 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, cleanup, screen, waitFor } from '@testing-library/react';
 import { fireEvent } from '@testing-library/react';
-import { vi } from 'vitest';
+import { vi, afterEach } from 'vitest';
 import {
   SwipeableContainer,
   SwipeableTabs,
@@ -23,6 +23,12 @@ const createTouchEvent = (type: string, touches: Array<{ clientX: number; client
     })) as any,
   });
 };
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('SwipeableContainer', () => {
   it('左スワイプが検出される', () => {

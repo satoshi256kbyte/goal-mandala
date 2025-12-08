@@ -1,9 +1,9 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, cleanup, screen } from '@testing-library/react';
 import { waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
-import { vi } from 'vitest';
+import { vi, afterEach } from 'vitest';
 import { LoginPage } from './LoginPage';
 import { AuthService } from '../services/auth';
 import { useAuthForm } from '../hooks/useAuthForm';
@@ -49,6 +49,12 @@ vi.mock('react-router-dom', async () => {
 const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <BrowserRouter>{children}</BrowserRouter>
 );
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('LoginPage', () => {
   const mockSignIn = vi.fn();

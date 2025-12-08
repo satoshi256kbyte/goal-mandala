@@ -1,8 +1,14 @@
 import React from 'react';
-import { render, screen, waitFor, act } from '@testing-library/react';
+import { render, cleanup, screen, waitFor, act } from '@testing-library/react';
 import { fireEvent } from '@testing-library/react';
-import { vi } from 'vitest';
+import { vi, afterEach } from 'vitest';
 import { SubmitButton, MemoizedSubmitButton } from './SubmitButton';
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('SubmitButton', () => {
   describe('基本表示', () => {

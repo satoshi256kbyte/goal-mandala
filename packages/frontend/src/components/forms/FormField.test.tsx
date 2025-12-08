@@ -1,6 +1,12 @@
-import { render, screen, waitFor, fireEvent, act } from '@testing-library/react';
-import { describe, it } from 'vitest';
+import { render, cleanup, screen, waitFor, fireEvent, act } from '@testing-library/react';
+import { describe, it, afterEach } from 'vitest';
 import { FormField } from './FormField';
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('FormField', () => {
   it('ラベルが正しく表示される', () => {

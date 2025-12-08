@@ -1,7 +1,7 @@
 import React from 'react';
-import { render, screen, waitFor, fireEvent, act } from '@testing-library/react';
+import { render, cleanup, screen, waitFor, fireEvent, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { vi } from 'vitest';
+import { vi, afterEach } from 'vitest';
 import { SubGoalForm } from './SubGoalForm';
 
 // Mock DraftService and draftUtils
@@ -75,6 +75,12 @@ const sampleFormData = {
 const mockOnSubmit = vi.fn();
 const mockOnDraftSave = vi.fn();
 const mockOnRegenerate = vi.fn();
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('SubGoalForm', () => {
   beforeEach(() => {

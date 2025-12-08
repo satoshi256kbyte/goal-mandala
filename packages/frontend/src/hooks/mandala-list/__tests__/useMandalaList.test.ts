@@ -3,9 +3,9 @@
  */
 import { GoalsApiError } from '../../../services/mandala-list/goals-api';
 
-import { waitFor } from '@testing-library/react';
+import { waitFor, cleanup } from '@testing-library/react';
 import { act } from 'react';
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { renderHookWithProviders } from '../../../test/test-utils';
 import { useMandalaList } from '../useMandalaList';
 import { GoalsService } from '../../../services/mandala-list/goals-api';
@@ -14,6 +14,12 @@ import type { GoalsListResponse } from '../../../types/mandala-list';
 
 // GoalsServiceをモック
 vi.mock('../../../services/mandala-list/goals-api');
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('useMandalaList', () => {
   // テスト用のモックデータ

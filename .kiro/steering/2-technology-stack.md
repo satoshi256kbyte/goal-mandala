@@ -30,6 +30,10 @@
 - テスト:
   - ユニット: Jest + React Testing Library
   - E2E: Playwright
+  - **必須設定**: `singleFork: false`（変更不可の固定要件）
+    - 理由: メモリ効率と安定性を最優先
+    - 時間がかかっても構わない
+    - この設定は絶対に変更しないこと
 - CI/CDローカルテスト: act (GitHub Actions)
 
 ## 配信

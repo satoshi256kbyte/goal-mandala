@@ -1,5 +1,11 @@
-import { render, screen } from '@testing-library/react';
+import { render, cleanup, screen } from '@testing-library/react';
 import { ProgressBar } from '../ProgressBar';
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('ProgressBar', () => {
   it('should render progress bar with correct percentage', () => {
