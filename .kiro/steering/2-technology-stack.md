@@ -28,12 +28,15 @@
 - 静的解析: ESLint (TypeScript/React)
 - フォーマッター: Prettier
 - テスト:
-  - ユニット: Jest + React Testing Library
+  - バックエンド: Jest
+  - フロントエンド: Vitest + React Testing Library
   - E2E: Playwright
-  - **必須設定**: `singleFork: false`（変更不可の固定要件）
-    - 理由: メモリ効率と安定性を最優先
-    - 時間がかかっても構わない
-    - この設定は絶対に変更しないこと
+  - メモリリーク対策（フロントエンド）:
+    - `singleFork: false`: 各テストファイル後にワーカー再起動
+    - `isolate: true`: テストファイル間の完全な分離
+    - `maxConcurrency: 1`: 並列実行を制限
+    - `max-old-space-size=8192`: 8GBヒープサイズ
+  - バッチ実行: 不要（上記設定で安定動作）
 - CI/CDローカルテスト: act (GitHub Actions)
 
 ## 配信
