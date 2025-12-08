@@ -4,7 +4,7 @@ import { PrismaClient } from '../generated/prisma-client';
 import { TaskService } from '../services/task.service';
 import { FilterService } from '../services/filter.service';
 import { ProgressService } from '../services/progress.service';
-import { jwtAuthMiddleware } from '../middleware/auth';
+import { authMiddleware } from '../middleware/auth';
 import { logger } from '../utils/logger';
 import { sanitizeErrorForLogging } from '../utils/security';
 import { z } from 'zod';
@@ -12,10 +12,21 @@ import { z } from 'zod';
 // Prismaクライアントのインスタンス化
 const prisma = new PrismaClient();
 
-// サービスのインスタンス化
-const taskService = new TaskService(prisma);
-const filterService = new FilterService(prisma);
-const progressService = new ProgressService(prisma);
+// サービスのインスタンス化（テスト時は外部から注入可能）
+let taskService = new TaskService(prisma);
+let filterService = new FilterService(prisma);
+let progressService = new ProgressService(prisma);
+
+// テスト用のサービス注入関数
+export const setServices = (services: {
+  taskService?: TaskService;
+  filterService?: FilterService;
+  progressService?: ProgressService;
+}) => {
+  if (services.taskService) taskService = services.taskService;
+  if (services.filterService) filterService = services.filterService;
+  if (services.progressService) progressService = services.progressService;
+};
 
 // Honoアプリケーションの作成
 const app = new Hono();
@@ -58,7 +69,7 @@ const SavedViewSchema = z.object({
 });
 
 // GET /api/tasks - タスク一覧取得
-app.get('/api/tasks', jwtAuthMiddleware(), async c => {
+app.get('/api/tasks', authMiddleware, async c => {
   const startTime = Date.now();
   const requestId = c.req.header('x-request-id') || 'unknown';
 
@@ -137,7 +148,7 @@ app.get('/api/tasks', jwtAuthMiddleware(), async c => {
 });
 
 // GET /api/tasks/:id - タスク詳細取得
-app.get('/api/tasks/:id', jwtAuthMiddleware(), async c => {
+app.get('/api/tasks/:id', authMiddleware, async c => {
   const startTime = Date.now();
   const requestId = c.req.header('x-request-id') || 'unknown';
 
@@ -205,7 +216,7 @@ app.get('/api/tasks/:id', jwtAuthMiddleware(), async c => {
 });
 
 // PATCH /api/tasks/:id/status - タスク状態更新
-app.patch('/api/tasks/:id/status', jwtAuthMiddleware(), async c => {
+app.patch('/api/tasks/:id/status', authMiddleware, async c => {
   const startTime = Date.now();
   const requestId = c.req.header('x-request-id') || 'unknown';
 
@@ -274,7 +285,7 @@ app.patch('/api/tasks/:id/status', jwtAuthMiddleware(), async c => {
 });
 
 // POST /api/tasks/:id/notes - ノート追加
-app.post('/api/tasks/:id/notes', jwtAuthMiddleware(), async c => {
+app.post('/api/tasks/:id/notes', authMiddleware, async c => {
   const startTime = Date.now();
   const requestId = c.req.header('x-request-id') || 'unknown';
 
@@ -339,7 +350,7 @@ app.post('/api/tasks/:id/notes', jwtAuthMiddleware(), async c => {
 });
 
 // PATCH /api/tasks/:id/notes/:noteId - ノート更新
-app.patch('/api/tasks/:id/notes/:noteId', jwtAuthMiddleware(), async c => {
+app.patch('/api/tasks/:id/notes/:noteId', authMiddleware, async c => {
   const startTime = Date.now();
   const requestId = c.req.header('x-request-id') || 'unknown';
 
@@ -403,7 +414,7 @@ app.patch('/api/tasks/:id/notes/:noteId', jwtAuthMiddleware(), async c => {
 });
 
 // DELETE /api/tasks/:id/notes/:noteId - ノート削除
-app.delete('/api/tasks/:id/notes/:noteId', jwtAuthMiddleware(), async c => {
+app.delete('/api/tasks/:id/notes/:noteId', authMiddleware, async c => {
   const startTime = Date.now();
   const requestId = c.req.header('x-request-id') || 'unknown';
 
@@ -458,7 +469,7 @@ app.delete('/api/tasks/:id/notes/:noteId', jwtAuthMiddleware(), async c => {
 });
 
 // POST /api/tasks/bulk/status - 一括状態更新
-app.post('/api/tasks/bulk/status', jwtAuthMiddleware(), async c => {
+app.post('/api/tasks/bulk/status', authMiddleware, async c => {
   const startTime = Date.now();
   const requestId = c.req.header('x-request-id') || 'unknown';
 
@@ -523,7 +534,7 @@ app.post('/api/tasks/bulk/status', jwtAuthMiddleware(), async c => {
 });
 
 // DELETE /api/tasks/bulk - 一括削除
-app.delete('/api/tasks/bulk', jwtAuthMiddleware(), async c => {
+app.delete('/api/tasks/bulk', authMiddleware, async c => {
   const startTime = Date.now();
   const requestId = c.req.header('x-request-id') || 'unknown';
 
@@ -583,7 +594,7 @@ app.delete('/api/tasks/bulk', jwtAuthMiddleware(), async c => {
 });
 
 // GET /api/saved-views - 保存済みビュー一覧取得
-app.get('/api/saved-views', jwtAuthMiddleware(), async c => {
+app.get('/api/saved-views', authMiddleware, async c => {
   const startTime = Date.now();
   const requestId = c.req.header('x-request-id') || 'unknown';
 
@@ -638,7 +649,7 @@ app.get('/api/saved-views', jwtAuthMiddleware(), async c => {
 });
 
 // POST /api/saved-views - ビュー保存
-app.post('/api/saved-views', jwtAuthMiddleware(), async c => {
+app.post('/api/saved-views', authMiddleware, async c => {
   const startTime = Date.now();
   const requestId = c.req.header('x-request-id') || 'unknown';
 
@@ -706,7 +717,7 @@ app.post('/api/saved-views', jwtAuthMiddleware(), async c => {
 });
 
 // DELETE /api/saved-views/:id - 保存済みビュー削除
-app.delete('/api/saved-views/:id', jwtAuthMiddleware(), async c => {
+app.delete('/api/saved-views/:id', authMiddleware, async c => {
   const startTime = Date.now();
   const requestId = c.req.header('x-request-id') || 'unknown';
 

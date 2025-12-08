@@ -33,7 +33,7 @@ export default defineConfig({
     pool: 'forks',
     poolOptions: {
       forks: {
-        singleFork: false,
+        singleFork: false, // 各テストファイル後にワーカー再起動（メモリリーク防止）
         isolate: true,
         execArgv: ['--expose-gc', '--max-old-space-size=8192'],
       },
