@@ -64,6 +64,17 @@ enum ReminderStatus {
   CANCELLED // キャンセル
 }
 
+enum EmailStatus {
+  SENT // 送信済み
+  FAILED // 送信失敗
+  BOUNCED // バウンス
+}
+
+enum MoodPreference {
+  STAY_ON_TRACK // このまま行く
+  CHANGE_PACE // 気分を変える
+}
+
 enum ProcessingType {
   SUBGOAL_GENERATION // サブ目標生成
   ACTION_GENERATION // アクション生成
@@ -335,4 +346,54 @@ model SavedView {
   @@index([userId])
   @@index([createdAt])
   @@map("saved_views")
+}
+
+model ReminderLog {
+  id           String      @id @default(uuid()) @db.Uuid
+  userId       String      @db.Uuid
+  sentAt       DateTime    @db.Timestamptz
+  taskIds      String[]    @db.Uuid
+  emailStatus  EmailStatus
+  messageId    String?     @db.VarChar(255)
+  errorMessage String?     @db.Text
+  retryCount   Int         @default(0) @db.SmallInt
+  createdAt    DateTime    @default(now()) @db.Timestamptz
+  updatedAt    DateTime    @updatedAt @db.Timestamptz
+
+  // Indexes
+  @@index([userId, sentAt])
+  @@index([emailStatus])
+  @@index([sentAt])
+  @@map("reminder_logs")
+}
+
+model UserReminderPreference {
+  userId             String          @id @db.Uuid
+  enabled            Boolean         @default(true)
+  moodPreference     MoodPreference?
+  lastReminderSentAt DateTime?       @db.Timestamptz
+  unsubscribedAt     DateTime?       @db.Timestamptz
+  createdAt          DateTime        @default(now()) @db.Timestamptz
+  updatedAt          DateTime        @updatedAt @db.Timestamptz
+
+  // Indexes
+  @@index([enabled])
+  @@index([lastReminderSentAt])
+  @@map("user_reminder_preferences")
+}
+
+model HabitTaskReminderTracking {
+  id             String   @id @default(uuid()) @db.Uuid
+  taskId         String   @db.Uuid
+  lastRemindedAt DateTime @db.Timestamptz
+  reminderCount  Int      @default(0) @db.SmallInt
+  weekNumber     Int      @db.SmallInt // ISO week number
+  createdAt      DateTime @default(now()) @db.Timestamptz
+  updatedAt      DateTime @updatedAt @db.Timestamptz
+
+  // Indexes
+  @@index([taskId])
+  @@index([lastRemindedAt])
+  @@index([weekNumber])
+  @@map("habit_task_reminder_tracking")
 }
