@@ -19,6 +19,8 @@ import {
   LazyActionEditPage,
   LazyProcessingPage,
   LazyNotFoundPage,
+  LazyDeepLinkPage,
+  LazyReminderSettingsPage,
 } from '../pages/LazyPages';
 
 /**
@@ -80,6 +82,16 @@ export const AppRoutes: React.FC = () => {
                   <LazyPasswordResetPage />
                 </LazyLoader>
               </PublicRoute>
+            }
+          />
+
+          {/* Deep Link処理（認証不要） */}
+          <Route
+            path="/reminder/link"
+            element={
+              <LazyLoader>
+                <LazyDeepLinkPage />
+              </LazyLoader>
             }
           />
 
@@ -180,6 +192,18 @@ export const AppRoutes: React.FC = () => {
               <ProtectedRoute>
                 <LazyLoader>
                   <LazySubGoalEditPage />
+                </LazyLoader>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* リマインド設定 */}
+          <Route
+            path="/settings/reminders"
+            element={
+              <ProtectedRoute>
+                <LazyLoader>
+                  <LazyReminderSettingsPage />
                 </LazyLoader>
               </ProtectedRoute>
             }
