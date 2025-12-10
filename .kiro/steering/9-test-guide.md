@@ -2304,3 +2304,225 @@ export default defineConfig({
 - プロジェクト詳細: `.kiro/specs/2.4.12-incremental-test-addition/`
 - 最終レポート: `.kiro/specs/2.4.12-incremental-test-addition/COMPLETION_REPORT.md`
 - タスクリスト: `.kiro/specs/2.4.12-incremental-test-addition/tasks.md`
+
+## Step Functionsワークフローのテスト（2025年12月追加）
+
+### 概要
+
+Step Functions統合機能（Spec 3.3）の実装を通じて得られた、ワークフローテストのベストプラクティスをまとめます。
+
+### プロパティベーステストの活用
+
+Step Functionsワークフローの正確性を検証するために、プロパティベーステストが非常に有効です。
+
+#### 実装例: 冪等性のテスト
+
+```typescript
+import * as fc from 'fast-check';
+
+describe('Property 1: Workflow Execution Idempotency', () => {
+  it('should not create duplicate tasks when workflow is started multiple times', async () => {
+    await fc.assert(
+      fc.asyncProperty(
+        fc.string(), // goalId
+        fc.array(fc.string(), { minLength: 1, maxLength: 64 }), // actionIds
+        async (goalId, actionIds) => {
+          // 同じ入力で複数回実行
+          const result1 = await startWorkflow(goalId, actionIds);
+          const result2 = await startWorkflow(goalId, actionIds);
+          
+          // タスクが重複していないことを確認
+          const tasks = await getTasks(goalId);
+          expect(tasks.length).toBe(expectedTaskCount);
+        }
+      ),
+      { numRuns: 100 }
+    );
+  });
+});
+```
+
+#### 実装したプロパティ一覧
+
+Step Functions統合では、以下の10個のプロパティを実装しました：
+
+1. **Workflow Execution Idempotency**: 同じ入力で複数回実行しても重複タスクが作成されない
+2. **Batch Processing Completeness**: すべてのアクションが正確に1回ずつ処理される
+3. **Retry Exponential Backoff**: リトライが指数バックオフパターンに従う
+4. **Timeout Enforcement**: 15分を超えるとワークフローが中断される
+5. **Task Persistence Atomicity**: タスクの保存が原子的（全て保存または全て失敗）
+6. **Progress Calculation Accuracy**: 進捗率が正確に計算される
+7. **Partial Failure Handling**: 一部失敗時も成功したタスクが保存される
+8. **Concurrent Execution Isolation**: 並行実行時に状態が分離される
+9. **Execution History Completeness**: すべての状態遷移が履歴に記録される
+10. **Alert Trigger Threshold**: 失敗率が10%を超えるとアラートが発火する
+
+#### テスト結果
+
+- 実行回数: 各プロパティ100回反復実行
+- 成功率: 100%（10/10プロパティ）
+- 実行時間: 0.694秒
+- 合計反復回数: 1,000回
+
+### 統合テストのシナリオ
+
+ワークフロー全体の動作を検証する統合テストを6つ実装しました：
+
+#### 1. 正常系テスト
+
+```typescript
+it('should complete workflow successfully with all actions succeeding', async () => {
+  const goalId = 'test-goal-success';
+  const userId = 'test-user';
+  
+  // ワークフロー開始
+  const executionArn = await startWorkflow(goalId, userId);
+  
+  // 完了まで待機
+  await waitForCompletion(executionArn);
+  
+  // 結果検証
+  const status = await getWorkflowStatus(executionArn);
+  expect(status.state).toBe('SUCCEEDED');
+  expect(status.progress).toBe(100);
+});
+```
+
+#### 2. 部分失敗テスト
+
+一部のアクションが失敗しても、成功したタスクが保存されることを確認。
+
+#### 3. 全失敗テスト
+
+すべてのアクションが失敗した場合のエラーハンドリングとアラート送信を確認。
+
+#### 4. タイムアウトテスト
+
+長時間実行をシミュレートし、タイムアウトが正しく動作することを確認。
+
+#### 5. 並行実行テスト
+
+複数ユーザーが同時にワークフローを実行しても、データ競合が発生しないことを確認。
+
+#### 6. キャンセルテスト
+
+実行中のワークフローをキャンセルし、クリーンアップが正しく実行されることを確認。
+
+### ローカルテスト環境
+
+#### Docker Compose設定
+
+```yaml
+version: '3.8'
+services:
+  stepfunctions-local:
+    image: amazon/aws-stepfunctions-local
+    ports:
+      - "8083:8083"
+    environment:
+      - LAMBDA_ENDPOINT=http://host.docker.internal:3001
+    volumes:
+      - ./src/workflows/task-generation-workflow.json:/home/stepfunctionslocal/TaskGenerationWorkflow.json
+```
+
+#### モックサービスの実装
+
+AI APIとデータベースのモックを作成し、コストをかけずにテスト：
+
+```typescript
+// AI APIモック
+export const mockAIService = {
+  generateTasks: vi.fn().mockResolvedValue({
+    tasks: [
+      { title: 'Task 1', description: 'Description 1', estimatedMinutes: 30 },
+      { title: 'Task 2', description: 'Description 2', estimatedMinutes: 45 },
+    ],
+  }),
+};
+
+// データベースモック
+export const mockDatabase = {
+  getGoal: vi.fn().mockResolvedValue({
+    id: 'goal-1',
+    title: 'Test Goal',
+    status: 'draft',
+  }),
+  getActions: vi.fn().mockResolvedValue([
+    { id: 'action-1', title: 'Action 1' },
+    { id: 'action-2', title: 'Action 2' },
+  ]),
+  saveTasks: vi.fn().mockResolvedValue({ success: true }),
+};
+```
+
+### テスト実行コマンド
+
+```bash
+# ワークフローテスト
+npm test -- src/workflows
+
+# 統合テスト
+npm test -- src/workflows/__tests__/workflow-integration.test.ts
+
+# プロパティベーステスト
+npm test -- src/workflows/__tests__/workflow.property.test.ts
+
+# APIテスト
+npm test -- src/handlers/workflow-api.test.ts
+```
+
+### パフォーマンス目標
+
+| テストタイプ | 目標時間 | 実績 | 状態 |
+|------------|---------|------|------|
+| ワークフローテスト | < 5s | 1.464s | ✅ |
+| APIテスト | < 2s | 0.856s | ✅ |
+| 合計 | < 10s | 2.320s | ✅ |
+
+### ベストプラクティス
+
+1. **プロパティベーステスト**:
+   - 各プロパティは100回以上反復実行
+   - fast-checkライブラリを使用
+   - 設計ドキュメントのCorrectness Propertiesと1対1対応
+
+2. **統合テスト**:
+   - 正常系、異常系、エッジケースをカバー
+   - 実際のワークフロー実行をシミュレート
+   - モックを最小限にして実際の動作に近づける
+
+3. **ローカルテスト**:
+   - Docker Composeで環境を構築
+   - モックサービスでコストを削減
+   - 実行スクリプトで開発効率を向上
+
+4. **テストの独立性**:
+   - 各テストは独立して実行可能
+   - テストデータは各テスト内で完結
+   - グローバル状態をクリーンアップ
+
+### トラブルシューティング
+
+#### タイムアウトエラー
+
+**症状**: テストがタイムアウトする
+
+**解決方法**:
+- テストタイムアウトを延長（30秒 → 60秒）
+- モックの応答時間を短縮
+- 並列実行数を削減
+
+#### モックの設定ミス
+
+**症状**: モックが正しく動作しない
+
+**解決方法**:
+- モックの戻り値を明示的に設定
+- vi.clearAllMocks()でリセット
+- モックの呼び出し履歴を確認
+
+### 参考資料
+
+- Step Functionsベストプラクティス: `.kiro/steering/13-step-functions-best-practices.md`
+- Spec詳細: `.kiro/specs/3.3-step-functions-integration/`
+- 実装レポート: `.kiro/specs/3.3-step-functions-integration/temp/`

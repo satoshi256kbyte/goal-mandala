@@ -6,6 +6,7 @@ export { ApiStack } from './api-stack';
 export { FrontendStack } from './frontend-stack';
 export { StepFunctionsStack } from './step-functions-stack';
 export { TaskManagementStack } from './task-management-stack';
+export { TaskGenerationWorkflowStack } from './task-generation-workflow-stack';
 
 // スタックプロパティのエクスポート
 export type { VpcStackProps } from './vpc-stack';
@@ -15,3 +16,4 @@ export type { ApiStackProps } from './api-stack';
 export type { FrontendStackProps } from './frontend-stack';
 export type { StepFunctionsStackProps } from './step-functions-stack';
 export type { TaskManagementStackProps } from './task-management-stack';
+export type { TaskGenerationWorkflowStackProps } from './task-generation-workflow-stack';

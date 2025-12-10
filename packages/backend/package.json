@@ -70,7 +70,17 @@
     "test:migration:performance": "jest tests/migration-performance.test.ts",
     "quality:check": "./scripts/check-code-quality.sh",
     "deploy:checklist": "./scripts/deployment-checklist.sh",
-    "deploy:ready": "./scripts/deployment-checklist.sh && ./scripts/test-migration-integration.sh && ./scripts/check-code-quality.sh"
+    "deploy:ready": "./scripts/deployment-checklist.sh && ./scripts/test-migration-integration.sh && ./scripts/check-code-quality.sh",
+    "workflow:setup": "./scripts/workflow-local-setup.sh",
+    "workflow:validate": "./scripts/workflow-validate.sh",
+    "workflow:create-local": "./scripts/workflow-create-local.sh",
+    "workflow:execute-local": "./scripts/workflow-execute-local.sh",
+    "workflow:local": "docker-compose -f docker-compose.local.yml up -d",
+    "workflow:local:down": "docker-compose -f docker-compose.local.yml down",
+    "workflow:local:logs": "docker-compose -f docker-compose.local.yml logs -f",
+    "test:workflow:happy-path": "./scripts/workflow-execute-local.sh --input test/fixtures/workflow-input.json",
+    "test:workflow:partial-failure": "./scripts/workflow-execute-local.sh --input test/fixtures/workflow-input-partial-failure.json",
+    "test:workflow:validation-error": "./scripts/workflow-execute-local.sh --input test/fixtures/workflow-input-validation-error.json"
   },
   "dependencies": {
     "@aws-sdk/client-bedrock-runtime": "^3.470.0",

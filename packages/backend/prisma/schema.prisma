@@ -90,6 +90,14 @@ enum ProcessingStatus {
   CANCELLED // キャンセル
 }
 
+enum WorkflowStatus {
+  RUNNING // 実行中
+  SUCCEEDED // 成功
+  FAILED // 失敗
+  TIMED_OUT // タイムアウト
+  ABORTED // 中断
+}
+
 // Models
 model User {
   id          String        @id @default(uuid()) @db.Uuid
@@ -396,4 +404,32 @@ model HabitTaskReminderTracking {
   @@index([lastRemindedAt])
   @@index([weekNumber])
   @@map("habit_task_reminder_tracking")
+}
+
+model WorkflowExecution {
+  id                     String         @id @default(uuid()) @db.Uuid
+  executionArn           String         @unique @db.VarChar(500)
+  goalId                 String         @db.Uuid
+  userId                 String         @db.Uuid
+  status                 WorkflowStatus @default(RUNNING)
+  startDate              DateTime       @db.Timestamptz
+  stopDate               DateTime?      @db.Timestamptz
+  input                  Json // { goalId: string, actionIds: string[] }
+  output                 Json? // { successCount: number, failedCount: number, failedActions: string[] }
+  progressPercentage     Int            @default(0) @db.SmallInt
+  processedActions       Int            @default(0) @db.SmallInt
+  totalActions           Int            @db.SmallInt
+  currentBatch           Int            @default(0) @db.SmallInt
+  totalBatches           Int            @db.SmallInt
+  estimatedTimeRemaining Int            @default(0) @db.Integer // 秒単位
+  ttl                    Int? // Unix timestamp for TTL (90 days)
+  createdAt              DateTime       @default(now()) @db.Timestamptz
+  updatedAt              DateTime       @updatedAt @db.Timestamptz
+
+  // Indexes
+  @@index([goalId, createdAt])
+  @@index([userId, createdAt])
+  @@index([status, createdAt])
+  @@index([ttl])
+  @@map("workflow_executions")
 }

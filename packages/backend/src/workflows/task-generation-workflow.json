@@ -1,0 +1,257 @@
+{
+  "Comment": "Task Generation Workflow - Orchestrates task generation from actions using AI",
+  "StartAt": "ValidateInput",
+  "TimeoutSeconds": 900,
+  "States": {
+    "ValidateInput": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${ValidateInputFunctionName}",
+      "Comment": "Validate input parameters (goalId, userId, actionIds)",
+      "ResultPath": "$.validationResult",
+      "Next": "GetActions",
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "ResultPath": "$.error",
+          "Next": "HandleValidationError"
+        }
+      ]
+    },
+    "GetActions": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${GetActionsFunctionName}",
+      "Comment": "Retrieve actions and their context from database",
+      "ResultPath": "$.actions",
+      "Next": "CreateBatches",
+      "Retry": [
+        {
+          "ErrorEquals": ["States.TaskFailed"],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 3,
+          "BackoffRate": 2.0
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "ResultPath": "$.error",
+          "Next": "HandleGetActionsError"
+        }
+      ]
+    },
+    "CreateBatches": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${CreateBatchesFunctionName}",
+      "Comment": "Divide actions into batches of maximum 8 actions each",
+      "ResultPath": "$.batches",
+      "Next": "ProcessBatches"
+    },
+    "ProcessBatches": {
+      "Type": "Map",
+      "Comment": "Process batches in parallel (max 3 concurrent batches)",
+      "ItemsPath": "$.batches",
+      "MaxConcurrency": 3,
+      "ResultPath": "$.batchResults",
+      "Iterator": {
+        "StartAt": "ProcessBatch",
+        "States": {
+          "ProcessBatch": {
+            "Type": "Map",
+            "Comment": "Process actions within a batch in parallel (max 8 concurrent)",
+            "ItemsPath": "$.actions",
+            "MaxConcurrency": 8,
+            "ResultPath": "$.actionResults",
+            "Iterator": {
+              "StartAt": "GenerateTasks",
+              "States": {
+                "GenerateTasks": {
+                  "Type": "Task",
+                  "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${TaskGenerationFunctionName}",
+                  "Comment": "Generate tasks for an action using AI",
+                  "TimeoutSeconds": 120,
+                  "ResultPath": "$.generatedTasks",
+                  "Retry": [
+                    {
+                      "ErrorEquals": ["States.TaskFailed"],
+                      "IntervalSeconds": 2,
+                      "MaxAttempts": 3,
+                      "BackoffRate": 2.0
+                    }
+                  ],
+                  "Catch": [
+                    {
+                      "ErrorEquals": ["States.ALL"],
+                      "ResultPath": "$.error",
+                      "Next": "MarkActionFailed"
+                    }
+                  ],
+                  "Next": "SaveTasks"
+                },
+                "SaveTasks": {
+                  "Type": "Task",
+                  "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${SaveTasksFunctionName}",
+                  "Comment": "Save generated tasks to database",
+                  "ResultPath": "$.saveResult",
+                  "Retry": [
+                    {
+                      "ErrorEquals": ["States.TaskFailed"],
+                      "IntervalSeconds": 1,
+                      "MaxAttempts": 3,
+                      "BackoffRate": 2.0
+                    }
+                  ],
+                  "Catch": [
+                    {
+                      "ErrorEquals": ["States.ALL"],
+                      "ResultPath": "$.error",
+                      "Next": "MarkActionFailed"
+                    }
+                  ],
+                  "Next": "MarkActionSuccess"
+                },
+                "MarkActionSuccess": {
+                  "Type": "Pass",
+                  "Comment": "Mark action as successfully processed",
+                  "Result": {
+                    "status": "success"
+                  },
+                  "ResultPath": "$.result",
+                  "End": true
+                },
+                "MarkActionFailed": {
+                  "Type": "Pass",
+                  "Comment": "Mark action as failed after all retries",
+                  "Result": {
+                    "status": "failed"
+                  },
+                  "ResultPath": "$.result",
+                  "End": true
+                }
+              }
+            },
+            "Next": "UpdateBatchProgress"
+          },
+          "UpdateBatchProgress": {
+            "Type": "Task",
+            "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${UpdateProgressFunctionName}",
+            "Comment": "Update workflow progress after batch completion",
+            "ResultPath": "$.progressUpdate",
+            "End": true
+          }
+        }
+      },
+      "Next": "AggregateResults"
+    },
+    "AggregateResults": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${AggregateResultsFunctionName}",
+      "Comment": "Aggregate results from all batches",
+      "ResultPath": "$.aggregatedResults",
+      "Next": "CheckResults"
+    },
+    "CheckResults": {
+      "Type": "Choice",
+      "Comment": "Determine workflow outcome based on results",
+      "Choices": [
+        {
+          "Variable": "$.aggregatedResults.allSuccess",
+          "BooleanEquals": true,
+          "Next": "UpdateGoalStatusActive"
+        },
+        {
+          "Variable": "$.aggregatedResults.partialSuccess",
+          "BooleanEquals": true,
+          "Next": "UpdateGoalStatusPartial"
+        }
+      ],
+      "Default": "UpdateGoalStatusFailed"
+    },
+    "UpdateGoalStatusActive": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${UpdateGoalStatusFunctionName}",
+      "Comment": "Update goal status to active (all actions succeeded)",
+      "Parameters": {
+        "goalId.$": "$.goalId",
+        "status": "active"
+      },
+      "ResultPath": "$.statusUpdate",
+      "Next": "Success"
+    },
+    "UpdateGoalStatusPartial": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${UpdateGoalStatusFunctionName}",
+      "Comment": "Update goal status to partial (some actions failed)",
+      "Parameters": {
+        "goalId.$": "$.goalId",
+        "status": "partial"
+      },
+      "ResultPath": "$.statusUpdate",
+      "Next": "SendPartialSuccessNotification"
+    },
+    "UpdateGoalStatusFailed": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${UpdateGoalStatusFunctionName}",
+      "Comment": "Update goal status to failed (all actions failed)",
+      "Parameters": {
+        "goalId.$": "$.goalId",
+        "status": "failed"
+      },
+      "ResultPath": "$.statusUpdate",
+      "Next": "SendFailureNotification"
+    },
+    "SendPartialSuccessNotification": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::sns:publish",
+      "Comment": "Send notification for partial success",
+      "Parameters": {
+        "TopicArn": "${WorkflowNotificationTopicArn}",
+        "Subject": "Task Generation Partially Succeeded",
+        "Message.$": "$.aggregatedResults.notificationMessage"
+      },
+      "ResultPath": "$.notification",
+      "Next": "Success"
+    },
+    "SendFailureNotification": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::sns:publish",
+      "Comment": "Send notification for complete failure",
+      "Parameters": {
+        "TopicArn": "${WorkflowNotificationTopicArn}",
+        "Subject": "Task Generation Failed",
+        "Message.$": "$.aggregatedResults.notificationMessage"
+      },
+      "ResultPath": "$.notification",
+      "Next": "Fail"
+    },
+    "HandleValidationError": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${HandleErrorFunctionName}",
+      "Comment": "Handle validation errors",
+      "Parameters": {
+        "errorType": "ValidationError",
+        "error.$": "$.error"
+      },
+      "ResultPath": "$.errorHandling",
+      "Next": "Fail"
+    },
+    "HandleGetActionsError": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${HandleErrorFunctionName}",
+      "Comment": "Handle errors when retrieving actions",
+      "Parameters": {
+        "errorType": "GetActionsError",
+        "error.$": "$.error"
+      },
+      "ResultPath": "$.errorHandling",
+      "Next": "Fail"
+    },
+    "Success": {
+      "Type": "Succeed",
+      "Comment": "Workflow completed successfully"
+    },
+    "Fail": {
+      "Type": "Fail",
+      "Comment": "Workflow failed"
+    }
+  }
+}

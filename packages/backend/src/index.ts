@@ -44,6 +44,8 @@ import subGoalsHandler from './handlers/subgoals';
 import actionsHandler from './handlers/actions';
 import unsubscribeHandler from './handlers/unsubscribe';
 import reminderTestRoutes from './handlers/reminder-test-routes';
+import workflowApiHandler from './handlers/workflow-api';
+import workflowApiHandler from './handlers/workflow-api';
 
 // API v1 ルート
 const apiV1 = new Hono();
@@ -64,6 +66,9 @@ apiV1.route('/goals', goalsHandler);
 apiV1.route('/subgoals', subGoalsHandler);
 apiV1.route('/actions', actionsHandler);
 
+// ワークフローAPI
+apiV1.route('/', workflowApiHandler);
+
 // リマインド関連API
 apiV1.route('/reminders', unsubscribeHandler);
 
@@ -71,6 +76,9 @@ apiV1.route('/reminders', unsubscribeHandler);
 if (config.NODE_ENV !== 'production') {
   apiV1.route('/reminders/test', reminderTestRoutes);
 }
+
+// ワークフローAPI
+apiV1.route('/', workflowApiHandler);
 
 // APIルートをマウント
 app.route('/api/v1', apiV1);
