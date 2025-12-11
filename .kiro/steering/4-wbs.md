@@ -408,6 +408,8 @@ inclusion: always
 
 **Specパス**: `.kiro/specs/4.1-reflection-feature`
 
+**注意**: 重複していた`.kiro/specs/4.1-reflection-functionality`は削除済み（壊れたファイル）
+
 **目的**: 目標達成状況の振り返りと改善点の記録
 
 **主要機能**:
