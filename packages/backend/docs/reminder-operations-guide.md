@@ -40,22 +40,22 @@ SNS Topic (アラート通知)
 
 #### Lambda関数メトリクス
 
-| メトリクス名 | 説明 | 正常範囲 | アラート閾値 |
-|------------|------|---------|------------|
-| `Invocations` | Lambda実行回数 | 1回/日（平日） | - |
-| `Errors` | エラー発生回数 | 0回 | 5回以上 |
-| `Duration` | 実行時間 | < 3分 | 4分以上 |
-| `Throttles` | スロットリング回数 | 0回 | 1回以上 |
+| メトリクス名  | 説明               | 正常範囲       | アラート閾値 |
+| ------------- | ------------------ | -------------- | ------------ |
+| `Invocations` | Lambda実行回数     | 1回/日（平日） | -            |
+| `Errors`      | エラー発生回数     | 0回            | 5回以上      |
+| `Duration`    | 実行時間           | < 3分          | 4分以上      |
+| `Throttles`   | スロットリング回数 | 0回            | 1回以上      |
 
 #### カスタムメトリクス
 
-| メトリクス名 | 説明 | 正常範囲 | アラート閾値 |
-|------------|------|---------|------------|
-| `EmailsSent` | 送信成功メール数 | - | - |
-| `EmailsFailed` | 送信失敗メール数 | 0回 | - |
-| `EmailFailureRate` | メール失敗率 | < 2% | 5%以上 |
-| `ProcessingTime` | 処理時間 | < 5分 | - |
-| `UsersProcessed` | 処理ユーザー数 | - | - |
+| メトリクス名       | 説明             | 正常範囲 | アラート閾値 |
+| ------------------ | ---------------- | -------- | ------------ |
+| `EmailsSent`       | 送信成功メール数 | -        | -            |
+| `EmailsFailed`     | 送信失敗メール数 | 0回      | -            |
+| `EmailFailureRate` | メール失敗率     | < 2%     | 5%以上       |
+| `ProcessingTime`   | 処理時間         | < 5分    | -            |
+| `UsersProcessed`   | 処理ユーザー数   | -        | -            |
 
 ### CloudWatch Logs
 
@@ -147,6 +147,7 @@ aws events describe-rule --name goal-mandala-prod-reminder-schedule
 ### 毎日の確認事項
 
 1. **メール配信状況の確認**
+
    ```bash
    # 当日のメール送信数を確認
    aws cloudwatch get-metric-statistics \
@@ -159,6 +160,7 @@ aws events describe-rule --name goal-mandala-prod-reminder-schedule
    ```
 
 2. **エラー発生状況の確認**
+
    ```bash
    # 当日のエラー数を確認
    aws logs filter-log-events \
@@ -210,11 +212,13 @@ aws events describe-rule --name goal-mandala-prod-reminder-schedule
 **症状**: メール送信失敗率が高い
 
 **原因**:
+
 - SES送信制限に達している
 - メールアドレスが無効
 - SESサービスの一時的な問題
 
 **解決方法**:
+
 ```bash
 # SES送信統計を確認
 aws ses get-send-statistics
@@ -231,11 +235,13 @@ aws ses get-send-quota
 **症状**: Lambda実行時間が5分を超えてタイムアウト
 
 **原因**:
+
 - 処理ユーザー数が多すぎる
 - データベースクエリが遅い
 - SES送信が遅い
 
 **解決方法**:
+
 ```bash
 # バッチサイズを調整（環境変数）
 aws lambda update-function-configuration \
@@ -253,11 +259,13 @@ aws lambda update-function-configuration \
 **症状**: EventBridgeルールがLambda関数をトリガーしない
 
 **原因**:
+
 - ルールが無効化されている
 - Lambda関数の権限が不足
 - Cron式が間違っている
 
 **解決方法**:
+
 ```bash
 # ルールの状態を確認
 aws events describe-rule --name goal-mandala-prod-reminder-schedule
@@ -274,11 +282,13 @@ aws events list-targets-by-rule --rule goal-mandala-prod-reminder-schedule
 **症状**: メール内のDeep Linkが動作しない
 
 **原因**:
+
 - トークンの有効期限切れ（24時間）
 - JWT秘密鍵が変更された
 - トークン生成ロジックのバグ
 
 **解決方法**:
+
 ```bash
 # JWT秘密鍵を確認
 aws secretsmanager get-secret-value \
@@ -341,11 +351,13 @@ aws logs tail /aws/lambda/goal-mandala-prod-reminder --follow
 #### システム停止手順
 
 1. **EventBridgeルールの無効化**
+
    ```bash
    aws events disable-rule --name goal-mandala-prod-reminder-schedule
    ```
 
 2. **進行中のLambda実行の確認**
+
    ```bash
    aws lambda list-functions --query 'Functions[?FunctionName==`goal-mandala-prod-reminder`]'
    ```
@@ -365,6 +377,7 @@ aws logs tail /aws/lambda/goal-mandala-prod-reminder --follow
    - メール送信の確認
 
 3. **EventBridgeルールの有効化**
+
    ```bash
    aws events enable-rule --name goal-mandala-prod-reminder-schedule
    ```
@@ -421,6 +434,6 @@ aws logs tail /aws/lambda/goal-mandala-prod-reminder --follow
 
 ## 変更履歴
 
-| バージョン | 日付 | 変更内容 |
-|-----------|------|----------|
-| 1.0.0 | 2025-12-10 | 初版作成 |
+| バージョン | 日付       | 変更内容 |
+| ---------- | ---------- | -------- |
+| 1.0.0      | 2025-12-10 | 初版作成 |

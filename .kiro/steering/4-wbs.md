@@ -404,7 +404,7 @@ inclusion: always
 
 **開始条件**: フェーズ3の完了
 
-#### 4.1 振り返り機能 ⏸️ 未着手
+#### 4.1 振り返り機能 🚧 進行中（9.5%完了、2025年12月11日更新）
 
 **Specパス**: `.kiro/specs/4.1-reflection-feature`
 
@@ -417,11 +417,34 @@ inclusion: always
 - アクション進捗状況の参照（候補表示機能）
 
 **実装フェーズ**:
-- Phase 1: バックエンド実装（21タスク）
-- Phase 2: フロントエンド実装（15タスク）
-- Phase 3: 統合テスト・ドキュメント（6タスク）
+- 🚧 Phase 1: バックエンド実装（4/21タスク完了）
+- ⏸️ Phase 2: フロントエンド実装（0/15タスク）
+- ⏸️ Phase 3: 統合テスト・ドキュメント（0/6タスク）
 
-**合計**: 42タスク（全て必須）
+**合計**: 42タスク（全て必須）、4タスク完了
+
+**完了したタスク**:
+- ✅ Task 1.1: Reflectionテーブルの確認（2025年12月11日）
+  - 既存のReflectionモデルをTaskReflectionに変更
+  - 新しい目標ベースのReflectionモデルを作成
+  - データベーススキーマを正常に適用
+- ✅ Task 2.1: Zodスキーマの作成（2025年12月11日）
+  - createReflectionSchemaとupdateReflectionSchemaを実装
+  - 全てのエラーメッセージを日本語化
+  - updateReflectionSchemaにrefineを追加して空の更新リクエストを防止
+  - コード品質チェック（format/lint）完了
+- ✅ Task 2.2: プロパティテスト実装（2025年12月11日）
+  - Property 8: バリデーションエラーの一貫性を検証
+  - 14テスト実装（createReflectionSchema: 7テスト、updateReflectionSchema: 7テスト）
+  - 全テスト成功（100回反復実行、合計1,400回）
+  - コード品質チェック（format/lint）完了
+- ✅ Task 3.1: ReflectionService実装（2025年12月11日）
+  - 全5メソッド実装（createReflection, getReflection, getReflectionsByGoal, updateReflection, deleteReflection）
+  - 入力バリデーション、データベース保存、エラーハンドリング実装
+  - エラークラス作成（NotFoundError, ValidationError, UnauthorizedError, ForbiddenError）
+  - 22テスト実装（全メソッドのユニットテスト、100%成功）
+  - テスト実行時間: 0.44秒
+  - コード品質チェック（format/lint: 0エラー、15警告）
 
 **Correctness Properties**: 10個
 1. 振り返り作成の完全性
@@ -434,6 +457,8 @@ inclusion: always
 8. バリデーションエラーの一貫性
 9. 認証・認可の保証
 10. 日時の自動設定
+
+**次のアクション**: Task 3.2 プロパティテスト実装（Property 1: 振り返り作成の完全性）
 
 ## 関連ドキュメント
 

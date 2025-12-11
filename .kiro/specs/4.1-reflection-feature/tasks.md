@@ -4,31 +4,35 @@
 
 ### 1. データベーススキーマ確認
 
-- [ ] 1.1 Reflectionテーブルの確認
+- [x] 1.1 Reflectionテーブルの確認
   - Prismaスキーマで既存のReflectionモデルを確認
   - インデックスが適切に設定されているか確認
   - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5_
+  - **完了**: 既存のReflectionモデルをTaskReflectionに変更し、新しい目標ベースのReflectionモデルを作成。データベーススキーマを正常に適用。
 
 ### 2. バリデーションスキーマ実装
 
-- [ ] 2.1 Zodスキーマの作成
+- [x] 2.1 Zodスキーマの作成
   - createReflectionSchemaの実装
   - updateReflectionSchemaの実装
   - バリデーションエラーメッセージの日本語化
   - _Requirements: 1.4, 3.4_
+  - **完了**: createReflectionSchemaとupdateReflectionSchemaを実装。全てのエラーメッセージを日本語化。updateReflectionSchemaにrefineを追加して空の更新リクエストを防止。コード品質チェック（format/lint）完了。
 
-- [ ] 2.2 プロパティテスト: バリデーションエラーの一貫性
+- [x] 2.2 プロパティテスト: バリデーションエラーの一貫性
   - **Property 8: バリデーションエラーの一貫性**
   - **Validates: Requirements 1.4, 3.4**
+  - **完了**: 14テスト実装（createReflectionSchema: 7テスト、updateReflectionSchema: 7テスト）。全テスト成功（100回反復実行）。コード品質チェック（format/lint）完了。
 
 ### 3. ReflectionService実装
 
-- [ ] 3.1 振り返り作成機能
+- [x] 3.1 振り返り作成機能
   - createReflection メソッドの実装
   - 入力バリデーション
   - データベース保存
   - エラーハンドリング
   - _Requirements: 1.1, 1.2, 1.3_
+  - **完了**: 全5メソッド実装（createReflection, getReflection, getReflectionsByGoal, updateReflection, deleteReflection）。22テスト実装（全て成功）。コード品質チェック（format/lint）完了。
 
 - [ ] 3.2 プロパティテスト: 振り返り作成の完全性
   - **Property 1: 振り返り作成の完全性**

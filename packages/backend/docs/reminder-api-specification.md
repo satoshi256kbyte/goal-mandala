@@ -6,13 +6,13 @@
 
 ## エンドポイント一覧
 
-| エンドポイント | メソッド | 説明 | 認証 |
-|---------------|---------|------|------|
-| `/api/reminders/verify` | POST | Deep Linkトークンの検証 | 不要 |
-| `/api/reminders/unsubscribe/:token` | GET | リマインド配信停止 | 不要 |
-| `/api/reminders/enable` | POST | リマインド再有効化 | 必要 |
-| `/api/reminders/trigger` | POST | 手動リマインド送信（テスト用） | 必要 |
-| `/api/reminders/preview` | POST | メールプレビュー生成（テスト用） | 必要 |
+| エンドポイント                      | メソッド | 説明                             | 認証 |
+| ----------------------------------- | -------- | -------------------------------- | ---- |
+| `/api/reminders/verify`             | POST     | Deep Linkトークンの検証          | 不要 |
+| `/api/reminders/unsubscribe/:token` | GET      | リマインド配信停止               | 不要 |
+| `/api/reminders/enable`             | POST     | リマインド再有効化               | 必要 |
+| `/api/reminders/trigger`            | POST     | 手動リマインド送信（テスト用）   | 必要 |
+| `/api/reminders/preview`            | POST     | メールプレビュー生成（テスト用） | 必要 |
 
 ## エンドポイント詳細
 
@@ -23,6 +23,7 @@
 **説明**: メール内のDeep Linkトークンを検証し、ユーザーIDとタスクIDを取得します。
 
 **リクエスト**:
+
 ```json
 {
   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
@@ -30,6 +31,7 @@
 ```
 
 **レスポンス（成功）**:
+
 ```json
 {
   "success": true,
@@ -42,6 +44,7 @@
 ```
 
 **レスポンス（エラー）**:
+
 ```json
 {
   "success": false,
@@ -53,6 +56,7 @@
 ```
 
 **エラーコード**:
+
 - `INVALID_TOKEN`: トークンが無効または改ざんされている
 - `TOKEN_EXPIRED`: トークンの有効期限が切れている
 - `VALIDATION_ERROR`: リクエストボディのバリデーションエラー
@@ -64,9 +68,11 @@
 **説明**: メール内の配信停止リンクからアクセスし、リマインドを停止します。
 
 **パラメータ**:
+
 - `token` (string, required): 配信停止トークン（JWT）
 
 **レスポンス（成功）**:
+
 ```json
 {
   "success": true,
@@ -75,6 +81,7 @@
 ```
 
 **レスポンス（エラー）**:
+
 ```json
 {
   "success": false,
@@ -86,6 +93,7 @@
 ```
 
 **エラーコード**:
+
 - `INVALID_TOKEN`: トークンが無効または改ざんされている
 - `TOKEN_EXPIRED`: トークンの有効期限が切れている
 - `USER_NOT_FOUND`: ユーザーが見つからない
@@ -99,6 +107,7 @@
 **認証**: 必要（JWT Bearer Token）
 
 **リクエスト**:
+
 ```json
 {
   "userId": "user-123"
@@ -106,6 +115,7 @@
 ```
 
 **レスポンス（成功）**:
+
 ```json
 {
   "success": true,
@@ -114,6 +124,7 @@
 ```
 
 **レスポンス（エラー）**:
+
 ```json
 {
   "success": false,
@@ -125,6 +136,7 @@
 ```
 
 **エラーコード**:
+
 - `UNAUTHORIZED`: 認証トークンが無効または期限切れ
 - `USER_NOT_FOUND`: ユーザーが見つからない
 - `VALIDATION_ERROR`: リクエストボディのバリデーションエラー
@@ -138,6 +150,7 @@
 **認証**: 必要（JWT Bearer Token、管理者権限）
 
 **リクエスト**:
+
 ```json
 {
   "userId": "user-123"
@@ -145,6 +158,7 @@
 ```
 
 **レスポンス（成功）**:
+
 ```json
 {
   "success": true,
@@ -157,6 +171,7 @@
 ```
 
 **レスポンス（エラー）**:
+
 ```json
 {
   "success": false,
@@ -168,6 +183,7 @@
 ```
 
 **エラーコード**:
+
 - `UNAUTHORIZED`: 認証トークンが無効または期限切れ
 - `FORBIDDEN`: 管理者権限がない
 - `USER_NOT_FOUND`: ユーザーが見つからない
@@ -183,6 +199,7 @@
 **認証**: 必要（JWT Bearer Token）
 
 **リクエスト**:
+
 ```json
 {
   "userId": "user-123"
@@ -190,6 +207,7 @@
 ```
 
 **レスポンス（成功）**:
+
 ```json
 {
   "success": true,
@@ -203,6 +221,7 @@
 ```
 
 **レスポンス（エラー）**:
+
 ```json
 {
   "success": false,
@@ -214,6 +233,7 @@
 ```
 
 **エラーコード**:
+
 - `UNAUTHORIZED`: 認証トークンが無効または期限切れ
 - `USER_NOT_FOUND`: ユーザーが見つからない
 - `NO_TASKS_AVAILABLE`: リマインド可能なタスクがない
@@ -319,6 +339,6 @@ curl -X POST https://api.goal-mandala.com/api/reminders/preview \
 
 ## 変更履歴
 
-| バージョン | 日付 | 変更内容 |
-|-----------|------|----------|
-| 1.0.0 | 2025-12-10 | 初版作成 |
+| バージョン | 日付       | 変更内容 |
+| ---------- | ---------- | -------- |
+| 1.0.0      | 2025-12-10 | 初版作成 |
