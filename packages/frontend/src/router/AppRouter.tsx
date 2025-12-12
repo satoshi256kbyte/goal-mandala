@@ -21,6 +21,10 @@ import {
   LazyNotFoundPage,
   LazyDeepLinkPage,
   LazyReminderSettingsPage,
+  LazyReflectionListPage,
+  LazyReflectionCreatePage,
+  LazyReflectionDetailPage,
+  LazyReflectionEditPage,
 } from '../pages/LazyPages';
 
 /**
@@ -204,6 +208,48 @@ export const AppRoutes: React.FC = () => {
               <ProtectedRoute>
                 <LazyLoader>
                   <LazyReminderSettingsPage />
+                </LazyLoader>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* 振り返り機能 */}
+          <Route
+            path="/mandala/:goalId/reflections"
+            element={
+              <ProtectedRoute>
+                <LazyLoader>
+                  <LazyReflectionListPage />
+                </LazyLoader>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/mandala/:goalId/reflections/new"
+            element={
+              <ProtectedRoute>
+                <LazyLoader>
+                  <LazyReflectionCreatePage />
+                </LazyLoader>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/mandala/:goalId/reflections/:reflectionId"
+            element={
+              <ProtectedRoute>
+                <LazyLoader>
+                  <LazyReflectionDetailPage />
+                </LazyLoader>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/mandala/:goalId/reflections/:reflectionId/edit"
+            element={
+              <ProtectedRoute>
+                <LazyLoader>
+                  <LazyReflectionEditPage />
                 </LazyLoader>
               </ProtectedRoute>
             }

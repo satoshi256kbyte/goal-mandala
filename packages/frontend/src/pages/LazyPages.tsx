@@ -16,6 +16,12 @@ export const LazyDeepLinkPage = lazy(() => import('./DeepLinkPage'));
 // リマインド設定ページ
 export const LazyReminderSettingsPage = lazy(() => import('./ReminderSettingsPage'));
 
+// 振り返り機能ページ
+export const LazyReflectionListPage = lazy(() => import('./ReflectionListPage'));
+export const LazyReflectionCreatePage = lazy(() => import('./ReflectionCreatePage'));
+export const LazyReflectionDetailPage = lazy(() => import('./ReflectionDetailPage'));
+export const LazyReflectionEditPage = lazy(() => import('./ReflectionEditPage'));
+
 // 目標作成関連ページ
 export const LazyGoalInputPage = lazy(() =>
   Promise.resolve({
