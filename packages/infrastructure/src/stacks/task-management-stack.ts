@@ -92,7 +92,6 @@ export class TaskManagementStack extends Stack {
       environment: {
         NODE_ENV: props.environment,
         DATABASE_SECRET_ARN: props.databaseSecretArn,
-        AWS_REGION: this.region,
       },
       logRetention: logs.RetentionDays.ONE_MONTH,
       deadLetterQueueEnabled: true,

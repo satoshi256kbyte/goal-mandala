@@ -1,0 +1,245 @@
+name: Rollback Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Git tag or commit SHA to rollback to"
+        required: true
+        type: string
+      confirm_rollback:
+        description: 'Confirm rollback (type "rollback" to proceed)'
+        required: true
+        type: string
+
+jobs:
+  validate-input:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate rollback confirmation
+        if: ${{ github.event.inputs.confirm_rollback != 'rollback' }}
+        run: |
+          echo "❌ Rollback confirmation failed. Please type 'rollback' to proceed."
+          exit 1
+
+      - name: Validate version format
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          if [[ ! "$VERSION" =~ ^(v[0-9]+\.[0-9]+\.[0-9]+|[0-9a-f]{7,40})$ ]]; then
+            echo "❌ Invalid version format. Please provide a valid git tag (e.g., v1.0.0) or commit SHA."
+            exit 1
+          fi
+          echo "✅ Version format is valid: $VERSION"
+
+  rollback:
+    needs: validate-input
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code at specified version
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.version }}
+        timeout-minutes: 1
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
+        timeout-minutes: 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".tool-versions"
+          cache: "pnpm"
+        timeout-minutes: 1
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        timeout-minutes: 3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION || 'ap-northeast-1' }}
+        timeout-minutes: 1
+
+      - name: Build all packages
+        run: pnpm run build
+        timeout-minutes: 5
+
+      - name: Show CDK diff
+        working-directory: packages/infrastructure
+        run: |
+          echo "🔍 Showing CDK diff for rollback to version: ${{ github.event.inputs.version }}"
+          pnpm cdk diff --context environment=prod
+        timeout-minutes: 3
+
+      - name: Rollback CDK stacks
+        working-directory: packages/infrastructure
+        run: |
+          echo "⏪ Rolling back CDK stacks to version: ${{ github.event.inputs.version }}"
+          pnpm cdk deploy --all --require-approval never --context environment=prod
+        timeout-minutes: 20
+
+      - name: Rollback frontend to S3
+        run: |
+          echo "⏪ Rolling back frontend to S3"
+          aws s3 sync packages/frontend/dist/ s3://${{ secrets.S3_BUCKET_NAME }} --delete
+        timeout-minutes: 3
+
+      - name: Invalidate CloudFront cache
+        run: |
+          echo "🔄 Invalidating CloudFront cache"
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
+            --paths "/*"
+        timeout-minutes: 2
+
+      - name: Output rollback info
+        run: |
+          echo "✅ Rollback completed successfully!"
+          echo "Environment: production"
+          echo "Rolled back to: ${{ github.event.inputs.version }}"
+          echo "Rolled back at: $(date)"
+          echo "Rolled back by: ${{ github.actor }}"
+
+  verify-rollback:
+    needs: rollback
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Wait for rollback to stabilize
+        run: sleep 30
+
+      - name: Health check
+        run: |
+          echo "🏥 Performing health check after rollback"
+          HEALTH_URL="${{ secrets.API_ENDPOINT }}/health"
+
+          for i in {1..5}; do
+            echo "Attempt $i/5"
+            if curl -f -s "$HEALTH_URL" > /dev/null; then
+              echo "✅ Health check passed"
+              exit 0
+            fi
+            echo "⚠️ Health check failed, retrying in 10 seconds..."
+            sleep 10
+          done
+
+          echo "❌ Health check failed after 5 attempts"
+          exit 1
+
+      - name: Verify version
+        run: |
+          echo "🔍 Verifying deployed version"
+          VERSION_URL="${{ secrets.API_ENDPOINT }}/version"
+
+          if curl -f -s "$VERSION_URL" > /dev/null; then
+            DEPLOYED_VERSION=$(curl -s "$VERSION_URL" | jq -r '.version')
+            echo "Deployed version: $DEPLOYED_VERSION"
+            echo "Expected version: ${{ github.event.inputs.version }}"
+          else
+            echo "⚠️ Version endpoint not available"
+          fi
+
+  notify-success:
+    needs: verify-rollback
+    if: success()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Slack notification
+        if: ${{ secrets.SLACK_WEBHOOK_URL != '' }}
+        run: |
+          curl -X POST ${{ secrets.SLACK_WEBHOOK_URL }} \
+            -H 'Content-Type: application/json' \
+            -d '{
+              "text": "✅ Production rollback successful",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Production Rollback Successful* :white_check_mark:"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Environment:*\nproduction"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Rolled back to:*\n${{ github.event.inputs.version }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Rolled back by:*\n${{ github.actor }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Rolled back at:*\n$(date)"
+                    }
+                  ]
+                }
+              ]
+            }'
+
+  notify-failure:
+    needs: [rollback, verify-rollback]
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Slack notification
+        if: ${{ secrets.SLACK_WEBHOOK_URL != '' }}
+        run: |
+          curl -X POST ${{ secrets.SLACK_WEBHOOK_URL }} \
+            -H 'Content-Type: application/json' \
+            -d '{
+              "text": "❌ Production rollback failed",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Production Rollback Failed* :x:"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Environment:*\nproduction"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Attempted version:*\n${{ github.event.inputs.version }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Failed by:*\n${{ github.actor }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Failed at:*\n$(date)"
+                    }
+                  ]
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View workflow run>"
+                  }
+                }
+              ]
+            }'

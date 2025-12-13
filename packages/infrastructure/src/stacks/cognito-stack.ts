@@ -1,6 +1,7 @@
 import * as cdk from 'aws-cdk-lib';
 import * as cognito from 'aws-cdk-lib/aws-cognito';
 import * as iam from 'aws-cdk-lib/aws-iam';
+import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
 import { Construct } from 'constructs';
 import { EnvironmentConfig } from '../config/environment';
 import { SesConstruct } from '../constructs/ses-construct';
@@ -16,11 +17,27 @@ export class CognitoStack extends cdk.Stack {
   public readonly userPoolDomain: cognito.UserPoolDomain;
   public readonly lambdaRole: iam.Role;
   public readonly sesConstruct?: SesConstruct;
+  public readonly jwtSecret: secretsmanager.Secret;
 
   constructor(scope: Construct, id: string, props: CognitoStackProps) {
     super(scope, id, props);
 
     const { config, environment } = props;
+
+    // JWT Secret作成（Reminder機能で使用）
+    this.jwtSecret = new secretsmanager.Secret(this, 'JwtSecret', {
+      secretName: `${config.stackPrefix}-${environment}-jwt-secret`,
+      description: 'JWT signing secret for authentication',
+      generateSecretString: {
+        secretStringTemplate: JSON.stringify({ algorithm: 'HS256' }),
+        generateStringKey: 'secret',
+        excludePunctuation: true,
+        passwordLength: 64,
+      },
+      removalPolicy: config.cognito.userPool.deletionProtection
+        ? cdk.RemovalPolicy.RETAIN
+        : cdk.RemovalPolicy.DESTROY,
+    });
 
     // SES設定作成（User Pool作成前に必要）
     if (config.cognito.userPool.emailSettings.useSes && environment !== 'local') {
@@ -840,6 +857,13 @@ export class CognitoStack extends cdk.Stack {
     new cdk.CfnOutput(this, 'FromEmailAddress', {
       value: emailSettings.fromEmail,
       description: 'From email address for Cognito notifications',
+    });
+
+    // JWT Secret ARN出力
+    new cdk.CfnOutput(this, 'JwtSecretArn', {
+      value: this.jwtSecret.secretArn,
+      description: 'ARN of the JWT signing secret',
+      exportName: `${this.stackName}-JwtSecretArn`,
     });
   }
 

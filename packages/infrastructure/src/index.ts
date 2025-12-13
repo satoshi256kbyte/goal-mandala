@@ -4,7 +4,9 @@ import { VpcStack, DatabaseStack, CognitoStack, ApiStack, FrontendStack } from '
 import { StepFunctionsStack } from './stacks/step-functions-stack';
 import { TaskManagementStack } from './stacks/task-management-stack';
 import { ReminderStack } from './stacks/reminder-stack';
+import { CloudTrailStack } from './stacks/cloudtrail-stack';
 import { getEnvironmentConfig } from './config/environment';
+import { getDefaultConfig } from './config/project-config';
 
 const app = new cdk.App();
 
@@ -115,6 +117,13 @@ try {
   reminderStack.addDependency(databaseStack);
   reminderStack.addDependency(cognitoStack);
 
+  // CloudTrailスタック作成（独立）
+  const projectConfig = getDefaultConfig(environment);
+  new CloudTrailStack(app, `${config.stackPrefix}-cloudtrail`, projectConfig, {
+    env,
+    description: `CloudTrail stack for ${config.stackPrefix} environment`,
+  });
+
   // 共通タグの設定
   if (config.tags) {
     Object.entries(config.tags).forEach(([key, value]) => {
@@ -141,4 +150,5 @@ export {
   StepFunctionsStack,
   TaskManagementStack,
   ReminderStack,
+  CloudTrailStack,
 };
