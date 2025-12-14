@@ -6,14 +6,14 @@
 
 ## エンドポイント一覧
 
-| エンドポイント | メソッド | 説明 | 認証 |
-|---------------|---------|------|------|
-| `/api/reflections` | POST | 振り返りを作成 | 必須 |
-| `/api/reflections/:id` | GET | 振り返りを取得 | 必須 |
-| `/api/goals/:goalId/reflections` | GET | 振り返り一覧を取得 | 必須 |
-| `/api/reflections/:id` | PUT | 振り返りを更新 | 必須 |
-| `/api/reflections/:id` | DELETE | 振り返りを削除 | 必須 |
-| `/api/goals/:goalId/action-progress` | GET | アクション進捗を取得 | 必須 |
+| エンドポイント                       | メソッド | 説明                 | 認証 |
+| ------------------------------------ | -------- | -------------------- | ---- |
+| `/api/reflections`                   | POST     | 振り返りを作成       | 必須 |
+| `/api/reflections/:id`               | GET      | 振り返りを取得       | 必須 |
+| `/api/goals/:goalId/reflections`     | GET      | 振り返り一覧を取得   | 必須 |
+| `/api/reflections/:id`               | PUT      | 振り返りを更新       | 必須 |
+| `/api/reflections/:id`               | DELETE   | 振り返りを削除       | 必須 |
+| `/api/goals/:goalId/action-progress` | GET      | アクション進捗を取得 | 必須 |
 
 ## 認証
 
@@ -64,13 +64,13 @@ Authorization: Bearer <JWT_TOKEN>
 
 #### リクエストボディフィールド
 
-| フィールド | 型 | 必須 | 説明 |
-|-----------|---|------|------|
-| goalId | string (UUID) | ✓ | 目標ID |
-| summary | string | ✓ | 総括（1文字以上） |
-| regretfulActions | string | - | 惜しかったアクション |
-| slowProgressActions | string | - | 進まなかったアクション |
-| untouchedActions | string | - | 未着手アクション |
+| フィールド          | 型            | 必須 | 説明                   |
+| ------------------- | ------------- | ---- | ---------------------- |
+| goalId              | string (UUID) | ✓    | 目標ID                 |
+| summary             | string        | ✓    | 総括（1文字以上）      |
+| regretfulActions    | string        | -    | 惜しかったアクション   |
+| slowProgressActions | string        | -    | 進まなかったアクション |
+| untouchedActions    | string        | -    | 未着手アクション       |
 
 #### レスポンス（成功）
 
@@ -126,9 +126,9 @@ Authorization: Bearer <JWT_TOKEN>
 
 #### パスパラメータ
 
-| パラメータ | 型 | 説明 |
-|-----------|---|------|
-| id | string | 振り返りID |
+| パラメータ | 型     | 説明       |
+| ---------- | ------ | ---------- |
+| id         | string | 振り返りID |
 
 #### レスポンス（成功）
 
@@ -174,9 +174,9 @@ Authorization: Bearer <JWT_TOKEN>
 
 #### パスパラメータ
 
-| パラメータ | 型 | 説明 |
-|-----------|---|------|
-| goalId | string (UUID) | 目標ID |
+| パラメータ | 型            | 説明   |
+| ---------- | ------------- | ------ |
+| goalId     | string (UUID) | 目標ID |
 
 #### レスポンス（成功）
 
@@ -225,9 +225,9 @@ Authorization: Bearer <JWT_TOKEN>
 
 #### パスパラメータ
 
-| パラメータ | 型 | 説明 |
-|-----------|---|------|
-| id | string | 振り返りID |
+| パラメータ | 型     | 説明       |
+| ---------- | ------ | ---------- |
+| id         | string | 振り返りID |
 
 #### リクエストボディ
 
@@ -240,12 +240,12 @@ Authorization: Bearer <JWT_TOKEN>
 
 #### リクエストボディフィールド
 
-| フィールド | 型 | 必須 | 説明 |
-|-----------|---|------|------|
-| summary | string | - | 総括 |
-| regretfulActions | string | - | 惜しかったアクション |
-| slowProgressActions | string | - | 進まなかったアクション |
-| untouchedActions | string | - | 未着手アクション |
+| フィールド          | 型     | 必須 | 説明                   |
+| ------------------- | ------ | ---- | ---------------------- |
+| summary             | string | -    | 総括                   |
+| regretfulActions    | string | -    | 惜しかったアクション   |
+| slowProgressActions | string | -    | 進まなかったアクション |
+| untouchedActions    | string | -    | 未着手アクション       |
 
 **注意**: 少なくとも1つのフィールドを更新する必要があります。
 
@@ -293,9 +293,9 @@ Authorization: Bearer <JWT_TOKEN>
 
 #### パスパラメータ
 
-| パラメータ | 型 | 説明 |
-|-----------|---|------|
-| id | string | 振り返りID |
+| パラメータ | 型     | 説明       |
+| ---------- | ------ | ---------- |
+| id         | string | 振り返りID |
 
 #### レスポンス（成功）
 
@@ -330,9 +330,9 @@ Authorization: Bearer <JWT_TOKEN>
 
 #### パスパラメータ
 
-| パラメータ | 型 | 説明 |
-|-----------|---|------|
-| goalId | string (UUID) | 目標ID |
+| パラメータ | 型            | 説明   |
+| ---------- | ------------- | ------ |
+| goalId     | string (UUID) | 目標ID |
 
 #### レスポンス（成功）
 
@@ -370,21 +370,21 @@ Authorization: Bearer <JWT_TOKEN>
 
 #### アクション分類基準
 
-| 分類 | 進捗率 | 説明 |
-|------|--------|------|
-| regretful | 80%以上 | 惜しかったアクション |
+| 分類         | 進捗率  | 説明                   |
+| ------------ | ------- | ---------------------- |
+| regretful    | 80%以上 | 惜しかったアクション   |
 | slowProgress | 1%〜20% | 進まなかったアクション |
-| untouched | 0% | 未着手アクション |
+| untouched    | 0%      | 未着手アクション       |
 
 ## エラーコード一覧
 
-| コード | HTTPステータス | 説明 |
-|--------|---------------|------|
-| UNAUTHORIZED | 401 | 認証が必要です |
-| FORBIDDEN | 403 | アクセス権限がありません |
-| NOT_FOUND | 404 | リソースが見つかりません |
-| VALIDATION_ERROR | 400 | 入力データが不正です |
-| INTERNAL_ERROR | 500 | サーバー内部エラー |
+| コード           | HTTPステータス | 説明                     |
+| ---------------- | -------------- | ------------------------ |
+| UNAUTHORIZED     | 401            | 認証が必要です           |
+| FORBIDDEN        | 403            | アクセス権限がありません |
+| NOT_FOUND        | 404            | リソースが見つかりません |
+| VALIDATION_ERROR | 400            | 入力データが不正です     |
+| INTERNAL_ERROR   | 500            | サーバー内部エラー       |
 
 ## セキュリティ仕様
 
