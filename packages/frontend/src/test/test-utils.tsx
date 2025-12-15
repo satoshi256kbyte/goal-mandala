@@ -272,6 +272,10 @@ export const wait = {
   },
 };
 
+// ファクトリーとマッチャーを再エクスポート
+export * from './factories';
+export * from './matchers';
+
 // 再エクスポート
 export * from '@testing-library/react';
 export { default as userEvent } from '@testing-library/user-event';

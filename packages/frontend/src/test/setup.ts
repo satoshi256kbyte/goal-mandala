@@ -1,6 +1,10 @@
 import '@testing-library/jest-dom';
 import { cleanup, configure } from '@testing-library/react';
 import { afterEach, beforeEach, afterAll } from 'vitest';
+import { setupCustomMatchers } from './matchers/custom-matchers';
+
+// カスタムマッチャーを登録
+setupCustomMatchers();
 
 // Testing Libraryの設定を最適化
 configure({
