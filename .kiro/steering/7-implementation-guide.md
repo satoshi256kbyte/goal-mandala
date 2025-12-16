@@ -1,3 +1,8 @@
+---
+inclusion: fileMatch
+fileMatchPattern: '{.github/**/*,tools/**/*,docker-compose.yml,.env*,**/*.config.{js,ts,cjs,mjs},.husky/**/*,*.{json,yml,yaml}}'
+---
+
 # 実装ガイド
 
 ## Git 運用ガイド

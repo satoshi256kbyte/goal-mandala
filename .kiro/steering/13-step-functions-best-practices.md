@@ -1,3 +1,8 @@
+---
+inclusion: fileMatch
+fileMatchPattern: 'packages/backend/src/workflows/**/*.{ts,json}'
+---
+
 # Step Functionsベストプラクティス
 
 ## 概要

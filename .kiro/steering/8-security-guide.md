@@ -1,3 +1,8 @@
+---
+inclusion: fileMatch
+fileMatchPattern: '{packages/backend/src/{middleware,utils,handlers}/**/*auth*,packages/infrastructure/lib/**/*Security*,packages/infrastructure/lib/**/*secrets*}.{ts,tsx}'
+---
+
 # セキュリティガイド
 
 ## 基本方針

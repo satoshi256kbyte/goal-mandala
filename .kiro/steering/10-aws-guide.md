@@ -1,3 +1,8 @@
+---
+inclusion: fileMatch
+fileMatchPattern: 'packages/infrastructure/**/*.ts'
+---
+
 # AWS 利用ガイド
 
 インフラ環境にはAWSを用いる。  

@@ -1,3 +1,8 @@
+---
+inclusion: fileMatch
+fileMatchPattern: '**/*.md'
+---
+
 # ドキュメント管理ガイド
 
 ## 概要

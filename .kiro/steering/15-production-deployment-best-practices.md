@@ -1,3 +1,8 @@
+---
+inclusion: fileMatch
+fileMatchPattern: '{.github/workflows/**/*.yml,packages/infrastructure/**/*.ts,docs/{deployment,operations,troubleshooting,rollback}*.md}'
+---
+
 # 本番環境デプロイのベストプラクティス
 
 ## 概要

@@ -1,3 +1,8 @@
+---
+inclusion: fileMatch
+fileMatchPattern: 'packages/frontend/**/*.{ts,tsx}'
+---
+
 # React Hooksのベストプラクティス
 
 ## 概要

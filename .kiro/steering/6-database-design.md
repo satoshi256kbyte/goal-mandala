@@ -1,3 +1,8 @@
+---
+inclusion: fileMatch
+fileMatchPattern: 'packages/backend/{prisma,src/services}/**/*.{ts,prisma}'
+---
+
 # データベース設計
 
 ## 概要

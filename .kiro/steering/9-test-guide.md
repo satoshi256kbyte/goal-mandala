@@ -1,3 +1,8 @@
+---
+inclusion: fileMatch
+fileMatchPattern: '**/*.test.{ts,tsx}'
+---
+
 # テストガイド
 
 ## テスト戦略

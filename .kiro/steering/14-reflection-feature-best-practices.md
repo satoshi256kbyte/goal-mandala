@@ -1,3 +1,8 @@
+---
+inclusion: fileMatch
+fileMatchPattern: 'packages/{backend/src/{handlers,services}/reflection*,frontend/src/{pages,components}/**/Reflection*}/**/*.{ts,tsx}'
+---
+
 # 振り返り機能実装のベストプラクティス
 
 ## 概要
