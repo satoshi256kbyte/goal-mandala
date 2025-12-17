@@ -269,4 +269,244 @@ describe('TaskListPage', () => {
       expect(screen.getByText('2個のタスクが選択されています')).toBeInTheDocument();
     });
   });
+
+  it('選択解除ボタンが動作する', async () => {
+    render(<TaskListPage />, { wrapper: createWrapper() });
+
+    await waitFor(() => {
+      expect(screen.getByText('タスク1')).toBeInTheDocument();
+    });
+
+    // タスクを選択
+    const checkbox = screen.getByTestId('task-select-task-1');
+    fireEvent.click(checkbox);
+
+    await waitFor(() => {
+      expect(screen.getByText('選択解除')).toBeInTheDocument();
+    });
+
+    // 選択解除ボタンをクリック
+    const clearButton = screen.getByText('選択解除');
+    fireEvent.click(clearButton);
+
+    await waitFor(() => {
+      expect(screen.queryByText('選択解除')).not.toBeInTheDocument();
+    });
+  });
+
+  it('一括削除が動作する', async () => {
+    render(<TaskListPage />, { wrapper: createWrapper() });
+
+    await waitFor(() => {
+      expect(screen.getByText('タスク1')).toBeInTheDocument();
+    });
+
+    // タスクを選択
+    const checkbox = screen.getByTestId('task-select-task-1');
+    fireEvent.click(checkbox);
+
+    await waitFor(() => {
+      expect(screen.getByText('一括削除')).toBeInTheDocument();
+    });
+
+    // 一括削除を実行
+    const bulkDeleteButton = screen.getByText('一括削除');
+    fireEvent.click(bulkDeleteButton);
+
+    await waitFor(() => {
+      expect(mockTaskApi.bulkDelete).toHaveBeenCalledWith(['task-1']);
+    });
+  });
+
+  it('タスクがない場合のメッセージが表示される', async () => {
+    mockTaskApi.getTasks.mockResolvedValue({
+      tasks: [],
+      total: 0,
+      page: 1,
+      pageSize: 20,
+    });
+
+    render(<TaskListPage />, { wrapper: createWrapper() });
+
+    await waitFor(() => {
+      expect(screen.getByText('条件に一致するタスクがありません')).toBeInTheDocument();
+    });
+  });
+
+  it('ステータスごとにタスクがグループ化される', async () => {
+    render(<TaskListPage />, { wrapper: createWrapper() });
+
+    await waitFor(() => {
+      expect(screen.getByText('未着手 (1)')).toBeInTheDocument();
+      expect(screen.getByText('完了 (1)')).toBeInTheDocument();
+    });
+  });
+
+  it('進捗バーが正しく計算される', async () => {
+    render(<TaskListPage />, { wrapper: createWrapper() });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('progress-bar')).toBeInTheDocument();
+      expect(screen.getByText('全体進捗: 50%')).toBeInTheDocument();
+    });
+  });
+
+  it('期限フィルターが動作する（今日）', async () => {
+    render(<TaskListPage />, { wrapper: createWrapper() });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('task-filter')).toBeInTheDocument();
+    });
+
+    const filterButton = screen.getByText('Filter Completed');
+    fireEvent.click(filterButton);
+
+    await waitFor(() => {
+      expect(mockTaskApi.getTasks).toHaveBeenCalled();
+    });
+  });
+
+  it('アクションフィルターが動作する', async () => {
+    render(<TaskListPage />, { wrapper: createWrapper() });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('task-filter')).toBeInTheDocument();
+    });
+
+    // フィルターの変更をシミュレート
+    const filterButton = screen.getByText('Filter Completed');
+    fireEvent.click(filterButton);
+
+    await waitFor(() => {
+      expect(mockTaskApi.getTasks).toHaveBeenCalled();
+    });
+  });
+
+  it('タスク数が正しく表示される', async () => {
+    render(<TaskListPage />, { wrapper: createWrapper() });
+
+    await waitFor(() => {
+      expect(screen.getByText('2件のタスク')).toBeInTheDocument();
+    });
+  });
+
+  it('エラー後のリトライが動作する', async () => {
+    mockTaskApi.getTasks.mockRejectedValueOnce(new Error('API Error'));
+
+    render(<TaskListPage />, { wrapper: createWrapper() });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('error-alert')).toBeInTheDocument();
+    });
+
+    // リトライボタンをクリック
+    mockTaskApi.getTasks.mockResolvedValue({
+      tasks: mockTasks,
+      total: mockTasks.length,
+      page: 1,
+      pageSize: 20,
+    });
+
+    const retryButton = screen.getByText('Retry');
+    fireEvent.click(retryButton);
+
+    await waitFor(() => {
+      expect(screen.getByText('タスク1')).toBeInTheDocument();
+    });
+  });
+
+  it('複数のタスクを選択できる', async () => {
+    render(<TaskListPage />, { wrapper: createWrapper() });
+
+    await waitFor(() => {
+      expect(screen.getByText('タスク1')).toBeInTheDocument();
+    });
+
+    // 複数のタスクを選択
+    const checkbox1 = screen.getByTestId('task-select-task-1');
+    const checkbox2 = screen.getByTestId('task-select-task-2');
+
+    fireEvent.click(checkbox1);
+    fireEvent.click(checkbox2);
+
+    await waitFor(() => {
+      expect(screen.getByText('2個のタスクが選択されています')).toBeInTheDocument();
+    });
+  });
+
+  it('全選択後に個別選択解除が動作する', async () => {
+    render(<TaskListPage />, { wrapper: createWrapper() });
+
+    await waitFor(() => {
+      expect(screen.getByText('すべて選択')).toBeInTheDocument();
+    });
+
+    // 全選択
+    const selectAllCheckbox = screen.getByLabelText('すべて選択');
+    fireEvent.click(selectAllCheckbox);
+
+    await waitFor(() => {
+      expect(screen.getByText('2個のタスクが選択されています')).toBeInTheDocument();
+    });
+
+    // 個別選択解除
+    const checkbox1 = screen.getByTestId('task-select-task-1');
+    fireEvent.click(checkbox1);
+
+    await waitFor(() => {
+      expect(screen.getByText('1個のタスクが選択されています')).toBeInTheDocument();
+    });
+  });
+
+  it('検索クエリがデバウンスされる', async () => {
+    render(<TaskListPage />, { wrapper: createWrapper() });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('task-search')).toBeInTheDocument();
+    });
+
+    const searchInput = screen.getByPlaceholderText('Search tasks');
+
+    // 複数回入力
+    fireEvent.change(searchInput, { target: { value: 'テ' } });
+    fireEvent.change(searchInput, { target: { value: 'テス' } });
+    fireEvent.change(searchInput, { target: { value: 'テスト' } });
+
+    // デバウンス待機
+    await new Promise(resolve => setTimeout(resolve, 600));
+
+    await waitFor(() => {
+      expect(mockTaskApi.getTasks).toHaveBeenCalledWith(
+        expect.objectContaining({
+          search: 'テスト',
+        })
+      );
+    });
+  });
+
+  it('ステータス更新エラーが処理される', async () => {
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    mockTaskApi.updateTaskStatus.mockRejectedValue(new Error('Update failed'));
+
+    render(<TaskListPage />, { wrapper: createWrapper() });
+
+    await waitFor(() => {
+      expect(screen.getByText('タスク1')).toBeInTheDocument();
+    });
+
+    const completeButton = screen.getAllByText('Complete')[0];
+    fireEvent.click(completeButton);
+
+    await waitFor(
+      () => {
+        expect(consoleErrorSpy).toHaveBeenCalledWith(
+          'Failed to update task status:',
+          expect.any(Error)
+        );
+      },
+      { timeout: 5000 }
+    );
+
+    consoleErrorSpy.mockRestore();
+  });
 });

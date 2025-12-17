@@ -231,4 +231,337 @@ describe('LoginPage', () => {
     // エラーメッセージが表示されることを確認
     expect(screen.getByText(errorMessage)).toBeInTheDocument();
   });
+
+  // フォーム入力のインタラクションテスト
+  describe('フォーム入力', () => {
+    it('メールアドレスとパスワードを入力できる', async () => {
+      const user = userEvent.setup();
+
+      render(
+        <TestWrapper>
+          <LoginPage />
+        </TestWrapper>
+      );
+
+      const emailInput = screen.getByLabelText(/メールアドレス/) as HTMLInputElement;
+      const passwordInput = screen.getByLabelText(/パスワード/) as HTMLInputElement;
+
+      await user.type(emailInput, 'test@example.com');
+      await user.type(passwordInput, 'password123');
+
+      expect(emailInput.value).toBe('test@example.com');
+      expect(passwordInput.value).toBe('password123');
+    });
+
+    it('フォーム送信時にsignInが呼ばれる', async () => {
+      const user = userEvent.setup();
+
+      render(
+        <TestWrapper>
+          <LoginPage />
+        </TestWrapper>
+      );
+
+      const emailInput = screen.getByLabelText(/メールアドレス/);
+      const passwordInput = screen.getByLabelText(/パスワード/);
+      const submitButton = screen.getByRole('button', { name: 'ログインボタン' });
+
+      await user.type(emailInput, 'test@example.com');
+      await user.type(passwordInput, 'password123');
+      await user.click(submitButton);
+
+      await waitFor(() => {
+        expect(mockSignIn).toHaveBeenCalledWith('test@example.com', 'password123');
+      });
+    });
+
+    it('無効なメールアドレスでバリデーションエラーが表示される', async () => {
+      const user = userEvent.setup();
+
+      render(
+        <TestWrapper>
+          <LoginPage />
+        </TestWrapper>
+      );
+
+      const emailInput = screen.getByLabelText(/メールアドレス/);
+      await user.type(emailInput, 'invalid-email');
+      await user.tab();
+
+      await waitFor(() => {
+        expect(
+          screen.getAllByText(/有効なメールアドレスを入力してください/).length
+        ).toBeGreaterThan(0);
+      });
+    });
+
+    it('空のメールアドレスでバリデーションエラーが表示される', async () => {
+      const user = userEvent.setup();
+
+      render(
+        <TestWrapper>
+          <LoginPage />
+        </TestWrapper>
+      );
+
+      const emailInput = screen.getByLabelText(/メールアドレス/);
+      await user.click(emailInput);
+      await user.tab();
+
+      await waitFor(() => {
+        // loginZodSchemaのエラーメッセージに合わせる
+        const errorMessages = screen.getAllByText(/有効なメールアドレスを入力してください/);
+        expect(errorMessages.length).toBeGreaterThan(0);
+      });
+    });
+
+    it('空のパスワードでバリデーションエラーが表示される', async () => {
+      const user = userEvent.setup();
+
+      render(
+        <TestWrapper>
+          <LoginPage />
+        </TestWrapper>
+      );
+
+      const passwordInput = screen.getByLabelText(/パスワード/);
+      await user.click(passwordInput);
+      await user.tab();
+
+      await waitFor(() => {
+        expect(
+          screen.getAllByText(/パスワードは8文字以上で入力してください/).length
+        ).toBeGreaterThan(0);
+      });
+    });
+  });
+
+  // ナビゲーションテスト
+  describe('ナビゲーション', () => {
+    it('新規登録リンクが正しく表示される', () => {
+      render(
+        <TestWrapper>
+          <LoginPage />
+        </TestWrapper>
+      );
+
+      const signupLink = screen.getByRole('link', { name: /新規登録/ });
+      expect(signupLink).toBeInTheDocument();
+      expect(signupLink).toHaveAttribute('href', '/signup');
+    });
+
+    it('パスワードリセットリンクが正しく表示される', () => {
+      render(
+        <TestWrapper>
+          <LoginPage />
+        </TestWrapper>
+      );
+
+      const resetLink = screen.getByRole('link', { name: /パスワードを忘れた場合/ });
+      expect(resetLink).toBeInTheDocument();
+      expect(resetLink).toHaveAttribute('href', '/password-reset');
+    });
+
+    it('ログイン成功後にTOP画面にリダイレクトされる', async () => {
+      const user = userEvent.setup();
+      let onSuccessCallback: (() => void) | undefined;
+
+      // useAuthFormのモックでonSuccessコールバックをキャプチャ
+      mockUseAuthForm.mockImplementation((options: any) => {
+        onSuccessCallback = options?.onSuccess;
+        return {
+          isLoading: false,
+          successMessage: null,
+          error: null,
+          isNetworkError: false,
+          isRetryable: false,
+          isOnline: true,
+          signIn: async (email: string, password: string) => {
+            // ログイン成功時にonSuccessを呼び出す
+            if (onSuccessCallback) {
+              onSuccessCallback();
+            }
+          },
+          clearError: vi.fn(),
+          clearSuccess: vi.fn(),
+          retry: vi.fn(),
+        };
+      });
+
+      render(
+        <TestWrapper>
+          <LoginPage />
+        </TestWrapper>
+      );
+
+      const emailInput = screen.getByLabelText(/メールアドレス/);
+      const passwordInput = screen.getByLabelText(/パスワード/);
+      const submitButton = screen.getByRole('button', { name: 'ログインボタン' });
+
+      await user.type(emailInput, 'test@example.com');
+      await user.type(passwordInput, 'password123');
+      await user.click(submitButton);
+
+      await waitFor(() => {
+        expect(mockNavigate).toHaveBeenCalledWith('/', { replace: true });
+      });
+    });
+  });
+
+  // エラーハンドリングテスト
+  describe('エラーハンドリング', () => {
+    it('リトライ可能なエラーの場合、再試行ボタンが表示される', () => {
+      const mockRetry = vi.fn();
+
+      mockUseAuthForm.mockReturnValue({
+        isLoading: false,
+        successMessage: null,
+        error: 'ネットワークエラー',
+        isNetworkError: true,
+        isRetryable: true,
+        isOnline: false,
+        signIn: mockSignIn,
+        clearError: vi.fn(),
+        clearSuccess: vi.fn(),
+        retry: mockRetry,
+      });
+
+      render(
+        <TestWrapper>
+          <LoginPage />
+        </TestWrapper>
+      );
+
+      const retryButton = screen.getByRole('button', { name: /再試行/ });
+      expect(retryButton).toBeInTheDocument();
+    });
+
+    it('再試行ボタンをクリックするとretryが呼ばれる', async () => {
+      const user = userEvent.setup();
+      const mockRetry = vi.fn();
+
+      mockUseAuthForm.mockReturnValue({
+        isLoading: false,
+        successMessage: null,
+        error: 'ネットワークエラー',
+        isNetworkError: true,
+        isRetryable: true,
+        isOnline: false,
+        signIn: mockSignIn,
+        clearError: vi.fn(),
+        clearSuccess: vi.fn(),
+        retry: mockRetry,
+      });
+
+      render(
+        <TestWrapper>
+          <LoginPage />
+        </TestWrapper>
+      );
+
+      const retryButton = screen.getByRole('button', { name: /再試行/ });
+      await user.click(retryButton);
+
+      expect(mockRetry).toHaveBeenCalled();
+    });
+
+    it('オフライン時に適切なエラーメッセージが表示される', () => {
+      mockUseAuthForm.mockReturnValue({
+        isLoading: false,
+        successMessage: null,
+        error: 'インターネット接続を確認してください',
+        isNetworkError: true,
+        isRetryable: true,
+        isOnline: false,
+        signIn: mockSignIn,
+        clearError: vi.fn(),
+        clearSuccess: vi.fn(),
+        retry: vi.fn(),
+      });
+
+      render(
+        <TestWrapper>
+          <LoginPage />
+        </TestWrapper>
+      );
+
+      expect(screen.getByText(/インターネット接続を確認してください/)).toBeInTheDocument();
+    });
+  });
+
+  // アクセシビリティテスト
+  describe('アクセシビリティ', () => {
+    it('フォーム要素に適切なラベルが設定されている', () => {
+      render(
+        <TestWrapper>
+          <LoginPage />
+        </TestWrapper>
+      );
+
+      expect(screen.getByLabelText(/メールアドレス/)).toBeInTheDocument();
+      expect(screen.getByLabelText(/パスワード/)).toBeInTheDocument();
+    });
+
+    it('送信ボタンに適切なaria属性が設定されている', () => {
+      render(
+        <TestWrapper>
+          <LoginPage />
+        </TestWrapper>
+      );
+
+      const submitButton = screen.getByRole('button', { name: 'ログインボタン' });
+      expect(submitButton).toHaveAttribute('type', 'submit');
+    });
+
+    it('ローディング中のボタンに適切なaria属性が設定されている', () => {
+      mockUseAuthForm.mockReturnValue({
+        isLoading: true,
+        successMessage: null,
+        error: null,
+        isNetworkError: false,
+        isRetryable: false,
+        isOnline: true,
+        signIn: mockSignIn,
+        clearError: vi.fn(),
+        clearSuccess: vi.fn(),
+        retry: vi.fn(),
+      });
+
+      render(
+        <TestWrapper>
+          <LoginPage />
+        </TestWrapper>
+      );
+
+      const submitButton = screen.getByRole('button');
+      expect(submitButton).toHaveAttribute('aria-busy', 'true');
+      expect(submitButton).toBeDisabled();
+    });
+
+    it('エラーメッセージに適切なrole属性が設定されている', () => {
+      mockUseAuthForm.mockReturnValue({
+        isLoading: false,
+        successMessage: null,
+        error: 'エラーが発生しました',
+        isNetworkError: false,
+        isRetryable: false,
+        isOnline: true,
+        signIn: mockSignIn,
+        clearError: vi.fn(),
+        clearSuccess: vi.fn(),
+        retry: vi.fn(),
+      });
+
+      render(
+        <TestWrapper>
+          <LoginPage />
+        </TestWrapper>
+      );
+
+      // ErrorAlertコンポーネント内にrole="alert"が設定されている
+      const errorAlert = screen.getByRole('alert');
+      expect(errorAlert).toBeInTheDocument();
+      expect(errorAlert).toHaveTextContent('エラーが発生しました');
+    });
+  });
 });
