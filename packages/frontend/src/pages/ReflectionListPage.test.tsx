@@ -169,4 +169,151 @@ describe('ReflectionListPage', () => {
       });
     });
   });
+
+  describe('エッジケース', () => {
+    it('ローディング状態でもページが正しく表示される', () => {
+      mockUseReflectionsByGoal.mockReturnValue({
+        data: undefined,
+        isLoading: true,
+        error: null,
+      });
+
+      renderWithProviders();
+
+      // ローディング状態でもページタイトルと新規作成ボタンは表示される
+      expect(screen.getByText('振り返り履歴')).toBeInTheDocument();
+      expect(screen.getByText('新規作成')).toBeInTheDocument();
+    });
+
+    it('エラー状態でもページが正しく表示される', async () => {
+      mockUseReflectionsByGoal.mockReturnValue({
+        data: undefined,
+        isLoading: false,
+        error: new Error('Failed to fetch reflections'),
+      });
+
+      renderWithProviders();
+
+      await waitFor(() => {
+        // エラー状態でもページタイトルと新規作成ボタンは表示される
+        expect(screen.getByText('振り返り履歴')).toBeInTheDocument();
+        expect(screen.getByText('新規作成')).toBeInTheDocument();
+      });
+    });
+
+    it('空データ状態でもページが正しく表示される', async () => {
+      mockUseReflectionsByGoal.mockReturnValue({
+        data: [],
+        isLoading: false,
+        error: null,
+      });
+
+      renderWithProviders();
+
+      await waitFor(() => {
+        // 空データ状態でもページタイトルと新規作成ボタンは表示される
+        expect(screen.getByText('振り返り履歴')).toBeInTheDocument();
+        expect(screen.getByText('新規作成')).toBeInTheDocument();
+      });
+    });
+
+    it('大量の振り返り（100件）でもページが正しく表示される', async () => {
+      const largeReflections = Array.from({ length: 100 }, (_, i) => ({
+        id: `reflection-${i + 1}`,
+        goalId: 'goal-1',
+        summary: `テスト振り返り${i + 1}`,
+        regretfulActions: null,
+        slowProgressActions: null,
+        untouchedActions: null,
+        createdAt: new Date(2025, 0, i + 1).toISOString(),
+        updatedAt: new Date(2025, 0, i + 1).toISOString(),
+      }));
+
+      mockUseReflectionsByGoal.mockReturnValue({
+        data: largeReflections,
+        isLoading: false,
+        error: null,
+      });
+
+      renderWithProviders();
+
+      await waitFor(() => {
+        // 大量データでもページタイトルと新規作成ボタンは表示される
+        expect(screen.getByText('振り返り履歴')).toBeInTheDocument();
+        expect(screen.getByText('新規作成')).toBeInTheDocument();
+        // ReflectionListコンポーネントが表示される
+        expect(screen.getByTestId('reflection-list')).toBeInTheDocument();
+      });
+    });
+
+    it('振り返りのサマリーが非常に長い場合でもページが正しく表示される', async () => {
+      const longSummary = 'これは非常に長いサマリーです。'.repeat(50);
+      const reflectionWithLongSummary = [
+        {
+          id: 'reflection-1',
+          goalId: 'goal-1',
+          summary: longSummary,
+          regretfulActions: null,
+          slowProgressActions: null,
+          untouchedActions: null,
+          createdAt: '2025-01-15T10:00:00Z',
+          updatedAt: '2025-01-15T10:00:00Z',
+        },
+      ];
+
+      mockUseReflectionsByGoal.mockReturnValue({
+        data: reflectionWithLongSummary,
+        isLoading: false,
+        error: null,
+      });
+
+      renderWithProviders();
+
+      await waitFor(() => {
+        // 長いサマリーでもページタイトルと新規作成ボタンは表示される
+        expect(screen.getByText('振り返り履歴')).toBeInTheDocument();
+        expect(screen.getByText('新規作成')).toBeInTheDocument();
+        // ReflectionListコンポーネントが表示される
+        expect(screen.getByTestId('reflection-list')).toBeInTheDocument();
+      });
+    });
+
+    it('ローディング中に新規作成ボタンをクリックしてもエラーが発生しない', async () => {
+      mockUseReflectionsByGoal.mockReturnValue({
+        data: undefined,
+        isLoading: true,
+        error: null,
+      });
+
+      renderWithProviders();
+
+      const createButton = screen.getByText('新規作成');
+      await userEvent.click(createButton);
+
+      await waitFor(() => {
+        expect(screen.getByText('Create Reflection')).toBeInTheDocument();
+      });
+    });
+
+    it('エラー状態で新規作成ボタンをクリックしてもエラーが発生しない', async () => {
+      mockUseReflectionsByGoal.mockReturnValue({
+        data: undefined,
+        isLoading: false,
+        error: new Error('Failed to fetch reflections'),
+      });
+
+      renderWithProviders();
+
+      await waitFor(() => {
+        expect(screen.getByText('振り返り履歴')).toBeInTheDocument();
+      });
+
+      const createButton = screen.getByText('新規作成');
+      await userEvent.click(createButton);
+
+      await waitFor(() => {
+        expect(screen.getByText('Create Reflection')).toBeInTheDocument();
+      });
+    });
+  });
 });

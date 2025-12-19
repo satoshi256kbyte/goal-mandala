@@ -388,4 +388,158 @@ describe('TaskDetailPage', () => {
       expect(screen.queryByText('完了日時')).not.toBeInTheDocument();
     });
   });
+
+  describe('エッジケース', () => {
+    it('大量のノート（50件）が正しく表示される', async () => {
+      const mockTask = createMockTask('1');
+      const mockNotes = Array.from({ length: 50 }, (_, i) =>
+        createMockNote(`note-${i + 1}`, `Note ${i + 1}`)
+      );
+      vi.mocked(taskApi.getTaskById).mockResolvedValue({
+        task: mockTask,
+        notes: mockNotes,
+        history: [],
+      });
+
+      renderWithProviders('1');
+
+      await waitFor(() => {
+        expect(screen.getByText('Note 1')).toBeInTheDocument();
+        expect(screen.getByText('Note 50')).toBeInTheDocument();
+      });
+    });
+
+    it('大量の履歴（100件）が正しく表示される', async () => {
+      const mockTask = createMockTask('1');
+      const mockHistory = Array.from({ length: 100 }, (_, i) =>
+        createMockHistory(
+          `h${i + 1}`,
+          i % 2 === 0 ? TaskStatus.NOT_STARTED : TaskStatus.IN_PROGRESS,
+          i % 2 === 0 ? TaskStatus.IN_PROGRESS : TaskStatus.COMPLETED
+        )
+      );
+      vi.mocked(taskApi.getTaskById).mockResolvedValue({
+        task: mockTask,
+        notes: [],
+        history: mockHistory,
+      });
+
+      renderWithProviders('1');
+
+      await waitFor(() => {
+        const historyItems1 = screen.getAllByText('未着手 → 進行中');
+        const historyItems2 = screen.getAllByText('進行中 → 完了');
+        expect(historyItems1.length).toBeGreaterThan(0);
+        expect(historyItems2.length).toBeGreaterThan(0);
+      });
+    });
+
+    it('エラー後にリトライが成功する', async () => {
+      const mockTask = createMockTask('1');
+      vi.mocked(taskApi.getTaskById)
+        .mockRejectedValueOnce(new Error('Failed to fetch'))
+        .mockResolvedValueOnce({
+          task: mockTask,
+          notes: [],
+          history: [],
+        });
+
+      renderWithProviders('1');
+
+      await waitFor(() => {
+        expect(screen.getByTestId('error-alert')).toBeInTheDocument();
+      });
+
+      const retryButton = screen.getByText('Retry');
+      await userEvent.click(retryButton);
+
+      await waitFor(() => {
+        expect(screen.getByText('Task 1')).toBeInTheDocument();
+      });
+    });
+
+    it('ノート追加中にエラーが発生してもアプリケーションがクラッシュしない', async () => {
+      const mockTask = createMockTask('1');
+      vi.mocked(taskApi.getTaskById).mockResolvedValue({
+        task: mockTask,
+        notes: [],
+        history: [],
+      });
+      vi.mocked(taskApi.addNote).mockRejectedValue(new Error('Failed to add note'));
+
+      renderWithProviders('1');
+
+      await waitFor(() => {
+        expect(screen.getByText('Task 1')).toBeInTheDocument();
+      });
+
+      const noteInput = screen.getByPlaceholderText('ノートを追加...');
+      await userEvent.type(noteInput, 'New note');
+
+      const addButton = screen.getByText('ノートを追加');
+      await userEvent.click(addButton);
+
+      // エラーが発生してもアプリケーションがクラッシュしないことを確認
+      await waitFor(() => {
+        expect(taskApi.addNote).toHaveBeenCalledWith('1', 'New note');
+      });
+    });
+
+    it('ノート編集中にエラーが発生してもアプリケーションがクラッシュしない', async () => {
+      const mockTask = createMockTask('1');
+      const mockNote = createMockNote('note-1', 'Original note');
+      vi.mocked(taskApi.getTaskById).mockResolvedValue({
+        task: mockTask,
+        notes: [mockNote],
+        history: [],
+      });
+      vi.mocked(taskApi.updateNote).mockRejectedValue(new Error('Failed to update note'));
+
+      renderWithProviders('1');
+
+      await waitFor(() => {
+        expect(screen.getByText('Original note')).toBeInTheDocument();
+      });
+
+      const editButton = screen.getByText('編集');
+      await userEvent.click(editButton);
+
+      const editInput = screen.getByDisplayValue('Original note');
+      await userEvent.clear(editInput);
+      await userEvent.type(editInput, 'Updated note');
+
+      const saveButton = screen.getByText('保存');
+      await userEvent.click(saveButton);
+
+      // エラーが発生してもアプリケーションがクラッシュしないことを確認
+      await waitFor(() => {
+        expect(taskApi.updateNote).toHaveBeenCalledWith('1', 'note-1', 'Updated note');
+      });
+    });
+
+    it('ノート削除中にエラーが発生してもアプリケーションがクラッシュしない', async () => {
+      const mockTask = createMockTask('1');
+      const mockNote = createMockNote('note-1', 'Note to delete');
+      vi.mocked(taskApi.getTaskById).mockResolvedValue({
+        task: mockTask,
+        notes: [mockNote],
+        history: [],
+      });
+      vi.mocked(taskApi.deleteNote).mockRejectedValue(new Error('Failed to delete note'));
+
+      renderWithProviders('1');
+
+      await waitFor(() => {
+        expect(screen.getByText('Note to delete')).toBeInTheDocument();
+      });
+
+      const deleteButton = screen.getByText('削除');
+      await userEvent.click(deleteButton);
+
+      // エラーが発生してもアプリケーションがクラッシュしないことを確認
+      await waitFor(() => {
+        expect(taskApi.deleteNote).toHaveBeenCalledWith('1', 'note-1');
+      });
+    });
+  });
 });

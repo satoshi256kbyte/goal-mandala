@@ -42,10 +42,19 @@ export default defineConfig({
     reporter: ['dot'],
     // カバレッジ設定
     coverage: {
-      enabled: false,
       provider: 'v8',
-      reporter: ['json'],
-      exclude: ['**/node_modules/**', '**/dist/**', '**/e2e/**', '**/*.integration.test.{ts,tsx}'],
+      reporter: ['json', 'json-summary', 'text'],
+      reportsDirectory: './coverage',
+      exclude: [
+        '**/node_modules/**',
+        '**/dist/**',
+        '**/e2e/**',
+        '**/*.integration.test.{ts,tsx}',
+        '**/test/**',
+        '**/*.test.{ts,tsx}',
+        '**/*.config.{ts,js}',
+        '**/vite-env.d.ts',
+      ],
     },
     // メモリ最適化: テストファイルを順次実行
     sequence: {

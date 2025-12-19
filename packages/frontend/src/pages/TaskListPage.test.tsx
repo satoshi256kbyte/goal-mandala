@@ -358,4 +358,109 @@ describe('TaskListPage', () => {
       });
     });
   });
+
+  describe('エッジケース', () => {
+    it('大量のタスク（100件）が正しく表示される', async () => {
+      const mockTasks = Array.from({ length: 100 }, (_, i) =>
+        createMockTask(`${i + 1}`, { title: `Task ${i + 1}` })
+      );
+
+      vi.mocked(taskApi.getTasks).mockResolvedValue({ tasks: mockTasks, total: 100 });
+
+      renderWithProviders(<TaskListPage />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Task 1')).toBeInTheDocument();
+        expect(screen.getByText('Task 100')).toBeInTheDocument();
+      });
+    });
+
+    it('空データ状態でフィルターを適用してもエラーが発生しない', async () => {
+      vi.mocked(taskApi.getTasks).mockResolvedValue({ tasks: [], total: 0 });
+
+      renderWithProviders(<TaskListPage />);
+
+      await waitFor(() => {
+        expect(screen.getByText('条件に一致するタスクがありません')).toBeInTheDocument();
+      });
+
+      const filterButton = screen.getByText('Filter Completed');
+      await userEvent.click(filterButton);
+
+      await waitFor(() => {
+        expect(screen.getByText('条件に一致するタスクがありません')).toBeInTheDocument();
+      });
+    });
+
+    it('空データ状態で検索してもエラーが発生しない', async () => {
+      vi.mocked(taskApi.getTasks).mockResolvedValue({ tasks: [], total: 0 });
+
+      renderWithProviders(<TaskListPage />);
+
+      await waitFor(() => {
+        expect(screen.getByText('条件に一致するタスクがありません')).toBeInTheDocument();
+      });
+
+      const searchInput = screen.getByTestId('search-input');
+      await userEvent.type(searchInput, 'test');
+
+      await waitFor(() => {
+        expect(screen.getByText('条件に一致するタスクがありません')).toBeInTheDocument();
+      });
+    });
+
+    it('大量のタスクを一括選択できる', async () => {
+      const mockTasks = Array.from({ length: 50 }, (_, i) => createMockTask(`${i + 1}`));
+      vi.mocked(taskApi.getTasks).mockResolvedValue({ tasks: mockTasks, total: 50 });
+
+      renderWithProviders(<TaskListPage />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Task 1')).toBeInTheDocument();
+      });
+
+      const selectAllCheckbox = screen.getByLabelText('すべて選択');
+      await userEvent.click(selectAllCheckbox);
+
+      await waitFor(() => {
+        expect(screen.getByText('50個のタスクが選択されています')).toBeInTheDocument();
+      });
+    });
+
+    it('エラー後にリトライが成功する', async () => {
+      vi.mocked(taskApi.getTasks)
+        .mockRejectedValueOnce(new Error('Failed to fetch'))
+        .mockResolvedValueOnce({ tasks: [createMockTask('1')], total: 1 });
+
+      renderWithProviders(<TaskListPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('error-alert')).toBeInTheDocument();
+      });
+
+      const retryButton = screen.getByText('Retry');
+      await userEvent.click(retryButton);
+
+      await waitFor(() => {
+        expect(screen.getByText('Task 1')).toBeInTheDocument();
+      });
+    });
+
+    it('ローディング中にフィルターを変更してもエラーが発生しない', async () => {
+      vi.mocked(taskApi.getTasks).mockImplementation(
+        () => new Promise(() => {}) // Never resolves
+      );
+
+      renderWithProviders(<TaskListPage />);
+
+      expect(screen.getByTestId('loading-spinner')).toBeInTheDocument();
+
+      // ローディング中にフィルターボタンをクリック
+      const filterButton = screen.getByText('Filter Completed');
+      await userEvent.click(filterButton);
+
+      // エラーが発生しないことを確認
+      expect(screen.getByTestId('loading-spinner')).toBeInTheDocument();
+    });
+  });
 });

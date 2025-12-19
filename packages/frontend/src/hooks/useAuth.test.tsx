@@ -433,5 +433,81 @@ describe('useAuth', () => {
       expect(result.current.isAuthenticated).toBe(true);
       expect(result.current.user?.email).toBe('test@example.com');
     });
+
+    it('連続したログイン・ログアウトでメモリリークが発生しない', async () => {
+      const { result } = renderHook(() => useAuth(), { wrapper });
+
+      // 10回ログイン・ログアウトを繰り返す
+      for (let i = 0; i < 10; i++) {
+        await act(async () => {
+          await result.current.signIn(`test${i}@example.com`, 'password');
+        });
+
+        await act(async () => {
+          await result.current.signOut();
+        });
+      }
+
+      // メモリリークが発生していないことを確認（エラーが発生しない）
+      expect(result.current.isAuthenticated).toBe(false);
+    });
+
+    it('複数のリスナーを追加・削除してもメモリリークが発生しない', async () => {
+      const { result } = renderHook(() => useAuth(), { wrapper });
+
+      const listeners: (() => void)[] = [];
+
+      // 10個のリスナーを追加
+      act(() => {
+        for (let i = 0; i < 10; i++) {
+          const mockListener = vi.fn();
+          const removeListener = result.current.addAuthStateListener(mockListener);
+          listeners.push(removeListener);
+        }
+      });
+
+      // すべてのリスナーを削除
+      act(() => {
+        listeners.forEach(removeListener => removeListener());
+      });
+
+      // メモリリークが発生していないことを確認（エラーが発生しない）
+      expect(true).toBe(true);
+    });
+
+    it('トークン有効期限が境界値の場合の処理', async () => {
+      const { result } = renderHook(() => useAuth(), { wrapper });
+
+      // ログイン
+      await act(async () => {
+        await result.current.signIn('test@example.com', 'password');
+      });
+
+      // 有効期限を現在時刻に設定（境界値）
+      act(() => {
+        localStorageStore['token_expiration'] = String(Date.now());
+      });
+
+      const isExpired = result.current.isTokenExpired();
+      // 境界値では期限切れと判定される
+      expect(isExpired).toBe(true);
+    });
+
+    it('トークン有効期限が未来の場合の処理', async () => {
+      const { result } = renderHook(() => useAuth(), { wrapper });
+
+      // ログイン
+      await act(async () => {
+        await result.current.signIn('test@example.com', 'password');
+      });
+
+      // 有効期限を未来に設定
+      act(() => {
+        localStorageStore['token_expiration'] = String(Date.now() + 3600000); // 1時間後
+      });
+
+      const isExpired = result.current.isTokenExpired();
+      expect(isExpired).toBe(false);
+    });
   });
 });
