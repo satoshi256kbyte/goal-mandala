@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi } from 'vitest';
 import { TextArea } from '../TextArea';
@@ -193,13 +193,13 @@ describe('TextArea', () => {
       expect(textarea).toHaveValue('こんにちは');
     });
 
-    it('長いテキストを処理する', async () => {
-      const user = userEvent.setup();
+    it('長いテキストを処理する', () => {
       const longText = 'a'.repeat(1000);
       render(<TextArea name="test" />);
 
       const textarea = screen.getByRole('textbox');
-      await user.type(textarea, longText);
+      // Use fireEvent.change() instead of userEvent.type() for long text to avoid timeout
+      fireEvent.change(textarea, { target: { value: longText } });
 
       expect(textarea).toHaveValue(longText);
     });
