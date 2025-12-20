@@ -510,4 +510,42 @@ describe('useAuth', () => {
       expect(isExpired).toBe(false);
     });
   });
+
+  describe('エッジケーステスト', () => {
+    it('空文字列でログインを試みた場合', async () => {
+      const { result } = renderHook(() => useAuth(), { wrapper });
+
+      await act(async () => {
+        await result.current.signIn('', '');
+      });
+
+      // モック実装では空文字列でもログインが成功する
+      // 実際の実装ではバリデーションが必要
+      expect(result.current.isAuthenticated).toBe(true);
+    });
+
+    it('非常に長いメールアドレスでログインを試みた場合', async () => {
+      const { result } = renderHook(() => useAuth(), { wrapper });
+      const longEmail = 'a'.repeat(1000) + '@example.com';
+
+      await act(async () => {
+        await result.current.signIn(longEmail, 'password');
+      });
+
+      // モック実装では長いメールアドレスでもログインが成功する
+      expect(result.current.isAuthenticated).toBe(true);
+    });
+
+    it('特殊文字を含むパスワードでログインを試みた場合', async () => {
+      const { result } = renderHook(() => useAuth(), { wrapper });
+      const specialPassword = '!@#$%^&*()_+-=[]{}|;:\'",.<>?/~`';
+
+      await act(async () => {
+        await result.current.signIn('test@example.com', specialPassword);
+      });
+
+      // 特殊文字を含むパスワードでもログインできる
+      expect(result.current.isAuthenticated).toBe(true);
+    });
+  });
 });

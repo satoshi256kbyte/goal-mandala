@@ -898,4 +898,246 @@ describe('useGoalForm', () => {
       vi.useRealTimers();
     });
   });
+
+  describe('エッジケーステスト', () => {
+    it('空文字列でフィールドを設定した場合', async () => {
+      const { result } = renderHook(() => useGoalForm());
+
+      await act(async () => {
+        result.current.setValue('title', '');
+        result.current.setValue('description', '');
+        result.current.setValue('background', '');
+      });
+
+      expect(result.current.watchedValues.title).toBe('');
+      expect(result.current.watchedValues.description).toBe('');
+      expect(result.current.watchedValues.background).toBe('');
+    });
+
+    it('非常に長い文字列でフィールドを設定した場合', async () => {
+      const { result } = renderHook(() => useGoalForm());
+
+      const longString = 'a'.repeat(10000);
+
+      await act(async () => {
+        result.current.setValue('title', longString);
+        result.current.setValue('description', longString);
+      });
+
+      expect(result.current.watchedValues.title).toBe(longString);
+      expect(result.current.watchedValues.description).toBe(longString);
+    });
+
+    it('特殊文字を含む文字列でフィールドを設定した場合', async () => {
+      const { result } = renderHook(() => useGoalForm());
+
+      const specialChars = '<script>alert("XSS")</script>';
+
+      await act(async () => {
+        result.current.setValue('title', specialChars);
+      });
+
+      expect(result.current.watchedValues.title).toBe(specialChars);
+    });
+
+    it('過去の日付をdeadlineに設定した場合', async () => {
+      const { result } = renderHook(() => useGoalForm());
+
+      await act(async () => {
+        result.current.setValue('deadline', '2020-01-01');
+        await result.current.validateField('deadline');
+      });
+
+      const fieldState = result.current.getFieldState('deadline');
+      // 過去の日付はバリデーションエラーになる
+      expect(fieldState.error).toBeDefined();
+    });
+
+    it('無効な日付形式をdeadlineに設定した場合', async () => {
+      const { result } = renderHook(() => useGoalForm());
+
+      await act(async () => {
+        result.current.setValue('deadline', 'invalid-date');
+        await result.current.validateField('deadline');
+      });
+
+      const fieldState = result.current.getFieldState('deadline');
+      expect(fieldState.error).toBeDefined();
+    });
+
+    it('onDraftSaveがundefinedの場合に自動保存が有効でもエラーにならない', async () => {
+      vi.useFakeTimers();
+
+      const { result } = renderHook(() =>
+        useGoalForm({
+          enableAutoSave: true,
+          autoSaveInterval: 1000,
+        })
+      );
+
+      await act(async () => {
+        result.current.setValue('title', 'テスト', { shouldDirty: true });
+      });
+
+      await act(async () => {
+        vi.advanceTimersByTime(1000);
+        await vi.runAllTimersAsync();
+      });
+
+      // エラーが発生しないことを確認
+      expect(result.current.formState).toBeDefined();
+
+      vi.useRealTimers();
+    });
+
+    it('onDraftSaveがエラーをスローした場合', async () => {
+      vi.useFakeTimers();
+
+      const mockOnDraftSave = vi.fn().mockRejectedValue(new Error('保存エラー'));
+
+      const { result } = renderHook(() =>
+        useGoalForm({
+          onDraftSave: mockOnDraftSave,
+          enableAutoSave: true,
+          autoSaveInterval: 1000,
+        })
+      );
+
+      await act(async () => {
+        result.current.setValue('title', 'テスト', { shouldDirty: true });
+      });
+
+      await act(async () => {
+        vi.advanceTimersByTime(1000);
+        await vi.runAllTimersAsync();
+      });
+
+      // エラーが発生してもフォームは動作し続ける
+      expect(result.current.formState).toBeDefined();
+      expect(mockOnDraftSave).toHaveBeenCalled();
+
+      vi.useRealTimers();
+    });
+
+    it('複数のフィールドを同時に変更した場合', async () => {
+      const { result } = renderHook(() => useGoalForm());
+
+      await act(async () => {
+        result.current.setValue('title', 'テスト目標');
+        result.current.setValue('description', 'テスト説明');
+        result.current.setValue('deadline', '2025-12-31');
+        result.current.setValue('background', 'テスト背景');
+      });
+
+      expect(result.current.watchedValues.title).toBe('テスト目標');
+      expect(result.current.watchedValues.description).toBe('テスト説明');
+      expect(result.current.watchedValues.deadline).toBe('2025-12-31');
+      expect(result.current.watchedValues.background).toBe('テスト背景');
+    });
+
+    it('フォームをリセットした後に再度入力した場合', async () => {
+      const { result } = renderHook(() => useGoalForm());
+
+      // 1回目の入力
+      await act(async () => {
+        result.current.setValue('title', 'テスト1');
+      });
+
+      expect(result.current.watchedValues.title).toBe('テスト1');
+
+      // リセット
+      await act(async () => {
+        result.current.reset();
+      });
+
+      expect(result.current.watchedValues.title).toBe('');
+
+      // 2回目の入力
+      await act(async () => {
+        result.current.setValue('title', 'テスト2');
+      });
+
+      expect(result.current.watchedValues.title).toBe('テスト2');
+    });
+
+    it('バリデーションエラーがある状態でフォームを送信しようとした場合', async () => {
+      const { result } = renderHook(() => useGoalForm());
+
+      // タイトルのみ設定（他のフィールドは空）
+      await act(async () => {
+        result.current.setValue('title', 'テスト目標');
+      });
+
+      await act(async () => {
+        await result.current.trigger();
+      });
+
+      // バリデーションエラーがあるため、isValidはfalse
+      expect(result.current.formState.isValid).toBe(false);
+    });
+
+    it('初期データがnullまたはundefinedの場合', () => {
+      const { result: result1 } = renderHook(() => useGoalForm({ initialData: null as any }));
+      expect(result1.current.formState).toBeDefined();
+
+      const { result: result2 } = renderHook(() => useGoalForm({ initialData: undefined }));
+      expect(result2.current.formState).toBeDefined();
+    });
+
+    it('autoSaveIntervalが0の場合', async () => {
+      vi.useFakeTimers();
+
+      const mockOnDraftSave = vi.fn().mockResolvedValue(undefined);
+
+      const { result } = renderHook(() =>
+        useGoalForm({
+          onDraftSave: mockOnDraftSave,
+          enableAutoSave: true,
+          autoSaveInterval: 0,
+        })
+      );
+
+      await act(async () => {
+        result.current.setValue('title', 'テスト', { shouldDirty: true });
+      });
+
+      await act(async () => {
+        vi.advanceTimersByTime(1000);
+        await vi.runAllTimersAsync();
+      });
+
+      // autoSaveIntervalが0でも動作する
+      expect(result.current.formState).toBeDefined();
+
+      vi.useRealTimers();
+    });
+
+    it('autoSaveIntervalが負の値の場合', async () => {
+      vi.useFakeTimers();
+
+      const mockOnDraftSave = vi.fn().mockResolvedValue(undefined);
+
+      const { result } = renderHook(() =>
+        useGoalForm({
+          onDraftSave: mockOnDraftSave,
+          enableAutoSave: true,
+          autoSaveInterval: -1000,
+        })
+      );
+
+      await act(async () => {
+        result.current.setValue('title', 'テスト', { shouldDirty: true });
+      });
+
+      await act(async () => {
+        vi.advanceTimersByTime(1000);
+        await vi.runAllTimersAsync();
+      });
+
+      // 負の値でも動作する（実装によっては無視される）
+      expect(result.current.formState).toBeDefined();
+
+      vi.useRealTimers();
+    });
+  });
 });

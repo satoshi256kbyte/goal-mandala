@@ -665,4 +665,155 @@ describe('useReflections hooks', () => {
       ]);
     });
   });
+
+  describe('エッジケーステスト', () => {
+    it('空文字列で振り返りを作成しようとした場合', async () => {
+      const mockReflection: Reflection = {
+        id: 'reflection-empty',
+        goalId: '',
+        summary: '',
+        almostActions: [],
+        slowActions: [],
+        untouchedActions: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      vi.mocked(reflectionApi.createReflection).mockResolvedValue(mockReflection);
+
+      const { result } = renderHook(() => useCreateReflection(), {
+        wrapper: createWrapper(),
+      });
+
+      const input: CreateReflectionInput = {
+        goalId: '',
+        summary: '',
+        almostActions: [],
+        slowActions: [],
+        untouchedActions: [],
+      };
+
+      await result.current.mutateAsync(input);
+
+      expect(vi.mocked(reflectionApi.createReflection)).toHaveBeenCalledWith(input);
+    });
+
+    it('非常に長いsummaryで振り返りを作成した場合', async () => {
+      const longSummary = 'あ'.repeat(10000);
+      const mockReflection: Reflection = {
+        id: 'reflection-long',
+        goalId: 'goal-1',
+        summary: longSummary,
+        almostActions: [],
+        slowActions: [],
+        untouchedActions: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      vi.mocked(reflectionApi.createReflection).mockResolvedValue(mockReflection);
+
+      const { result } = renderHook(() => useCreateReflection(), {
+        wrapper: createWrapper(),
+      });
+
+      const input: CreateReflectionInput = {
+        goalId: 'goal-1',
+        summary: longSummary,
+        almostActions: [],
+        slowActions: [],
+        untouchedActions: [],
+      };
+
+      await result.current.mutateAsync(input);
+
+      expect(vi.mocked(reflectionApi.createReflection)).toHaveBeenCalledWith(input);
+    });
+
+    it('存在しないreflectionIdで取得しようとした場合', async () => {
+      vi.mocked(reflectionApi.getReflection).mockRejectedValue(new Error('Reflection not found'));
+
+      const { result } = renderHook(() => useReflection('non-existent-id'), {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => expect(result.current.isError).toBe(true));
+      expect(result.current.error).toBeDefined();
+    });
+
+    it('存在しないgoalIdで振り返り一覧を取得しようとした場合', async () => {
+      vi.mocked(reflectionApi.getReflectionsByGoal).mockResolvedValue([]);
+
+      const { result } = renderHook(() => useReflectionsByGoal('non-existent-goal'), {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => expect(result.current.isSuccess).toBe(true));
+      expect(result.current.data).toEqual([]);
+    });
+
+    it('大量のアクションIDを含む振り返りを作成した場合', async () => {
+      const manyActionIds = Array.from({ length: 100 }, (_, i) => `action-${i}`);
+      const mockReflection: Reflection = {
+        id: 'reflection-many',
+        goalId: 'goal-1',
+        summary: 'テスト',
+        almostActions: manyActionIds,
+        slowActions: [],
+        untouchedActions: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      vi.mocked(reflectionApi.createReflection).mockResolvedValue(mockReflection);
+
+      const { result } = renderHook(() => useCreateReflection(), {
+        wrapper: createWrapper(),
+      });
+
+      const input: CreateReflectionInput = {
+        goalId: 'goal-1',
+        summary: 'テスト',
+        almostActions: manyActionIds,
+        slowActions: [],
+        untouchedActions: [],
+      };
+
+      await result.current.mutateAsync(input);
+
+      expect(vi.mocked(reflectionApi.createReflection)).toHaveBeenCalledWith(input);
+    });
+
+    it('特殊文字を含むsummaryで振り返りを作成した場合', async () => {
+      const specialChars = '<script>alert("XSS")</script>';
+      const mockReflection: Reflection = {
+        id: 'reflection-special',
+        goalId: 'goal-1',
+        summary: specialChars,
+        almostActions: [],
+        slowActions: [],
+        untouchedActions: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      vi.mocked(reflectionApi.createReflection).mockResolvedValue(mockReflection);
+
+      const { result } = renderHook(() => useCreateReflection(), {
+        wrapper: createWrapper(),
+      });
+
+      const input: CreateReflectionInput = {
+        goalId: 'goal-1',
+        summary: specialChars,
+        almostActions: [],
+        slowActions: [],
+        untouchedActions: [],
+      };
+
+      await result.current.mutateAsync(input);
+
+      expect(vi.mocked(reflectionApi.createReflection)).toHaveBeenCalledWith(input);
+    });
+  });
 });
