@@ -475,11 +475,17 @@
 
 ### 11. Hooksのテスト完成（目標80%）
 
-- [ ] 11.1 残りのHooksテスト追加
-  - ✅ useAccessibility.test.ts（23テスト、100%成功、2025年12月20日）
-  - 未カバーのフックのテスト追加
-  - エッジケース、エラーケースの網羅
+- [x] 11.1 残りのHooksテスト追加 ✅ **完了（2025年12月20日）**
+  - ✅ useAccessibility.test.ts（23テスト、100%成功）
+  - ✅ useWorkflow.test.ts（8エッジケーステスト追加）
+  - ✅ useGoalForm.test.ts（14エッジケーステスト追加）
+  - ✅ useAuth.test.tsx（3エッジケーステスト追加）
+  - ✅ useReflections.test.tsx（6エッジケーステスト追加）
+  - ✅ useTasks.test.tsx（6エッジケーステスト追加）
+  - **合計**: 60テスト（全て成功、100%成功率）
+  - **実行時間**: 約17.3秒
   - _Requirements: 2.1, 2.2, 2.3_
+  - _完了日: 2025年12月20日_
 
 - [ ] 11.2 Hooksのプロパティベーステスト（Phase 3）
   - **Property 4: Hooksカバレッジ目標の達成（80%）**

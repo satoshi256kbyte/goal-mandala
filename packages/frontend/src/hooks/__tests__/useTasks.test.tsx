@@ -497,4 +497,128 @@ describe('useTasks hooks', () => {
       ]);
     });
   });
+
+  describe('エッジケーステスト', () => {
+    it('存在しないtaskIdでタスク詳細を取得しようとした場合', async () => {
+      taskApi.getTask = vi.fn().mockRejectedValue(new Error('Task not found'));
+
+      const { result } = renderHook(() => useTaskDetail('non-existent-task'), {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => expect(result.current.isError).toBe(true));
+      expect(result.current.error).toBeDefined();
+    });
+
+    it('大量のタスクIDで一括ステータス更新を試みた場合', async () => {
+      const manyTaskIds = Array.from({ length: 1000 }, (_, i) => `task-${i}`);
+      taskApi.bulkUpdateStatus = vi.fn().mockResolvedValue({ success: true });
+
+      const { result } = renderHook(() => useBulkUpdateStatus(), {
+        wrapper: createWrapper(),
+      });
+
+      await result.current.mutateAsync({
+        taskIds: manyTaskIds,
+        status: 'completed' as TaskStatus,
+      });
+
+      expect(taskApi.bulkUpdateStatus).toHaveBeenCalledWith(manyTaskIds, 'completed');
+    });
+
+    it('空配列のtaskIdsで一括削除を試みた場合', async () => {
+      taskApi.bulkDelete = vi.fn().mockResolvedValue({ success: true });
+
+      const { result } = renderHook(() => useBulkDelete(), {
+        wrapper: createWrapper(),
+      });
+
+      await result.current.mutateAsync({ taskIds: [] });
+
+      expect(taskApi.bulkDelete).toHaveBeenCalledWith([]);
+    });
+
+    it('非常に長いnoteを追加しようとした場合', async () => {
+      const taskId = 'task-1';
+      const longNote = 'あ'.repeat(10000);
+      taskApi.addNote = vi.fn().mockResolvedValue({
+        id: 'note-1',
+        taskId,
+        content: longNote,
+        createdAt: new Date().toISOString(),
+      });
+
+      const { result } = renderHook(() => useAddNote(), {
+        wrapper: createWrapper(),
+      });
+
+      await result.current.mutateAsync({ taskId, content: longNote });
+
+      expect(taskApi.addNote).toHaveBeenCalledWith(taskId, longNote);
+    });
+
+    it('特殊文字を含むnoteを追加しようとした場合', async () => {
+      const taskId = 'task-1';
+      const specialChars = '<script>alert("XSS")</script>';
+      taskApi.addNote = vi.fn().mockResolvedValue({
+        id: 'note-1',
+        taskId,
+        content: specialChars,
+        createdAt: new Date().toISOString(),
+      });
+
+      const { result } = renderHook(() => useAddNote(), {
+        wrapper: createWrapper(),
+      });
+
+      await result.current.mutateAsync({ taskId, content: specialChars });
+
+      expect(taskApi.addNote).toHaveBeenCalledWith(taskId, specialChars);
+    });
+
+    it('非常に長いビュー名で保存しようとした場合', async () => {
+      const longName = 'あ'.repeat(1000);
+      const filters: TaskFilters = { statuses: ['in_progress' as TaskStatus] };
+      taskApi.saveView = vi.fn().mockResolvedValue({
+        id: 'view-1',
+        name: longName,
+        filters,
+        createdAt: new Date().toISOString(),
+      });
+
+      const { result } = renderHook(() => useSaveView(), {
+        wrapper: createWrapper(),
+      });
+
+      await result.current.mutateAsync({ name: longName, filters });
+
+      expect(taskApi.saveView).toHaveBeenCalledWith(longName, filters, undefined);
+    });
+
+    it('複雑なフィルター条件でタスク一覧を取得した場合', async () => {
+      const complexFilters: TaskFilters = {
+        statuses: ['in_progress' as TaskStatus, 'completed' as TaskStatus],
+        priorities: ['high', 'medium'],
+        actionIds: ['action-1', 'action-2', 'action-3'],
+        dueDateRange: {
+          start: '2025-01-01',
+          end: '2025-12-31',
+        },
+      };
+
+      taskApi.getTasks = vi.fn().mockResolvedValue({
+        tasks: [],
+        total: 0,
+        page: 1,
+        pageSize: 20,
+      });
+
+      const { result } = renderHook(() => useTasks(complexFilters), {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => expect(result.current.isSuccess).toBe(true));
+      expect(taskApi.getTasks).toHaveBeenCalledWith(complexFilters, undefined);
+    });
+  });
 });
