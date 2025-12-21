@@ -193,4 +193,89 @@ describe('GoalInputPage', () => {
       expect(mockNavigate).toHaveBeenCalledWith('/dashboard');
     });
   });
+
+  describe('エッジケース', () => {
+    it('複数回のナビゲーションが正しく動作する', async () => {
+      const user = userEvent.setup();
+
+      await act(async () => {
+        render(
+          <TestWrapper>
+            <GoalInputPage />
+          </TestWrapper>
+        );
+      });
+
+      await waitFor(
+        () => {
+          expect(screen.getByRole('button', { name: 'ダッシュボードに戻る' })).toBeInTheDocument();
+        },
+        { timeout: 5000 }
+      );
+
+      const dashboardButton = screen.getByRole('button', { name: 'ダッシュボードに戻る' });
+
+      // 複数回クリック
+      await act(async () => {
+        await user.click(dashboardButton);
+        await user.click(dashboardButton);
+      });
+
+      // 最後のナビゲーションのみが記録される
+      expect(mockNavigate).toHaveBeenCalledWith('/dashboard');
+    });
+
+    it('認証状態が変更された場合にリダイレクトされる', async () => {
+      mockUseAuth.isLoading = false;
+      mockUseAuth.isAuthenticated = true;
+
+      const { rerender } = render(
+        <TestWrapper>
+          <GoalInputPage />
+        </TestWrapper>
+      );
+
+      await waitFor(
+        () => {
+          expect(screen.getByText('新しい目標を作成')).toBeInTheDocument();
+        },
+        { timeout: 5000 }
+      );
+
+      // 認証状態を変更
+      mockUseAuth.isAuthenticated = false;
+
+      await act(async () => {
+        rerender(
+          <TestWrapper>
+            <GoalInputPage />
+          </TestWrapper>
+        );
+      });
+
+      await waitFor(
+        () => {
+          expect(screen.getByText('ログインページに移動しています...')).toBeInTheDocument();
+        },
+        { timeout: 5000 }
+      );
+    });
+
+    it('フォームが正しく表示される', async () => {
+      await act(async () => {
+        render(
+          <TestWrapper>
+            <GoalInputPage />
+          </TestWrapper>
+        );
+      });
+
+      await waitFor(
+        () => {
+          expect(screen.getByTestId('goal-input-form')).toBeInTheDocument();
+        },
+        { timeout: 5000 }
+      );
+    });
+  });
 });

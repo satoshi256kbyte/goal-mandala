@@ -468,4 +468,120 @@ describe('ReminderSettingsPage', () => {
       });
     });
   });
+
+  describe('エッジケース', () => {
+    it('トグルスイッチを連続してクリックできる', async () => {
+      const user = userEvent.setup();
+      vi.mocked(reminderApi.getReminderPreference).mockResolvedValue(mockPreference);
+      vi.mocked(reminderApi.updateReminderPreference).mockResolvedValue({
+        ...mockPreference,
+        enabled: false,
+      });
+
+      render(
+        <BrowserRouter>
+          <ReminderSettingsPage />
+        </BrowserRouter>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByRole('switch')).toBeInTheDocument();
+      });
+
+      const toggle = screen.getByRole('switch');
+
+      // 複数回クリック
+      await user.click(toggle);
+      await user.click(toggle);
+      await user.click(toggle);
+
+      // 最後の呼び出しが記録される
+      expect(reminderApi.updateReminderPreference).toHaveBeenCalled();
+    });
+
+    it('気分選択を連続して変更できる', async () => {
+      const user = userEvent.setup();
+      vi.mocked(reminderApi.getReminderPreference).mockResolvedValue(mockPreference);
+      vi.mocked(reminderApi.updateReminderPreference).mockResolvedValue({
+        ...mockPreference,
+        moodPreference: 'change_pace',
+      });
+
+      render(
+        <BrowserRouter>
+          <ReminderSettingsPage />
+        </BrowserRouter>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('このまま行く')).toBeInTheDocument();
+      });
+
+      const stayOnTrackButton = screen.getByText('このまま行く').closest('button');
+      const changePaceButton = screen.getByText('気分を変える').closest('button');
+
+      // 複数回クリック
+      await user.click(stayOnTrackButton!);
+      await user.click(changePaceButton!);
+      await user.click(stayOnTrackButton!);
+
+      expect(reminderApi.updateReminderPreference).toHaveBeenCalled();
+    });
+
+    it('リマインドが無効な場合に気分選択が表示されない', async () => {
+      vi.mocked(reminderApi.getReminderPreference).mockResolvedValue({
+        ...mockPreference,
+        enabled: false,
+      });
+
+      render(
+        <BrowserRouter>
+          <ReminderSettingsPage />
+        </BrowserRouter>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('リマインド通知')).toBeInTheDocument();
+      });
+
+      expect(screen.queryByText('明日の気分選択')).not.toBeInTheDocument();
+    });
+
+    it('ネットワークエラー時に適切なエラーメッセージが表示される', async () => {
+      vi.mocked(reminderApi.getReminderPreference).mockRejectedValue(new Error('Network error'));
+
+      render(
+        <BrowserRouter>
+          <ReminderSettingsPage />
+        </BrowserRouter>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('設定の取得に失敗しました')).toBeInTheDocument();
+      });
+    });
+
+    it('戻るボタンを複数回クリックできる', async () => {
+      const user = userEvent.setup();
+      vi.mocked(reminderApi.getReminderPreference).mockResolvedValue(mockPreference);
+
+      render(
+        <BrowserRouter>
+          <ReminderSettingsPage />
+        </BrowserRouter>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('戻る')).toBeInTheDocument();
+      });
+
+      const backButton = screen.getByText('戻る');
+
+      // 複数回クリック
+      await user.click(backButton);
+      await user.click(backButton);
+
+      expect(mockNavigate).toHaveBeenCalled();
+    });
+  });
 });

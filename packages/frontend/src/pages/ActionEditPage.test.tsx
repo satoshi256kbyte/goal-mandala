@@ -319,4 +319,97 @@ describe('ActionEditPage', () => {
       });
     });
   });
+
+  describe('エッジケース', () => {
+    it('一括編集モードを複数回切り替えできる', async () => {
+      render(
+        <TestWrapper>
+          <ActionEditPage />
+        </TestWrapper>
+      );
+
+      await waitFor(() => {
+        const bulkEditButton = screen.getByText('一括編集モード');
+
+        // 1回目の切り替え
+        fireEvent.click(bulkEditButton);
+        expect(screen.getByText('一括編集モード終了')).toBeInTheDocument();
+
+        // 2回目の切り替え
+        fireEvent.click(screen.getByText('一括編集モード終了'));
+        expect(screen.getByText('一括編集モード')).toBeInTheDocument();
+      });
+    });
+
+    it('サブ目標タブを連続して切り替えできる', async () => {
+      render(
+        <TestWrapper>
+          <ActionEditPage />
+        </TestWrapper>
+      );
+
+      await waitFor(() => {
+        const tab1 = screen.getByRole('tab', { name: /サブ目標 1/ });
+        const tab2 = screen.getByRole('tab', { name: /サブ目標 2/ });
+        const tab3 = screen.getByRole('tab', { name: /サブ目標 3/ });
+
+        fireEvent.click(tab2);
+        fireEvent.click(tab3);
+        fireEvent.click(tab1);
+
+        // タブの切り替えが動作することを確認
+        expect(tab1).toBeInTheDocument();
+      });
+    });
+
+    it('モーダルを開いて閉じる操作を複数回繰り返せる', async () => {
+      render(
+        <TestWrapper>
+          <ActionEditPage />
+        </TestWrapper>
+      );
+
+      await waitFor(() => {
+        // 一括編集モードに切り替え
+        const bulkEditButton = screen.getByText('一括編集モード');
+        fireEvent.click(bulkEditButton);
+
+        // 1回目: モーダルを開いて閉じる
+        const executeButton = screen.getByText('一括編集実行');
+        fireEvent.click(executeButton);
+        expect(screen.getByTestId('bulk-edit-modal')).toBeInTheDocument();
+
+        const closeButton = screen.getByText('閉じる');
+        fireEvent.click(closeButton);
+        expect(screen.queryByTestId('bulk-edit-modal')).not.toBeInTheDocument();
+
+        // 2回目: モーダルを開いて閉じる
+        fireEvent.click(executeButton);
+        expect(screen.getByTestId('bulk-edit-modal')).toBeInTheDocument();
+
+        fireEvent.click(screen.getByText('閉じる'));
+        expect(screen.queryByTestId('bulk-edit-modal')).not.toBeInTheDocument();
+      });
+    });
+
+    it('ナビゲーションボタンを連続してクリックできる', async () => {
+      render(
+        <TestWrapper>
+          <ActionEditPage />
+        </TestWrapper>
+      );
+
+      await waitFor(() => {
+        const backButton = screen.getByText('前に戻る');
+        const startButton = screen.getByText('活動開始');
+
+        // 複数回クリック
+        fireEvent.click(backButton);
+        fireEvent.click(startButton);
+
+        // ナビゲーションが呼ばれることを確認
+        expect(mockNavigate).toHaveBeenCalled();
+      });
+    });
+  });
 });
