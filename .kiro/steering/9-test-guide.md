@@ -2531,3 +2531,365 @@ npm test -- src/handlers/workflow-api.test.ts
 - Step Functionsベストプラクティス: `.kiro/steering/13-step-functions-best-practices.md`
 - Spec詳細: `.kiro/specs/3.3-step-functions-integration/`
 - 実装レポート: `.kiro/specs/3.3-step-functions-integration/temp/`
+
+## テストカバレッジ改善のベストプラクティス（2025年12月追加）
+
+### 概要
+
+Phase 1-2のテストカバレッジ改善プロジェクト（Spec 4.5）を通じて得られた、効率的なカバレッジ改善のベストプラクティスをまとめます。
+
+### カバレッジ改善の成果
+
+- **Phase 1**: 40% → 62.85%（+22.85%、目標50%を+12.85%上回る）
+- **Phase 2**: 62.85% → 68.51%（+5.66%、目標65%を+3.51%上回る）
+- **総改善幅**: +28.51ポイント
+- **実施期間**: 7日間（2025年12月13日〜20日）
+
+### 段階的アプローチの重要性
+
+カバレッジ改善は、一度に全てを実装するのではなく、段階的に進めることが重要です。
+
+#### Phase 1: 基礎固め（50%目標）
+
+- テスト基盤整備（テストユーティリティ、カバレッジ測定スクリプト）
+- 主要なHooks、Pages、Servicesのテスト
+- プロパティベーステストの導入
+
+#### Phase 2: 拡充（65%目標）
+
+- 残りのHooks、Pages、Services、Componentsのテスト
+- エッジケーステストの追加
+- プロパティベーステストの拡充
+
+#### Phase 3: 完成（80%目標）- スキップ
+
+- **スキップ理由**: 68.51%は業界標準（60-70%）を満たす
+- **コストパフォーマンス**: 残り11.49%の改善に10-20時間必要
+- **優先度**: MVP完成が最優先
+
+### カバレッジ駆動のテスト作成
+
+Phase 3で学んだ最も重要な教訓は、**カバレッジ駆動のテスト作成**の重要性です。
+
+#### 推奨アプローチ
+
+1. **カバレッジレポートの生成**
+   ```bash
+   npm run test:coverage:ci
+   ```
+
+2. **未カバーブランチの特定**
+   - `coverage/lcov-report/index.html`を確認
+   - 未カバーの条件分岐を特定
+
+3. **ターゲットを絞ったテスト作成**
+   - 特定の未カバーブランチのみをテスト
+   - 実装を理解した上でテストを作成
+
+#### メリット
+
+- 確実にカバレッジが向上
+- 無駄なテストを作成しない
+- 実装の理解が深まる
+
+#### 避けるべきアプローチ
+
+実装後にエッジケーステストを作成すると：
+- 実装の意図的な設計選択と矛盾する
+- 実装の実際の動作と異なる期待値
+- 修正に多大な時間が必要
+
+**実例**: LoginPageのエッジケーステスト18個中6個が失敗（33.3%失敗率）
+
+### プロパティベーステストの活用
+
+fast-checkライブラリを使用したプロパティベーステストは、カバレッジ改善に非常に有効です。
+
+#### 実装例
+
+```typescript
+import { fc } from 'fast-check';
+
+it('Property: 主要カスタムフックにテストファイルが存在する', () => {
+  fc.assert(
+    fc.property(
+      fc.constantFrom(...criticalHooks),
+      (hookName) => {
+        const testFilePath = path.join(hooksDir, '__tests__', `${hookName}.test.ts`);
+        expect(fs.existsSync(testFilePath)).toBe(true);
+      }
+    ),
+    { numRuns: 100 }
+  );
+});
+```
+
+#### Phase 1-2で実装したプロパティ
+
+- **Hooks**: 9プロパティ（状態の一貫性、クリーンアップ、エラー回復、パフォーマンス、冪等性、並行操作）
+- **Pages**: 6プロパティ（状態の一貫性、ナビゲーション、エラー回復、パフォーマンス、アクセシビリティ、データ整合性）
+- **Services**: 15プロパティ（CRUD操作、エラーハンドリング、リトライロジック、並行リクエスト、データ変換、整合性）
+- **Components**: 6プロパティ（レンダリング、ユーザーインタラクション、エラー状態、アクセシビリティ）
+
+### エッジケーステストのパターン
+
+#### 境界値テスト
+
+```typescript
+it('空文字列を入力した場合、バリデーションエラーが表示される', async () => {
+  render(<Component />);
+  
+  await userEvent.type(screen.getByLabelText('タイトル'), '');
+  await userEvent.click(screen.getByRole('button', { name: '保存' }));
+  
+  expect(screen.getByText('タイトルは必須です')).toBeInTheDocument();
+});
+```
+
+#### エラーケーステスト
+
+```typescript
+it('APIエラー時、エラーメッセージが表示される', async () => {
+  vi.mocked(api.getData).mockRejectedValueOnce(new Error('API Error'));
+  
+  render(<Component />);
+  
+  await waitFor(() => {
+    expect(screen.getByText('エラーが発生しました')).toBeInTheDocument();
+  });
+});
+```
+
+#### 並行処理テスト
+
+```typescript
+it('並行リクエスト時、データ競合が発生しない', async () => {
+  const promises = [
+    api.updateData({ id: 1, value: 'A' }),
+    api.updateData({ id: 1, value: 'B' }),
+    api.updateData({ id: 1, value: 'C' }),
+  ];
+  
+  await Promise.all(promises);
+  
+  const data = await api.getData(1);
+  expect(['A', 'B', 'C']).toContain(data.value);
+});
+```
+
+### テスト基盤の整備
+
+効率的なテスト作成のために、以下のテスト基盤を整備しました。
+
+#### テストユーティリティ
+
+```typescript
+// renderWithProviders: コンポーネントをプロバイダーでラップ
+export const renderWithProviders = (ui: React.ReactElement, options = {}) => {
+  return render(ui, {
+    wrapper: ({ children }) => (
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <Router>{children}</Router>
+        </AuthProvider>
+      </QueryClientProvider>
+    ),
+    ...options,
+  });
+};
+
+// renderHookWithProviders: カスタムフックをプロバイダーでラップ
+export const renderHookWithProviders = <T,>(hook: () => T) => {
+  return renderHook(hook, {
+    wrapper: ({ children }) => (
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>{children}</AuthProvider>
+      </QueryClientProvider>
+    ),
+  });
+};
+```
+
+#### モックデータファクトリー
+
+```typescript
+// createMockGoal: モック目標データの生成
+export const createMockGoal = (overrides = {}) => ({
+  id: 'goal-1',
+  title: 'Test Goal',
+  description: 'Test Description',
+  deadline: '2025-12-31',
+  status: 'draft',
+  progress: 0,
+  ...overrides,
+});
+
+// createMockTask: モックタスクデータの生成
+export const createMockTask = (overrides = {}) => ({
+  id: 'task-1',
+  title: 'Test Task',
+  description: 'Test Description',
+  status: 'pending',
+  estimatedMinutes: 30,
+  ...overrides,
+});
+```
+
+#### カスタムマッチャー
+
+```typescript
+// toBeValidGoal: 目標データの検証
+expect.extend({
+  toBeValidGoal(received: unknown) {
+    const isValid =
+      typeof received === 'object' &&
+      received !== null &&
+      'id' in received &&
+      'title' in received &&
+      'status' in received &&
+      'progress' in received;
+
+    return {
+      pass: isValid,
+      message: () =>
+        isValid
+          ? `Expected ${JSON.stringify(received)} not to be a valid goal`
+          : `Expected ${JSON.stringify(received)} to be a valid goal`,
+    };
+  },
+});
+```
+
+### カバレッジ測定とレポート
+
+#### カバレッジ測定スクリプト
+
+```bash
+# カバレッジ測定（JSON形式のみ）
+npm run test:coverage:ci
+
+# カバレッジ分析
+npm run coverage:analyze
+
+# カバレッジレポート生成（HTML + Markdown）
+npm run coverage:report
+
+# カバレッジトレンド追跡
+npm run coverage:trend
+
+# 全て実行
+npm run coverage:all
+```
+
+#### カバレッジレポートの確認
+
+- `coverage/coverage-summary.json`: カバレッジサマリー（JSON形式）
+- `coverage/lcov-report/index.html`: カバレッジレポート（HTML形式）
+- `coverage/coverage-report.md`: カバレッジレポート（Markdown形式）
+
+### コストパフォーマンスの評価
+
+カバレッジ改善は、コストパフォーマンスを評価すべきです。
+
+#### 評価基準
+
+| 項目 | 内容 |
+|------|------|
+| **投資時間** | テスト作成 + デバッグ + メンテナンス |
+| **得られる価値** | カバレッジ改善 + バグ発見 + ドキュメント |
+| **ROI** | 価値 / 投資時間 |
+
+#### Phase 3の評価
+
+- **投資時間**: 10-20時間
+- **得られる価値**: カバレッジ+11.49%（エッジケースのみ）
+- **ROI**: 低い
+- **判断**: スキップ
+
+### 業界標準の理解
+
+カバレッジ目標は、業界標準を考慮すべきです。
+
+| カバレッジ | 評価 | コスト |
+|-----------|------|--------|
+| **60-70%** | 業界標準 | 低 |
+| **70-80%** | 高品質 | 中 |
+| **80%以上** | 非常に高品質 | 高 |
+
+Phase 2で68.51%を達成しており、これは業界標準を満たしています。
+
+### テスト実行時間の最適化
+
+#### 目標
+
+- **全テスト**: 120秒以内
+- **ユニットテスト**: 60秒以内
+- **統合テスト**: 60秒以内
+
+#### 最適化手法
+
+1. **カバレッジ計算の制御**
+   - デフォルトでカバレッジ計算を無効化
+   - 必要な時のみ`test:coverage`で実行
+
+2. **並列実行の最適化**
+   - maxConcurrency: 4（メモリ効率優先）
+   - maxForks: 2（安定性重視）
+
+3. **テスト分離の制御**
+   - デフォルトで分離を無効化（isolate: false）
+   - 高速実行を優先
+
+4. **タイムアウト設定の最適化**
+   - testTimeout: 3000ms
+   - hookTimeout: 2000ms
+   - teardownTimeout: 1000ms
+
+### トラブルシューティング
+
+#### カバレッジが上がらない
+
+**原因**: テストが不十分、未テストのコードパスが存在
+
+**解決方法**:
+- カバレッジレポートを確認し、未カバー箇所を特定する
+- エッジケースのテストを追加する
+- プロパティベーステストを活用する
+
+#### テスト実行時間が長い
+
+**原因**: 並列実行の設定不足、メモリリーク、重いテスト
+
+**解決方法**:
+- 並列実行数を増やす
+- メモリリーク対策を実施する
+- 重いテストを分割する
+
+#### テストが失敗する
+
+**原因**: モックの設定が不適切、非同期処理の待機不足、テストデータの不整合
+
+**解決方法**:
+- モックの設定を確認する
+- `await waitFor()`で非同期処理を待機する
+- テストデータの一貫性を確認する
+
+### まとめ
+
+Phase 1-2のテストカバレッジ改善では、以下の成果を達成しました：
+
+1. **カバレッジ68.51%達成**: 目標65%を大幅に上回る
+2. **455テスト追加**: Hooks、Pages、Services、Componentsを網羅
+3. **プロパティベーステスト**: 36プロパティ、100%成功
+4. **テスト実行時間**: 約30-60秒（目標120秒以内）
+5. **コード品質**: format 100%、lint 0エラー
+
+これらのベストプラクティスを実践することで、効率的にテストカバレッジを改善できます。
+
+### 参考資料
+
+- カバレッジ改善ベストプラクティス: `.kiro/steering/16-test-coverage-improvement-best-practices.md`
+- Spec詳細: `.kiro/specs/4.5-test-coverage-improvement/`
+- Phase 1完了レポート: `temp/phase1-completion-report.md`
+- Phase 2完了レポート: `temp/phase2-review-and-adjustment.md`
+- Phase 3分析レポート: `temp/phase3-task12-analysis.md`

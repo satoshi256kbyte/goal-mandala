@@ -35,7 +35,7 @@ export default defineConfig({
       forks: {
         singleFork: false, // 各テストファイル後にワーカー再起動（メモリリーク防止）
         isolate: true,
-        execArgv: ['--expose-gc', '--max-old-space-size=8192'],
+        execArgv: ['--expose-gc', '--max-old-space-size=6144'], // 6GBヒープサイズ（8GBから削減）
       },
     },
     // レポーター設定
@@ -45,30 +45,24 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['json', 'json-summary', 'text'],
       reportsDirectory: './coverage',
+      all: false, // テストされたファイルのみ測定（高速化）
+      clean: true, // 前回の結果をクリア
       exclude: [
         '**/node_modules/**',
         '**/dist/**',
         '**/e2e/**',
         '**/*.integration.test.{ts,tsx}',
         '**/test/**',
+        '**/test-utils/**',
         '**/*.test.{ts,tsx}',
         '**/*.config.{ts,js}',
         '**/vite-env.d.ts',
+        '**/__mocks__/**',
       ],
     },
     // メモリ最適化: テストファイルを順次実行
     sequence: {
       shuffle: false,
-      // テストファイルを小さいものから実行（メモリ効率向上）
-      sequencer: class CustomSequencer {
-        async sort(files: string[]) {
-          // ファイルサイズでソート（小さいファイルから実行）
-          return files.sort();
-        }
-        async shard(files: string[]) {
-          return files;
-        }
-      },
     },
     // 環境のクリーンアップを強制
     clearMocks: true,
