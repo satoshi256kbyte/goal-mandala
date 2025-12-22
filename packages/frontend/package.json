@@ -67,7 +67,7 @@
     "@typescript-eslint/eslint-plugin": "^6.19.0",
     "@typescript-eslint/parser": "^6.19.0",
     "@vitejs/plugin-react": "^4.1.1",
-    "@vitest/coverage-v8": "^1.0.0",
+    "@vitest/coverage-v8": "^4.0.0",
     "autoprefixer": "^10.4.16",
     "eslint-plugin-jsx-a11y": "^6.8.0",
     "eslint-plugin-react": "^7.33.2",
@@ -84,6 +84,6 @@
     "terser": "^5.44.0",
     "typescript": "^5.2.2",
     "vite": "^5.4.21",
-    "vitest": "^1.0.0"
+    "vitest": "^4.0.0"
   }
 }

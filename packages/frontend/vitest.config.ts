@@ -29,23 +29,19 @@ export default defineConfig({
       '**/EnhancedErrorDisplay.test.tsx',
     ],
     // 並列実行を制限（パフォーマンスとメモリのバランス）
-    maxConcurrency: 1,
+    maxWorkers: 1,
     pool: 'forks',
-    poolOptions: {
-      forks: {
-        singleFork: false, // 各テストファイル後にワーカー再起動（メモリリーク防止）
-        isolate: true,
-        execArgv: ['--expose-gc', '--max-old-space-size=6144'], // 6GBヒープサイズ（8GBから削減）
-      },
-    },
+    // Vitest 4: Pool options moved to top-level
+    execArgv: ['--expose-gc', '--max-old-space-size=6144'], // 6GBヒープサイズ（8GBから削減）
+    singleFork: false, // 各テストファイル後にワーカー再起動（メモリリーク防止）
     // レポーター設定
-    reporter: ['dot'],
+    reporters: ['dot'],
     // カバレッジ設定
     coverage: {
       provider: 'v8',
       reporter: ['json', 'json-summary', 'text'],
       reportsDirectory: './coverage',
-      all: false, // テストされたファイルのみ測定（高速化）
+      include: ['src/**/*.{ts,tsx}'], // テスト対象ファイルを明示的に指定
       clean: true, // 前回の結果をクリア
       exclude: [
         '**/node_modules/**',
