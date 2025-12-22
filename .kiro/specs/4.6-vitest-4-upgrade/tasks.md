@@ -149,7 +149,7 @@
   - パフォーマンスがVitest 1と同等以下であることを確認する
   - 問題があれば、ユーザーに報告する
 
-- [-] 7. プロパティベーステストの作成
+- [x] 7. プロパティベーステストの作成
   - 設定ファイルのテストを作成する
   - バージョンのテストを作成する
   - _Requirements: 要件2.6, 要件1.4_
@@ -165,24 +165,24 @@
   - **Property 2: 設定ファイルの型安全性**
   - **Validates: Requirements 2.6**
 
-- [ ] 7.2 バージョンのテストを作成
+- [x] 7.2 バージョンのテストを作成
   - `packages/frontend/src/test/package-version.test.ts`を作成する
   - `vitest`バージョンのテストを追加する
   - `@vitest/coverage-v8`バージョンのテストを追加する
   - **Property 1: バージョン更新の正確性**
   - **Validates: Requirements 1.1, 1.2**
 
-- [-] 7.3 プロパティベーステストを実行
+- [x] 7.3 プロパティベーステストを実行
   - `cd packages/frontend && pnpm test vitest-config.test.ts`を実行する
   - `cd packages/frontend && pnpm test package-version.test.ts`を実行する
   - 全てのテストが成功することを確認する
 
-- [ ] 8. CI/CD統合の検証
+- [-] 8. CI/CD統合の検証
   - GitHub Actionsでテストを実行する
   - 結果を確認する
   - _Requirements: 要件6_
 
-- [ ] 8.1 プルリクエストを作成
+- [-] 8.1 プルリクエストを作成
   - `git checkout -b feature/vitest-4-upgrade`を実行する
   - `git add .`を実行する
   - `git commit -m "feat: Vitest 4への更新"`を実行する
