@@ -21,7 +21,13 @@ vi.mock('./api-client', () => ({
   },
 }));
 
-const mockApiClient = vi.mocked(apiClient);
+// モックされたapiClientの型定義
+const mockApiClient = apiClient as unknown as {
+  get: ReturnType<typeof vi.fn>;
+  put: ReturnType<typeof vi.fn>;
+  post: ReturnType<typeof vi.fn>;
+  delete: ReturnType<typeof vi.fn>;
+};
 
 describe('API統合テスト', () => {
   beforeEach(() => {

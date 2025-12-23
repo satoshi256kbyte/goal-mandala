@@ -1,7 +1,19 @@
 import React from 'react';
 import { ValidationMessage } from './ValidationMessage';
-import { InlineError } from './ErrorDisplay';
+import { InlineError, ErrorSummary } from './ErrorDisplay';
 import { ApiError } from '../../services/api';
+
+/**
+ * ネットワークエラーの種類
+ */
+export enum NetworkErrorType {
+  TIMEOUT = 'TIMEOUT',
+  CONNECTION_ERROR = 'CONNECTION_ERROR',
+  SERVER_ERROR = 'SERVER_ERROR',
+  CLIENT_ERROR = 'CLIENT_ERROR',
+  RATE_LIMIT = 'RATE_LIMIT',
+  OFFLINE = 'OFFLINE',
+}
 
 /**
  * 拡張エラー表示のプロパティ

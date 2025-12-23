@@ -10,7 +10,7 @@ interface CacheEntry<T> {
 }
 
 export class CacheService {
-  private cache = new Map<string, CacheEntry<any>>();
+  private cache = new Map<string, CacheEntry<unknown>>();
   private readonly DEFAULT_TTL = 5 * 60 * 1000; // 5 minutes
 
   /**
@@ -97,7 +97,7 @@ export class CacheService {
   }
 
   // タスク関連のキャッシュキー生成
-  static getTaskListKey(userId: string, filters?: any): string {
+  static getTaskListKey(userId: string, filters?: TaskFilters): string {
     const filterStr = filters ? JSON.stringify(filters) : 'all';
     return `tasks:${userId}:${filterStr}`;
   }
@@ -129,11 +129,12 @@ export class CacheService {
  */
 import { TaskService, TaskFilters } from './task.service';
 import { Task, TaskStatus } from '../generated/prisma-client';
+import { PrismaClient } from '../generated/prisma-client';
 
 export class CachedTaskService extends TaskService {
   private cacheService: CacheService;
 
-  constructor(prisma: any, cacheService?: CacheService) {
+  constructor(prisma: PrismaClient, cacheService?: CacheService) {
     super(prisma);
     this.cacheService = cacheService || new CacheService();
   }
@@ -243,7 +244,7 @@ import { ProgressService } from './progress.service';
 export class CachedProgressService extends ProgressService {
   private cacheService: CacheService;
 
-  constructor(prisma: any, cacheService?: CacheService) {
+  constructor(prisma: PrismaClient, cacheService?: CacheService) {
     super(prisma);
     this.cacheService = cacheService || new CacheService();
   }

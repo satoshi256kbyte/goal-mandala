@@ -3,7 +3,7 @@
  * 一貫性のあるテストデータを生成するためのクラス
  */
 
-import { Goal, SubGoal, Action, GoalStatus } from '../../types/mandala';
+import { Goal, SubGoal, Action, GoalStatus, ActionType } from '../../types/mandala';
 import { User } from '../../types/storage-sync';
 
 export interface Task {

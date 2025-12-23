@@ -1,0 +1,35 @@
+{
+  "name": "developer",
+  "description": "developer",
+  "prompt": "You are developer",
+  "mcpServers": {
+    "aws-knowledge-mcp-server": {
+      "command": "uvx",
+      "args": ["fastmcp", "run", "https://knowledge-mcp.global.api.aws"]
+    },
+    "context7": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@upstash/context7-mcp",
+        "--api-key",
+        "ctx7sk-a6a3ee83-78c1-497d-8627-da695a873870"
+      ],
+      "env": {},
+      "disabled": false,
+      "autoApprove": []
+    }
+  },
+  "tools": ["*"],
+  "toolAliases": {},
+  "allowedTools": ["*"],
+  "resources": [
+    "file://AGENTS.md",
+    "file://README.md",
+    "file://.kiro/steering/**/*"
+  ],
+  "hooks": {},
+  "toolsSettings": {},
+  "useLegacyMcpJson": false,
+  "model": null
+}

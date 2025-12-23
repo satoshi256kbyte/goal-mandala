@@ -1,5 +1,6 @@
 import React from 'react';
 import { DraftData } from '../../services/draftService';
+import { draftUtils } from '../../utils/draft-utils';
 
 /**
  * 下書き復元通知のプロパティ
@@ -42,7 +43,7 @@ export const DraftRestoreNotification: React.FC<DraftRestoreNotificationProps> =
 
   const savedAt = new Date(draftData.savedAt);
   const summary = draftUtils.getDraftSummary(draftData.formData);
-  const timeSinceSave = draftUtils.getTimeSinceSave(savedAt);
+  const timeSinceSave = draftUtils.getTimeSinceSave(savedAt.getTime());
 
   return (
     <div className={`bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4 ${className}`}>

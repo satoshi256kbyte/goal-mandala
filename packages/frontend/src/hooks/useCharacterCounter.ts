@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 
 export interface UseCharacterCounterOptions {
   /** 最大文字数 */
@@ -55,6 +55,17 @@ export const useCharacterCounter = (
   const [currentLength, setCurrentLength] = useState(initialValue.length);
   const [currentValue, setCurrentValue] = useState(initialValue);
 
+  const onChangeRef = useRef(onChange);
+  const onLimitReachedRef = useRef(onLimitReached);
+
+  useEffect(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
+
+  useEffect(() => {
+    onLimitReachedRef.current = onLimitReached;
+  }, [onLimitReached]);
+
   // 文字数更新関数
   const updateLength = useCallback(
     (value: string) => {
@@ -68,17 +79,17 @@ export const useCharacterCounter = (
         setCurrentLength(maxLength);
 
         // 制限到達コールバック実行
-        onLimitReached?.(truncatedValue);
-        onChange?.(maxLength, truncatedValue);
+        onLimitReachedRef.current?.(truncatedValue);
+        onChangeRef.current?.(maxLength, truncatedValue);
         return;
       }
 
       // 通常の更新
       setCurrentValue(value);
       setCurrentLength(newLength);
-      onChange?.(newLength, value);
+      onChangeRef.current?.(newLength, value);
     },
-    [maxLength, onChange, onLimitReached]
+    [maxLength]
   );
 
   // 計算値
@@ -88,12 +99,14 @@ export const useCharacterCounter = (
   const isError = percentage >= 100;
   const remainingLength = maxLength > 0 ? Math.max(0, maxLength - currentLength) : Infinity;
 
-  // 初期値変更時の同期
+  // 初期値変更時の同期（initialValueが変更された時のみ実行）
+  const prevInitialValueRef = useRef(initialValue);
   useEffect(() => {
-    if (initialValue !== currentValue) {
+    if (initialValue !== prevInitialValueRef.current) {
+      prevInitialValueRef.current = initialValue;
       updateLength(initialValue);
     }
-  }, [initialValue, currentValue, updateLength]);
+  }, [initialValue, updateLength]);
 
   return {
     currentLength,

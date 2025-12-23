@@ -10,6 +10,11 @@ import {
   SignificantChange,
 } from '../progress-history-service';
 
+afterEach(() => {
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
+
 describe('Progress History Analysis Tests', () => {
   let service: InMemoryProgressHistoryService;
 

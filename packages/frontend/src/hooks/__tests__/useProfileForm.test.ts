@@ -1,11 +1,17 @@
-import { renderHook, act } from '@testing-library/react';
-import { describe, it, expect, beforeEach } from 'vitest';
+import { renderHook, cleanup, act, waitFor } from '@testing-library/react';
+import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { useProfileForm } from '../useProfileForm';
-import { updateProfile } from '../../services/profileService';
+import { updateProfile, ProfileUpdateResponse } from '../../services/profileService';
 
 // Mock the profile service
 vi.mock('../../services/profileService');
 const mockUpdateProfile = vi.mocked(updateProfile);
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('useProfileForm', () => {
   beforeEach(() => {
@@ -42,7 +48,7 @@ describe('useProfileForm', () => {
       expect(result.current.formData.industry).toBe('it-communication');
     });
 
-    it('setFieldValueでエラーがクリアされる', () => {
+    it('setFieldValueでエラーがクリアされる', async () => {
       const { result } = renderHook(() => useProfileForm());
 
       // まずエラーを発生させる
@@ -60,12 +66,14 @@ describe('useProfileForm', () => {
       // 値が設定されたことを確認
       expect(result.current.formData.jobTitle).toBe('エンジニア');
 
-      // バリデーションを再実行してエラーをクリア
-      act(() => {
-        result.current.validateField('jobTitle');
+      // デバウンス待機（300ms）
+      await act(async () => {
+        await new Promise(resolve => setTimeout(resolve, 350));
       });
 
-      expect(result.current.errors.jobTitle).toBeUndefined();
+      await waitFor(() => {
+        expect(result.current.errors.jobTitle).toBeUndefined();
+      });
     });
 
     it('setFieldTouchedでタッチ状態を設定できる', () => {
@@ -280,8 +288,8 @@ describe('useProfileForm', () => {
 
     it('handleSubmit中はisSubmittingがtrueになる', async () => {
       let resolvePromise: () => void;
-      const promise = new Promise<void>(resolve => {
-        resolvePromise = resolve;
+      const promise = new Promise<ProfileUpdateResponse>(resolve => {
+        resolvePromise = resolve as () => void;
       });
 
       mockUpdateProfile.mockReturnValue(promise);

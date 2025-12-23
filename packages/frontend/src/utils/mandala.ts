@@ -1,6 +1,11 @@
 import { Goal, SubGoal, Action, GridData, CellData } from '../types';
 import { ValidationResult } from '../types/validation';
 
+interface Position {
+  row: number;
+  col: number;
+}
+
 export const generateGridData = (goal: Goal, subGoals: SubGoal[], actions: Action[]): GridData => {
   const cells: CellData[][] = Array(9)
     .fill(null)

@@ -1,4 +1,4 @@
-import { useRef, useCallback } from 'react';
+import { useRef, useCallback, useEffect, useState } from 'react';
 
 /**
  * タイムアウト処理フックの戻り値の型
@@ -42,10 +42,11 @@ export const useTimeout = (options: UseTimeoutOptions = {}): UseTimeoutReturn =>
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const progressRef = useRef<NodeJS.Timeout | null>(null);
   const callbackRef = useRef<(() => void) | null>(null);
-  const startTimeRef = useRef<number>(0);
+  const elapsedRef = useRef<number>(0);
   const delayRef = useRef<number>(0);
-  const isActiveRef = useRef<boolean>(false);
-  const remainingTimeRef = useRef<number>(0);
+
+  const [isActive, setIsActive] = useState<boolean>(false);
+  const [remainingTime, setRemainingTime] = useState<number>(0);
 
   /**
    * タイムアウトを開始
@@ -61,18 +62,18 @@ export const useTimeout = (options: UseTimeoutOptions = {}): UseTimeoutReturn =>
       }
 
       callbackRef.current = callback;
-      startTimeRef.current = Date.now();
+      elapsedRef.current = 0;
       delayRef.current = delay;
-      isActiveRef.current = true;
-      remainingTimeRef.current = delay;
+      setIsActive(true);
+      setRemainingTime(delay);
 
       // 開始コールバックを実行
       onStart?.();
 
       // メインタイムアウトを設定
       timeoutRef.current = setTimeout(() => {
-        isActiveRef.current = false;
-        remainingTimeRef.current = 0;
+        setIsActive(false);
+        setRemainingTime(0);
 
         // タイムアウトコールバックを実行
         onTimeout?.();
@@ -91,16 +92,15 @@ export const useTimeout = (options: UseTimeoutOptions = {}): UseTimeoutReturn =>
 
       // 進捗更新タイマーを設定
       progressRef.current = setInterval(() => {
-        if (isActiveRef.current) {
-          const elapsed = Date.now() - startTimeRef.current;
-          remainingTimeRef.current = Math.max(0, delayRef.current - elapsed);
+        elapsedRef.current += progressInterval;
+        const remaining = Math.max(0, delayRef.current - elapsedRef.current);
+        setRemainingTime(remaining);
 
-          if (remainingTimeRef.current <= 0) {
-            isActiveRef.current = false;
-            if (progressRef.current) {
-              clearInterval(progressRef.current);
-              progressRef.current = null;
-            }
+        if (remaining <= 0) {
+          setIsActive(false);
+          if (progressRef.current) {
+            clearInterval(progressRef.current);
+            progressRef.current = null;
           }
         }
       }, progressInterval);
@@ -121,31 +121,34 @@ export const useTimeout = (options: UseTimeoutOptions = {}): UseTimeoutReturn =>
       progressRef.current = null;
     }
 
-    const wasActive = isActiveRef.current;
-    isActiveRef.current = false;
-    remainingTimeRef.current = 0;
+    // 状態をリセット
+    setIsActive(false);
+    setRemainingTime(0);
     callbackRef.current = null;
 
-    // キャンセルコールバックを実行（アクティブだった場合のみ）
-    if (wasActive) {
-      onCancel?.();
-    }
+    // キャンセルコールバックを実行
+    onCancel?.();
   }, [onCancel]);
 
   // コンポーネントアンマウント時の自動クリーンアップ
   useEffect(() => {
-    if (autoCleanup) {
-      return () => {
-        clearTimeoutHandler();
-      };
-    }
-  }, [autoCleanup, clearTimeoutHandler]);
+    if (!autoCleanup) return;
+
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      if (progressRef.current) {
+        clearInterval(progressRef.current);
+      }
+    };
+  }, [autoCleanup]);
 
   return {
     startTimeout,
     clearTimeout: clearTimeoutHandler,
-    isActive: isActiveRef.current,
-    remainingTime: remainingTimeRef.current,
+    isActive,
+    remainingTime,
   };
 };
 
@@ -175,7 +178,7 @@ export const useMultipleTimeouts = (options: UseTimeoutOptions = {}): UseMultipl
         timeoutId: NodeJS.Timeout;
         progressId: NodeJS.Timeout | null;
         callback: () => void;
-        startTime: number;
+        elapsed: number;
         delay: number;
         isActive: boolean;
       }
@@ -197,8 +200,6 @@ export const useMultipleTimeouts = (options: UseTimeoutOptions = {}): UseMultipl
           clearInterval(existing.progressId);
         }
       }
-
-      const startTime = Date.now();
 
       // 開始コールバックを実行
       onStart?.();
@@ -229,8 +230,8 @@ export const useMultipleTimeouts = (options: UseTimeoutOptions = {}): UseMultipl
       const progressId = setInterval(() => {
         const timeoutData = timeoutsRef.current.get(id);
         if (timeoutData && timeoutData.isActive) {
-          const elapsed = Date.now() - timeoutData.startTime;
-          const remaining = Math.max(0, timeoutData.delay - elapsed);
+          timeoutData.elapsed += progressInterval;
+          const remaining = Math.max(0, timeoutData.delay - timeoutData.elapsed);
 
           if (remaining <= 0) {
             timeoutData.isActive = false;
@@ -244,7 +245,7 @@ export const useMultipleTimeouts = (options: UseTimeoutOptions = {}): UseMultipl
         timeoutId,
         progressId,
         callback,
-        startTime,
+        elapsed: 0,
         delay,
         isActive: true,
       });
@@ -301,8 +302,7 @@ export const useMultipleTimeouts = (options: UseTimeoutOptions = {}): UseMultipl
       return 0;
     }
 
-    const elapsed = Date.now() - timeoutData.startTime;
-    return Math.max(0, timeoutData.delay - elapsed);
+    return Math.max(0, timeoutData.delay - timeoutData.elapsed);
   }, []);
 
   /**
@@ -363,17 +363,17 @@ export const useFormTimeout = (options: UseFormTimeoutOptions = {}): UseFormTime
   } = options;
 
   const warningTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const isWarningRef = useRef<boolean>(false);
+  const [isWarning, setIsWarning] = useState<boolean>(false);
 
   const timeout = useTimeout({
     ...timeoutOptions,
     onStart: () => {
-      isWarningRef.current = false;
+      setIsWarning(false);
 
       // 警告タイムアウトを設定
       if (warningTimeout < defaultTimeout) {
         warningTimeoutRef.current = setTimeout(() => {
-          isWarningRef.current = true;
+          setIsWarning(true);
           onWarning?.();
         }, warningTimeout);
       }
@@ -381,7 +381,7 @@ export const useFormTimeout = (options: UseFormTimeoutOptions = {}): UseFormTime
       timeoutOptions.onStart?.();
     },
     onTimeout: () => {
-      isWarningRef.current = false;
+      setIsWarning(false);
       if (warningTimeoutRef.current) {
         clearTimeout(warningTimeoutRef.current);
         warningTimeoutRef.current = null;
@@ -389,7 +389,7 @@ export const useFormTimeout = (options: UseFormTimeoutOptions = {}): UseFormTime
       timeoutOptions.onTimeout?.();
     },
     onCancel: () => {
-      isWarningRef.current = false;
+      setIsWarning(false);
       if (warningTimeoutRef.current) {
         clearTimeout(warningTimeoutRef.current);
         warningTimeoutRef.current = null;
@@ -415,12 +415,16 @@ export const useFormTimeout = (options: UseFormTimeoutOptions = {}): UseFormTime
   /**
    * 進捗率を計算
    */
-  const progress = timeout.isActive ? Math.max(0, 1 - timeout.remainingTime / defaultTimeout) : 0;
+  const progress = timeout.isActive
+    ? Math.max(0, 1 - timeout.remainingTime / defaultTimeout)
+    : timeout.remainingTime === 0
+      ? 1
+      : 0;
 
   return {
     ...timeout,
     startSubmissionTimeout,
-    isWarning: isWarningRef.current,
+    isWarning,
     progress,
   };
 };

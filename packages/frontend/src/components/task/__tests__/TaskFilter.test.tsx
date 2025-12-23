@@ -1,6 +1,12 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, cleanup, screen, fireEvent } from '@testing-library/react';
 import { TaskFilter } from '../TaskFilter';
-import { TaskFilters } from '@goal-mandala/shared';
+import { TaskFilters, TaskStatus } from '@goal-mandala/shared';
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('TaskFilter', () => {
   const mockActions = [
@@ -19,7 +25,7 @@ describe('TaskFilter', () => {
   });
 
   it('should call onChange when status filter is changed', () => {
-    const onChange = jest.fn();
+    const onChange = vi.fn();
     const filters: TaskFilters = {};
 
     render(<TaskFilter filters={filters} onChange={onChange} actions={mockActions} />);
@@ -28,18 +34,18 @@ describe('TaskFilter', () => {
     fireEvent.click(completedCheckbox);
 
     expect(onChange).toHaveBeenCalledWith({
-      statuses: ['completed'],
+      statuses: [TaskStatus.COMPLETED],
     });
   });
 
   it('should call onChange when deadline filter is changed', () => {
-    const onChange = jest.fn();
+    const onChange = vi.fn();
     const filters: TaskFilters = {};
 
     render(<TaskFilter filters={filters} onChange={onChange} actions={mockActions} />);
 
-    const todayOption = screen.getByLabelText('今日');
-    fireEvent.click(todayOption);
+    const deadlineSelect = screen.getByLabelText('期限フィルター');
+    fireEvent.change(deadlineSelect, { target: { value: 'today' } });
 
     expect(onChange).toHaveBeenCalledWith({
       deadlineRange: 'today',
@@ -47,7 +53,7 @@ describe('TaskFilter', () => {
   });
 
   it('should call onChange when action filter is changed', () => {
-    const onChange = jest.fn();
+    const onChange = vi.fn();
     const filters: TaskFilters = {};
 
     render(<TaskFilter filters={filters} onChange={onChange} actions={mockActions} />);
@@ -62,7 +68,7 @@ describe('TaskFilter', () => {
 
   it('should display current filter values', () => {
     const filters: TaskFilters = {
-      statuses: ['completed'],
+      statuses: [TaskStatus.COMPLETED],
       deadlineRange: 'today',
       actionIds: ['action-1'],
     };
@@ -70,13 +76,13 @@ describe('TaskFilter', () => {
     render(<TaskFilter filters={filters} onChange={() => {}} actions={mockActions} />);
 
     expect(screen.getByLabelText('完了')).toBeChecked();
-    expect(screen.getByLabelText('今日')).toBeChecked();
+    expect(screen.getByLabelText('期限フィルター')).toHaveValue('today');
     expect(screen.getByLabelText('Action 1')).toBeChecked();
   });
 
   it('should handle multiple status selections', () => {
-    const onChange = jest.fn();
-    const filters: TaskFilters = { statuses: ['completed'] };
+    const onChange = vi.fn();
+    const filters: TaskFilters = { statuses: [TaskStatus.COMPLETED] };
 
     render(<TaskFilter filters={filters} onChange={onChange} actions={mockActions} />);
 
@@ -84,7 +90,7 @@ describe('TaskFilter', () => {
     fireEvent.click(inProgressCheckbox);
 
     expect(onChange).toHaveBeenCalledWith({
-      statuses: ['completed', 'in_progress'],
+      statuses: [TaskStatus.COMPLETED, TaskStatus.IN_PROGRESS],
     });
   });
 });

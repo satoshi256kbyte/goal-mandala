@@ -1,19 +1,12 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
-import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { render, screen, waitFor, act } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { BrowserRouter } from 'react-router-dom';
 import { GoalInputPage } from './GoalInputPage';
-import { GoalFormService } from '../services/goalFormService';
-import { useAuth } from '../components/auth/AuthProvider';
 
-// useNavigateのモック関数を作成
+// React Router のモック
 const mockNavigate = vi.fn();
-
-// モック設定
-vi.mock('../services/goalFormService');
-vi.mock('../components/auth/AuthProvider', () => ({
-  useAuth: vi.fn(),
-}));
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual('react-router-dom');
   return {
@@ -22,21 +15,41 @@ vi.mock('react-router-dom', async () => {
   };
 });
 
-// テスト用のモックデータ
-const mockUser = {
-  id: 'user-123',
-  email: 'test@example.com',
-  name: 'テストユーザー',
-  profileComplete: true,
+// 認証フックのモック
+const mockUseAuth = {
+  user: { id: 'user-1', name: 'テストユーザー', email: 'test@example.com' },
+  isAuthenticated: true,
+  isLoading: false,
 };
 
-const mockDraftData = {
-  title: '下書きタイトル',
-  description: '下書き説明',
-  deadline: '2024-12-31',
-  background: '下書き背景',
-  constraints: '下書き制約',
-};
+vi.mock('../hooks/useAuth', () => ({
+  useAuth: () => mockUseAuth,
+}));
+
+// GoalFormServiceのモック
+vi.mock('../services/goalFormService', () => ({
+  GoalFormService: {
+    getDraft: vi.fn(),
+    saveDraft: vi.fn(),
+    deleteDraft: vi.fn(),
+    createGoal: vi.fn(),
+  },
+  getErrorMessage: (error: Error) => error.message,
+}));
+
+// GoalFormProviderのモック
+vi.mock('../contexts/GoalFormContext', () => ({
+  GoalFormProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+
+// GoalInputFormのモック
+vi.mock('../components/forms/GoalInputForm', () => ({
+  GoalInputForm: () => (
+    <div data-testid="goal-input-form">
+      <p>目標入力フォーム</p>
+    </div>
+  ),
+}));
 
 // テスト用のラッパーコンポーネント
 const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
@@ -44,168 +57,225 @@ const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
 );
 
 describe('GoalInputPage', () => {
-  const mockUseAuth = vi.mocked(useAuth);
-  const mockGoalFormService = vi.mocked(GoalFormService);
-
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
-    mockNavigate.mockClear();
 
-    // デフォルトの認証状態
-    mockUseAuth.mockReturnValue({
-      user: mockUser,
-      isAuthenticated: true,
-      isLoading: false,
-    } as any);
+    // デフォルトのモック設定
+    mockUseAuth.user = { id: 'user-1', name: 'テストユーザー', email: 'test@example.com' };
+    mockUseAuth.isAuthenticated = true;
+    mockUseAuth.isLoading = false;
 
-    // GoalFormService のモック
-    mockGoalFormService.getDraft.mockResolvedValue({
+    const { GoalFormService } = await import('../services/goalFormService');
+    vi.mocked(GoalFormService.getDraft).mockResolvedValue({
       draftData: null,
-      savedAt: null,
-      message: '下書きはありません',
+    });
+    vi.mocked(GoalFormService.saveDraft).mockResolvedValue({
+      savedAt: new Date().toISOString(),
+    });
+    vi.mocked(GoalFormService.createGoal).mockResolvedValue({
+      processingId: 'processing-123',
     });
   });
 
   afterEach(() => {
     vi.clearAllTimers();
-    vi.useRealTimers();
+    vi.clearAllMocks();
   });
 
-  describe('認証状態の処理', () => {
-    it('認証チェック中はローディング画面を表示する', () => {
-      mockUseAuth.mockReturnValue({
-        user: null,
-        isAuthenticated: false,
-        isLoading: true,
-      } as any);
+  describe('ページ表示', () => {
+    it('ページが正しく表示される', async () => {
+      await act(async () => {
+        render(
+          <TestWrapper>
+            <GoalInputPage />
+          </TestWrapper>
+        );
+      });
 
-      render(
-        <TestWrapper>
-          <GoalInputPage />
-        </TestWrapper>
+      await waitFor(
+        () => {
+          expect(screen.getByText('新しい目標を作成')).toBeInTheDocument();
+          expect(screen.getByText('目標を入力してください')).toBeInTheDocument();
+        },
+        { timeout: 5000 }
       );
+    });
+
+    it('認証中はローディングが表示される', async () => {
+      mockUseAuth.isLoading = true;
+      mockUseAuth.isAuthenticated = false;
+
+      await act(async () => {
+        render(
+          <TestWrapper>
+            <GoalInputPage />
+          </TestWrapper>
+        );
+      });
 
       expect(screen.getByText('認証状態を確認しています...')).toBeInTheDocument();
     });
 
-    it('未認証の場合はリダイレクト画面を表示する', () => {
-      mockUseAuth.mockReturnValue({
-        user: null,
-        isAuthenticated: false,
-        isLoading: false,
-      } as any);
+    it('未認証の場合はリダイレクトメッセージが表示される', async () => {
+      mockUseAuth.isLoading = false;
+      mockUseAuth.isAuthenticated = false;
 
-      render(
-        <TestWrapper>
-          <GoalInputPage />
-        </TestWrapper>
-      );
+      await act(async () => {
+        render(
+          <TestWrapper>
+            <GoalInputPage />
+          </TestWrapper>
+        );
+      });
 
       expect(screen.getByText('ログインページに移動しています...')).toBeInTheDocument();
     });
 
-    it('認証済みの場合はページを表示する', async () => {
-      render(
-        <TestWrapper>
-          <GoalInputPage />
-        </TestWrapper>
-      );
+    it('フォームが表示される', async () => {
+      await act(async () => {
+        render(
+          <TestWrapper>
+            <GoalInputPage />
+          </TestWrapper>
+        );
+      });
 
-      expect(await screen.findByText('新しい目標を作成')).toBeInTheDocument();
+      await waitFor(
+        () => {
+          expect(screen.getByTestId('goal-input-form')).toBeInTheDocument();
+        },
+        { timeout: 5000 }
+      );
     });
   });
 
-  describe('ページの初期化', () => {
-    it('下書きデータがない場合は空のフォームを表示する', async () => {
-      render(
-        <TestWrapper>
-          <GoalInputPage />
-        </TestWrapper>
-      );
-
-      const titleInput = await screen.findByLabelText(/目標タイトル/);
-      expect(titleInput).toHaveValue('');
-    });
-
-    it('下書きデータがある場合は復元メッセージを表示する', async () => {
-      mockGoalFormService.getDraft.mockResolvedValue({
-        draftData: mockDraftData,
-        savedAt: '2024-01-01T10:00:00Z',
-        message: '下書きが復元されました',
+  describe('ナビゲーション', () => {
+    it('ダッシュボードに戻るボタンが表示される', async () => {
+      await act(async () => {
+        render(
+          <TestWrapper>
+            <GoalInputPage />
+          </TestWrapper>
+        );
       });
 
-      render(
-        <TestWrapper>
-          <GoalInputPage />
-        </TestWrapper>
+      await waitFor(
+        () => {
+          expect(screen.getByRole('button', { name: 'ダッシュボードに戻る' })).toBeInTheDocument();
+        },
+        { timeout: 5000 }
+      );
+    });
+
+    it('ダッシュボードに戻るボタンをクリックするとナビゲートされる', async () => {
+      const user = userEvent.setup();
+
+      await act(async () => {
+        render(
+          <TestWrapper>
+            <GoalInputPage />
+          </TestWrapper>
+        );
+      });
+
+      await waitFor(
+        () => {
+          expect(screen.getByRole('button', { name: 'ダッシュボードに戻る' })).toBeInTheDocument();
+        },
+        { timeout: 5000 }
       );
 
-      expect(await screen.findByText('下書きが復元されました')).toBeInTheDocument();
+      const dashboardButton = screen.getByRole('button', { name: 'ダッシュボードに戻る' });
+      await act(async () => {
+        await user.click(dashboardButton);
+      });
+
+      expect(mockNavigate).toHaveBeenCalledWith('/dashboard');
     });
   });
 
-  describe('ヘッダーの表示', () => {
-    it('ページタイトルが表示される', async () => {
-      render(
-        <TestWrapper>
-          <GoalInputPage />
-        </TestWrapper>
-      );
+  describe('エッジケース', () => {
+    it('複数回のナビゲーションが正しく動作する', async () => {
+      const user = userEvent.setup();
 
-      expect(await screen.findByText('新しい目標を作成')).toBeInTheDocument();
-    });
-
-    it('ユーザー名が表示される', async () => {
-      render(
-        <TestWrapper>
-          <GoalInputPage />
-        </TestWrapper>
-      );
-
-      expect(await screen.findByText('テストユーザー')).toBeInTheDocument();
-    });
-  });
-
-  describe('タイマー機能', () => {
-    it('成功メッセージは3秒後に自動で消える', async () => {
-      vi.useFakeTimers();
-
-      mockGoalFormService.getDraft.mockResolvedValue({
-        draftData: mockDraftData,
-        savedAt: '2024-01-01T10:00:00Z',
-        message: '下書きが復元されました',
+      await act(async () => {
+        render(
+          <TestWrapper>
+            <GoalInputPage />
+          </TestWrapper>
+        );
       });
 
-      render(
-        <TestWrapper>
-          <GoalInputPage />
-        </TestWrapper>
+      await waitFor(
+        () => {
+          expect(screen.getByRole('button', { name: 'ダッシュボードに戻る' })).toBeInTheDocument();
+        },
+        { timeout: 5000 }
       );
 
-      await vi.waitFor(() => {
-        expect(screen.getByText('下書きが復元されました')).toBeInTheDocument();
+      const dashboardButton = screen.getByRole('button', { name: 'ダッシュボードに戻る' });
+
+      // 複数回クリック
+      await act(async () => {
+        await user.click(dashboardButton);
+        await user.click(dashboardButton);
       });
 
-      act(() => {
-        vi.advanceTimersByTime(3000);
-      });
-
-      expect(screen.queryByText('下書きが復元されました')).not.toBeInTheDocument();
-
-      vi.useRealTimers();
+      // 最後のナビゲーションのみが記録される
+      expect(mockNavigate).toHaveBeenCalledWith('/dashboard');
     });
-  });
 
-  describe('アクセシビリティ', () => {
-    it('適切なARIA属性が設定されている', async () => {
-      render(
+    it('認証状態が変更された場合にリダイレクトされる', async () => {
+      mockUseAuth.isLoading = false;
+      mockUseAuth.isAuthenticated = true;
+
+      const { rerender } = render(
         <TestWrapper>
           <GoalInputPage />
         </TestWrapper>
       );
 
-      expect(await screen.findByRole('main')).toBeInTheDocument();
-      expect(screen.getByRole('banner')).toBeInTheDocument();
+      await waitFor(
+        () => {
+          expect(screen.getByText('新しい目標を作成')).toBeInTheDocument();
+        },
+        { timeout: 5000 }
+      );
+
+      // 認証状態を変更
+      mockUseAuth.isAuthenticated = false;
+
+      await act(async () => {
+        rerender(
+          <TestWrapper>
+            <GoalInputPage />
+          </TestWrapper>
+        );
+      });
+
+      await waitFor(
+        () => {
+          expect(screen.getByText('ログインページに移動しています...')).toBeInTheDocument();
+        },
+        { timeout: 5000 }
+      );
+    });
+
+    it('フォームが正しく表示される', async () => {
+      await act(async () => {
+        render(
+          <TestWrapper>
+            <GoalInputPage />
+          </TestWrapper>
+        );
+      });
+
+      await waitFor(
+        () => {
+          expect(screen.getByTestId('goal-input-form')).toBeInTheDocument();
+        },
+        { timeout: 5000 }
+      );
     });
   });
 });

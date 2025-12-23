@@ -1,12 +1,19 @@
 import React from 'react';
-import { render } from '@testing-library/react';
+import { render, cleanup } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import { SafeText } from '../SafeText';
 
-import { vi } from 'vitest';
+import { vi, afterEach } from 'vitest';
 
 // console.warn をモック
 const mockConsoleWarn = vi.fn();
 console.warn = mockConsoleWarn;
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('SafeText', () => {
   beforeEach(() => {
@@ -49,53 +56,6 @@ describe('SafeText', () => {
           source: 'test-component',
         })
       );
-    });
-  });
-
-  describe('SafeTextArea Component', () => {
-    it('should render multiline text with line breaks', () => {
-      const multilineText = 'Line 1\nLine 2\nLine 3';
-      const { container } = render(<SafeTextArea value={multilineText} />);
-
-      expect(container.textContent).toContain('Line 1');
-      expect(container.textContent).toContain('Line 2');
-      expect(container.textContent).toContain('Line 3');
-
-      // br要素が存在することを確認
-      const brElements = container.querySelectorAll('br');
-      expect(brElements).toHaveLength(2);
-    });
-
-    it('should sanitize dangerous multiline content', () => {
-      const dangerousContent = 'Safe Line 1\n<script>alert("xss")</script>\nSafe Line 2';
-      const { container } = render(<SafeTextArea value={dangerousContent} />);
-
-      expect(container.textContent).toContain('Safe Line 1');
-      expect(container.textContent).toContain('Safe Line 2');
-      expect(container.textContent).not.toContain('<script>');
-    });
-
-    it('should not preserve line breaks when disabled', () => {
-      const multilineText = 'Line 1\nLine 2';
-      const { container } = render(
-        <SafeTextArea value={multilineText} preserveLineBreaks={false} />
-      );
-
-      // br要素が存在しないことを確認
-      expect(container.querySelector('br')).not.toBeInTheDocument();
-    });
-
-    it('should apply custom className', () => {
-      const { container } = render(<SafeTextArea value="Test" className="custom-textarea-class" />);
-
-      const divElement = container.querySelector('div');
-      expect(divElement).toHaveClass('custom-textarea-class');
-    });
-
-    it('should handle empty content', () => {
-      const { container } = render(<SafeTextArea value="" />);
-      // エラーが発生しないことを確認
-      expect(container.querySelector('div')).toBeInTheDocument();
     });
   });
 });

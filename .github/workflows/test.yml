@@ -79,6 +79,24 @@ jobs:
           fail_ci_if_error: false
         timeout-minutes: 1
 
+      - name: Analyze frontend coverage
+        run: |
+          echo "Analyzing frontend coverage..."
+          cd packages/frontend
+
+          # カバレッジ分析スクリプトを実行
+          node scripts/coverage-analysis.js
+
+          # カバレッジレポートを生成（Markdown形式）
+          node scripts/coverage-report.js
+
+          # レポートをGitHub Actionsサマリーに追加
+          if [ -f "coverage-report.md" ]; then
+            echo "## 📊 Frontend Coverage Report" >> $GITHUB_STEP_SUMMARY
+            cat coverage-report.md >> $GITHUB_STEP_SUMMARY
+          fi
+        timeout-minutes: 2
+
       - name: Check coverage thresholds
         run: |
           echo "Checking coverage thresholds..."
@@ -87,14 +105,52 @@ jobs:
           if [ -f "packages/frontend/coverage/coverage-final.json" ]; then
             echo "✅ Frontend coverage report generated"
           else
-            echo "⚠️ Frontend coverage report not found"
+            echo "❌ Frontend coverage report not found"
+            exit 1
           fi
 
           # Backend coverage check
           if [ -f "packages/backend/coverage/coverage-final.json" ]; then
             echo "✅ Backend coverage report generated"
           else
-            echo "⚠️ Backend coverage report not found"
+            echo "❌ Backend coverage report not found"
+            exit 1
+          fi
+
+          # カバレッジ閾値チェック（現在は警告のみ、将来的にはfailさせる）
+          echo "⚠️ Coverage threshold check: Currently in warning mode"
+          echo "📈 Target: 80% overall coverage"
+          echo "📊 Current: Check the coverage report above"
+
+          echo "✅ Coverage reports generated successfully"
+        timeout-minutes: 1
+
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-reports
+          path: |
+            packages/frontend/coverage/
+            packages/frontend/coverage-report.md
+            packages/frontend/coverage-analysis.json
+            packages/backend/coverage/
+          retention-days: 30
+        timeout-minutes: 1
+
+      - name: Track coverage trend
+        if: github.ref == 'refs/heads/main'
+        run: |
+          echo "Tracking coverage trend..."
+          cd packages/frontend
+
+          # カバレッジトレンドを追跡
+          node scripts/coverage-trend.js
+
+          # トレンドレポートをGitHub Actionsサマリーに追加
+          if [ -f "coverage-trend.md" ]; then
+            echo "## 📈 Coverage Trend" >> $GITHUB_STEP_SUMMARY
+            cat coverage-trend.md >> $GITHUB_STEP_SUMMARY
           fi
         timeout-minutes: 1
 

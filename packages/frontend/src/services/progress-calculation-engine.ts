@@ -635,10 +635,11 @@ export class ProgressCalculationEngineImpl implements ProgressCalculationEngine 
     return progress;
   }
 
-  /**
-   * データの整合性を検証する
-   */
-  private validateDataConsistency(data: any, entityType: string): ValidationResult {
+  // TODO: ValidationResult型を適切な場所に移動
+  private validateDataConsistency(
+    data: any,
+    entityType: string
+  ): { isValid: boolean; errors: string[] } {
     switch (entityType) {
       case 'task':
         return progressDataValidator.validateTask(data);
@@ -652,7 +653,6 @@ export class ProgressCalculationEngineImpl implements ProgressCalculationEngine 
         return {
           isValid: false,
           errors: [`Unknown entity type: ${entityType}`],
-          warnings: [],
         };
     }
   }

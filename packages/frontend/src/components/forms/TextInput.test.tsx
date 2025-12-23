@@ -1,5 +1,5 @@
-import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect } from 'vitest';
+import { render, cleanup, screen, fireEvent, waitFor, act } from '@testing-library/react';
+import { describe, it, expect, afterEach } from 'vitest';
 import { useForm } from 'react-hook-form';
 import { TextInput } from './TextInput';
 
@@ -38,6 +38,12 @@ const TestWrapper = ({
     />
   );
 };
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('TextInput', () => {
   describe('基本機能', () => {
@@ -96,7 +102,7 @@ describe('TextInput', () => {
 
       await waitFor(() => {
         const counter = screen.getByText('8/10');
-        expect(counter).toHaveClass('text-yellow-600');
+        expect(counter.parentElement).toHaveClass('text-yellow-600');
       });
     });
 
@@ -108,7 +114,7 @@ describe('TextInput', () => {
 
       await waitFor(() => {
         const counter = screen.getByText('10/10');
-        expect(counter).toHaveClass('text-red-600');
+        expect(counter.parentElement).toHaveClass('text-red-600');
       });
     });
   });

@@ -10,7 +10,7 @@
  * 要件: 要件1, 要件2
  */
 
-import { detectXSSAttempt } from '../utils/xss-protection';
+import { detectXSSAttempt, logXSSAttempt } from '../utils/xss-protection';
 import {
   generateCSRFToken,
   getCSRFTokenForRequest,

@@ -6,6 +6,11 @@
 import { ProgressSecurityManager } from '../progress-security-manager';
 import { ProgressCalculationError } from '../../types/progress-errors';
 
+afterEach(() => {
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
+
 describe('ProgressSecurityManager', () => {
   let securityManager: ProgressSecurityManager;
 

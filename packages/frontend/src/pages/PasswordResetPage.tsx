@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import AuthLayout from '../components/auth/AuthLayout';
 import { PasswordResetForm } from '../components/auth/PasswordResetForm';
 import { NewPasswordForm } from '../components/auth/NewPasswordForm';
@@ -7,6 +7,9 @@ import { ErrorAlert, SuccessMessage } from '../components/common';
 import { useAuthForm } from '../hooks/useAuthForm';
 import { AuthService } from '../services/auth';
 import type { PasswordResetFormData, NewPasswordFormData } from '../utils/validation';
+
+// TODO: NetworkStatusコンポーネントを適切な場所に移動
+const NetworkStatus: React.FC = () => null;
 
 /**
  * パスワードリセットページコンポーネント

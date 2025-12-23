@@ -1,3 +1,8 @@
+---
+inclusion: fileMatch
+fileMatchPattern: 'packages/infrastructure/**/*.ts'
+---
+
 # AWS 利用ガイド
 
 インフラ環境にはAWSを用いる。  
@@ -6,10 +11,10 @@
 
 ### Infrastructure as Code (IaC)
 
-- **AWS CDK**: 全てのAWSリソースはCDKで管理
-- **バージョン管理**: インフラ構成もGitで管理
-- **環境分離**: local/dev/stg/prod環境の明確な分離
-- **手動デプロイ禁止**: トラブル調査時以外はAWS CDKを介さない変更は禁止
+- AWS CDK: 全てのAWSリソースはCDKで管理
+- バージョン管理: インフラ構成もGitで管理
+- 環境分離: local/dev/stg/prod環境の明確な分離
+- 手動デプロイ禁止: トラブル調査時以外はAWS CDKを介さない変更は禁止
 
 ### AWS リソース命名規約
 
@@ -166,9 +171,9 @@ jobs:
 
 ### 環境別デプロイ
 
-- **Development**: `cdk deploy GameHostingStack-dev`
-- **Staging**: `cdk deploy GameHostingStack-staging`
-- **Production**: `cdk deploy GameHostingStack-prod`
+- Development: `cdk deploy GameHostingStack-dev`
+- Staging: `cdk deploy GameHostingStack-staging`
+- Production: `cdk deploy GameHostingStack-prod`
 
 ## セキュリティ設定
 
@@ -194,9 +199,9 @@ jobs:
 
 ### 機密情報管理
 
-- **AWS Secrets Manager**: データベース接続情報
-- **GitHub Secrets**: CI/CD用認証情報
-- **環境変数**: 設定値の外部化
+- AWS Secrets Manager: データベース接続情報
+- GitHub Secrets: CI/CD用認証情報
+- 環境変数: 設定値の外部化
 
 ### セキュリティヘッダー
 
@@ -223,10 +228,10 @@ const responseHeadersPolicy = new cloudfront.ResponseHeadersPolicy(this, 'Securi
 
 ### CloudWatch メトリクス
 
-- **S3**: リクエスト数、エラー率
-- **CloudFront**: キャッシュヒット率、レスポンス時間
-- **Lambda**: 実行時間、エラー率
-- **DynamoDB**: 読み書き容量、スロットリング
+- S3: リクエスト数、エラー率
+- CloudFront: キャッシュヒット率、レスポンス時間
+- Lambda: 実行時間、エラー率
+- DynamoDB: 読み書き容量、スロットリング
 
 ### アラート設定
 
@@ -243,18 +248,18 @@ errorAlarm.addAlarmAction(new cloudwatchActions.SnsAction(alertTopic));
 
 ### ログ管理
 
-- **CloudTrail**: API呼び出しログ
-- **S3 アクセスログ**: ウェブサイトアクセス記録
-- **Lambda ログ**: 関数実行ログ
+- CloudTrail: API呼び出しログ
+- S3 アクセスログ: ウェブサイトアクセス記録
+- Lambda ログ: 関数実行ログ
 
 ## コスト最適化
 
 ### 無料利用枠活用
 
-- **S3**: 5GB ストレージ
-- **CloudFront**: 1TB データ転送
-- **Lambda**: 100万リクエスト/月
-- **DynamoDB**: 25GB ストレージ
+- S3: 5GB ストレージ
+- CloudFront: 1TB データ転送
+- Lambda: 100万リクエスト/月
+- DynamoDB: 25GB ストレージ
 
 ### コスト監視
 
@@ -292,37 +297,37 @@ const budget = new budgets.CfnBudget(this, 'MonthlyBudget', {
 
 ### 初回セットアップ
 
-1. **AWS CLI設定**: `aws configure`
-2. **CDK初期化**: `cdk bootstrap`
-3. **依存関係インストール**: `npm install`
-4. **環境変数設定**: `.env`ファイル作成
+1. AWS CLI設定: `aws configure`
+2. CDK初期化: `cdk bootstrap`
+3. 依存関係インストール: `npm install`
+4. 環境変数設定: `.env`ファイル作成
 
 ### 通常デプロイ
 
-1. **コードプッシュ**: `git push origin main`
-2. **自動テスト**: GitHub Actions実行
-3. **自動デプロイ**: CDKスタック更新
-4. **動作確認**: デプロイ後の動作テスト
+1. コードプッシュ: `git push origin main`
+2. 自動テスト: GitHub Actions実行
+3. 自動デプロイ: CDKスタック更新
+4. 動作確認: デプロイ後の動作テスト
 
 ### ロールバック手順
 
-1. **前バージョン特定**: Git履歴確認
-2. **コードロールバック**: `git revert`
-3. **再デプロイ**: 自動パイプライン実行
-4. **動作確認**: ロールバック後の確認
+1. 前バージョン特定: Git履歴確認
+2. コードロールバック: `git revert`
+3. 再デプロイ: 自動パイプライン実行
+4. 動作確認: ロールバック後の確認
 
 ## トラブルシューティング
 
 ### よくある問題
 
-- **CloudFrontキャッシュ**: 無効化が必要
-- **S3権限エラー**: IAMポリシー確認
-- **Lambda タイムアウト**: 実行時間制限調整
-- **DynamoDB スロットリング**: 容量設定見直し
+- CloudFrontキャッシュ: 無効化が必要
+- S3権限エラー: IAMポリシー確認
+- Lambda タイムアウト: 実行時間制限調整
+- DynamoDB スロットリング: 容量設定見直し
 
 ### 緊急時対応
 
-1. **サービス停止**: CloudFront無効化
-2. **問題調査**: CloudWatchログ確認
-3. **修正デプロイ**: 緊急パッチ適用
-4. **サービス復旧**: 段階的復旧実施
+1. サービス停止: CloudFront無効化
+2. 問題調査: CloudWatchログ確認
+3. 修正デプロイ: 緊急パッチ適用
+4. サービス復旧: 段階的復旧実施

@@ -104,7 +104,7 @@ export const TaskListPage: React.FC = () => {
           case 'this_week':
             return deadline >= today && deadline <= weekFromNow;
           case 'overdue':
-            return deadline < now && task.status !== 'completed';
+            return deadline < now && task.status !== TaskStatus.COMPLETED;
           default:
             return true;
         }
@@ -148,7 +148,7 @@ export const TaskListPage: React.FC = () => {
   // Calculate progress
   const progress = useMemo(() => {
     if (tasks.length === 0) return 0;
-    const completedCount = tasks.filter(task => task.status === 'completed').length;
+    const completedCount = tasks.filter(task => task.status === TaskStatus.COMPLETED).length;
     return Math.round((completedCount / tasks.length) * 100);
   }, [tasks]);
 
@@ -178,7 +178,7 @@ export const TaskListPage: React.FC = () => {
     if (selectedTasks.length === 0) return;
 
     if (action === 'complete') {
-      bulkUpdateStatusMutation.mutate({ taskIds: selectedTasks, status: 'completed' });
+      bulkUpdateStatusMutation.mutate({ taskIds: selectedTasks, status: TaskStatus.COMPLETED });
     } else if (action === 'delete') {
       bulkDeleteMutation.mutate(selectedTasks);
     }

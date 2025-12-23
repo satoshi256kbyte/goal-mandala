@@ -3,24 +3,62 @@ import { Task, TaskStatus, TaskFilters, TaskNote, TaskHistory } from '@goal-mand
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
 
 class TaskApiClient {
-  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-    const token = localStorage.getItem('accessToken');
+  private maxRetries = 3;
+  private baseDelay = 1000; // 1秒
 
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-      ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: token ? `Bearer ${token}` : '',
-        ...options.headers,
-      },
-    });
+  /**
+   * 指数バックオフによるリトライ処理
+   * @param fn 実行する関数
+   * @param retries 残りのリトライ回数
+   * @returns 関数の実行結果
+   */
+  private async retryWithBackoff<T>(fn: () => Promise<T>, retries = this.maxRetries): Promise<T> {
+    try {
+      return await fn();
+    } catch (error) {
+      if (retries === 0) {
+        throw error;
+      }
 
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: 'Network error' }));
-      throw new Error(error.error || `HTTP ${response.status}`);
+      // ネットワークエラーまたは5xxエラーの場合のみリトライ
+      const shouldRetry =
+        error instanceof Error &&
+        (error.message.includes('Network error') ||
+          error.message.includes('HTTP 5') ||
+          error.message.includes('Failed to fetch'));
+
+      if (!shouldRetry) {
+        throw error;
+      }
+
+      // 指数バックオフ: 1秒 → 2秒 → 4秒
+      const delay = this.baseDelay * Math.pow(2, this.maxRetries - retries);
+      await new Promise(resolve => setTimeout(resolve, delay));
+
+      return this.retryWithBackoff(fn, retries - 1);
     }
+  }
 
-    return response.json();
+  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+    return this.retryWithBackoff(async () => {
+      const token = localStorage.getItem('accessToken');
+
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        ...options,
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: token ? `Bearer ${token}` : '',
+          ...options.headers,
+        },
+      });
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ error: 'Network error' }));
+        throw new Error(error.error || `HTTP ${response.status}`);
+      }
+
+      return response.json();
+    });
   }
 
   // Task CRUD operations

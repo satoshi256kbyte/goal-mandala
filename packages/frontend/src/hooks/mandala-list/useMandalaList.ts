@@ -4,7 +4,7 @@
  * マンダラチャート一覧の取得、検索、フィルター、ソート、ページネーション機能を提供します。
  */
 
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import type {
   MandalaChartSummary,
   GoalStatus,
@@ -157,8 +157,9 @@ export function useMandalaList(options?: UseMandalaListOptions): UseMandalaListR
       setMandalas(response.data);
       setTotalItems(response.total);
     } catch (err) {
-      // エラーオブジェクトをそのまま保存（エラー分類は表示側で行う）
-      setError(err);
+      // エラーを文字列に変換
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      setError(errorMessage);
       // エラー時はデータをクリア
       setMandalas([]);
       setTotalItems(0);
@@ -179,7 +180,7 @@ export function useMandalaList(options?: UseMandalaListOptions): UseMandalaListR
   useEffect(() => {
     setIsLoading(true);
     fetchMandalas();
-  }, [debouncedSearchKeyword, statusFilter, sortOption, currentPage, itemsPerPage]);
+  }, [debouncedSearchKeyword, statusFilter, sortOption, currentPage, itemsPerPage, fetchMandalas]);
 
   return {
     // データ

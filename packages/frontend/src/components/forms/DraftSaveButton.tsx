@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { PartialGoalFormData } from '../../schemas/goal-form';
 import { DraftService } from '../../services/draftService';
+import { draftUtils } from '../../utils/draft-utils';
 
 /**
  * 下書き保存ボタンのプロパティ
@@ -176,7 +177,7 @@ export const DraftSaveButton: React.FC<DraftSaveButtonProps> = ({
       {/* 保存成功メッセージ */}
       {lastSaveTime && !saveError && (
         <div className="absolute top-full left-0 mt-1 text-xs text-green-600">
-          {draftUtils.getTimeSinceSave(lastSaveTime)}に保存しました
+          {draftUtils.getTimeSinceSave(lastSaveTime.getTime())}に保存しました
         </div>
       )}
 

@@ -1,5 +1,5 @@
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { describe, it, expect, vi, afterEach } from 'vitest';
+import { render, cleanup, screen, waitFor, within, act, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { HistoryPanel } from './HistoryPanel';
 
@@ -41,6 +41,12 @@ const mockHistoryEntries = [
     ],
   },
 ];
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('HistoryPanel', () => {
   const mockOnRollback = vi.fn();
@@ -648,7 +654,9 @@ describe('HistoryPanel', () => {
 
     it('ロールバック実行中はローディング状態が表示される', async () => {
       const user = userEvent.setup();
-      const slowRollback = vi.fn(() => new Promise(resolve => setTimeout(resolve, 100)));
+      const slowRollback = vi.fn<[historyId: string], Promise<void>>(
+        () => new Promise(resolve => setTimeout(resolve, 100))
+      );
 
       render(
         <HistoryPanel

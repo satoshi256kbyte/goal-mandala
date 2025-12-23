@@ -1,5 +1,5 @@
 import React from 'react';
-import { Task } from '@goal-mandala/shared';
+import { Task, TaskStatus } from '@goal-mandala/shared';
 
 interface TaskCardProps {
   task: Task;
@@ -68,6 +68,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onStatusChange, onSele
                   }
                 >
                   期限: {new Date(task.deadline).toLocaleDateString()}
+                  {isOverdue && ' (期限超過)'}
                 </span>
               )}
 
@@ -90,6 +91,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onStatusChange, onSele
             value={task.status}
             onChange={e => onStatusChange(e.target.value as TaskStatus)}
             className="text-xs border border-gray-300 rounded px-2 py-1 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            aria-label="状態を変更"
           >
             <option value="not_started">未着手</option>
             <option value="in_progress">進行中</option>

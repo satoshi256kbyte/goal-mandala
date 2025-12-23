@@ -1,8 +1,9 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
+import { waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { vi } from 'vitest';
-import { GoalInputForm } from './GoalInputForm';
+import { GoalInputForm, GoalInputFormProps } from './GoalInputForm';
 import { GoalFormData } from '../../schemas/goal-form';
 import { renderWithProviders } from '../../test/test-utils';
 import { GoalFormProvider } from '../../contexts/GoalFormContext';
@@ -21,8 +22,34 @@ vi.mock('../../schemas/goal-form', async () => {
 
 // テスト用のデフォルトプロパティ
 const defaultProps: GoalInputFormProps = {
-  onSubmit: vi.fn(),
-  onDraftSave: vi.fn(),
+  onSubmit: vi
+    .fn<
+      [
+        data: {
+          title?: string;
+          description?: string;
+          deadline?: string;
+          background?: string;
+          constraints?: string;
+        },
+      ],
+      Promise<void>
+    >()
+    .mockResolvedValue(undefined),
+  onDraftSave: vi
+    .fn<
+      [
+        data: {
+          title?: string;
+          description?: string;
+          deadline?: string;
+          background?: string;
+          constraints?: string;
+        },
+      ],
+      Promise<void>
+    >()
+    .mockResolvedValue(undefined),
   isSubmitting: false,
   isDraftSaving: false,
 };
@@ -50,8 +77,34 @@ describe('GoalInputForm', () => {
   };
 
   beforeEach(() => {
-    mockOnSubmit = vi.fn().mockResolvedValue(undefined);
-    mockOnDraftSave = vi.fn().mockResolvedValue(undefined);
+    mockOnSubmit = vi
+      .fn<
+        [
+          data: {
+            title?: string;
+            description?: string;
+            deadline?: string;
+            background?: string;
+            constraints?: string;
+          },
+        ],
+        Promise<void>
+      >()
+      .mockResolvedValue(undefined);
+    mockOnDraftSave = vi
+      .fn<
+        [
+          data: {
+            title?: string;
+            description?: string;
+            deadline?: string;
+            background?: string;
+            constraints?: string;
+          },
+        ],
+        Promise<void>
+      >()
+      .mockResolvedValue(undefined);
     vi.clearAllMocks();
   });
 
@@ -114,7 +167,7 @@ describe('GoalInputForm', () => {
   describe('バリデーション', () => {
     it('必須フィールドが空の場合にエラーが表示される', async () => {
       const user = userEvent.setup();
-      render(<GoalInputForm {...defaultProps} onSubmit={mockOnSubmit} showErrorSummary={true} />);
+      render(<GoalInputForm {...defaultProps} showErrorSummary={true} />);
 
       const submitButton = screen.getByRole('button', { name: /AI生成開始/ });
       await user.click(submitButton);
@@ -130,7 +183,7 @@ describe('GoalInputForm', () => {
 
   describe('フォーム送信', () => {
     it('送信ボタンが表示される', () => {
-      render(<GoalInputForm {...defaultProps} onSubmit={mockOnSubmit} />);
+      render(<GoalInputForm {...defaultProps} />);
 
       const submitButton = screen.getByRole('button', { name: /AI生成開始/ });
       expect(submitButton).toBeInTheDocument();
@@ -145,8 +198,17 @@ describe('GoalInputForm', () => {
       // 部分的なデータを入力
       await user.type(screen.getByLabelText(/目標タイトル/), 'テスト');
 
+      // ボタンが有効になるまで待つ
+      await waitFor(() => {
+        const draftSaveButton = screen.getByRole('button', { name: /下書き保存/ });
+        expect(draftSaveButton).not.toBeDisabled();
+      });
+
       const draftSaveButton = screen.getByRole('button', { name: /下書き保存/ });
-      await user.click(draftSaveButton);
+
+      await act(async () => {
+        await user.click(draftSaveButton);
+      });
 
       await waitFor(() => {
         expect(mockOnDraftSave).toHaveBeenCalled();

@@ -1,13 +1,8 @@
-import { describe, it, expect, vi } from 'vitest';
-import { AuthService } from './auth';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { AuthService, AuthError } from './auth';
+import * as amplifyAuth from 'aws-amplify/auth';
 
-// AWS Amplifyをモック化
-vi.mock('aws-amplify', () => ({
-  Amplify: {
-    configure: vi.fn(),
-  },
-}));
-
+// aws-amplify/authをモック
 vi.mock('aws-amplify/auth', () => ({
   signIn: vi.fn(),
   signUp: vi.fn(),
@@ -19,40 +14,40 @@ vi.mock('aws-amplify/auth', () => ({
   fetchAuthSession: vi.fn(),
 }));
 
-import {
-  signIn,
-  signUp,
-  confirmSignUp,
-  resetPassword,
-  confirmResetPassword,
-  signOut,
-  getCurrentUser,
-  fetchAuthSession,
-} from 'aws-amplify/auth';
+// Amplifyをモック
+vi.mock('aws-amplify', () => ({
+  Amplify: {
+    configure: vi.fn(),
+  },
+}));
 
 describe('AuthService', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   describe('signIn', () => {
     it('正常にログインできる', async () => {
-      vi.mocked(signIn).mockResolvedValue({} as any);
+      vi.mocked(amplifyAuth.signIn).mockResolvedValue({} as any);
 
-      await expect(AuthService.signIn('test@example.com', 'password123')).resolves.not.toThrow();
+      await expect(AuthService.signIn('test@example.com', 'password123')).resolves.toBeUndefined();
 
-      expect(signIn).toHaveBeenCalledWith({
+      expect(amplifyAuth.signIn).toHaveBeenCalledWith({
         username: 'test@example.com',
         password: 'password123',
       });
     });
 
-    it('認証エラーを適切に処理する', async () => {
-      const mockError = { code: 'NotAuthorizedException' };
-      vi.mocked(signIn).mockRejectedValue(mockError);
+    it('ログインエラーを適切に処理する', async () => {
+      const error = { code: 'UserNotFoundException', message: 'User not found' };
+      vi.mocked(amplifyAuth.signIn).mockRejectedValue(error);
 
-      await expect(AuthService.signIn('test@example.com', 'wrongpassword')).rejects.toEqual({
-        code: 'NotAuthorizedException',
+      await expect(AuthService.signIn('test@example.com', 'wrong')).rejects.toMatchObject({
+        code: 'UserNotFoundException',
         message: 'メールアドレスまたはパスワードが正しくありません',
       });
     });
@@ -60,31 +55,31 @@ describe('AuthService', () => {
 
   describe('signUp', () => {
     it('正常にサインアップできる', async () => {
-      vi.mocked(signUp).mockResolvedValue({} as any);
+      vi.mocked(amplifyAuth.signUp).mockResolvedValue({} as any);
 
       await expect(
-        AuthService.signUp('test@example.com', 'password123', '山田太郎')
-      ).resolves.not.toThrow();
+        AuthService.signUp('test@example.com', 'password123', 'Test User')
+      ).resolves.toBeUndefined();
 
-      expect(signUp).toHaveBeenCalledWith({
+      expect(amplifyAuth.signUp).toHaveBeenCalledWith({
         username: 'test@example.com',
         password: 'password123',
         options: {
           userAttributes: {
             email: 'test@example.com',
-            name: '山田太郎',
+            name: 'Test User',
           },
         },
       });
     });
 
     it('既存ユーザーエラーを適切に処理する', async () => {
-      const mockError = { code: 'UsernameExistsException' };
-      vi.mocked(signUp).mockRejectedValue(mockError);
+      const error = { code: 'UsernameExistsException', message: 'User exists' };
+      vi.mocked(amplifyAuth.signUp).mockRejectedValue(error);
 
       await expect(
-        AuthService.signUp('existing@example.com', 'password123', '山田太郎')
-      ).rejects.toEqual({
+        AuthService.signUp('test@example.com', 'password123', 'Test User')
+      ).rejects.toMatchObject({
         code: 'UsernameExistsException',
         message: 'このメールアドレスは既に登録されています',
       });
@@ -92,22 +87,24 @@ describe('AuthService', () => {
   });
 
   describe('confirmSignUp', () => {
-    it('正常にサインアップを確認できる', async () => {
-      vi.mocked(confirmSignUp).mockResolvedValue({} as any);
+    it('正常に確認できる', async () => {
+      vi.mocked(amplifyAuth.confirmSignUp).mockResolvedValue({} as any);
 
-      await expect(AuthService.confirmSignUp('test@example.com', '123456')).resolves.not.toThrow();
+      await expect(
+        AuthService.confirmSignUp('test@example.com', '123456')
+      ).resolves.toBeUndefined();
 
-      expect(confirmSignUp).toHaveBeenCalledWith({
+      expect(amplifyAuth.confirmSignUp).toHaveBeenCalledWith({
         username: 'test@example.com',
         confirmationCode: '123456',
       });
     });
 
-    it('無効な確認コードエラーを適切に処理する', async () => {
-      const mockError = { code: 'CodeMismatchException' };
-      vi.mocked(confirmSignUp).mockRejectedValue(mockError);
+    it('確認コードエラーを適切に処理する', async () => {
+      const error = { code: 'CodeMismatchException', message: 'Invalid code' };
+      vi.mocked(amplifyAuth.confirmSignUp).mockRejectedValue(error);
 
-      await expect(AuthService.confirmSignUp('test@example.com', 'invalid')).rejects.toEqual({
+      await expect(AuthService.confirmSignUp('test@example.com', 'wrong')).rejects.toMatchObject({
         code: 'CodeMismatchException',
         message: '確認コードが正しくありません',
       });
@@ -116,153 +113,299 @@ describe('AuthService', () => {
 
   describe('resetPassword', () => {
     it('正常にパスワードリセットを開始できる', async () => {
-      vi.mocked(resetPassword).mockResolvedValue({} as any);
+      vi.mocked(amplifyAuth.resetPassword).mockResolvedValue({} as any);
 
-      await expect(AuthService.resetPassword('test@example.com')).resolves.not.toThrow();
+      await expect(AuthService.resetPassword('test@example.com')).resolves.toBeUndefined();
 
-      expect(resetPassword).toHaveBeenCalledWith({ username: 'test@example.com' });
+      expect(amplifyAuth.resetPassword).toHaveBeenCalledWith({
+        username: 'test@example.com',
+      });
+    });
+
+    it('ユーザー不在エラーを適切に処理する', async () => {
+      const error = { code: 'UserNotFoundException', message: 'User not found' };
+      vi.mocked(amplifyAuth.resetPassword).mockRejectedValue(error);
+
+      await expect(AuthService.resetPassword('test@example.com')).rejects.toMatchObject({
+        code: 'UserNotFoundException',
+        message: 'メールアドレスまたはパスワードが正しくありません',
+      });
     });
   });
 
   describe('confirmResetPassword', () => {
     it('正常にパスワードリセットを完了できる', async () => {
-      vi.mocked(confirmResetPassword).mockResolvedValue({} as any);
+      vi.mocked(amplifyAuth.confirmResetPassword).mockResolvedValue({} as any);
 
       await expect(
-        AuthService.confirmResetPassword('test@example.com', '123456', 'newpassword123')
-      ).resolves.not.toThrow();
+        AuthService.confirmResetPassword('test@example.com', '123456', 'newPassword123')
+      ).resolves.toBeUndefined();
 
-      expect(confirmResetPassword).toHaveBeenCalledWith({
+      expect(amplifyAuth.confirmResetPassword).toHaveBeenCalledWith({
         username: 'test@example.com',
         confirmationCode: '123456',
-        newPassword: 'newpassword123',
+        newPassword: 'newPassword123',
+      });
+    });
+
+    it('無効なパスワードエラーを適切に処理する', async () => {
+      const error = { code: 'InvalidPasswordException', message: 'Invalid password' };
+      vi.mocked(amplifyAuth.confirmResetPassword).mockRejectedValue(error);
+
+      await expect(
+        AuthService.confirmResetPassword('test@example.com', '123456', 'weak')
+      ).rejects.toMatchObject({
+        code: 'InvalidPasswordException',
+        message: 'パスワードは8文字以上で、大文字・小文字・数字を含む必要があります',
       });
     });
   });
 
   describe('signOut', () => {
     it('正常にログアウトできる', async () => {
-      vi.mocked(signOut).mockResolvedValue({} as any);
+      vi.mocked(amplifyAuth.signOut).mockResolvedValue({} as any);
 
-      await expect(AuthService.signOut()).resolves.not.toThrow();
+      await expect(AuthService.signOut()).resolves.toBeUndefined();
 
-      expect(signOut).toHaveBeenCalled();
+      expect(amplifyAuth.signOut).toHaveBeenCalled();
+    });
+
+    it('ログアウトエラーを適切に処理する', async () => {
+      const error = { code: 'NetworkError', message: 'Network error' };
+      vi.mocked(amplifyAuth.signOut).mockRejectedValue(error);
+
+      await expect(AuthService.signOut()).rejects.toMatchObject({
+        code: 'NetworkError',
+        message: 'ネットワークエラーが発生しました。インターネット接続を確認してください',
+      });
     });
   });
 
   describe('getCurrentUser', () => {
-    it('認証済みユーザーを取得できる', async () => {
-      const mockUser = { username: 'test@example.com' };
-      vi.mocked(getCurrentUser).mockResolvedValue(mockUser);
+    it('正常にユーザー情報を取得できる', async () => {
+      const mockUser = { userId: '123', username: 'test@example.com' };
+      vi.mocked(amplifyAuth.getCurrentUser).mockResolvedValue(mockUser as any);
 
       const result = await AuthService.getCurrentUser();
+
       expect(result).toEqual(mockUser);
+      expect(amplifyAuth.getCurrentUser).toHaveBeenCalled();
     });
 
-    it('未認証の場合はnullを返す', async () => {
-      vi.mocked(getCurrentUser).mockRejectedValue(new Error('Not authenticated'));
+    it('エラー時にnullを返す', async () => {
+      vi.mocked(amplifyAuth.getCurrentUser).mockRejectedValue(new Error('Not authenticated'));
 
       const result = await AuthService.getCurrentUser();
+
       expect(result).toBeNull();
     });
   });
 
   describe('getCurrentSession', () => {
-    it('現在のセッションを取得できる', async () => {
-      const mockSession = { tokens: { idToken: 'mock-token' } };
-      vi.mocked(fetchAuthSession).mockResolvedValue(mockSession);
+    it('正常にセッション情報を取得できる', async () => {
+      const mockSession = { tokens: { idToken: 'token123' } };
+      vi.mocked(amplifyAuth.fetchAuthSession).mockResolvedValue(mockSession as any);
 
       const result = await AuthService.getCurrentSession();
+
       expect(result).toEqual(mockSession);
+      expect(amplifyAuth.fetchAuthSession).toHaveBeenCalled();
     });
 
-    it('セッションがない場合はnullを返す', async () => {
-      vi.mocked(fetchAuthSession).mockRejectedValue(new Error('No session'));
+    it('エラー時にnullを返す', async () => {
+      vi.mocked(amplifyAuth.fetchAuthSession).mockRejectedValue(new Error('Session error'));
 
       const result = await AuthService.getCurrentSession();
+
+      expect(result).toBeNull();
+    });
+  });
+
+  describe('getCurrentSessionTyped', () => {
+    it('正常に型付きセッション情報を取得できる', async () => {
+      const mockSession = {
+        tokens: {
+          idToken: { toString: () => 'idToken123' },
+          accessToken: { toString: () => 'accessToken123' },
+          refreshToken: { toString: () => 'refreshToken123' },
+        },
+      };
+      vi.mocked(amplifyAuth.fetchAuthSession).mockResolvedValue(mockSession as any);
+
+      const result = await AuthService.getCurrentSessionTyped();
+
+      expect(result).toEqual(mockSession);
+      expect(amplifyAuth.fetchAuthSession).toHaveBeenCalled();
+    });
+
+    it('エラー時にnullを返す', async () => {
+      vi.mocked(amplifyAuth.fetchAuthSession).mockRejectedValue(new Error('Session error'));
+
+      const result = await AuthService.getCurrentSessionTyped();
+
       expect(result).toBeNull();
     });
   });
 
   describe('getJwtToken', () => {
-    it('JWTトークンを取得できる', async () => {
-      const mockToken = 'mock-jwt-token';
+    it('正常にJWTトークンを取得できる', async () => {
       const mockSession = {
         tokens: {
-          idToken: {
-            toString: () => mockToken,
-          },
+          idToken: { toString: () => 'jwtToken123' },
         },
       };
-      vi.mocked(fetchAuthSession).mockResolvedValue(mockSession);
+      vi.mocked(amplifyAuth.fetchAuthSession).mockResolvedValue(mockSession as any);
 
       const result = await AuthService.getJwtToken();
-      expect(result).toBe(mockToken);
+
+      expect(result).toBe('jwtToken123');
+      expect(amplifyAuth.fetchAuthSession).toHaveBeenCalled();
     });
 
-    it('セッションがない場合はnullを返す', async () => {
-      vi.mocked(fetchAuthSession).mockRejectedValue(new Error('No session'));
+    it('トークンがない場合nullを返す', async () => {
+      const mockSession = { tokens: {} };
+      vi.mocked(amplifyAuth.fetchAuthSession).mockResolvedValue(mockSession as any);
 
       const result = await AuthService.getJwtToken();
+
+      expect(result).toBeNull();
+    });
+
+    it('エラー時にnullを返す', async () => {
+      vi.mocked(amplifyAuth.fetchAuthSession).mockRejectedValue(new Error('Token error'));
+
+      const result = await AuthService.getJwtToken();
+
       expect(result).toBeNull();
     });
   });
 
   describe('checkAuthState', () => {
-    it('認証済みの場合はtrueを返す', async () => {
-      vi.mocked(getCurrentUser).mockResolvedValue({});
+    it('認証済みの場合trueを返す', async () => {
+      vi.mocked(amplifyAuth.getCurrentUser).mockResolvedValue({} as any);
 
       const result = await AuthService.checkAuthState();
+
       expect(result).toBe(true);
+      expect(amplifyAuth.getCurrentUser).toHaveBeenCalled();
     });
 
-    it('未認証の場合はfalseを返す', async () => {
-      vi.mocked(getCurrentUser).mockRejectedValue(new Error('Not authenticated'));
+    it('未認証の場合falseを返す', async () => {
+      vi.mocked(amplifyAuth.getCurrentUser).mockRejectedValue(new Error('Not authenticated'));
 
       const result = await AuthService.checkAuthState();
+
       expect(result).toBe(false);
     });
   });
 
   describe('handleAuthError', () => {
-    it('未知のエラーに対してデフォルトメッセージを返す', async () => {
-      const mockError = { code: 'UnknownErrorCode' };
-      vi.mocked(signIn).mockRejectedValue(mockError);
+    it('UserNotFoundExceptionを適切に変換する', () => {
+      const error = { code: 'UserNotFoundException', message: 'User not found' };
 
-      await expect(AuthService.signIn('test@example.com', 'password')).rejects.toEqual({
-        code: 'UnknownErrorCode',
-        message: 'エラーが発生しました。しばらく待ってから再試行してください',
+      const result = AuthService.handleAuthError(error);
+
+      expect(result).toMatchObject({
+        code: 'UserNotFoundException',
+        message: 'メールアドレスまたはパスワードが正しくありません',
       });
     });
 
-    it('エラーコードがない場合はUnknownErrorとして処理する', async () => {
-      const mockError = { message: 'Some error' };
-      vi.mocked(signIn).mockRejectedValue(mockError);
+    it('NotAuthorizedExceptionを適切に変換する', () => {
+      const error = { code: 'NotAuthorizedException', message: 'Not authorized' };
 
-      await expect(AuthService.signIn('test@example.com', 'password')).rejects.toEqual({
+      const result = AuthService.handleAuthError(error);
+
+      expect(result).toMatchObject({
+        code: 'NotAuthorizedException',
+        message: 'メールアドレスまたはパスワードが正しくありません',
+      });
+    });
+
+    it('UsernameExistsExceptionを適切に変換する', () => {
+      const error = { code: 'UsernameExistsException', message: 'User exists' };
+
+      const result = AuthService.handleAuthError(error);
+
+      expect(result).toMatchObject({
+        code: 'UsernameExistsException',
+        message: 'このメールアドレスは既に登録されています',
+      });
+    });
+
+    it('CodeMismatchExceptionを適切に変換する', () => {
+      const error = { code: 'CodeMismatchException', message: 'Invalid code' };
+
+      const result = AuthService.handleAuthError(error);
+
+      expect(result).toMatchObject({
+        code: 'CodeMismatchException',
+        message: '確認コードが正しくありません',
+      });
+    });
+
+    it('InvalidPasswordExceptionを適切に変換する', () => {
+      const error = { code: 'InvalidPasswordException', message: 'Invalid password' };
+
+      const result = AuthService.handleAuthError(error);
+
+      expect(result).toMatchObject({
+        code: 'InvalidPasswordException',
+        message: 'パスワードは8文字以上で、大文字・小文字・数字を含む必要があります',
+      });
+    });
+
+    it('TooManyRequestsExceptionを適切に変換する', () => {
+      const error = { code: 'TooManyRequestsException', message: 'Too many requests' };
+
+      const result = AuthService.handleAuthError(error);
+
+      expect(result).toMatchObject({
+        code: 'TooManyRequestsException',
+        message: 'リクエストが多すぎます。しばらく待ってから再試行してください',
+      });
+    });
+
+    it('ネットワークエラーを検出する（messageから）', () => {
+      const error = { message: 'Network request failed' };
+
+      const result = AuthService.handleAuthError(error);
+
+      expect(result).toMatchObject({
+        code: 'NetworkError',
+        message: 'ネットワークエラーが発生しました。インターネット接続を確認してください',
+      });
+    });
+
+    it('TypeErrorをネットワークエラーとして扱う', () => {
+      const error = new TypeError('Failed to fetch');
+
+      const result = AuthService.handleAuthError(error);
+
+      expect(result).toMatchObject({
+        code: 'NetworkError',
+        message: 'ネットワークエラーが発生しました。インターネット接続を確認してください',
+      });
+    });
+
+    it('未知のエラーをデフォルトメッセージで変換する', () => {
+      const error = { code: 'UnknownError', message: 'Unknown error' };
+
+      const result = AuthService.handleAuthError(error);
+
+      expect(result).toMatchObject({
         code: 'UnknownError',
         message: 'エラーが発生しました。しばらく待ってから再試行してください',
       });
     });
 
-    it('ネットワークエラーを正しく検出する', () => {
-      const networkError = new TypeError('Failed to fetch');
-      const result = AuthService.handleAuthError(networkError);
+    it('エラーオブジェクトでない場合もデフォルトメッセージを返す', () => {
+      const result = AuthService.handleAuthError(null);
 
-      expect(result.code).toBe('NetworkError');
-      expect(result.message).toBe(
-        'ネットワークエラーが発生しました。インターネット接続を確認してください'
-      );
-    });
-
-    it('メッセージからネットワークエラーを検出する', () => {
-      const error = { message: 'Network connection failed' };
-      const result = AuthService.handleAuthError(error);
-
-      expect(result.code).toBe('NetworkError');
-      expect(result.message).toBe(
-        'ネットワークエラーが発生しました。インターネット接続を確認してください'
-      );
+      expect(result).toMatchObject({
+        code: 'UnknownError',
+        message: 'エラーが発生しました。しばらく待ってから再試行してください',
+      });
     });
   });
 
@@ -271,83 +414,121 @@ describe('AuthService', () => {
       global.fetch = vi.fn();
     });
 
-    it('ネットワーク接続が正常な場合はtrueを返す', async () => {
-      vi.mocked(global.fetch).mockResolvedValue({
-        ok: true,
-      } as Response);
+    it('ネットワーク接続が正常な場合trueを返す', async () => {
+      vi.mocked(global.fetch).mockResolvedValue({ ok: true } as Response);
 
       const result = await AuthService.testNetworkConnection();
+
       expect(result).toBe(true);
+      expect(global.fetch).toHaveBeenCalledWith('/favicon.ico', {
+        method: 'HEAD',
+        cache: 'no-cache',
+        signal: expect.any(AbortSignal),
+      });
     });
 
-    it('ネットワーク接続が失敗した場合はfalseを返す', async () => {
+    it('ネットワーク接続が失敗した場合falseを返す', async () => {
       vi.mocked(global.fetch).mockRejectedValue(new Error('Network error'));
 
       const result = await AuthService.testNetworkConnection();
+
       expect(result).toBe(false);
     });
 
-    it('レスポンスがokでない場合はfalseを返す', async () => {
-      vi.mocked(global.fetch).mockResolvedValue({
-        ok: false,
-      } as Response);
+    it('レスポンスがokでない場合falseを返す', async () => {
+      vi.mocked(global.fetch).mockResolvedValue({ ok: false } as Response);
 
       const result = await AuthService.testNetworkConnection();
+
       expect(result).toBe(false);
     });
   });
 
   describe('isRetryableError', () => {
-    it('再試行可能なエラーを正しく判定する', () => {
-      const retryableErrors = [
-        { code: 'NetworkError', message: 'Network error' },
-        { code: 'TimeoutError', message: 'Timeout error' },
-        { code: 'ServiceUnavailable', message: 'Service unavailable' },
-        { code: 'TooManyRequestsException', message: 'Too many requests' },
-        { code: 'LimitExceededException', message: 'Limit exceeded' },
-        { code: 'InternalErrorException', message: 'Internal error' },
-      ];
+    it('NetworkErrorは再試行可能', () => {
+      const error: AuthError = { code: 'NetworkError', message: 'Network error' };
 
-      retryableErrors.forEach(error => {
-        expect(AuthService.isRetryableError(error)).toBe(true);
-      });
+      expect(AuthService.isRetryableError(error)).toBe(true);
     });
 
-    it('再試行不可能なエラーを正しく判定する', () => {
-      const nonRetryableErrors = [
-        { code: 'NotAuthorizedException', message: 'Not authorized' },
-        { code: 'UserNotFoundException', message: 'User not found' },
-        { code: 'InvalidPasswordException', message: 'Invalid password' },
-      ];
+    it('TimeoutErrorは再試行可能', () => {
+      const error: AuthError = { code: 'TimeoutError', message: 'Timeout' };
 
-      nonRetryableErrors.forEach(error => {
-        expect(AuthService.isRetryableError(error)).toBe(false);
-      });
+      expect(AuthService.isRetryableError(error)).toBe(true);
+    });
+
+    it('ServiceUnavailableは再試行可能', () => {
+      const error: AuthError = { code: 'ServiceUnavailable', message: 'Service unavailable' };
+
+      expect(AuthService.isRetryableError(error)).toBe(true);
+    });
+
+    it('TooManyRequestsExceptionは再試行可能', () => {
+      const error: AuthError = {
+        code: 'TooManyRequestsException',
+        message: 'Too many requests',
+      };
+
+      expect(AuthService.isRetryableError(error)).toBe(true);
+    });
+
+    it('LimitExceededExceptionは再試行可能', () => {
+      const error: AuthError = { code: 'LimitExceededException', message: 'Limit exceeded' };
+
+      expect(AuthService.isRetryableError(error)).toBe(true);
+    });
+
+    it('InternalErrorExceptionは再試行可能', () => {
+      const error: AuthError = { code: 'InternalErrorException', message: 'Internal error' };
+
+      expect(AuthService.isRetryableError(error)).toBe(true);
+    });
+
+    it('UserNotFoundExceptionは再試行不可', () => {
+      const error: AuthError = { code: 'UserNotFoundException', message: 'User not found' };
+
+      expect(AuthService.isRetryableError(error)).toBe(false);
+    });
+
+    it('CodeMismatchExceptionは再試行不可', () => {
+      const error: AuthError = { code: 'CodeMismatchException', message: 'Invalid code' };
+
+      expect(AuthService.isRetryableError(error)).toBe(false);
     });
   });
 
   describe('isNetworkError', () => {
-    it('ネットワークエラーを正しく判定する', () => {
-      const networkErrors = [
-        { code: 'NetworkError', message: 'Network error' },
-        { code: 'TimeoutError', message: 'Timeout error' },
-        { code: 'ServiceUnavailable', message: 'Service unavailable' },
-      ];
+    it('NetworkErrorはネットワークエラー', () => {
+      const error: AuthError = { code: 'NetworkError', message: 'Network error' };
 
-      networkErrors.forEach(error => {
-        expect(AuthService.isNetworkError(error)).toBe(true);
-      });
+      expect(AuthService.isNetworkError(error)).toBe(true);
     });
 
-    it('非ネットワークエラーを正しく判定する', () => {
-      const nonNetworkErrors = [
-        { code: 'NotAuthorizedException', message: 'Not authorized' },
-        { code: 'TooManyRequestsException', message: 'Too many requests' },
-      ];
+    it('TimeoutErrorはネットワークエラー', () => {
+      const error: AuthError = { code: 'TimeoutError', message: 'Timeout' };
 
-      nonNetworkErrors.forEach(error => {
-        expect(AuthService.isNetworkError(error)).toBe(false);
-      });
+      expect(AuthService.isNetworkError(error)).toBe(true);
+    });
+
+    it('ServiceUnavailableはネットワークエラー', () => {
+      const error: AuthError = { code: 'ServiceUnavailable', message: 'Service unavailable' };
+
+      expect(AuthService.isNetworkError(error)).toBe(true);
+    });
+
+    it('UserNotFoundExceptionはネットワークエラーではない', () => {
+      const error: AuthError = { code: 'UserNotFoundException', message: 'User not found' };
+
+      expect(AuthService.isNetworkError(error)).toBe(false);
+    });
+
+    it('TooManyRequestsExceptionはネットワークエラーではない', () => {
+      const error: AuthError = {
+        code: 'TooManyRequestsException',
+        message: 'Too many requests',
+      };
+
+      expect(AuthService.isNetworkError(error)).toBe(false);
     });
   });
 });

@@ -1,6 +1,7 @@
 /**
  * Goals API Service のユニットテスト
  */
+import { GoalsApiError } from '../goals-api';
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { getGoals } from '../goals-api';

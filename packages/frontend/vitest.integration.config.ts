@@ -16,15 +16,10 @@ export default defineConfig({
     exclude: ['**/node_modules/**', '**/dist/**', '**/e2e/**'],
     // 並列実行設定
     pool: 'forks',
-    poolOptions: {
-      forks: {
-        singleFork: false,
-        maxForks: 2,
-        minForks: 1,
-      },
-    },
-    maxConcurrency: 2, // 統合テストは並列数を抑える
-    isolate: false,
+    maxWorkers: 2, // 統合テストは並列数を抑える
+    isolate: true,
+    // メモリ制限を増加（安定性向上）
+    execArgv: ['--max-old-space-size=4096', '--expose-gc'],
     // レポーター設定
     reporters: ['dot'],
     // カバレッジは無効

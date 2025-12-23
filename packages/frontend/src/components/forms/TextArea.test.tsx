@@ -1,5 +1,6 @@
-import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect } from 'vitest';
+import { render, cleanup, screen, fireEvent, act } from '@testing-library/react';
+import { waitFor } from '@testing-library/react';
+import { describe, it, expect, afterEach } from 'vitest';
 import { useForm } from 'react-hook-form';
 import { TextArea } from './TextArea';
 
@@ -41,6 +42,12 @@ const TestWrapper = ({
     />
   );
 };
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('TextArea', () => {
   describe('基本機能', () => {
@@ -99,7 +106,7 @@ describe('TextArea', () => {
 
       await waitFor(() => {
         const counter = screen.getByText('8/10');
-        expect(counter).toHaveClass('text-yellow-600');
+        expect(counter.parentElement).toHaveClass('text-yellow-600');
       });
     });
 
@@ -111,7 +118,7 @@ describe('TextArea', () => {
 
       await waitFor(() => {
         const counter = screen.getByText('10/10');
-        expect(counter).toHaveClass('text-red-600');
+        expect(counter.parentElement).toHaveClass('text-red-600');
       });
     });
 
@@ -119,7 +126,7 @@ describe('TextArea', () => {
       render(<TestWrapper maxLength={500} showCounter={true} />);
 
       const counter = screen.getByText('0/500');
-      expect(counter).toHaveClass('absolute', 'right-2', 'bottom-2');
+      expect(counter.parentElement).toHaveClass('absolute', 'right-2', 'bottom-2');
     });
   });
 
@@ -138,7 +145,7 @@ describe('TextArea', () => {
 
     it('制限到達時にコールバックが呼ばれる', async () => {
       const onLimitReached = vi.fn();
-      render(<TestWrapper maxLength={5} onLimitReached={onLimitReached} />);
+      render(<TestWrapper maxLength={5} onLimitReached={onLimitReached} showCounter={true} />);
 
       const textarea = screen.getByPlaceholderText('テストテキストエリア');
       fireEvent.change(textarea, { target: { value: 'hello world' } });

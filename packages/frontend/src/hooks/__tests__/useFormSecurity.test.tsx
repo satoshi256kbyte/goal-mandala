@@ -11,7 +11,9 @@
 
 import React from 'react';
 import { vi } from 'vitest';
-import { renderHook } from '@testing-library/react';
+import { renderHook, act } from '@testing-library/react';
+import { ActionFormData } from '../../contexts/ActionContext';
+import { ActionType } from '@goal-mandala/shared';
 import { useFormSecurity } from '../useFormSecurity';
 import { AuthContext, SubGoalFormData } from '../../services/form-security';
 
@@ -170,7 +172,7 @@ describe('useFormSecurity', () => {
         title: 'テストアクション',
         description: 'テスト説明',
         background: 'テスト背景',
-        type: 'execution',
+        type: ActionType.EXECUTION,
         position: 0,
       };
 
@@ -204,7 +206,7 @@ describe('useFormSecurity', () => {
         title: 'テストアクション',
         description: 'テスト説明',
         background: 'テスト背景',
-        type: 'execution',
+        type: ActionType.EXECUTION,
         position: 0,
       };
 

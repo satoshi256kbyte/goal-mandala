@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { ProgressBar } from '../ProgressBar';
@@ -723,7 +723,9 @@ describe('アニメーションコンポーネントのテスト', () => {
                 type="glow"
                 intensity="normal"
                 animationId="no-children"
-              />
+              >
+                <div>Test Content</div>
+              </AchievementAnimation>
             </TestWrapper>
           );
         }).not.toThrow();

@@ -37,7 +37,8 @@ export function MobileFormField({
 }: MobileFormFieldProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const { isMobile } = useResponsive();
-  const { isVisible: keyboardVisible } = useVirtualKeyboard();
+  // TODO: useVirtualKeyboard フックを実装
+  const keyboardVisible = false;
   const [isFocused, setIsFocused] = useState(false);
 
   // フォーカス時にスクロールして表示
@@ -190,7 +191,8 @@ export function MobileTextArea({
 }: MobileTextAreaProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { isMobile } = useResponsive();
-  const { isVisible: keyboardVisible } = useVirtualKeyboard();
+  // TODO: useVirtualKeyboard フックを実装
+  const keyboardVisible = false;
   const [isFocused, setIsFocused] = useState(false);
 
   // 自動リサイズ

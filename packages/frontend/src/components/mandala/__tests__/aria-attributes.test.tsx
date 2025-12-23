@@ -1,5 +1,6 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
+import { waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { vi } from 'vitest';
 import { InlineEditor } from '../InlineEditor';
@@ -7,7 +8,7 @@ import { EditModal } from '../EditModal';
 import MandalaCell from '../MandalaCell';
 import { ConflictDialog } from '../ConflictDialog';
 import { HistoryPanel } from '../HistoryPanel';
-import { CellData } from '../../../types';
+import { CellData, Goal, GoalStatus } from '../../../types';
 
 describe('ARIA属性テスト', () => {
   describe('InlineEditor', () => {
@@ -70,18 +71,15 @@ describe('ARIA属性テスト', () => {
   });
 
   describe('EditModal', () => {
-    const mockGoal = {
+    const mockGoal: Goal = {
       id: 'goal-1',
-      user_id: 'user-1',
       title: 'テスト目標',
       description: 'テスト説明',
       deadline: new Date('2025-12-31'),
       background: 'テスト背景',
       constraints: 'テスト制約',
-      status: 'active' as const,
+      status: GoalStatus.ACTIVE,
       progress: 0,
-      created_at: new Date(),
-      updated_at: new Date(),
     };
 
     it('role="dialog"とaria-modal="true"が設定されている', () => {
@@ -202,6 +200,7 @@ describe('ARIA属性テスト', () => {
     const mockCellData: CellData = {
       id: 'cell-1',
       type: 'action',
+      position: { row: 0, col: 0 },
       title: 'テストアクション',
       description: 'テスト説明',
       progress: 50,
@@ -282,16 +281,14 @@ describe('ARIA属性テスト', () => {
   describe('ConflictDialog', () => {
     const mockCurrentData = {
       id: 'goal-1',
-      user_id: 'user-1',
+
       title: '現在のタイトル',
       description: '現在の説明',
       deadline: new Date('2025-12-31'),
       background: '現在の背景',
       constraints: '現在の制約',
-      status: 'active' as const,
+      status: GoalStatus.ACTIVE,
       progress: 0,
-      created_at: new Date(),
-      updated_at: new Date(),
     };
 
     const mockLatestData = {
@@ -363,7 +360,14 @@ describe('ARIA属性テスト', () => {
       const onClose = vi.fn();
 
       render(
-        <HistoryPanel entityType="goal" entityId="goal-1" isAdmin={false} onClose={onClose} />
+        <HistoryPanel
+          entityType="goal"
+          entityId="goal-1"
+          isAdmin={false}
+          history={[]}
+          total={0}
+          onClose={onClose}
+        />
       );
 
       await waitFor(() => {
@@ -376,7 +380,14 @@ describe('ARIA属性テスト', () => {
       const onClose = vi.fn();
 
       render(
-        <HistoryPanel entityType="goal" entityId="goal-1" isAdmin={false} onClose={onClose} />
+        <HistoryPanel
+          entityType="goal"
+          entityId="goal-1"
+          isAdmin={false}
+          history={[]}
+          total={0}
+          onClose={onClose}
+        />
       );
 
       await waitFor(() => {

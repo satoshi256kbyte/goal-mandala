@@ -1,6 +1,13 @@
-import { render } from '@testing-library/react';
-import { describe, it } from 'vitest';
+import { render, cleanup } from '@testing-library/react';
+import { screen } from '@testing-library/react';
+import { describe, it, afterEach } from 'vitest';
 import { ProgressCircle } from '../ProgressCircle';
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('ProgressCircle', () => {
   describe('表示内容', () => {

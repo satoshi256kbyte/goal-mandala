@@ -1,4 +1,5 @@
 import { renderHook } from '@testing-library/react';
+import { act } from '@testing-library/react';
 import { vi, beforeEach } from 'vitest';
 import {
   useRealtimeValidation,
@@ -289,7 +290,7 @@ describe('useFormValidation', () => {
       result.current.validateFields({
         title: 'テスト目標',
         description: 'テスト説明',
-        deadline: '2024-12-31',
+        deadline: '2025-12-31',
         background: 'テスト背景',
         constraints: 'テスト制約',
       });

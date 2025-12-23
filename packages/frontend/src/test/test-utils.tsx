@@ -1,7 +1,7 @@
-import { render, renderHook, RenderOptions } from '@testing-library/react';
-import { ReactElement } from 'react';
+import { render, renderHook, RenderOptions, RenderHookOptions } from '@testing-library/react';
+import { ReactElement, ReactNode } from 'react';
 import { BrowserRouter } from 'react-router-dom';
-import { QueryClient } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { SubGoalProvider } from '../contexts/SubGoalContext';
 
 /**
@@ -19,11 +19,6 @@ export function createTestQueryClient() {
       mutations: {
         retry: false,
       },
-    },
-    logger: {
-      log: () => {},
-      warn: () => {},
-      error: () => {},
     },
   });
 }
@@ -276,6 +271,10 @@ export const wait = {
     throw new Error('Condition not met within timeout');
   },
 };
+
+// ファクトリーとマッチャーを再エクスポート
+export * from './factories';
+export * from './matchers';
 
 // 再エクスポート
 export * from '@testing-library/react';

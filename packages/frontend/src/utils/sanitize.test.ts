@@ -1,5 +1,10 @@
 import { sanitizeInput, sanitizeHtml } from './sanitize';
 
+afterEach(() => {
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
+
 describe('Frontend sanitizeInput', () => {
   describe('XSS対策', () => {
     it('スクリプトタグを削除する', () => {
@@ -88,32 +93,31 @@ describe('Frontend sanitizeHtml', () => {
   });
 });
 
-describe('escapeHtml', () => {
-  it('HTMLエンティティをエスケープする', () => {
-    const input = '<div>Test & "quotes"</div>';
-    const result = escapeHtml(input);
-    expect(result).toContain('&lt;');
-    expect(result).toContain('&gt;');
-    expect(result).toContain('&amp;');
-    // ブラウザのtextContentは"をエスケープしない
+describe('sanitizeHtml', () => {
+  it('危険なHTMLタグを削除する', () => {
+    const input = '<script>alert("xss")</script><div>Test & "quotes"</div>';
+    const result = sanitizeHtml(input);
+    expect(result).not.toContain('<script>');
+    expect(result).not.toContain('alert');
+    expect(result).toContain('Test');
   });
 
-  it('シングルクォートをエスケープする', () => {
-    const input = "It's a test";
-    const result = escapeHtml(input);
-    // ブラウザのtextContentは'をエスケープしない
-    expect(result).toContain('It');
-    expect(result).toContain('test');
+  it('許可されたHTMLタグは保持する', () => {
+    const input = '<p>Test <strong>bold</strong> text</p>';
+    const result = sanitizeHtml(input);
+    expect(result).toContain('<p>');
+    expect(result).toContain('<strong>');
+    expect(result).toContain('bold');
   });
 
   it('通常のテキストはそのまま返す', () => {
     const input = 'Normal text without special chars';
-    const result = escapeHtml(input);
+    const result = sanitizeHtml(input);
     expect(result).toBe(input);
   });
 
   it('空文字列を処理する', () => {
-    const result = escapeHtml('');
+    const result = sanitizeHtml('');
     expect(result).toBe('');
   });
 });

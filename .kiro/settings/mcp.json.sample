@@ -39,7 +39,7 @@
       "command": "uvx",
       "args": ["awslabs.bedrock-kb-retrieval-mcp-server@latest"],
       "env": {
-        "AWS_REGION": "ap-northeast-1",
+        "AWS_REGION": "us-east-1",
         "FASTMCP_LOG_LEVEL": "ERROR",
         "KB_INCLUSION_TAG_KEY": "optional-tag-key-to-filter-kbs",
         "BEDROCK_KB_RERANKING_ENABLED": "false"
@@ -58,7 +58,12 @@
     },
     "Context7": {
       "command": "npx",
-      "args": ["-y", "@upstash/context7-mcp", "--api-key", "YOUR_API_KEY"],
+      "args": [
+        "-y",
+        "@upstash/context7-mcp",
+        "--api-key",
+        "YOUR_API_KEY"
+      ],
       "env": {},
       "disabled": false,
       "autoApprove": []

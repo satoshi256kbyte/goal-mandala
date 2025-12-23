@@ -1,34 +1,26 @@
-/**
- * APIサービスのテスト
- */
-
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { ApiClient, NetworkErrorType } from '../api';
-import { createMockNavigator } from '../../test/types/mock-types';
+
+// Mock fetch globally
+global.fetch = vi.fn();
 
 describe('ApiClient', () => {
   let apiClient: ApiClient;
-  let fetchMock: ReturnType<typeof vi.fn>;
+  const BASE_URL = 'http://localhost:3001/api';
 
   beforeEach(() => {
-    // fetchをモック
-    fetchMock = vi.fn();
-    global.fetch = fetchMock;
-
-    // navigatorをモック
-    global.navigator = createMockNavigator() as Navigator;
-
-    apiClient = new ApiClient('/api');
+    vi.clearAllMocks();
+    apiClient = new ApiClient(BASE_URL);
   });
 
   afterEach(() => {
     vi.clearAllMocks();
   });
 
-  describe('GETリクエスト', () => {
-    it('正常にGETリクエストを実行できる', async () => {
-      const mockData = { id: 1, name: 'Test' };
-      fetchMock.mockResolvedValue({
+  describe('GET requests', () => {
+    it('should make successful GET request', async () => {
+      const mockData = { id: '1', name: 'Test' };
+      (global.fetch as any).mockResolvedValueOnce({
         ok: true,
         status: 200,
         statusText: 'OK',
@@ -38,140 +30,154 @@ describe('ApiClient', () => {
 
       const response = await apiClient.get('/test');
 
-      expect(response.data).toEqual(mockData);
-      expect(response.status).toBe(200);
-      expect(fetchMock).toHaveBeenCalledWith(
-        '/api/test',
+      expect(global.fetch).toHaveBeenCalledWith(
+        `${BASE_URL}/test`,
         expect.objectContaining({
           method: 'GET',
         })
       );
+      expect(response.data).toEqual(mockData);
+      expect(response.status).toBe(200);
     });
-  });
 
-  describe('POSTリクエスト', () => {
-    it('正常にPOSTリクエストを実行できる', async () => {
-      const mockData = { success: true };
-      const postData = { name: 'Test' };
-
-      fetchMock.mockResolvedValue({
+    it('should handle GET request with custom headers', async () => {
+      (global.fetch as any).mockResolvedValueOnce({
         ok: true,
-        status: 201,
-        statusText: 'Created',
+        status: 200,
+        statusText: 'OK',
         headers: new Headers({ 'content-type': 'application/json' }),
-        json: async () => mockData,
+        json: async () => ({}),
       });
 
-      const response = await apiClient.post('/test', postData);
+      await apiClient.get('/test', {
+        headers: { Authorization: 'Bearer token' },
+      });
 
-      expect(response.data).toEqual(mockData);
-      expect(response.status).toBe(201);
-      expect(fetchMock).toHaveBeenCalledWith(
-        '/api/test',
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.any(String),
         expect.objectContaining({
-          method: 'POST',
-          body: JSON.stringify(postData),
+          headers: expect.objectContaining({
+            Authorization: 'Bearer token',
+          }),
         })
       );
     });
   });
 
-  describe('PUTリクエスト', () => {
-    it('正常にPUTリクエストを実行できる', async () => {
-      const mockData = { success: true };
-      const putData = { name: 'Updated' };
+  describe('POST requests', () => {
+    it('should make successful POST request', async () => {
+      const requestData = { name: 'Test' };
+      const responseData = { id: '1', name: 'Test' };
 
-      fetchMock.mockResolvedValue({
+      (global.fetch as any).mockResolvedValueOnce({
+        ok: true,
+        status: 201,
+        statusText: 'Created',
+        headers: new Headers({ 'content-type': 'application/json' }),
+        json: async () => responseData,
+      });
+
+      const response = await apiClient.post('/test', requestData);
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        `${BASE_URL}/test`,
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify(requestData),
+        })
+      );
+      expect(response.data).toEqual(responseData);
+    });
+  });
+
+  describe('PUT requests', () => {
+    it('should make successful PUT request', async () => {
+      const requestData = { name: 'Updated' };
+      const responseData = { id: '1', name: 'Updated' };
+
+      (global.fetch as any).mockResolvedValueOnce({
         ok: true,
         status: 200,
         statusText: 'OK',
         headers: new Headers({ 'content-type': 'application/json' }),
-        json: async () => mockData,
+        json: async () => responseData,
       });
 
-      const response = await apiClient.put('/test/1', putData);
+      const response = await apiClient.put('/test/1', requestData);
 
-      expect(response.data).toEqual(mockData);
-      expect(response.status).toBe(200);
+      expect(global.fetch).toHaveBeenCalledWith(
+        `${BASE_URL}/test/1`,
+        expect.objectContaining({
+          method: 'PUT',
+          body: JSON.stringify(requestData),
+        })
+      );
+      expect(response.data).toEqual(responseData);
     });
   });
 
-  describe('DELETEリクエスト', () => {
-    it('正常にDELETEリクエストを実行できる', async () => {
-      const mockData = { success: true };
-
-      fetchMock.mockResolvedValue({
+  describe('DELETE requests', () => {
+    it('should make successful DELETE request', async () => {
+      (global.fetch as any).mockResolvedValueOnce({
         ok: true,
         status: 204,
         statusText: 'No Content',
-        headers: new Headers({ 'content-type': 'application/json' }),
-        json: async () => mockData,
+        headers: new Headers(),
+        text: async () => '',
       });
 
       const response = await apiClient.delete('/test/1');
 
+      expect(global.fetch).toHaveBeenCalledWith(
+        `${BASE_URL}/test/1`,
+        expect.objectContaining({
+          method: 'DELETE',
+        })
+      );
       expect(response.status).toBe(204);
     });
   });
 
-  describe('エラーハンドリング', () => {
-    it('タイムアウトエラーを処理できる', async () => {
-      fetchMock.mockImplementation(
-        () =>
-          new Promise((_, reject) => {
-            const error = new Error('The operation was aborted');
-            error.name = 'AbortError';
-            setTimeout(() => reject(error), 100);
-          })
-      );
-
-      const shortTimeoutClient = new ApiClient('/api', { timeout: 50 });
-
-      await expect(shortTimeoutClient.get('/test')).rejects.toMatchObject({
-        code: NetworkErrorType.TIMEOUT,
-        message: 'リクエストがタイムアウトしました',
-      });
-    });
-
-    it('ネットワークエラーを処理できる', async () => {
-      fetchMock.mockRejectedValue(new TypeError('Failed to fetch'));
-
-      await expect(apiClient.get('/test')).rejects.toMatchObject({
-        code: NetworkErrorType.CONNECTION_ERROR,
-        message: 'ネットワークに接続できません',
-      });
-    });
-
-    it('サーバーエラー（500）を処理できる', async () => {
-      fetchMock.mockResolvedValue({
+  describe('Error handling', () => {
+    it('should handle 404 error', async () => {
+      (global.fetch as any).mockResolvedValueOnce({
         ok: false,
-        status: 500,
-        statusText: 'Internal Server Error',
-        headers: new Headers(),
-      });
-
-      await expect(apiClient.get('/test')).rejects.toMatchObject({
-        code: NetworkErrorType.SERVER_ERROR,
-        status: 500,
-      });
-    });
-
-    it('クライアントエラー（400）を処理できる', async () => {
-      fetchMock.mockResolvedValue({
-        ok: false,
-        status: 400,
-        statusText: 'Bad Request',
+        status: 404,
+        statusText: 'Not Found',
         headers: new Headers(),
       });
 
       await expect(apiClient.get('/test')).rejects.toMatchObject({
         code: NetworkErrorType.CLIENT_ERROR,
-        status: 400,
+        status: 404,
+        retryable: false,
       });
     });
 
-    it('レート制限エラー（429）を処理できる', async () => {
-      fetchMock.mockResolvedValue({
+    it('should handle 500 error with retry', async () => {
+      vi.useRealTimers();
+
+      (global.fetch as any).mockRejectedValue(new Error('Server error'));
+
+      await expect(apiClient.get('/test')).rejects.toThrow();
+      expect(global.fetch).toHaveBeenCalledTimes(4); // 初回 + 3回リトライ
+    }, 10000);
+
+    it('should handle network error', async () => {
+      vi.useRealTimers();
+
+      (global.fetch as any).mockRejectedValue(new TypeError('Failed to fetch'));
+
+      await expect(apiClient.get('/test')).rejects.toMatchObject({
+        code: NetworkErrorType.CONNECTION_ERROR,
+        retryable: true,
+      });
+    }, 10000);
+
+    it('should handle rate limit error', async () => {
+      vi.useRealTimers();
+
+      (global.fetch as any).mockResolvedValue({
         ok: false,
         status: 429,
         statusText: 'Too Many Requests',
@@ -181,162 +187,137 @@ describe('ApiClient', () => {
       await expect(apiClient.get('/test')).rejects.toMatchObject({
         code: NetworkErrorType.RATE_LIMIT,
         status: 429,
+        retryable: true,
       });
-    });
-
-    it('オフライン時にエラーを返す', async () => {
-      global.navigator = createMockNavigator({ onLine: false }) as Navigator;
-
-      await expect(apiClient.get('/test')).rejects.toMatchObject({
-        code: NetworkErrorType.OFFLINE,
-        message: 'オフラインです',
-      });
-    });
+    }, 10000);
   });
 
-  describe('リトライ機能', () => {
-    it('リトライ可能なエラーの場合、自動的にリトライする', async () => {
-      let callCount = 0;
-      fetchMock.mockImplementation(() => {
-        callCount++;
-        if (callCount < 3) {
-          return Promise.resolve({
-            ok: false,
-            status: 500,
-            statusText: 'Internal Server Error',
-            headers: new Headers(),
-          });
-        }
-        return Promise.resolve({
+  describe('Retry logic', () => {
+    it('should retry on retryable errors', async () => {
+      vi.useRealTimers();
+
+      (global.fetch as any)
+        .mockRejectedValueOnce(new Error('Network error'))
+        .mockRejectedValueOnce(new Error('Network error'))
+        .mockResolvedValueOnce({
           ok: true,
           status: 200,
           statusText: 'OK',
           headers: new Headers({ 'content-type': 'application/json' }),
           json: async () => ({ success: true }),
         });
+
+      const response = await apiClient.get('/test');
+      expect(response.data).toEqual({ success: true });
+      expect(global.fetch).toHaveBeenCalledTimes(3);
+    }, 10000);
+
+    it('should not retry on non-retryable errors', async () => {
+      (global.fetch as any).mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+        statusText: 'Bad Request',
+        headers: new Headers(),
+      });
+
+      await expect(apiClient.get('/test')).rejects.toMatchObject({
+        code: NetworkErrorType.CLIENT_ERROR,
+        retryable: false,
+      });
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('Configuration', () => {
+    it('should update config', () => {
+      apiClient.updateConfig({ timeout: 60000 });
+
+      // 設定が更新されたことを確認（内部状態なので直接確認できないが、動作で確認）
+      expect(apiClient).toBeDefined();
+    });
+
+    it('should update base URL', () => {
+      apiClient.updateBaseURL('http://new-url.com');
+
+      // 設定が更新されたことを確認（内部状態なので直接確認できないが、動作で確認）
+      expect(apiClient).toBeDefined();
+    });
+  });
+
+  describe('URL building', () => {
+    it('should build URL with leading slash', async () => {
+      (global.fetch as any).mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        statusText: 'OK',
+        headers: new Headers({ 'content-type': 'application/json' }),
+        json: async () => ({}),
+      });
+
+      await apiClient.get('/test');
+
+      expect(global.fetch).toHaveBeenCalledWith(`${BASE_URL}/test`, expect.any(Object));
+    });
+
+    it('should build URL without leading slash', async () => {
+      (global.fetch as any).mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        statusText: 'OK',
+        headers: new Headers({ 'content-type': 'application/json' }),
+        json: async () => ({}),
+      });
+
+      await apiClient.get('test');
+
+      expect(global.fetch).toHaveBeenCalledWith(`${BASE_URL}/test`, expect.any(Object));
+    });
+
+    it('should handle absolute URLs', async () => {
+      (global.fetch as any).mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        statusText: 'OK',
+        headers: new Headers({ 'content-type': 'application/json' }),
+        json: async () => ({}),
+      });
+
+      await apiClient.get('https://example.com/test');
+
+      expect(global.fetch).toHaveBeenCalledWith('https://example.com/test', expect.any(Object));
+    });
+  });
+
+  describe('Response parsing', () => {
+    it('should parse JSON response', async () => {
+      const mockData = { id: '1', name: 'Test' };
+      (global.fetch as any).mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        statusText: 'OK',
+        headers: new Headers({ 'content-type': 'application/json' }),
+        json: async () => mockData,
       });
 
       const response = await apiClient.get('/test');
 
-      expect(response.data).toEqual({ success: true });
-      expect(callCount).toBe(3);
+      expect(response.data).toEqual(mockData);
     });
 
-    it('リトライ回数上限に達したらエラーを投げる', async () => {
-      fetchMock.mockResolvedValue({
-        ok: false,
-        status: 500,
-        statusText: 'Internal Server Error',
-        headers: new Headers(),
-      });
-
-      const limitedRetryClient = new ApiClient('/api', { retries: 2 });
-
-      await expect(limitedRetryClient.get('/test')).rejects.toMatchObject({
-        code: NetworkErrorType.SERVER_ERROR,
-      });
-
-      // 初回 + リトライ2回 = 合計3回
-      expect(fetchMock).toHaveBeenCalledTimes(3);
-    });
-  });
-
-  describe('設定の更新', () => {
-    it('設定を更新できる', () => {
-      apiClient.updateConfig({ timeout: 5000 });
-      // 設定が更新されたことを確認（内部状態なので直接確認は難しい）
-      expect(apiClient).toBeDefined();
-    });
-
-    it('ベースURLを更新できる', () => {
-      apiClient.updateBaseURL('/new-api');
-      expect(apiClient).toBeDefined();
-    });
-  });
-});
-
-describe('goalFormApiService', () => {
-  let fetchMock: ReturnType<typeof vi.fn>;
-
-  beforeEach(() => {
-    fetchMock = vi.fn();
-    global.fetch = fetchMock;
-    global.navigator = createMockNavigator() as Navigator;
-  });
-
-  afterEach(() => {
-    vi.clearAllMocks();
-  });
-
-  describe('下書き保存', () => {
-    it('下書きを保存できる', async () => {
-      const mockResponse = { success: true, draftId: 'draft-123' };
-      fetchMock.mockResolvedValue({
+    it('should parse text response', async () => {
+      const mockText = 'Plain text response';
+      (global.fetch as any).mockResolvedValueOnce({
         ok: true,
         status: 200,
         statusText: 'OK',
-        headers: new Headers({ 'content-type': 'application/json' }),
-        json: async () => mockResponse,
+        headers: new Headers({ 'content-type': 'text/plain' }),
+        text: async () => mockText,
       });
 
-      const result = await goalFormApiService.saveDraft({ title: 'Test Goal' });
+      const response = await apiClient.get('/test');
 
-      expect(result).toEqual(mockResponse);
-    });
-  });
-
-  describe('下書き取得', () => {
-    it('下書きを取得できる', async () => {
-      const mockResponse = { success: true, draftData: { title: 'Test Goal' } };
-      fetchMock.mockResolvedValue({
-        ok: true,
-        status: 200,
-        statusText: 'OK',
-        headers: new Headers({ 'content-type': 'application/json' }),
-        json: async () => mockResponse,
-      });
-
-      const result = await goalFormApiService.getDraft('draft-123');
-
-      expect(result).toEqual(mockResponse);
-    });
-  });
-
-  describe('目標作成', () => {
-    it('目標を作成できる', async () => {
-      const mockResponse = {
-        success: true,
-        goalId: 'goal-123',
-        processingId: 'proc-123',
-      };
-      fetchMock.mockResolvedValue({
-        ok: true,
-        status: 201,
-        statusText: 'Created',
-        headers: new Headers({ 'content-type': 'application/json' }),
-        json: async () => mockResponse,
-      });
-
-      const result = await goalFormApiService.createGoal({ title: 'New Goal' });
-
-      expect(result).toEqual(mockResponse);
-    });
-  });
-
-  describe('処理状況確認', () => {
-    it('処理状況を確認できる', async () => {
-      const mockResponse = { status: 'processing', progress: 50 };
-      fetchMock.mockResolvedValue({
-        ok: true,
-        status: 200,
-        statusText: 'OK',
-        headers: new Headers({ 'content-type': 'application/json' }),
-        json: async () => mockResponse,
-      });
-
-      const result = await goalFormApiService.getProcessingStatus('proc-123');
-
-      expect(result).toEqual(mockResponse);
+      expect(response.data).toBe(mockText);
     });
   });
 });

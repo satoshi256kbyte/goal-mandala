@@ -1,75 +1,99 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
-import { vi } from 'vitest';
+import { render, cleanup, screen, fireEvent, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { SuccessMessage } from './SuccessMessage';
 
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
+
 describe('SuccessMessage', () => {
-  it('メッセージがない場合は何も表示しない', () => {
-    render(<SuccessMessage />);
-    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+  beforeEach(() => {
+    vi.clearAllMocks();
   });
 
-  it('成功メッセージを正しく表示する', () => {
-    render(<SuccessMessage message="操作が成功しました" />);
+  it('成功メッセージが表示される', () => {
+    render(<SuccessMessage message="保存しました" />);
 
     expect(screen.getByRole('status')).toBeInTheDocument();
-    expect(screen.getByText('操作が成功しました')).toBeInTheDocument();
+    expect(screen.getByText('保存しました')).toBeInTheDocument();
   });
 
-  it('デフォルトでアイコンを表示する', () => {
-    render(<SuccessMessage message="成功" />);
+  it('メッセージがない場合は何も表示されない', () => {
+    const { container } = render(<SuccessMessage message={null} />);
 
-    const icon = screen.getByRole('status').querySelector('svg');
+    expect(container.firstChild).toBeNull();
+  });
+
+  it('アイコンが表示される', () => {
+    const { container } = render(<SuccessMessage message="成功" showIcon={true} />);
+
+    const icon = container.querySelector('svg');
     expect(icon).toBeInTheDocument();
+    expect(icon).toHaveClass('text-green-400');
   });
 
-  it('showIcon=falseの場合はアイコンを表示しない', () => {
-    render(<SuccessMessage message="成功" showIcon={false} />);
+  it('アイコンを非表示にできる', () => {
+    const { container } = render(<SuccessMessage message="成功" showIcon={false} />);
 
-    const icon = screen.getByRole('status').querySelector('svg');
+    const icon = container.querySelector('svg.text-green-400');
     expect(icon).not.toBeInTheDocument();
   });
 
-  it('閉じるボタンをクリックするとonCloseが呼ばれる', () => {
-    const mockClose = vi.fn();
-
-    render(<SuccessMessage message="成功メッセージ" onClose={mockClose} />);
+  it('閉じるボタンが機能する', () => {
+    const onClose = vi.fn();
+    render(<SuccessMessage message="成功" onClose={onClose} />);
 
     const closeButton = screen.getByLabelText('成功メッセージを閉じる');
     fireEvent.click(closeButton);
 
-    expect(mockClose).toHaveBeenCalledTimes(1);
+    expect(onClose).toHaveBeenCalledTimes(1);
   });
 
-  it('onCloseが設定されていない場合は閉じるボタンを表示しない', () => {
-    render(<SuccessMessage message="成功メッセージ" />);
+  it('閉じるボタンをクリックするとメッセージが非表示になる', async () => {
+    const onClose = vi.fn();
+    render(<SuccessMessage message="成功" onClose={onClose} />);
 
-    expect(screen.queryByLabelText('成功メッセージを閉じる')).not.toBeInTheDocument();
-  });
+    const closeButton = screen.getByLabelText('成功メッセージを閉じる');
+    fireEvent.click(closeButton);
 
-  it.skip('自動クローズが設定されている場合は指定時間後に閉じる', async () => {
-    // このテストは複雑なタイマー処理のため一旦スキップ
-    // 実際の動作は手動テストで確認
-  });
-
-  it('カスタムIDが設定される', () => {
-    render(<SuccessMessage message="成功メッセージ" id="custom-success-id" />);
-
-    const message = screen.getByRole('status');
-    expect(message).toHaveAttribute('id', 'custom-success-id');
+    await waitFor(() => {
+      expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    });
   });
 
   it('カスタムクラス名が適用される', () => {
-    render(<SuccessMessage message="成功メッセージ" className="custom-class" />);
+    const { container } = render(<SuccessMessage message="成功" className="custom-class" />);
 
-    const message = screen.getByRole('status');
-    expect(message).toHaveClass('custom-class');
+    const status = container.querySelector('[role="status"]');
+    expect(status).toHaveClass('custom-class');
   });
 
-  it('aria-live属性が正しく設定される', () => {
-    render(<SuccessMessage message="成功メッセージ" />);
+  it('カスタムIDが設定される', () => {
+    render(<SuccessMessage message="成功" id="custom-id" />);
 
-    const message = screen.getByRole('status');
-    expect(message).toHaveAttribute('aria-live', 'polite');
+    expect(screen.getByRole('status')).toHaveAttribute('id', 'custom-id');
+  });
+
+  it('アクセシビリティ属性が正しく設定される', () => {
+    render(<SuccessMessage message="成功" />);
+
+    const status = screen.getByRole('status');
+    expect(status).toHaveAttribute('aria-live', 'polite');
+  });
+
+  it('メッセージが変更されると表示状態がリセットされる', async () => {
+    const { rerender } = render(<SuccessMessage message="メッセージ1" />);
+
+    expect(screen.getByText('メッセージ1')).toBeInTheDocument();
+
+    rerender(<SuccessMessage message="メッセージ2" />);
+
+    await waitFor(() => {
+      expect(screen.getByText('メッセージ2')).toBeInTheDocument();
+      expect(screen.queryByText('メッセージ1')).not.toBeInTheDocument();
+    });
   });
 });

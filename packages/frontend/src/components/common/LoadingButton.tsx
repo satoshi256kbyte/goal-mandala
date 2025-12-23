@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import { useFocusVisible } from '../../hooks/useAccessibility';
+import { useFocusVisible, useLiveRegion } from '../../hooks/useAccessibility';
 
 /**
  * ローディングボタンコンポーネントのProps
@@ -136,7 +136,9 @@ export const LoadingButton: React.FC<LoadingButtonProps> = ({
       className={buttonStyles}
       aria-busy={isLoading}
       aria-disabled={isDisabled}
-      aria-label={ariaLabel || (isLoading ? `${loadingText || children} - 処理中` : undefined)}
+      aria-label={
+        ariaLabel ? ariaLabel : isLoading ? `${loadingText || children} - 処理中` : undefined
+      }
       aria-describedby={ariaDescribedBy}
       tabIndex={isDisabled ? -1 : 0}
     >

@@ -10,6 +10,11 @@ import {
   PROGRESS_TRANSITION_CONFIG,
 } from '../progress-colors';
 
+afterEach(() => {
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
+
 describe('progress-colors', () => {
   describe('getProgressClassName', () => {
     it('進捗値に応じて正しいクラス名を返す', () => {

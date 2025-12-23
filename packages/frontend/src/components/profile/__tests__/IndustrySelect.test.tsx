@@ -1,5 +1,6 @@
-import { render, screen } from '@testing-library/react';
-import { describe, it, expect } from 'vitest';
+import { render, cleanup, screen } from '@testing-library/react';
+import { fireEvent } from '@testing-library/react';
+import { describe, it, expect, afterEach } from 'vitest';
 import { IndustrySelect } from '../IndustrySelect';
 import {
   INDUSTRY_OPTIONS,
@@ -7,6 +8,12 @@ import {
   ARIA_LABELS,
   TEST_IDS,
 } from '../../../constants/profile';
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('IndustrySelect', () => {
   const defaultProps = {

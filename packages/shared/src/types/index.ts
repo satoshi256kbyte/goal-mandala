@@ -166,3 +166,60 @@ export interface TaskFilters {
   customDeadlineRange?: CustomDeadlineRange;
   actionIds?: string[];
 }
+
+// リマインド機能の型定義
+export enum EmailStatus {
+  SENT = 'sent',
+  FAILED = 'failed',
+  BOUNCED = 'bounced',
+}
+
+export enum MoodPreference {
+  STAY_ON_TRACK = 'stay_on_track',
+  CHANGE_PACE = 'change_pace',
+}
+
+export interface ReminderLog {
+  id: string;
+  userId: string;
+  sentAt: Date;
+  taskIds: string[];
+  emailStatus: EmailStatus;
+  messageId?: string;
+  errorMessage?: string;
+  retryCount: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface UserReminderPreference {
+  userId: string;
+  enabled: boolean;
+  moodPreference: MoodPreference | null;
+  lastReminderSentAt: Date | null;
+  unsubscribedAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface HabitTaskReminderTracking {
+  id: string;
+  taskId: string;
+  lastRemindedAt: Date;
+  reminderCount: number;
+  weekNumber: number; // ISO week number
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface EmailResult {
+  messageId: string;
+  success: boolean;
+  error?: string;
+}
+
+export interface DeepLinkPayload {
+  userId: string;
+  taskId: string;
+  expiresAt: Date;
+}

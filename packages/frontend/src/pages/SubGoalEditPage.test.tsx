@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { render, screen, waitFor, within, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { BrowserRouter } from 'react-router-dom';
@@ -19,9 +19,9 @@ vi.mock('react-router-dom', async () => {
   };
 });
 
-// 認証プロバイダーのモック
+// 認証フックのモック
 const mockUseAuth = vi.fn();
-vi.mock('../components/auth/AuthProvider', () => ({
+vi.mock('../hooks/useAuth', () => ({
   useAuth: () => mockUseAuth(),
 }));
 
@@ -86,6 +86,10 @@ describe('SubGoalEditPage', () => {
 
   afterEach(() => {
     vi.clearAllTimers();
+    vi.clearAllMocks();
+    mockNavigate.mockClear();
+    mockUseParams.mockClear();
+    mockUseAuth.mockClear();
   });
 
   describe('ページ表示', () => {
@@ -685,6 +689,167 @@ describe('SubGoalEditPage', () => {
           expect(screen.queryByLabelText('タイトル')).not.toBeInTheDocument();
         });
       }
+    });
+  });
+
+  describe('エッジケース', () => {
+    it('goalIdが未指定の場合にエラーが表示される', async () => {
+      mockUseParams.mockReturnValue({ goalId: undefined });
+
+      await act(async () => {
+        render(
+          <TestWrapper>
+            <SubGoalEditPage />
+          </TestWrapper>
+        );
+      });
+
+      await waitFor(
+        () => {
+          expect(screen.getByText('目標IDが指定されていません')).toBeInTheDocument();
+        },
+        { timeout: 3000 }
+      );
+    });
+
+    it('複数のサブ目標を連続して編集できる', async () => {
+      const user = userEvent.setup();
+
+      await act(async () => {
+        render(
+          <TestWrapper>
+            <SubGoalEditPage />
+          </TestWrapper>
+        );
+      });
+
+      await waitFor(
+        () => {
+          const elements = screen.getAllByText('サブ目標 1');
+          expect(elements.length).toBeGreaterThan(0);
+        },
+        { timeout: 3000 }
+      );
+
+      // 1つ目のサブ目標を編集
+      const editButtons = screen.getAllByRole('button');
+      const editButton1 = editButtons.find(button =>
+        button.getAttribute('aria-label')?.includes('編集')
+      );
+
+      if (editButton1) {
+        await act(async () => {
+          await user.click(editButton1);
+        });
+
+        await waitFor(() => {
+          expect(screen.getByLabelText('タイトル')).toBeInTheDocument();
+        });
+
+        const cancelButton = screen.getByRole('button', { name: 'キャンセル' });
+        await act(async () => {
+          await user.click(cancelButton);
+        });
+      }
+    });
+
+    it('AI再生成を複数回実行できる', async () => {
+      const user = userEvent.setup();
+
+      await act(async () => {
+        render(
+          <TestWrapper>
+            <SubGoalEditPage />
+          </TestWrapper>
+        );
+      });
+
+      await waitFor(
+        () => {
+          expect(screen.getByRole('button', { name: 'AI再生成' })).toBeInTheDocument();
+        },
+        { timeout: 3000 }
+      );
+
+      const regenerateButton = screen.getByRole('button', { name: 'AI再生成' });
+
+      // 複数回クリック
+      await act(async () => {
+        await user.click(regenerateButton);
+        await user.click(regenerateButton);
+      });
+
+      expect(regenerateButton).toBeInTheDocument();
+    });
+
+    it('一括編集モードを複数回切り替えできる', async () => {
+      const user = userEvent.setup();
+
+      await act(async () => {
+        render(
+          <TestWrapper>
+            <SubGoalEditPage />
+          </TestWrapper>
+        );
+      });
+
+      await waitFor(
+        () => {
+          expect(screen.getByRole('button', { name: '一括編集モード' })).toBeInTheDocument();
+        },
+        { timeout: 3000 }
+      );
+
+      const bulkEditButton = screen.getByRole('button', { name: '一括編集モード' });
+
+      // 1回目の切り替え
+      await act(async () => {
+        await user.click(bulkEditButton);
+      });
+
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: '一括編集モード終了' })).toBeInTheDocument();
+      });
+
+      // 2回目の切り替え
+      const endBulkEditButton = screen.getByRole('button', { name: '一括編集モード終了' });
+      await act(async () => {
+        await user.click(endBulkEditButton);
+      });
+
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: '一括編集モード' })).toBeInTheDocument();
+      });
+    });
+
+    it('ナビゲーションボタンを連続してクリックできる', async () => {
+      const user = userEvent.setup();
+
+      await act(async () => {
+        render(
+          <TestWrapper>
+            <SubGoalEditPage />
+          </TestWrapper>
+        );
+      });
+
+      await waitFor(
+        () => {
+          expect(screen.getByRole('button', { name: '前に戻る' })).toBeInTheDocument();
+        },
+        { timeout: 3000 }
+      );
+
+      const backButton = screen.getByRole('button', { name: '前に戻る' });
+      const nextButton = screen.getByRole('button', { name: '次へ進む' });
+
+      // 複数回クリック
+      await act(async () => {
+        await user.click(backButton);
+        await user.click(nextButton);
+      });
+
+      expect(mockNavigate).toHaveBeenCalled();
     });
   });
 });

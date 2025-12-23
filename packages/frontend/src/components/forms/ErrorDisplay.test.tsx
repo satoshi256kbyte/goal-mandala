@@ -1,8 +1,8 @@
 import React from 'react';
-import { render } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent, act } from '@testing-library/react';
 import { vi, beforeEach } from 'vitest';
-import { ErrorDisplay, InlineError } from './ErrorDisplay';
-import { FormErrorSeverity } from '../../types/form-error';
+import { ErrorDisplay, InlineError, ErrorSummary } from './ErrorDisplay';
+import { FormErrorSeverity, FormErrorType } from '../../types/form-error';
 
 describe('ErrorDisplay', () => {
   beforeEach(() => {
@@ -36,6 +36,12 @@ describe('ErrorDisplay', () => {
         code: 'VALIDATION_ERROR',
         retryable: false,
         timestamp: new Date(),
+        displayStrategy: {
+          inline: true,
+          toast: false,
+          modal: false,
+          summary: false,
+        },
       };
 
       render(<ErrorDisplay error={error} />);
@@ -102,6 +108,12 @@ describe('ErrorSummary', () => {
         code: 'VALIDATION_ERROR',
         retryable: false,
         timestamp: new Date(),
+        displayStrategy: {
+          inline: true,
+          toast: false,
+          modal: false,
+          summary: false,
+        },
       },
       {
         message: '説明エラー',
@@ -111,6 +123,12 @@ describe('ErrorSummary', () => {
         code: 'VALIDATION_ERROR',
         retryable: false,
         timestamp: new Date(),
+        displayStrategy: {
+          inline: true,
+          toast: false,
+          modal: false,
+          summary: false,
+        },
       },
     ];
 

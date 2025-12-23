@@ -1,11 +1,25 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
-import { vi, describe, it, expect } from 'vitest';
+import { render, cleanup, screen } from '@testing-library/react';
+import { waitFor } from '@testing-library/react';
+import { vi, describe, it, expect, afterEach } from 'vitest';
 import { MemoryRouter, Routes } from 'react-router-dom';
-import { AppRouter } from './AppRouter';
+import { Route } from 'react-router-dom';
+import { AppRoutes } from './AppRouter';
 import { AuthProvider } from '../components/auth/AuthProvider';
 import { ProtectedRoute } from '../components/auth/ProtectedRoute';
 import { createMockAuthUser } from '../test/types/mock-types';
+
+// createMockAuthSessionヘルパー関数
+const createMockAuthSession = () => ({
+  tokens: {
+    accessToken: { toString: () => 'mock-access-token' },
+    idToken: { toString: () => 'mock-id-token' },
+  },
+  credentials: {
+    accessKeyId: 'mock-access-key',
+    secretAccessKey: 'mock-secret-key',
+  },
+});
 
 // Amplifyのモック
 vi.mock('aws-amplify', () => ({
@@ -32,6 +46,20 @@ Object.defineProperty(import.meta, 'env', {
     VITE_AWS_REGION: 'ap-northeast-1',
   },
 });
+
+// useAuthのモック（テストごとに設定可能）
+const mockUseAuth = vi.fn();
+
+vi.mock('../hooks/useAuth', () => ({
+  useAuth: () => mockUseAuth(),
+  AuthContext: { Provider: ({ children }: any) => children },
+  useAuthContext: () => mockUseAuth(),
+}));
+
+// AuthProviderのモック（useAuthを使用）
+vi.mock('../components/auth/AuthProvider', () => ({
+  AuthProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
 
 // LazyPagesのモック
 vi.mock('../pages/LazyPages', () => ({
@@ -60,6 +88,12 @@ vi.mock('../components/auth/AuthStateMonitorProvider', () => ({
   AuthStateMonitorProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
+
 describe('AppRouter', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -67,22 +101,52 @@ describe('AppRouter', () => {
 
   describe('基本的なルーティング', () => {
     it('認証状態確認中にローディング画面を表示する', async () => {
-      const { getCurrentUser } = await import('aws-amplify/auth');
-      vi.mocked(getCurrentUser).mockImplementation(
-        () => new Promise(() => {}) // 永遠に解決しないPromise
-      );
+      // ローディング中の状態をモック
+      mockUseAuth.mockReturnValue({
+        user: null,
+        isAuthenticated: false,
+        isLoading: true,
+        error: null,
+        signIn: vi.fn(),
+        signOut: vi.fn(),
+        clearError: vi.fn(),
+        addAuthStateListener: vi.fn(() => vi.fn()),
+        isTokenExpired: vi.fn(() => false),
+        getTokenExpirationTime: vi.fn(() => null),
+        refreshToken: vi.fn(),
+      });
 
-      render(<AppRouter />);
+      render(
+        <MemoryRouter>
+          <AppRoutes />
+        </MemoryRouter>
+      );
 
       // ローディング画面が表示されることを確認
       expect(screen.getByText('認証状況を確認中...')).toBeInTheDocument();
     });
 
     it('未認証の場合にログイン画面にリダイレクトする', async () => {
-      const { getCurrentUser } = await import('aws-amplify/auth');
-      vi.mocked(getCurrentUser).mockRejectedValue(new Error('Not authenticated'));
+      // 未認証状態をモック
+      mockUseAuth.mockReturnValue({
+        user: null,
+        isAuthenticated: false,
+        isLoading: false,
+        error: null,
+        signIn: vi.fn(),
+        signOut: vi.fn(),
+        clearError: vi.fn(),
+        addAuthStateListener: vi.fn(() => vi.fn()),
+        isTokenExpired: vi.fn(() => false),
+        getTokenExpirationTime: vi.fn(() => null),
+        refreshToken: vi.fn(),
+      });
 
-      render(<AppRouter />);
+      render(
+        <MemoryRouter initialEntries={['/']}>
+          <AppRoutes />
+        </MemoryRouter>
+      );
 
       // 最終的にログイン画面が表示されることを確認
       await waitFor(() => {
@@ -92,14 +156,27 @@ describe('AppRouter', () => {
   });
 
   describe('ルート遷移のテスト', () => {
-    it('TOP画面（/）にアクセスできる', async () => {
-      const { getCurrentUser, fetchAuthSession } = await import('aws-amplify/auth');
-      vi.mocked(getCurrentUser).mockResolvedValue(createMockAuthUser());
-      vi.mocked(fetchAuthSession).mockResolvedValue(createMockAuthSession());
+    beforeEach(() => {
+      // 認証済み状態をモック
+      mockUseAuth.mockReturnValue({
+        user: { id: 'test-user', email: 'test@example.com', name: 'Test User', profileSetup: true },
+        isAuthenticated: true,
+        isLoading: false,
+        error: null,
+        signIn: vi.fn(),
+        signOut: vi.fn(),
+        clearError: vi.fn(),
+        addAuthStateListener: vi.fn(() => vi.fn()),
+        isTokenExpired: vi.fn(() => false),
+        getTokenExpirationTime: vi.fn(() => null),
+        refreshToken: vi.fn(),
+      });
+    });
 
+    it('TOP画面（/）にアクセスできる', async () => {
       render(
         <MemoryRouter initialEntries={['/']}>
-          <AppRouter />
+          <AppRoutes />
         </MemoryRouter>
       );
 
@@ -109,13 +186,9 @@ describe('AppRouter', () => {
     });
 
     it('マンダラ詳細画面（/mandala/:id）にアクセスできる', async () => {
-      const { getCurrentUser, fetchAuthSession } = await import('aws-amplify/auth');
-      vi.mocked(getCurrentUser).mockResolvedValue(createMockAuthUser());
-      vi.mocked(fetchAuthSession).mockResolvedValue(createMockAuthSession());
-
       render(
         <MemoryRouter initialEntries={['/mandala/test-id']}>
-          <AppRouter />
+          <AppRoutes />
         </MemoryRouter>
       );
 
@@ -125,13 +198,9 @@ describe('AppRouter', () => {
     });
 
     it('目標入力画面（/mandala/create/goal）にアクセスできる', async () => {
-      const { getCurrentUser, fetchAuthSession } = await import('aws-amplify/auth');
-      vi.mocked(getCurrentUser).mockResolvedValue(createMockAuthUser());
-      vi.mocked(fetchAuthSession).mockResolvedValue(createMockAuthSession());
-
       render(
         <MemoryRouter initialEntries={['/mandala/create/goal']}>
-          <AppRouter />
+          <AppRoutes />
         </MemoryRouter>
       );
 
@@ -143,7 +212,7 @@ describe('AppRouter', () => {
     it('存在しないパスで404画面を表示する', async () => {
       render(
         <MemoryRouter initialEntries={['/non-existent-path']}>
-          <AppRouter />
+          <AppRoutes />
         </MemoryRouter>
       );
 
@@ -155,12 +224,24 @@ describe('AppRouter', () => {
 
   describe('認証ガードのテスト', () => {
     it('未認証ユーザーは保護されたルートにアクセスできない', async () => {
-      const { getCurrentUser } = await import('aws-amplify/auth');
-      vi.mocked(getCurrentUser).mockRejectedValue(new Error('Not authenticated'));
+      // 未認証状態をモック
+      mockUseAuth.mockReturnValue({
+        user: null,
+        isAuthenticated: false,
+        isLoading: false,
+        error: null,
+        signIn: vi.fn(),
+        signOut: vi.fn(),
+        clearError: vi.fn(),
+        addAuthStateListener: vi.fn(() => vi.fn()),
+        isTokenExpired: vi.fn(() => false),
+        getTokenExpirationTime: vi.fn(() => null),
+        refreshToken: vi.fn(),
+      });
 
       render(
         <MemoryRouter initialEntries={['/']}>
-          <AppRouter />
+          <AppRoutes />
         </MemoryRouter>
       );
 
@@ -171,13 +252,24 @@ describe('AppRouter', () => {
     });
 
     it('認証済みユーザーは保護されたルートにアクセスできる', async () => {
-      const { getCurrentUser, fetchAuthSession } = await import('aws-amplify/auth');
-      vi.mocked(getCurrentUser).mockResolvedValue(createMockAuthUser());
-      vi.mocked(fetchAuthSession).mockResolvedValue(createMockAuthSession());
+      // 認証済み状態をモック
+      mockUseAuth.mockReturnValue({
+        user: { id: 'test-user', email: 'test@example.com', name: 'Test User', profileSetup: true },
+        isAuthenticated: true,
+        isLoading: false,
+        error: null,
+        signIn: vi.fn(),
+        signOut: vi.fn(),
+        clearError: vi.fn(),
+        addAuthStateListener: vi.fn(() => vi.fn()),
+        isTokenExpired: vi.fn(() => false),
+        getTokenExpirationTime: vi.fn(() => null),
+        refreshToken: vi.fn(),
+      });
 
       render(
         <MemoryRouter initialEntries={['/']}>
-          <AppRouter />
+          <AppRoutes />
         </MemoryRouter>
       );
 
@@ -187,13 +279,24 @@ describe('AppRouter', () => {
     });
 
     it('認証済みユーザーがログイン画面にアクセスするとリダイレクトされる', async () => {
-      const { getCurrentUser, fetchAuthSession } = await import('aws-amplify/auth');
-      vi.mocked(getCurrentUser).mockResolvedValue(createMockAuthUser());
-      vi.mocked(fetchAuthSession).mockResolvedValue(createMockAuthSession());
+      // 認証済み状態をモック
+      mockUseAuth.mockReturnValue({
+        user: { id: 'test-user', email: 'test@example.com', name: 'Test User', profileSetup: true },
+        isAuthenticated: true,
+        isLoading: false,
+        error: null,
+        signIn: vi.fn(),
+        signOut: vi.fn(),
+        clearError: vi.fn(),
+        addAuthStateListener: vi.fn(() => vi.fn()),
+        isTokenExpired: vi.fn(() => false),
+        getTokenExpirationTime: vi.fn(() => null),
+        refreshToken: vi.fn(),
+      });
 
       render(
         <MemoryRouter initialEntries={['/login']}>
-          <AppRouter />
+          <AppRoutes />
         </MemoryRouter>
       );
 
@@ -206,34 +309,29 @@ describe('AppRouter', () => {
 
   describe('プロフィール設定チェックのテスト', () => {
     it('プロフィール未設定ユーザーはプロフィール設定画面にリダイレクトされる', async () => {
-      const { getCurrentUser, fetchAuthSession } = await import('aws-amplify/auth');
-      vi.mocked(getCurrentUser).mockResolvedValue(createMockAuthUser());
-      vi.mocked(fetchAuthSession).mockResolvedValue(createMockAuthSession());
-
-      // useAuthフックをモックしてプロフィール未設定状態をシミュレート
-      vi.mock('../hooks/useAuth', () => ({
-        useAuth: () => ({
-          user: { profileSetup: false },
-          isAuthenticated: true,
-          isLoading: false,
-        }),
-      }));
+      // プロフィール未設定の認証済み状態をモック
+      mockUseAuth.mockReturnValue({
+        user: {
+          id: 'test-user',
+          email: 'test@example.com',
+          name: 'Test User',
+          profileSetup: false,
+        },
+        isAuthenticated: true,
+        isLoading: false,
+        error: null,
+        signIn: vi.fn(),
+        signOut: vi.fn(),
+        clearError: vi.fn(),
+        addAuthStateListener: vi.fn(() => vi.fn()),
+        isTokenExpired: vi.fn(() => false),
+        getTokenExpirationTime: vi.fn(() => null),
+        refreshToken: vi.fn(),
+      });
 
       render(
         <MemoryRouter initialEntries={['/']}>
-          <AuthProvider>
-            <Routes>
-              <Route
-                path="/"
-                element={
-                  <ProtectedRoute>
-                    <div>マンダラ一覧画面</div>
-                  </ProtectedRoute>
-                }
-              />
-              <Route path="/profile/setup" element={<div>プロフィール設定画面</div>} />
-            </Routes>
-          </AuthProvider>
+          <AppRoutes />
         </MemoryRouter>
       );
 
@@ -243,13 +341,24 @@ describe('AppRouter', () => {
     });
 
     it('プロフィール設定済みユーザーは通常のルートにアクセスできる', async () => {
-      const { getCurrentUser, fetchAuthSession } = await import('aws-amplify/auth');
-      vi.mocked(getCurrentUser).mockResolvedValue(createMockAuthUser());
-      vi.mocked(fetchAuthSession).mockResolvedValue(createMockAuthSession());
+      // プロフィール設定済みの認証済み状態をモック
+      mockUseAuth.mockReturnValue({
+        user: { id: 'test-user', email: 'test@example.com', name: 'Test User', profileSetup: true },
+        isAuthenticated: true,
+        isLoading: false,
+        error: null,
+        signIn: vi.fn(),
+        signOut: vi.fn(),
+        clearError: vi.fn(),
+        addAuthStateListener: vi.fn(() => vi.fn()),
+        isTokenExpired: vi.fn(() => false),
+        getTokenExpirationTime: vi.fn(() => null),
+        refreshToken: vi.fn(),
+      });
 
       render(
         <MemoryRouter initialEntries={['/']}>
-          <AppRouter />
+          <AppRoutes />
         </MemoryRouter>
       );
 
@@ -259,12 +368,24 @@ describe('AppRouter', () => {
     });
 
     it('プロフィール設定画面（/profile/setup）は認証が必要', async () => {
-      const { getCurrentUser } = await import('aws-amplify/auth');
-      vi.mocked(getCurrentUser).mockRejectedValue(new Error('Not authenticated'));
+      // 未認証状態をモック
+      mockUseAuth.mockReturnValue({
+        user: null,
+        isAuthenticated: false,
+        isLoading: false,
+        error: null,
+        signIn: vi.fn(),
+        signOut: vi.fn(),
+        clearError: vi.fn(),
+        addAuthStateListener: vi.fn(() => vi.fn()),
+        isTokenExpired: vi.fn(() => false),
+        getTokenExpirationTime: vi.fn(() => null),
+        refreshToken: vi.fn(),
+      });
 
       render(
         <MemoryRouter initialEntries={['/profile/setup']}>
-          <AppRouter />
+          <AppRoutes />
         </MemoryRouter>
       );
 

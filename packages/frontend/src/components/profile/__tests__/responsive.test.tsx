@@ -8,6 +8,7 @@
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { render } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import { IndustrySelect } from '../IndustrySelect';
 import { CompanySizeSelect } from '../CompanySizeSelect';
 import { JobTitleInput } from '../JobTitleInput';

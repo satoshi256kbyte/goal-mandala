@@ -7,3 +7,6 @@ export * from './s3-frontend-construct';
 export * from './cloudfront-construct';
 export * from './monitoring-construct';
 export * from './ses-construct';
+export * from './workflow-execution-table-construct';
+export * from './workflow-monitoring-construct';
+export * from './workflow-notification-construct';

@@ -23,7 +23,7 @@ export const TaskSearch: React.FC<TaskSearchProps> = ({ query, onChange, onSaveV
 
   const handleSaveView = () => {
     if (viewName.trim()) {
-      onSaveView(viewName.trim());
+      onSaveView(query);
       setViewName('');
       setShowSaveDialog(false);
     }
@@ -57,18 +57,24 @@ export const TaskSearch: React.FC<TaskSearchProps> = ({ query, onChange, onSaveV
           </div>
         </div>
 
-        <button
-          onClick={() => setShowSaveDialog(true)}
-          className="px-4 py-2 text-sm text-blue-600 border border-blue-300 rounded-md hover:bg-blue-50 transition-colors"
-        >
-          ビューを保存
-        </button>
+        {query && (
+          <button
+            onClick={() => setShowSaveDialog(true)}
+            className="px-4 py-2 text-sm text-blue-600 border border-blue-300 rounded-md hover:bg-blue-50 transition-colors"
+          >
+            ビューを保存
+          </button>
+        )}
       </div>
 
       {query && (
         <div className="flex items-center justify-between text-sm text-gray-600">
           <span>検索中: &quot;{query}&quot;</span>
-          <button onClick={() => onChange('')} className="text-blue-600 hover:text-blue-800">
+          <button
+            onClick={() => onChange('')}
+            className="text-blue-600 hover:text-blue-800"
+            aria-label="検索をクリア"
+          >
             クリア
           </button>
         </div>

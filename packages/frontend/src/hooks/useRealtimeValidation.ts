@@ -1,5 +1,8 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { fieldValidators } from '../schemas/goal-form';
+
+// TODO: ValidationErrorType型を適切な場所に移動
+type ValidationErrorType = 'required' | 'minLength' | 'maxLength' | 'pattern' | 'custom';
 
 /**
  * バリデーション結果の型定義

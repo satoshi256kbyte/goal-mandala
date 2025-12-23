@@ -1,14 +1,21 @@
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi, afterEach } from 'vitest';
+import { render, cleanup, screen, fireEvent, act } from '@testing-library/react';
+import { waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { InlineEditor } from './InlineEditor';
 
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
+
 describe('InlineEditor', () => {
-  let mockOnSave: ReturnType<typeof vi.fn>;
+  let mockOnSave: ReturnType<typeof vi.fn<[value: string], Promise<void>>>;
   let mockOnCancel: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
-    mockOnSave = vi.fn();
+    mockOnSave = vi.fn<[value: string], Promise<void>>().mockResolvedValue(undefined);
     mockOnCancel = vi.fn();
   });
 
@@ -137,7 +144,12 @@ describe('InlineEditor', () => {
       mockOnSave.mockResolvedValue(undefined);
       render(
         <div>
-          <InlineEditor value="テスト値" maxLength={100} onSave={vi.fn()} onCancel={vi.fn()} />
+          <InlineEditor
+            value="テスト値"
+            maxLength={100}
+            onSave={mockOnSave}
+            onCancel={mockOnCancel}
+          />
           <button>外側のボタン</button>
         </div>
       );
@@ -156,17 +168,24 @@ describe('InlineEditor', () => {
 
     it('バリデーションエラーがある場合、保存処理が呼ばれない', async () => {
       const user = userEvent.setup();
-      render(<InlineEditor value="テスト値" maxLength={100} onSave={vi.fn()} onCancel={vi.fn()} />);
+      render(
+        <InlineEditor
+          value="テスト値"
+          maxLength={100}
+          onSave={mockOnSave}
+          onCancel={mockOnCancel}
+        />
+      );
       const input = screen.getByRole('textbox');
 
       await user.clear(input);
 
-      // デバウンスが完了するまで短時間待つ
+      // デバウンスが完了するまで待つ（300ms + マージン）
       await waitFor(
         () => {
           expect(screen.getByRole('alert')).toBeInTheDocument();
         },
-        { timeout: 100 }
+        { timeout: 500 }
       );
 
       await user.keyboard('{Enter}');
@@ -184,7 +203,14 @@ describe('InlineEditor', () => {
       });
       mockOnSave.mockReturnValue(savePromise);
 
-      render(<InlineEditor value="テスト値" maxLength={100} onSave={vi.fn()} onCancel={vi.fn()} />);
+      render(
+        <InlineEditor
+          value="テスト値"
+          maxLength={100}
+          onSave={mockOnSave}
+          onCancel={mockOnCancel}
+        />
+      );
       const input = screen.getByRole('textbox');
 
       await user.clear(input);
@@ -204,7 +230,14 @@ describe('InlineEditor', () => {
     it('保存成功後、編集モードが終了する', async () => {
       const user = userEvent.setup();
       mockOnSave.mockResolvedValue(undefined);
-      render(<InlineEditor value="テスト値" maxLength={100} onSave={vi.fn()} onCancel={vi.fn()} />);
+      render(
+        <InlineEditor
+          value="テスト値"
+          maxLength={100}
+          onSave={mockOnSave}
+          onCancel={mockOnCancel}
+        />
+      );
       const input = screen.getByRole('textbox');
 
       await user.clear(input);
@@ -219,7 +252,14 @@ describe('InlineEditor', () => {
     it('保存失敗時、エラーメッセージが表示される', async () => {
       const user = userEvent.setup();
       mockOnSave.mockRejectedValue(new Error('保存に失敗しました'));
-      render(<InlineEditor value="テスト値" maxLength={100} onSave={vi.fn()} onCancel={vi.fn()} />);
+      render(
+        <InlineEditor
+          value="テスト値"
+          maxLength={100}
+          onSave={mockOnSave}
+          onCancel={mockOnCancel}
+        />
+      );
       const input = screen.getByRole('textbox');
 
       await user.clear(input);
@@ -235,7 +275,14 @@ describe('InlineEditor', () => {
   describe('キャンセル処理', () => {
     it('Escキーでキャンセル処理が呼ばれる', async () => {
       const user = userEvent.setup();
-      render(<InlineEditor value="テスト値" maxLength={100} onSave={vi.fn()} onCancel={vi.fn()} />);
+      render(
+        <InlineEditor
+          value="テスト値"
+          maxLength={100}
+          onSave={mockOnSave}
+          onCancel={mockOnCancel}
+        />
+      );
       const input = screen.getByRole('textbox');
 
       await user.clear(input);
@@ -247,7 +294,14 @@ describe('InlineEditor', () => {
 
     it('キャンセルボタンクリックでキャンセル処理が呼ばれる', async () => {
       const user = userEvent.setup();
-      render(<InlineEditor value="テスト値" maxLength={100} onSave={vi.fn()} onCancel={vi.fn()} />);
+      render(
+        <InlineEditor
+          value="テスト値"
+          maxLength={100}
+          onSave={mockOnSave}
+          onCancel={mockOnCancel}
+        />
+      );
 
       const cancelButton = screen.queryByRole('button', { name: /キャンセル/i });
       if (cancelButton) {
@@ -258,7 +312,9 @@ describe('InlineEditor', () => {
 
     it('キャンセル時、入力値が元に戻る', async () => {
       const user = userEvent.setup();
-      render(<InlineEditor value="元の値" maxLength={100} onSave={vi.fn()} onCancel={vi.fn()} />);
+      render(
+        <InlineEditor value="元の値" maxLength={100} onSave={mockOnSave} onCancel={mockOnCancel} />
+      );
       const input = screen.getByRole('textbox');
 
       await user.clear(input);
@@ -339,8 +395,8 @@ describe('InlineEditor', () => {
         <InlineEditor
           value="テスト値"
           maxLength={100}
-          onSave={vi.fn()}
-          onCancel={vi.fn()}
+          onSave={mockOnSave}
+          onCancel={mockOnCancel}
           multiline={true}
         />
       );
@@ -419,7 +475,14 @@ describe('InlineEditor', () => {
       });
       mockOnSave.mockReturnValue(savePromise);
 
-      render(<InlineEditor value="テスト値" maxLength={100} onSave={vi.fn()} onCancel={vi.fn()} />);
+      render(
+        <InlineEditor
+          value="テスト値"
+          maxLength={100}
+          onSave={mockOnSave}
+          onCancel={mockOnCancel}
+        />
+      );
       const input = screen.getByRole('textbox');
 
       await user.clear(input);
@@ -438,7 +501,9 @@ describe('InlineEditor', () => {
     it('保存失敗時、元の値に戻る', async () => {
       const user = userEvent.setup();
       mockOnSave.mockRejectedValue(new Error('保存失敗'));
-      render(<InlineEditor value="元の値" maxLength={100} onSave={vi.fn()} onCancel={vi.fn()} />);
+      render(
+        <InlineEditor value="元の値" maxLength={100} onSave={mockOnSave} onCancel={mockOnCancel} />
+      );
       const input = screen.getByRole('textbox');
 
       await user.clear(input);

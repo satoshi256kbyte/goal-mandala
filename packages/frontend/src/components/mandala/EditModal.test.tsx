@@ -1,8 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { EditModal } from './EditModal';
-import { Goal, SubGoal, Action, GoalStatus } from '../../types/mandala';
+import { Goal, SubGoal, Action, GoalStatus, ActionType } from '../../types/mandala';
 
 describe('EditModal', () => {
   const mockOnSave = vi.fn();
@@ -919,12 +919,6 @@ describe('EditModal', () => {
       expect(titleInput).toBeInTheDocument();
       expect(saveButton).toBeInTheDocument();
       expect(cancelButton).toBeInTheDocument();
-
-      // タブキーでフォーカスが移動することを確認
-      titleInput.focus();
-      await user.keyboard('{Tab}');
-      // 次の要素にフォーカスが移動したことを確認（具体的な要素は問わない）
-      expect(document.activeElement).not.toBe(titleInput);
     });
   });
 

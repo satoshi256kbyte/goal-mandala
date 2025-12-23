@@ -1,0 +1,19 @@
+{
+  "goalId": "test-goal-123",
+  "userId": "test-user-456",
+  "actionIds": [
+    "action-1",
+    "action-2",
+    "action-3",
+    "action-4",
+    "action-5",
+    "action-6",
+    "action-7",
+    "action-8"
+  ],
+  "goalContext": {
+    "title": "テスト目標",
+    "description": "これはテスト用の目標です",
+    "deadline": "2025-12-31"
+  }
+}

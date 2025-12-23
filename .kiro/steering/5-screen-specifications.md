@@ -1,3 +1,8 @@
+---
+inclusion: fileMatch
+fileMatchPattern: 'packages/frontend/src/{pages,components}/**/*.{ts,tsx}'
+---
+
 # 画面仕様
 
 ## 画面一覧

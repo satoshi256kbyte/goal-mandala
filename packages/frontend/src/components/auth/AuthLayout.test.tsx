@@ -1,6 +1,13 @@
-import { render } from '@testing-library/react';
-import { describe, it } from 'vitest';
+import { render, cleanup } from '@testing-library/react';
+import { screen } from '@testing-library/react';
+import { describe, it, afterEach } from 'vitest';
 import AuthLayout from './AuthLayout';
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('AuthLayout', () => {
   it('タイトルが正しく表示される', () => {
@@ -57,7 +64,10 @@ describe('AuthLayout', () => {
     const outerDiv = container.firstChild as HTMLElement;
     expect(outerDiv).toHaveClass('min-h-screen', 'flex', 'items-center', 'justify-center');
 
-    const innerDiv = outerDiv.firstChild as HTMLElement;
+    // スキップリンクの次の要素を取得
+    const innerDiv = Array.from(outerDiv.children).find(
+      child => (child as HTMLElement).getAttribute('role') === 'main'
+    ) as HTMLElement;
     expect(innerDiv).toHaveClass('max-w-md', 'w-full');
   });
 

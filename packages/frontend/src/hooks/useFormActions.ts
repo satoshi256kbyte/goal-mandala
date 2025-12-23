@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { PartialGoalFormData } from '../schemas/goal-form';
 import { draftUtils } from '../services/draftService';
 

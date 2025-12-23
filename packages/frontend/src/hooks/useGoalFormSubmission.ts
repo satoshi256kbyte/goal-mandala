@@ -1,4 +1,5 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useRef } from 'react';
+import { PartialGoalFormData } from '../schemas/goal-form';
 import { useNavigate } from 'react-router-dom';
 import { GoalFormData } from '../schemas/goal-form';
 import {

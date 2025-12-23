@@ -1,6 +1,7 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
-import { vi } from 'vitest';
+import { render, cleanup, screen } from '@testing-library/react';
+import { waitFor } from '@testing-library/react';
+import { vi, afterEach } from 'vitest';
 import { BrowserRouter } from 'react-router-dom';
 import { GoalInputPage } from './GoalInputPage';
 import { AuthProvider } from '../components/auth/AuthProvider';
@@ -31,9 +32,8 @@ const mockAuthProvider = {
   resetPassword: vi.fn(),
 };
 
-// AuthProviderをモック
-vi.mock('../components/auth/AuthProvider', () => ({
-  AuthProvider: ({ children }: { children: React.ReactNode }) => children,
+// useAuthをモック
+vi.mock('../hooks/useAuth', () => ({
   useAuth: () => mockAuthProvider,
 }));
 
@@ -89,6 +89,12 @@ vi.mock('../services/goalFormService', () => ({
 const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <BrowserRouter>{children}</BrowserRouter>
 );
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('GoalInputPage レスポンシブデザイン', () => {
   beforeEach(() => {

@@ -1,0 +1,11 @@
+{
+  "goalId": "",
+  "userId": "",
+  "actionIds": [],
+  "goalContext": {
+    "title": "",
+    "description": "",
+    "deadline": ""
+  },
+  "testScenario": "validation-error"
+}

@@ -1,6 +1,6 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   goalFormSchema,
   partialGoalFormSchema,
@@ -71,6 +71,12 @@ export interface UseGoalFormReturn {
   getFieldState: (fieldName: keyof GoalFormData) => FieldState;
   /** フィールドの値を監視 */
   watchedValues: GoalFormData;
+  /** フィールドの値を設定 */
+  setValue: (
+    fieldName: keyof GoalFormData,
+    value: unknown,
+    options?: { shouldDirty?: boolean; shouldValidate?: boolean; shouldTouch?: boolean }
+  ) => void;
   /** 手動でバリデーションを実行 */
   validateField: (fieldName: keyof GoalFormData) => Promise<boolean>;
   /** 手動で下書き保存を実行 */

@@ -3,8 +3,9 @@
  */
 
 import React from 'react';
-import { render, screen } from '@testing-library/react';
-import { vi } from 'vitest';
+import { render, cleanup, screen } from '@testing-library/react';
+import { fireEvent } from '@testing-library/react';
+import { vi, afterEach } from 'vitest';
 import { ProgressHistoryDetail } from '../ProgressHistoryDetail';
 import {
   ProgressHistoryEntry,
@@ -12,14 +13,32 @@ import {
 } from '../../../services/progress-history-service';
 
 // date-fns のモック
-vi.mock('date-fns', () => ({
-  format: vi.fn((date, formatStr) => {
-    if (formatStr === 'yyyy-MM-dd') return '2024-01-15';
-    if (formatStr === 'yyyy年MM月dd日') return '2024年01月15日';
-    if (formatStr === 'EEEE') return '月曜日';
-    return '2024-01-15';
-  }),
-}));
+vi.mock('date-fns', () => {
+  const actualFormat = (date: Date, formatStr: string) => {
+    const d = new Date(date);
+    if (formatStr === 'yyyy-MM-dd') {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+    if (formatStr === 'yyyy年MM月dd日') {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}年${month}月${day}日`;
+    }
+    if (formatStr === 'EEEE') {
+      const days = ['日曜日', '月曜日', '火曜日', '水曜日', '木曜日', '金曜日', '土曜日'];
+      return days[d.getDay()];
+    }
+    return d.toISOString().split('T')[0];
+  };
+
+  return {
+    format: actualFormat,
+  };
+});
 
 vi.mock('date-fns/locale', () => ({
   ja: {},
@@ -37,6 +56,12 @@ vi.mock('../Tooltip', () => ({
   ),
 }));
 
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
+
 describe('ProgressHistoryDetail', () => {
   const mockHistoryData: ProgressHistoryEntry[] = [
     {
@@ -52,7 +77,7 @@ describe('ProgressHistoryDetail', () => {
       entityType: 'goal',
       progress: 50,
       timestamp: new Date('2024-01-15T10:00:00Z'),
-      changeReason: 'タスク完了による進捗',
+      // changeReasonを削除（significantChange.reasonを優先させるため）
     },
     {
       id: '3',
@@ -150,6 +175,14 @@ describe('ProgressHistoryDetail', () => {
     it('重要な変化がない場合は通常の変更理由を表示する', () => {
       const propsWithoutSignificant = {
         ...defaultProps,
+        historyData: [
+          ...mockHistoryData.slice(0, 1),
+          {
+            ...mockHistoryData[1],
+            changeReason: 'タスク完了による進捗',
+          },
+          ...mockHistoryData.slice(2),
+        ],
         significantChanges: [],
       };
 
@@ -187,11 +220,23 @@ describe('ProgressHistoryDetail', () => {
     });
 
     it('高進捗時の評価を表示する', () => {
+      const highProgressData = [
+        ...mockHistoryData,
+        {
+          id: '4',
+          entityId: 'goal-1',
+          entityType: 'goal' as const,
+          progress: 85,
+          timestamp: new Date('2024-01-17T10:00:00Z'),
+        },
+      ];
+
       render(
         <ProgressHistoryDetail
           {...defaultProps}
-          selectedDate={new Date('2024-01-16T10:00:00Z')}
-          selectedProgress={75}
+          historyData={highProgressData}
+          selectedDate={new Date('2024-01-17T10:00:00Z')}
+          selectedProgress={85}
         />
       );
 
@@ -246,8 +291,8 @@ describe('ProgressHistoryDetail', () => {
       const onClose = vi.fn();
       render(<ProgressHistoryDetail {...defaultProps} onClose={onClose} />);
 
-      const closeButtons = screen.getAllByText('閉じる');
-      fireEvent.click(closeButtons[0]); // ヘッダーの×ボタン
+      const closeButton = screen.getByLabelText('詳細を閉じる');
+      fireEvent.click(closeButton);
 
       expect(onClose).toHaveBeenCalledTimes(1);
     });
@@ -256,8 +301,8 @@ describe('ProgressHistoryDetail', () => {
       const onClose = vi.fn();
       render(<ProgressHistoryDetail {...defaultProps} onClose={onClose} />);
 
-      const closeButtons = screen.getAllByText('閉じる');
-      fireEvent.click(closeButtons[1]); // フッターの閉じるボタン
+      const closeButton = screen.getByRole('button', { name: '閉じる' });
+      fireEvent.click(closeButton);
 
       expect(onClose).toHaveBeenCalledTimes(1);
     });
@@ -271,60 +316,5 @@ describe('ProgressHistoryDetail', () => {
 
       expect(container.firstChild).toHaveClass('custom-detail');
     });
-  });
-});
-
-describe('ProgressDayTooltip', () => {
-  const mockDate = new Date('2024-01-15T10:00:00Z');
-  const mockSignificantChange: SignificantChange = {
-    date: mockDate,
-    progress: 75,
-    change: 25,
-    reason: 'マイルストーン達成',
-  };
-
-  it('基本的なツールチップを表示する', () => {
-    render(
-      <ProgressDayTooltip date={mockDate} progress={75}>
-        <div>Child Content</div>
-      </ProgressDayTooltip>
-    );
-
-    expect(screen.getByTestId('tooltip')).toBeInTheDocument();
-    expect(screen.getByText('Child Content')).toBeInTheDocument();
-  });
-
-  it('進捗変化がある場合は変化情報を表示する', () => {
-    render(
-      <ProgressDayTooltip date={mockDate} progress={75} previousProgress={50}>
-        <div>Child Content</div>
-      </ProgressDayTooltip>
-    );
-
-    expect(screen.getByTestId('tooltip')).toBeInTheDocument();
-  });
-
-  it('重要な変化がある場合は特別な情報を表示する', () => {
-    render(
-      <ProgressDayTooltip date={mockDate} progress={75} significantChange={mockSignificantChange}>
-        <div>Child Content</div>
-      </ProgressDayTooltip>
-    );
-
-    expect(screen.getByTestId('tooltip')).toBeInTheDocument();
-  });
-
-  it('変化が小さい場合は変化情報を表示しない', () => {
-    render(
-      <ProgressDayTooltip
-        date={mockDate}
-        progress={75}
-        previousProgress={74.5} // 0.5%の変化
-      >
-        <div>Child Content</div>
-      </ProgressDayTooltip>
-    );
-
-    expect(screen.getByTestId('tooltip')).toBeInTheDocument();
   });
 });

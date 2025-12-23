@@ -1,5 +1,6 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, cleanup, screen, fireEvent, act } from '@testing-library/react';
+import { waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { PasswordResetForm } from './PasswordResetForm';
 import type { PasswordResetFormData } from '../../utils/validation';
@@ -8,7 +9,13 @@ const renderWithRouter = (component: React.ReactElement) => {
   return render(<BrowserRouter>{component}</BrowserRouter>);
 };
 
-import { vi } from 'vitest';
+import { vi, afterEach } from 'vitest';
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('PasswordResetForm', () => {
   const mockOnSubmit = vi.fn();
@@ -30,7 +37,7 @@ describe('PasswordResetForm', () => {
   });
 
   it('有効なメールアドレスでフォーム送信が成功する', async () => {
-    mockOnSubmit.mockResolvedValue();
+    mockOnSubmit.mockResolvedValue(undefined);
     renderWithRouter(<PasswordResetForm onSubmit={mockOnSubmit} />);
 
     const formData: PasswordResetFormData = {

@@ -1,6 +1,7 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
-import { vi } from 'vitest';
+import { render, cleanup, screen } from '@testing-library/react';
+import { fireEvent } from '@testing-library/react';
+import { vi, afterEach } from 'vitest';
 import {
   MobileLayout,
   MobileHeader,
@@ -12,7 +13,13 @@ import { useResponsive } from '../../../hooks/useResponsive';
 
 // useResponsiveフックのモック
 vi.mock('../../../hooks/useResponsive');
-const mockUseResponsive = useResponsive as ReturnType<typeof vi.fn>;
+const mockUseResponsive = useResponsive as any;
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('MobileLayout', () => {
   beforeEach(() => {
@@ -199,7 +206,7 @@ describe('MobileCard', () => {
       </MobileCard>
     );
 
-    let card = screen.getByText('小パディング').closest('div');
+    let card = screen.getByText('小パディング').parentElement;
     expect(card).toHaveClass('p-3');
 
     rerender(
@@ -208,7 +215,7 @@ describe('MobileCard', () => {
       </MobileCard>
     );
 
-    card = screen.getByText('大パディング').closest('div');
+    card = screen.getByText('大パディング').parentElement;
     expect(card).toHaveClass('p-6');
   });
 });

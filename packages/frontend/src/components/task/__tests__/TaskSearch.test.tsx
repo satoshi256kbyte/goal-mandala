@@ -1,12 +1,13 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { TaskSearch } from '../TaskSearch';
 
-// デバウンス処理のテスト用にタイマーをモック
-jest.useFakeTimers();
-
 describe('TaskSearch', () => {
+  beforeEach(() => {
+    vi.useRealTimers();
+  });
+
   afterEach(() => {
-    jest.clearAllTimers();
+    vi.clearAllMocks();
   });
 
   it('should render search input field', () => {
@@ -23,7 +24,7 @@ describe('TaskSearch', () => {
   });
 
   it('should call onChange with debounced input (300ms)', async () => {
-    const onChange = jest.fn();
+    const onChange = vi.fn();
 
     render(<TaskSearch query="" onChange={onChange} onSaveView={() => {}} />);
 
@@ -36,7 +37,7 @@ describe('TaskSearch', () => {
     expect(onChange).not.toHaveBeenCalled();
 
     // 300ms経過後に呼ばれる
-    jest.advanceTimersByTime(300);
+    await new Promise(resolve => setTimeout(resolve, 350));
 
     await waitFor(() => {
       expect(onChange).toHaveBeenCalledWith('test');
@@ -44,7 +45,7 @@ describe('TaskSearch', () => {
   });
 
   it('should debounce multiple rapid inputs', async () => {
-    const onChange = jest.fn();
+    const onChange = vi.fn();
 
     render(<TaskSearch query="" onChange={onChange} onSaveView={() => {}} />);
 
@@ -57,7 +58,7 @@ describe('TaskSearch', () => {
     fireEvent.change(input, { target: { value: 'test' } });
 
     // 300ms経過後に最後の値のみで呼ばれる
-    jest.advanceTimersByTime(300);
+    await new Promise(resolve => setTimeout(resolve, 350));
 
     await waitFor(() => {
       expect(onChange).toHaveBeenCalledTimes(1);
@@ -78,18 +79,27 @@ describe('TaskSearch', () => {
   });
 
   it('should call onSaveView when save button is clicked', () => {
-    const onSaveView = jest.fn();
+    const onSaveView = vi.fn();
 
     render(<TaskSearch query="test query" onChange={() => {}} onSaveView={onSaveView} />);
 
-    const saveButton = screen.getByText('ビューを保存');
+    // ビューを保存ボタンをクリック
+    const saveViewButton = screen.getByText('ビューを保存');
+    fireEvent.click(saveViewButton);
+
+    // ダイアログが表示される
+    const viewNameInput = screen.getByPlaceholderText('ビュー名を入力...');
+    fireEvent.change(viewNameInput, { target: { value: 'My View' } });
+
+    // 保存ボタンをクリック
+    const saveButton = screen.getByRole('button', { name: '保存' });
     fireEvent.click(saveButton);
 
     expect(onSaveView).toHaveBeenCalledWith('test query');
   });
 
   it('should clear search when clear button is clicked', () => {
-    const onChange = jest.fn();
+    const onChange = vi.fn();
 
     render(<TaskSearch query="test query" onChange={onChange} onSaveView={() => {}} />);
 

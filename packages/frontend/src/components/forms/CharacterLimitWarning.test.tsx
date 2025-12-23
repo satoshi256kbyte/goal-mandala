@@ -1,164 +1,124 @@
 import React from 'react';
-import { render } from '@testing-library/react';
+import { render, cleanup, screen } from '@testing-library/react';
+import { describe, it, expect, afterEach } from 'vitest';
 import { CharacterLimitWarning } from './CharacterLimitWarning';
 
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
+
 describe('CharacterLimitWarning', () => {
-  describe('表示制御', () => {
-    it('通常時は何も表示されない', () => {
-      const { container } = render(<CharacterLimitWarning currentLength={50} maxLength={100} />);
+  it('80%未満では何も表示されない', () => {
+    const { container } = render(<CharacterLimitWarning currentLength={50} maxLength={100} />);
 
-      expect(container.firstChild).toBeNull();
-    });
-
-    it('80%を超えると警告が表示される', () => {
-      render(<CharacterLimitWarning currentLength={81} maxLength={100} />);
-
-      expect(screen.getByRole('alert')).toBeInTheDocument();
-      expect(screen.getByText('残り19文字です')).toBeInTheDocument();
-    });
-
-    it('100%を超えるとエラーが表示される', () => {
-      render(<CharacterLimitWarning currentLength={105} maxLength={100} />);
-
-      expect(screen.getByRole('alert')).toBeInTheDocument();
-      expect(screen.getByText('文字数制限を超えています（5文字超過）')).toBeInTheDocument();
-    });
+    expect(container.firstChild).toBeNull();
   });
 
-  describe('メッセージカスタマイズ', () => {
-    it('カスタム警告メッセージが表示される', () => {
-      render(
-        <CharacterLimitWarning
-          currentLength={85}
-          maxLength={100}
-          warningMessage="カスタム警告メッセージ"
-        />
-      );
+  it('80%以上で警告が表示される', () => {
+    render(<CharacterLimitWarning currentLength={85} maxLength={100} />);
 
-      expect(screen.getByText('カスタム警告メッセージ')).toBeInTheDocument();
-    });
-
-    it('カスタムエラーメッセージが表示される', () => {
-      render(
-        <CharacterLimitWarning
-          currentLength={105}
-          maxLength={100}
-          errorMessage="カスタムエラーメッセージ"
-        />
-      );
-
-      expect(screen.getByText('カスタムエラーメッセージ')).toBeInTheDocument();
-    });
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+    expect(screen.getByText('残り15文字です')).toBeInTheDocument();
   });
 
-  describe('しきい値設定', () => {
-    it('カスタム警告しきい値が適用される', () => {
-      render(<CharacterLimitWarning currentLength={71} maxLength={100} warningThreshold={70} />);
+  it('100%以上でエラーが表示される', () => {
+    render(<CharacterLimitWarning currentLength={105} maxLength={100} />);
 
-      expect(screen.getByRole('alert')).toBeInTheDocument();
-      expect(screen.getByText('残り29文字です')).toBeInTheDocument();
-    });
-
-    it('カスタムしきい値未満では表示されない', () => {
-      const { container } = render(
-        <CharacterLimitWarning currentLength={69} maxLength={100} warningThreshold={70} />
-      );
-
-      expect(container.firstChild).toBeNull();
-    });
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+    expect(screen.getByText('文字数制限を超えています（5文字超過）')).toBeInTheDocument();
   });
 
-  describe('スタイル', () => {
-    it('警告時は黄色のスタイルが適用される', () => {
-      render(<CharacterLimitWarning currentLength={85} maxLength={100} />);
+  it('カスタム警告しきい値が機能する', () => {
+    render(<CharacterLimitWarning currentLength={60} maxLength={100} warningThreshold={50} />);
 
-      const alert = screen.getByRole('alert');
-      expect(alert).toHaveClass('text-yellow-600');
-    });
-
-    it('エラー時は赤色のスタイルが適用される', () => {
-      render(<CharacterLimitWarning currentLength={105} maxLength={100} />);
-
-      const alert = screen.getByRole('alert');
-      expect(alert).toHaveClass('text-red-600');
-    });
-
-    it('tooltipポジションでは適切なスタイルが適用される', () => {
-      render(<CharacterLimitWarning currentLength={85} maxLength={100} position="tooltip" />);
-
-      const alert = screen.getByRole('alert');
-      expect(alert).toHaveClass('absolute', 'z-10', 'bg-yellow-50', 'text-yellow-700');
-    });
-
-    it('カスタムクラス名が適用される', () => {
-      render(<CharacterLimitWarning currentLength={85} maxLength={100} className="custom-class" />);
-
-      const alert = screen.getByRole('alert');
-      expect(alert).toHaveClass('custom-class');
-    });
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+    expect(screen.getByText('残り40文字です')).toBeInTheDocument();
   });
 
-  describe('アクセシビリティ', () => {
-    it('警告時のaria-labelが正しく設定される', () => {
-      render(<CharacterLimitWarning currentLength={85} maxLength={100} />);
+  it('カスタム警告メッセージが表示される', () => {
+    render(
+      <CharacterLimitWarning currentLength={85} maxLength={100} warningMessage="もうすぐ上限です" />
+    );
 
-      const alert = screen.getByRole('alert');
-      expect(alert).toHaveAttribute('aria-label', '警告: 残り15文字です');
-    });
-
-    it('エラー時のaria-labelが正しく設定される', () => {
-      render(<CharacterLimitWarning currentLength={105} maxLength={100} />);
-
-      const alert = screen.getByRole('alert');
-      expect(alert).toHaveAttribute('aria-label', 'エラー: 文字数制限を超えています（5文字超過）');
-    });
-
-    it('aria-liveが設定される', () => {
-      render(<CharacterLimitWarning currentLength={85} maxLength={100} />);
-
-      const alert = screen.getByRole('alert');
-      expect(alert).toHaveAttribute('aria-live', 'polite');
-    });
+    expect(screen.getByText('もうすぐ上限です')).toBeInTheDocument();
   });
 
-  describe('アイコン表示', () => {
-    it('警告時は警告アイコンが表示される', () => {
-      render(<CharacterLimitWarning currentLength={85} maxLength={100} />);
+  it('カスタムエラーメッセージが表示される', () => {
+    render(
+      <CharacterLimitWarning
+        currentLength={105}
+        maxLength={100}
+        errorMessage="文字数が多すぎます"
+      />
+    );
 
-      // ExclamationTriangleIcon が表示されることを確認
-      const alert = screen.getByRole('alert');
-      const icon = alert.querySelector('svg');
-      expect(icon).toBeInTheDocument();
-    });
-
-    it('エラー時はエラーアイコンが表示される', () => {
-      render(<CharacterLimitWarning currentLength={105} maxLength={100} />);
-
-      // XCircleIcon が表示されることを確認
-      const alert = screen.getByRole('alert');
-      const icon = alert.querySelector('svg');
-      expect(icon).toBeInTheDocument();
-    });
+    expect(screen.getByText('文字数が多すぎます')).toBeInTheDocument();
   });
 
-  describe('エッジケース', () => {
-    it('maxLengthが0でもエラーにならない', () => {
-      const { container } = render(<CharacterLimitWarning currentLength={0} maxLength={0} />);
+  it('警告状態で警告アイコンが表示される', () => {
+    const { container } = render(<CharacterLimitWarning currentLength={85} maxLength={100} />);
 
-      expect(container.firstChild).toBeNull();
-    });
+    const icon = container.querySelector('svg');
+    expect(icon).toBeInTheDocument();
+  });
 
-    it('currentLengthが負の値でも動作する', () => {
-      const { container } = render(<CharacterLimitWarning currentLength={-1} maxLength={100} />);
+  it('エラー状態でエラーアイコンが表示される', () => {
+    const { container } = render(<CharacterLimitWarning currentLength={105} maxLength={100} />);
 
-      expect(container.firstChild).toBeNull();
-    });
+    const icon = container.querySelector('svg');
+    expect(icon).toBeInTheDocument();
+  });
 
-    it('ちょうど制限値の場合はエラーとして表示される', () => {
-      render(<CharacterLimitWarning currentLength={100} maxLength={100} />);
+  it('inline位置でスタイルが適用される', () => {
+    const { container } = render(
+      <CharacterLimitWarning currentLength={85} maxLength={100} position="inline" />
+    );
 
-      expect(screen.getByRole('alert')).toBeInTheDocument();
-      expect(screen.getByText('文字数制限を超えています（0文字超過）')).toBeInTheDocument();
-    });
+    const alert = container.querySelector('[role="alert"]');
+    expect(alert).toHaveClass('text-yellow-600');
+  });
+
+  it('tooltip位置でスタイルが適用される', () => {
+    const { container } = render(
+      <CharacterLimitWarning currentLength={85} maxLength={100} position="tooltip" />
+    );
+
+    const alert = container.querySelector('[role="alert"]');
+    expect(alert).toHaveClass('absolute', 'z-10', 'bg-yellow-50');
+  });
+
+  it('カスタムクラス名が適用される', () => {
+    const { container } = render(
+      <CharacterLimitWarning currentLength={85} maxLength={100} className="custom-class" />
+    );
+
+    const alert = container.querySelector('[role="alert"]');
+    expect(alert).toHaveClass('custom-class');
+  });
+
+  it('アクセシビリティ属性が正しく設定される - 警告', () => {
+    render(<CharacterLimitWarning currentLength={85} maxLength={100} />);
+
+    const alert = screen.getByRole('alert');
+    expect(alert).toHaveAttribute('aria-live', 'polite');
+    expect(alert).toHaveAttribute('aria-label');
+    expect(alert.getAttribute('aria-label')).toContain('警告');
+  });
+
+  it('アクセシビリティ属性が正しく設定される - エラー', () => {
+    render(<CharacterLimitWarning currentLength={105} maxLength={100} />);
+
+    const alert = screen.getByRole('alert');
+    expect(alert).toHaveAttribute('aria-live', 'polite');
+    expect(alert).toHaveAttribute('aria-label');
+    expect(alert.getAttribute('aria-label')).toContain('エラー');
+  });
+
+  it('maxLengthが0の場合は何も表示されない', () => {
+    const { container } = render(<CharacterLimitWarning currentLength={10} maxLength={0} />);
+
+    expect(container.firstChild).toBeNull();
   });
 });

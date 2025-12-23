@@ -64,6 +64,17 @@ enum ReminderStatus {
   CANCELLED // キャンセル
 }
 
+enum EmailStatus {
+  SENT // 送信済み
+  FAILED // 送信失敗
+  BOUNCED // バウンス
+}
+
+enum MoodPreference {
+  STAY_ON_TRACK // このまま行く
+  CHANGE_PACE // 気分を変える
+}
+
 enum ProcessingType {
   SUBGOAL_GENERATION // サブ目標生成
   ACTION_GENERATION // アクション生成
@@ -77,6 +88,14 @@ enum ProcessingStatus {
   FAILED // 失敗
   TIMEOUT // タイムアウト
   CANCELLED // キャンセル
+}
+
+enum WorkflowStatus {
+  RUNNING // 実行中
+  SUCCEEDED // 成功
+  FAILED // 失敗
+  TIMED_OUT // タイムアウト
+  ABORTED // 中断
 }
 
 // Models
@@ -113,8 +132,9 @@ model Goal {
   updatedAt   DateTime   @updatedAt @db.Timestamptz
 
   // Relations
-  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  subGoals SubGoal[]
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subGoals    SubGoal[]
+  reflections Reflection[]
 
   // Indexes
   @@index([userId, status])
@@ -183,11 +203,11 @@ model Task {
   updatedAt        DateTime   @updatedAt @db.Timestamptz
 
   // Relations
-  action      Action         @relation(fields: [actionId], references: [id], onDelete: Cascade)
-  reminders   TaskReminder[]
-  reflections Reflection[]
-  notes       TaskNote[]
-  history     TaskHistory[]
+  action          Action           @relation(fields: [actionId], references: [id], onDelete: Cascade)
+  reminders       TaskReminder[]
+  taskReflections TaskReflection[]
+  notes           TaskNote[]
+  history         TaskHistory[]
 
   // Indexes
   @@index([actionId, status])
@@ -216,7 +236,7 @@ model TaskReminder {
   @@map("task_reminders")
 }
 
-model Reflection {
+model TaskReflection {
   id        String   @id @default(uuid()) @db.Uuid
   taskId    String   @db.Uuid
   content   String   @db.Text
@@ -229,6 +249,24 @@ model Reflection {
 
   // Indexes
   @@index([taskId, createdAt])
+  @@map("task_reflections")
+}
+
+model Reflection {
+  id                  String   @id @default(uuid()) @db.Uuid
+  goalId              String   @db.Uuid
+  summary             String   @db.Text
+  regretfulActions    String?  @db.Text
+  slowProgressActions String?  @db.Text
+  untouchedActions    String?  @db.Text
+  createdAt           DateTime @default(now()) @db.Timestamptz
+  updatedAt           DateTime @updatedAt @db.Timestamptz
+
+  // Relations
+  goal Goal @relation(fields: [goalId], references: [id], onDelete: Cascade)
+
+  // Indexes
+  @@index([goalId, createdAt(sort: Desc)])
   @@map("reflections")
 }
 
@@ -335,4 +373,82 @@ model SavedView {
   @@index([userId])
   @@index([createdAt])
   @@map("saved_views")
+}
+
+model ReminderLog {
+  id           String      @id @default(uuid()) @db.Uuid
+  userId       String      @db.Uuid
+  sentAt       DateTime    @db.Timestamptz
+  taskIds      String[]    @db.Uuid
+  emailStatus  EmailStatus
+  messageId    String?     @db.VarChar(255)
+  errorMessage String?     @db.Text
+  retryCount   Int         @default(0) @db.SmallInt
+  createdAt    DateTime    @default(now()) @db.Timestamptz
+  updatedAt    DateTime    @updatedAt @db.Timestamptz
+
+  // Indexes
+  @@index([userId, sentAt])
+  @@index([emailStatus])
+  @@index([sentAt])
+  @@map("reminder_logs")
+}
+
+model UserReminderPreference {
+  userId             String          @id @db.Uuid
+  enabled            Boolean         @default(true)
+  moodPreference     MoodPreference?
+  lastReminderSentAt DateTime?       @db.Timestamptz
+  unsubscribedAt     DateTime?       @db.Timestamptz
+  createdAt          DateTime        @default(now()) @db.Timestamptz
+  updatedAt          DateTime        @updatedAt @db.Timestamptz
+
+  // Indexes
+  @@index([enabled])
+  @@index([lastReminderSentAt])
+  @@map("user_reminder_preferences")
+}
+
+model HabitTaskReminderTracking {
+  id             String   @id @default(uuid()) @db.Uuid
+  taskId         String   @db.Uuid
+  lastRemindedAt DateTime @db.Timestamptz
+  reminderCount  Int      @default(0) @db.SmallInt
+  weekNumber     Int      @db.SmallInt // ISO week number
+  createdAt      DateTime @default(now()) @db.Timestamptz
+  updatedAt      DateTime @updatedAt @db.Timestamptz
+
+  // Indexes
+  @@index([taskId])
+  @@index([lastRemindedAt])
+  @@index([weekNumber])
+  @@map("habit_task_reminder_tracking")
+}
+
+model WorkflowExecution {
+  id                     String         @id @default(uuid()) @db.Uuid
+  executionArn           String         @unique @db.VarChar(500)
+  goalId                 String         @db.Uuid
+  userId                 String         @db.Uuid
+  status                 WorkflowStatus @default(RUNNING)
+  startDate              DateTime       @db.Timestamptz
+  stopDate               DateTime?      @db.Timestamptz
+  input                  Json // { goalId: string, actionIds: string[] }
+  output                 Json? // { successCount: number, failedCount: number, failedActions: string[] }
+  progressPercentage     Int            @default(0) @db.SmallInt
+  processedActions       Int            @default(0) @db.SmallInt
+  totalActions           Int            @db.SmallInt
+  currentBatch           Int            @default(0) @db.SmallInt
+  totalBatches           Int            @db.SmallInt
+  estimatedTimeRemaining Int            @default(0) @db.Integer // 秒単位
+  ttl                    Int? // Unix timestamp for TTL (90 days)
+  createdAt              DateTime       @default(now()) @db.Timestamptz
+  updatedAt              DateTime       @updatedAt @db.Timestamptz
+
+  // Indexes
+  @@index([goalId, createdAt])
+  @@index([userId, createdAt])
+  @@index([status, createdAt])
+  @@index([ttl])
+  @@map("workflow_executions")
 }

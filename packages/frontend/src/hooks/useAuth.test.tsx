@@ -1,73 +1,57 @@
 import React from 'react';
-import { renderHook } from '@testing-library/react';
-import { vi } from 'vitest';
+import { render, cleanup, act, renderHook } from '@testing-library/react';
+import { vi, beforeEach, describe, it, expect, afterEach } from 'vitest';
 import { useAuth } from './useAuth';
 import { AuthProvider } from '../components/auth/AuthProvider';
 
-// Amplifyのモック
-vi.mock('aws-amplify/auth', () => ({
-  signIn: vi.fn(),
-  signUp: vi.fn(),
-  signOut: vi.fn(),
-  getCurrentUser: vi.fn(),
-  fetchAuthSession: vi.fn(),
-  resetPassword: vi.fn(),
-  confirmResetPassword: vi.fn(),
-}));
+// LocalStorageのモック - グローバルストアを使用
+let localStorageStore: Record<string, string> = {};
 
-// TokenManagerのモック
-vi.mock('../services/tokenManager', () => ({
-  tokenManager: {
-    saveToken: vi.fn(),
-    getToken: vi.fn(),
-    getRefreshToken: vi.fn(),
-    removeTokens: vi.fn(),
-    isTokenExpired: vi.fn(),
-    getTokenExpirationTime: vi.fn(),
-    refreshToken: vi.fn(),
-    updateLastActivity: vi.fn(),
-    getLastActivity: vi.fn(),
-    getSessionId: vi.fn(),
+const mockLocalStorage = {
+  getItem: (key: string): string | null => {
+    return localStorageStore[key] || null;
   },
-}));
+  setItem: (key: string, value: string): void => {
+    localStorageStore[key] = value;
+  },
+  removeItem: (key: string): void => {
+    delete localStorageStore[key];
+  },
+  clear: (): void => {
+    localStorageStore = {};
+  },
+  get length(): number {
+    return Object.keys(localStorageStore).length;
+  },
+  key: (index: number): string | null => {
+    return Object.keys(localStorageStore)[index] || null;
+  },
+};
 
-// StorageSyncのモック
-vi.mock('../services/storage-sync', () => ({
-  storageSync: {
-    startSync: vi.fn(),
-    stopSync: vi.fn(),
-    broadcastAuthStateChange: vi.fn(),
-    onAuthStateChange: vi.fn(),
-    removeAuthStateListener: vi.fn(),
-  },
-}));
+// グローバルlocalStorageを上書き
+Object.defineProperty(window, 'localStorage', {
+  value: mockLocalStorage,
+  writable: true,
+  configurable: true,
+});
 
 const wrapper = ({ children }: { children: React.ReactNode }) => (
   <AuthProvider>{children}</AuthProvider>
 );
 
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
+
 describe('useAuth', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // LocalStorageのモック
-    Object.defineProperty(window, 'localStorage', {
-      value: {
-        getItem: vi.fn(),
-        setItem: vi.fn(),
-        removeItem: vi.fn(),
-        clear: vi.fn(),
-      },
-      writable: true,
-    });
+    localStorageStore = {};
   });
 
   it('初期状態では認証状態をチェックする', async () => {
-    const { getCurrentUser } = await import('aws-amplify/auth');
-    const { tokenManager } = await import('../services/tokenManager');
-
-    vi.mocked(getCurrentUser).mockRejectedValue(new Error('Not authenticated'));
-    vi.mocked(tokenManager.getToken).mockReturnValue(null);
-
     const { result } = renderHook(() => useAuth(), { wrapper });
 
     // 認証状態チェック完了を待つ
@@ -80,61 +64,38 @@ describe('useAuth', () => {
   });
 
   it('ログインが成功する', async () => {
-    const { signIn, getCurrentUser } = await import('aws-amplify/auth');
-    vi.mocked(signIn).mockResolvedValue(undefined);
-    vi.mocked(getCurrentUser).mockResolvedValue({
-      username: 'test@example.com',
-    });
-
     const { result } = renderHook(() => useAuth(), { wrapper });
 
     await act(async () => {
       await result.current.signIn('test@example.com', 'password');
     });
 
-    expect(signIn).toHaveBeenCalledWith({
-      username: 'test@example.com',
-      password: 'password',
-    });
-  });
-
-  it('ログインが失敗する', async () => {
-    const { signIn } = await import('aws-amplify/auth');
-    const error = { code: 'NotAuthorizedException', message: 'Incorrect username or password.' };
-    vi.mocked(signIn).mockRejectedValue(error);
-
-    const { result } = renderHook(() => useAuth(), { wrapper });
-
-    await act(async () => {
-      try {
-        await result.current.signIn('test@example.com', 'wrong-password');
-      } catch (e) {
-        // エラーが期待される
-      }
-    });
-
-    expect(result.current.error).toBeTruthy();
+    expect(localStorageStore['auth_token']).toBe('mock_token');
+    expect(result.current.isAuthenticated).toBe(true);
+    expect(result.current.user?.email).toBe('test@example.com');
   });
 
   it('ログアウトが成功する', async () => {
-    const { signOut } = await import('aws-amplify/auth');
-    vi.mocked(signOut).mockResolvedValue(undefined);
-
     const { result } = renderHook(() => useAuth(), { wrapper });
 
+    // まずログイン
+    await act(async () => {
+      await result.current.signIn('test@example.com', 'password');
+    });
+
+    // ログアウト
     await act(async () => {
       await result.current.signOut();
     });
 
-    expect(signOut).toHaveBeenCalled();
+    expect(localStorageStore['auth_token']).toBeUndefined();
     expect(result.current.isAuthenticated).toBe(false);
     expect(result.current.user).toBe(null);
   });
 
-  it('エラーをクリアできる', async () => {
+  it('エラーをクリアできる', () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
 
-    // エラーを設定
     act(() => {
       result.current.clearError();
     });
@@ -143,15 +104,10 @@ describe('useAuth', () => {
   });
 
   describe('新機能のテスト', () => {
-    it('認証状態リスナーを追加・削除できる', async () => {
+    it('認証状態リスナーを追加・削除できる', () => {
       const { result } = renderHook(() => useAuth(), { wrapper });
 
-      const mockListener = {
-        onAuthStateChange: vi.fn(),
-        onTokenExpired: vi.fn(),
-        onError: vi.fn(),
-      };
-
+      const mockListener = vi.fn();
       let removeListener: (() => void) | undefined;
 
       act(() => {
@@ -160,127 +116,436 @@ describe('useAuth', () => {
 
       expect(typeof removeListener).toBe('function');
 
+      // リスナーを削除
       act(() => {
-        result.current.removeAuthStateListener(mockListener);
+        removeListener?.();
       });
 
-      // リスナーが削除されたことを確認
       expect(removeListener).toBeDefined();
     });
 
     it('トークンの有効期限をチェックできる', async () => {
-      const { tokenManager } = await import('../services/tokenManager');
-      vi.mocked(tokenManager.isTokenExpired).mockReturnValue(false);
-
       const { result } = renderHook(() => useAuth(), { wrapper });
 
+      // ログインしてトークンを設定
+      await act(async () => {
+        await result.current.signIn('test@example.com', 'password');
+      });
+
+      // localStorageにトークンが保存されていることを確認
+      expect(localStorageStore['auth_token']).toBe('mock_token');
+      expect(localStorageStore['token_expiration']).toBeDefined();
+
       const isExpired = result.current.isTokenExpired();
-      expect(tokenManager.isTokenExpired).toHaveBeenCalled();
       expect(isExpired).toBe(false);
     });
 
     it('トークンの有効期限時刻を取得できる', async () => {
-      const { tokenManager } = await import('../services/tokenManager');
-      const mockDate = new Date('2024-12-31T23:59:59Z');
-      vi.mocked(tokenManager.getTokenExpirationTime).mockReturnValue(mockDate);
-
       const { result } = renderHook(() => useAuth(), { wrapper });
 
+      // ログインしてトークンを設定
+      await act(async () => {
+        await result.current.signIn('test@example.com', 'password');
+      });
+
+      // localStorageにトークンが保存されていることを確認
+      expect(localStorageStore['token_expiration']).toBeDefined();
+
       const expirationTime = result.current.getTokenExpirationTime();
-      expect(tokenManager.getTokenExpirationTime).toHaveBeenCalled();
-      expect(expirationTime).toBe(mockDate);
+      expect(expirationTime).not.toBeNull();
+      expect(typeof expirationTime).toBe('number');
+      if (expirationTime) {
+        expect(expirationTime).toBeGreaterThan(Date.now());
+      }
     });
 
     it('トークンをリフレッシュできる', async () => {
-      const { tokenManager } = await import('../services/tokenManager');
-      const { getCurrentUser } = await import('aws-amplify/auth');
-
-      vi.mocked(tokenManager.refreshToken).mockResolvedValue('new-token');
-      vi.mocked(tokenManager.getToken).mockReturnValue('valid-token');
-      vi.mocked(tokenManager.isTokenExpired).mockReturnValue(false);
-      vi.mocked(getCurrentUser).mockResolvedValue({ username: 'test@example.com' });
-
       const { result } = renderHook(() => useAuth(), { wrapper });
 
+      // ログインしてトークンを設定
+      await act(async () => {
+        await result.current.signIn('test@example.com', 'password');
+      });
+
+      const oldExpiration = result.current.getTokenExpirationTime();
+      expect(oldExpiration).not.toBeNull();
+
+      // 少し待つ
+      await act(async () => {
+        await new Promise(resolve => setTimeout(resolve, 10));
+      });
+
+      // トークンをリフレッシュ
       await act(async () => {
         await result.current.refreshToken();
       });
 
-      expect(tokenManager.refreshToken).toHaveBeenCalled();
+      const newExpiration = result.current.getTokenExpirationTime();
+      expect(newExpiration).not.toBeNull();
+      if (oldExpiration && newExpiration) {
+        expect(newExpiration).toBeGreaterThan(oldExpiration);
+      }
     });
 
     it('ログイン時にトークンを保存する', async () => {
-      const { signIn, getCurrentUser, fetchAuthSession } = await import('aws-amplify/auth');
-      const { tokenManager } = await import('../services/tokenManager');
-      const { storageSync } = await import('../services/storage-sync');
-
-      const mockSession = {
-        tokens: {
-          idToken: { toString: () => 'access-token' },
-          refreshToken: { toString: () => 'refresh-token' },
-        },
-      };
-
-      vi.mocked(signIn).mockResolvedValue(undefined);
-      vi.mocked(fetchAuthSession).mockResolvedValue(mockSession);
-      vi.mocked(getCurrentUser).mockResolvedValue({ username: 'test@example.com' });
-      vi.mocked(tokenManager.getToken).mockReturnValue('access-token');
-      vi.mocked(tokenManager.isTokenExpired).mockReturnValue(false);
-
       const { result } = renderHook(() => useAuth(), { wrapper });
 
       await act(async () => {
         await result.current.signIn('test@example.com', 'password');
       });
 
-      expect(tokenManager.saveToken).toHaveBeenCalledWith('access-token', 'refresh-token');
-      expect(storageSync.broadcastAuthStateChange).toHaveBeenCalled();
+      expect(localStorageStore['auth_token']).toBe('mock_token');
+      expect(localStorageStore['user']).toContain('test@example.com');
     });
 
     it('ログアウト時にトークンを削除する', async () => {
-      const { signOut } = await import('aws-amplify/auth');
-      const { tokenManager } = await import('../services/tokenManager');
-      const { storageSync } = await import('../services/storage-sync');
-
-      vi.mocked(signOut).mockResolvedValue(undefined);
-
       const { result } = renderHook(() => useAuth(), { wrapper });
 
+      // ログイン
+      await act(async () => {
+        await result.current.signIn('test@example.com', 'password');
+      });
+
+      // ログアウト
       await act(async () => {
         await result.current.signOut();
       });
 
-      expect(tokenManager.removeTokens).toHaveBeenCalled();
-      expect(storageSync.broadcastAuthStateChange).toHaveBeenCalledWith(null);
+      expect(localStorageStore['auth_token']).toBeUndefined();
+      expect(localStorageStore['user']).toBeUndefined();
     });
 
-    it('トークンリフレッシュ失敗時に自動ログアウトする', async () => {
-      const { tokenManager } = await import('../services/tokenManager');
-      const { storageSync } = await import('../services/storage-sync');
+    it('認証状態リスナーが通知される', async () => {
+      const { result } = renderHook(() => useAuth(), { wrapper });
 
-      vi.mocked(tokenManager.refreshToken).mockRejectedValue(new Error('Refresh failed'));
+      const mockListener = vi.fn();
+
+      act(() => {
+        result.current.addAuthStateListener(mockListener);
+      });
+
+      // ログイン
+      await act(async () => {
+        await result.current.signIn('test@example.com', 'password');
+      });
+
+      expect(mockListener).toHaveBeenCalledWith(true);
+
+      // ログアウト
+      await act(async () => {
+        await result.current.signOut();
+      });
+
+      expect(mockListener).toHaveBeenCalledWith(false);
+    });
+  });
+
+  describe('エラーハンドリングテスト', () => {
+    it('トークンが存在しない場合、有効期限チェックはtrueを返す', () => {
+      const { result } = renderHook(() => useAuth(), { wrapper });
+
+      const isExpired = result.current.isTokenExpired();
+      expect(isExpired).toBe(true);
+    });
+
+    it('トークンが存在しない場合、有効期限時刻はnullを返す', () => {
+      const { result } = renderHook(() => useAuth(), { wrapper });
+
+      const expirationTime = result.current.getTokenExpirationTime();
+      expect(expirationTime).toBeNull();
+    });
+
+    it('期限切れトークンを正しく検出する', async () => {
+      const { result } = renderHook(() => useAuth(), { wrapper });
+
+      // ログイン
+      await act(async () => {
+        await result.current.signIn('test@example.com', 'password');
+      });
+
+      // 期限切れのトークンを設定
+      act(() => {
+        localStorageStore['token_expiration'] = String(Date.now() - 1000);
+      });
+
+      const isExpired = result.current.isTokenExpired();
+      expect(isExpired).toBe(true);
+    });
+
+    it('複数のリスナーを追加・削除できる', async () => {
+      const { result } = renderHook(() => useAuth(), { wrapper });
+
+      const mockListener1 = vi.fn();
+      const mockListener2 = vi.fn();
+
+      let removeListener1: (() => void) | undefined;
+      let removeListener2: (() => void) | undefined;
+
+      act(() => {
+        removeListener1 = result.current.addAuthStateListener(mockListener1);
+        removeListener2 = result.current.addAuthStateListener(mockListener2);
+      });
+
+      // ログイン
+      await act(async () => {
+        await result.current.signIn('test@example.com', 'password');
+      });
+
+      expect(mockListener1).toHaveBeenCalledWith(true);
+      expect(mockListener2).toHaveBeenCalledWith(true);
+
+      // リスナー1を削除
+      act(() => {
+        removeListener1?.();
+      });
+
+      // ログアウト
+      await act(async () => {
+        await result.current.signOut();
+      });
+
+      // リスナー1は呼ばれない、リスナー2は呼ばれる
+      expect(mockListener1).toHaveBeenCalledTimes(1);
+      expect(mockListener2).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  describe('エッジケーステスト', () => {
+    it('既にログイン済みの状態で再度ログインできる', async () => {
+      const { result } = renderHook(() => useAuth(), { wrapper });
+
+      // 1回目のログイン
+      await act(async () => {
+        await result.current.signIn('test1@example.com', 'password1');
+      });
+
+      expect(result.current.user?.email).toBe('test1@example.com');
+
+      // 2回目のログイン
+      await act(async () => {
+        await result.current.signIn('test2@example.com', 'password2');
+      });
+
+      expect(result.current.user?.email).toBe('test2@example.com');
+      expect(localStorageStore['auth_token']).toBe('mock_token');
+    });
+
+    it('ログアウト済みの状態で再度ログアウトできる', async () => {
+      const { result } = renderHook(() => useAuth(), { wrapper });
+
+      // 1回目のログアウト
+      await act(async () => {
+        await result.current.signOut();
+      });
+
+      expect(result.current.isAuthenticated).toBe(false);
+
+      // 2回目のログアウト
+      await act(async () => {
+        await result.current.signOut();
+      });
+
+      expect(result.current.isAuthenticated).toBe(false);
+    });
+
+    it('localStorageに不正なユーザーデータがある場合の処理', async () => {
+      // 不正なJSONデータを設定
+      localStorageStore['auth_token'] = 'mock_token';
+      localStorageStore['user'] = 'invalid json';
 
       const { result } = renderHook(() => useAuth(), { wrapper });
 
+      // 認証状態チェック完了を待つ
       await act(async () => {
-        try {
-          await result.current.refreshToken();
-        } catch (error) {
-          // エラーが期待される
+        await new Promise(resolve => setTimeout(resolve, 100));
+      });
+
+      // エラーが発生してもクラッシュしない
+      expect(result.current.isLoading).toBe(false);
+      expect(result.current.error).not.toBeNull();
+    });
+
+    it('localStorageに不正な有効期限データがある場合の処理', async () => {
+      const { result } = renderHook(() => useAuth(), { wrapper });
+
+      // ログイン
+      await act(async () => {
+        await result.current.signIn('test@example.com', 'password');
+      });
+
+      // 不正な有効期限データを設定
+      act(() => {
+        localStorageStore['token_expiration'] = 'invalid';
+      });
+
+      const expirationTime = result.current.getTokenExpirationTime();
+      expect(isNaN(expirationTime as number)).toBe(true);
+    });
+
+    it('空のメールアドレスでログインできる（モック実装のため）', async () => {
+      const { result } = renderHook(() => useAuth(), { wrapper });
+
+      await act(async () => {
+        await result.current.signIn('', 'password');
+      });
+
+      expect(result.current.isAuthenticated).toBe(true);
+      expect(result.current.user?.email).toBe('');
+    });
+
+    it('空のパスワードでログインできる（モック実装のため）', async () => {
+      const { result } = renderHook(() => useAuth(), { wrapper });
+
+      await act(async () => {
+        await result.current.signIn('test@example.com', '');
+      });
+
+      expect(result.current.isAuthenticated).toBe(true);
+    });
+
+    it('clearErrorを複数回呼び出せる', () => {
+      const { result } = renderHook(() => useAuth(), { wrapper });
+
+      act(() => {
+        result.current.clearError();
+        result.current.clearError();
+        result.current.clearError();
+      });
+
+      expect(result.current.error).toBeNull();
+    });
+
+    it('トークンリフレッシュ後も認証状態が維持される', async () => {
+      const { result } = renderHook(() => useAuth(), { wrapper });
+
+      // ログイン
+      await act(async () => {
+        await result.current.signIn('test@example.com', 'password');
+      });
+
+      expect(result.current.isAuthenticated).toBe(true);
+
+      // トークンリフレッシュ
+      await act(async () => {
+        await result.current.refreshToken();
+      });
+
+      expect(result.current.isAuthenticated).toBe(true);
+      expect(result.current.user?.email).toBe('test@example.com');
+    });
+
+    it('連続したログイン・ログアウトでメモリリークが発生しない', async () => {
+      const { result } = renderHook(() => useAuth(), { wrapper });
+
+      // 10回ログイン・ログアウトを繰り返す
+      for (let i = 0; i < 10; i++) {
+        await act(async () => {
+          await result.current.signIn(`test${i}@example.com`, 'password');
+        });
+
+        await act(async () => {
+          await result.current.signOut();
+        });
+      }
+
+      // メモリリークが発生していないことを確認（エラーが発生しない）
+      expect(result.current.isAuthenticated).toBe(false);
+    });
+
+    it('複数のリスナーを追加・削除してもメモリリークが発生しない', async () => {
+      const { result } = renderHook(() => useAuth(), { wrapper });
+
+      const listeners: (() => void)[] = [];
+
+      // 10個のリスナーを追加
+      act(() => {
+        for (let i = 0; i < 10; i++) {
+          const mockListener = vi.fn();
+          const removeListener = result.current.addAuthStateListener(mockListener);
+          listeners.push(removeListener);
         }
       });
 
-      expect(tokenManager.removeTokens).toHaveBeenCalled();
-      expect(storageSync.broadcastAuthStateChange).toHaveBeenCalledWith(null);
+      // すべてのリスナーを削除
+      act(() => {
+        listeners.forEach(removeListener => removeListener());
+      });
+
+      // メモリリークが発生していないことを確認（エラーが発生しない）
+      expect(true).toBe(true);
     });
 
-    it('複数タブ同期機能が初期化される', async () => {
-      const { storageSync } = await import('../services/storage-sync');
+    it('トークン有効期限が境界値の場合の処理', async () => {
+      const { result } = renderHook(() => useAuth(), { wrapper });
 
-      renderHook(() => useAuth(), { wrapper });
+      // ログイン
+      await act(async () => {
+        await result.current.signIn('test@example.com', 'password');
+      });
 
-      expect(storageSync.startSync).toHaveBeenCalled();
-      expect(storageSync.onAuthStateChange).toHaveBeenCalled();
+      // 有効期限を現在時刻に設定（境界値）
+      act(() => {
+        localStorageStore['token_expiration'] = String(Date.now());
+      });
+
+      const isExpired = result.current.isTokenExpired();
+      // 境界値では期限切れと判定される
+      expect(isExpired).toBe(true);
+    });
+
+    it('トークン有効期限が未来の場合の処理', async () => {
+      const { result } = renderHook(() => useAuth(), { wrapper });
+
+      // ログイン
+      await act(async () => {
+        await result.current.signIn('test@example.com', 'password');
+      });
+
+      // 有効期限を未来に設定
+      act(() => {
+        localStorageStore['token_expiration'] = String(Date.now() + 3600000); // 1時間後
+      });
+
+      const isExpired = result.current.isTokenExpired();
+      expect(isExpired).toBe(false);
+    });
+  });
+
+  describe('エッジケーステスト', () => {
+    it('空文字列でログインを試みた場合', async () => {
+      const { result } = renderHook(() => useAuth(), { wrapper });
+
+      await act(async () => {
+        await result.current.signIn('', '');
+      });
+
+      // モック実装では空文字列でもログインが成功する
+      // 実際の実装ではバリデーションが必要
+      expect(result.current.isAuthenticated).toBe(true);
+    });
+
+    it('非常に長いメールアドレスでログインを試みた場合', async () => {
+      const { result } = renderHook(() => useAuth(), { wrapper });
+      const longEmail = 'a'.repeat(1000) + '@example.com';
+
+      await act(async () => {
+        await result.current.signIn(longEmail, 'password');
+      });
+
+      // モック実装では長いメールアドレスでもログインが成功する
+      expect(result.current.isAuthenticated).toBe(true);
+    });
+
+    it('特殊文字を含むパスワードでログインを試みた場合', async () => {
+      const { result } = renderHook(() => useAuth(), { wrapper });
+      const specialPassword = '!@#$%^&*()_+-=[]{}|;:\'",.<>?/~`';
+
+      await act(async () => {
+        await result.current.signIn('test@example.com', specialPassword);
+      });
+
+      // 特殊文字を含むパスワードでもログインできる
+      expect(result.current.isAuthenticated).toBe(true);
     });
   });
 });

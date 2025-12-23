@@ -1,0 +1,127 @@
+version: "3.8"
+
+services:
+  # Step Functions Local
+  stepfunctions-local:
+    image: amazon/aws-stepfunctions-local:latest
+    container_name: goal-mandala-stepfunctions-local
+    ports:
+      - "8083:8083"
+    environment:
+      # Lambda endpoint for local testing
+      LAMBDA_ENDPOINT: http://host.docker.internal:3001
+      # DynamoDB endpoint (if needed)
+      DYNAMODB_ENDPOINT: http://dynamodb-local:8000
+      # Wait for dependencies
+      WAIT_TIME_SCALE: 1
+      # Enable Step Functions Local features
+      SFN_MOCK_CONFIG: /home/StepFunctionsLocal/MockConfigFile.json
+    volumes:
+      - ./src/workflows/state-machines:/home/StepFunctionsLocal/state-machines
+      - ./test/mocks/stepfunctions-mock-config.json:/home/StepFunctionsLocal/MockConfigFile.json
+    networks:
+      - workflow-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8083/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    # リソース制限
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: "0.5"
+        reservations:
+          memory: 256M
+          cpus: "0.25"
+    # ログ設定
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # DynamoDB Local (for workflow execution tracking)
+  dynamodb-local:
+    image: amazon/dynamodb-local:latest
+    container_name: goal-mandala-dynamodb-local
+    ports:
+      - "8000:8000"
+    command: "-jar DynamoDBLocal.jar -sharedDb -dbPath /data"
+    volumes:
+      - dynamodb-data:/data
+    networks:
+      - workflow-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/shell || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    # リソース制限
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: "0.25"
+        reservations:
+          memory: 128M
+          cpus: "0.1"
+    # ログ設定
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # PostgreSQL (for testing database operations)
+  postgres-test:
+    image: postgres:15-alpine
+    container_name: goal-mandala-postgres-test
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: goal_mandala_test
+      POSTGRES_USER: goal_mandala_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-test_password}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --locale=C"
+    volumes:
+      - postgres-test-data:/var/lib/postgresql/data
+    networks:
+      - workflow-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U goal_mandala_user -d goal_mandala_test"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    # リソース制限
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: "0.5"
+        reservations:
+          memory: 256M
+          cpus: "0.25"
+    # ログ設定
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  dynamodb-data:
+    driver: local
+  postgres-test-data:
+    driver: local
+
+networks:
+  workflow-network:
+    driver: bridge

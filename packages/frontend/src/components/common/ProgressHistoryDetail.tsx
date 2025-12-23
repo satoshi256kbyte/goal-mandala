@@ -8,7 +8,7 @@ import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { ja } from 'date-fns/locale';
 import { cn } from '../../utils/cn';
-import { ProgressHistoryEntry } from '../../services/progress-history-service';
+import { ProgressHistoryEntry, SignificantChange } from '../../services/progress-history-service';
 import { Tooltip } from './Tooltip';
 
 export interface ProgressHistoryDetailProps {

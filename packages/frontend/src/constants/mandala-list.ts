@@ -4,6 +4,17 @@
 
 import { GoalStatus } from '../types/mandala-list';
 
+// TODO: SortOption型を適切な場所に移動
+type SortOption =
+  | 'created_at_desc'
+  | 'created_at_asc'
+  | 'updated_at_desc'
+  | 'updated_at_asc'
+  | 'deadline_asc'
+  | 'deadline_desc'
+  | 'progress_desc'
+  | 'progress_asc';
+
 /**
  * ページネーション設定
  */

@@ -1,6 +1,13 @@
 import React from 'react';
-import { render } from '@testing-library/react';
-import { LoadingSpinner, LoadingOverlay } from './LoadingSpinner';
+import { render, cleanup } from '@testing-library/react';
+import { screen } from '@testing-library/react';
+import { LoadingSpinner, LoadingOverlay, InlineLoading } from './LoadingSpinner';
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('LoadingSpinner', () => {
   describe('基本表示', () => {

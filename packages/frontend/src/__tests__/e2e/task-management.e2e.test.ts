@@ -1,4 +1,4 @@
-import { test } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 
 test.describe('Task Management E2E Tests', () => {
   test.beforeEach(async ({ page }) => {

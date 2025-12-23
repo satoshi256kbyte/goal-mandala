@@ -1,0 +1,104 @@
+{
+  "StateMachines": {
+    "TaskGenerationWorkflow": {
+      "TestCases": {
+        "HappyPath": {
+          "ValidateInput": "SUCCEED",
+          "GetActions": "SUCCEED",
+          "CreateBatches": "SUCCEED",
+          "GenerateTasks": "SUCCEED",
+          "SaveTasks": "SUCCEED",
+          "UpdateProgress": "SUCCEED",
+          "AggregateResults": "SUCCEED",
+          "UpdateGoalStatus": "SUCCEED"
+        },
+        "PartialFailure": {
+          "ValidateInput": "SUCCEED",
+          "GetActions": "SUCCEED",
+          "CreateBatches": "SUCCEED",
+          "GenerateTasks": "FAIL_SOME",
+          "SaveTasks": "SUCCEED",
+          "UpdateProgress": "SUCCEED",
+          "AggregateResults": "SUCCEED",
+          "UpdateGoalStatus": "SUCCEED"
+        },
+        "ValidationError": {
+          "ValidateInput": "FAIL",
+          "GetActions": "SKIP",
+          "CreateBatches": "SKIP",
+          "GenerateTasks": "SKIP",
+          "SaveTasks": "SKIP",
+          "UpdateProgress": "SKIP",
+          "AggregateResults": "SKIP",
+          "UpdateGoalStatus": "SKIP"
+        },
+        "Timeout": {
+          "ValidateInput": "SUCCEED",
+          "GetActions": "SUCCEED",
+          "CreateBatches": "SUCCEED",
+          "GenerateTasks": "TIMEOUT",
+          "SaveTasks": "SKIP",
+          "UpdateProgress": "SKIP",
+          "AggregateResults": "SKIP",
+          "UpdateGoalStatus": "SKIP"
+        }
+      }
+    }
+  },
+  "MockedServices": {
+    "Lambda": {
+      "ValidateInputFunction": {
+        "Return": {
+          "StatusCode": 200,
+          "Payload": {
+            "goalId": "test-goal-id",
+            "userId": "test-user-id",
+            "actionIds": ["action-1", "action-2", "action-3"]
+          }
+        }
+      },
+      "GetActionsFunction": {
+        "Return": {
+          "StatusCode": 200,
+          "Payload": {
+            "actions": [
+              {
+                "id": "action-1",
+                "title": "Test Action 1",
+                "description": "Test Description 1"
+              },
+              {
+                "id": "action-2",
+                "title": "Test Action 2",
+                "description": "Test Description 2"
+              }
+            ]
+          }
+        }
+      },
+      "TaskGenerationFunction": {
+        "Return": {
+          "StatusCode": 200,
+          "Payload": {
+            "actionId": "action-1",
+            "tasks": [
+              {
+                "title": "Task 1",
+                "description": "Task Description 1",
+                "type": "execution",
+                "estimatedMinutes": 30
+              }
+            ],
+            "status": "success"
+          }
+        }
+      }
+    },
+    "DynamoDB": {
+      "WorkflowExecution": {
+        "TableName": "WorkflowExecution-local",
+        "MockData": []
+      }
+    }
+  }
+}

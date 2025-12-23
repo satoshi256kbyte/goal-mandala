@@ -1,0 +1,326 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "packages/**"
+      - ".github/workflows/deploy-production.yml"
+  workflow_dispatch:
+    inputs:
+      skip_tests:
+        description: "Skip tests (not recommended)"
+        required: false
+        type: boolean
+        default: false
+      confirm_deployment:
+        description: 'Confirm deployment (type "deploy" to proceed)'
+        required: true
+        type: string
+
+jobs:
+  validate-input:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate deployment confirmation
+        if: ${{ github.event.inputs.confirm_deployment != 'deploy' }}
+        run: |
+          echo "❌ Deployment confirmation failed. Please type 'deploy' to proceed."
+          exit 1
+
+  test:
+    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.skip_tests != 'true')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        timeout-minutes: 1
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
+        timeout-minutes: 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".tool-versions"
+          cache: "pnpm"
+        timeout-minutes: 1
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        timeout-minutes: 3
+
+      - name: Run lint
+        run: pnpm run lint
+        timeout-minutes: 2
+
+      - name: Run type check
+        run: pnpm run type-check
+        timeout-minutes: 2
+
+      - name: Run unit tests
+        run: pnpm run test
+        timeout-minutes: 3
+
+      - name: Run integration tests
+        run: pnpm run test:integration
+        timeout-minutes: 2
+
+  e2e-test:
+    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.skip_tests != 'true')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        timeout-minutes: 1
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
+        timeout-minutes: 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".tool-versions"
+          cache: "pnpm"
+        timeout-minutes: 1
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        timeout-minutes: 3
+
+      - name: Install Playwright Browsers
+        run: pnpm --filter @goal-mandala/frontend exec playwright install chromium --with-deps
+        timeout-minutes: 2
+
+      - name: Build frontend
+        run: pnpm --filter @goal-mandala/frontend build
+        timeout-minutes: 2
+
+      - name: Run E2E tests
+        run: pnpm --filter @goal-mandala/frontend test:e2e
+        timeout-minutes: 3
+        env:
+          CI: true
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: packages/frontend/playwright-report/
+          retention-days: 7
+        timeout-minutes: 1
+
+  deploy:
+    needs: [test, e2e-test]
+    if: |
+      always() &&
+      (needs.test.result == 'success' || needs.test.result == 'skipped') &&
+      (needs.e2e-test.result == 'success' || needs.e2e-test.result == 'skipped')
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        timeout-minutes: 1
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
+        timeout-minutes: 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".tool-versions"
+          cache: "pnpm"
+        timeout-minutes: 1
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        timeout-minutes: 3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION || 'ap-northeast-1' }}
+        timeout-minutes: 1
+
+      - name: Build all packages
+        run: pnpm run build
+        timeout-minutes: 5
+
+      - name: Run CDK diff
+        working-directory: packages/infrastructure
+        run: |
+          echo "🔍 Showing CDK diff for production environment"
+          pnpm cdk diff --context environment=prod
+        timeout-minutes: 3
+
+      - name: Deploy CDK stacks
+        working-directory: packages/infrastructure
+        run: |
+          echo "🚀 Deploying to production environment"
+          pnpm cdk deploy --all --require-approval never --context environment=prod
+        timeout-minutes: 20
+
+      - name: Deploy frontend to S3
+        run: |
+          echo "📦 Deploying frontend to S3"
+          aws s3 sync packages/frontend/dist/ s3://${{ secrets.S3_BUCKET_NAME }} --delete
+        timeout-minutes: 3
+
+      - name: Invalidate CloudFront cache
+        run: |
+          echo "🔄 Invalidating CloudFront cache"
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
+            --paths "/*"
+        timeout-minutes: 2
+
+      - name: Output deployment info
+        run: |
+          echo "✅ Deployment completed successfully!"
+          echo "Environment: production"
+          echo "Deployed at: $(date)"
+          echo "Commit: ${{ github.sha }}"
+          echo "Branch: ${{ github.ref_name }}"
+
+  verify-deployment:
+    needs: deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Wait for deployment to stabilize
+        run: sleep 30
+
+      - name: Health check
+        run: |
+          echo "🏥 Performing health check"
+          HEALTH_URL="${{ secrets.API_ENDPOINT }}/health"
+
+          for i in {1..5}; do
+            echo "Attempt $i/5"
+            if curl -f -s "$HEALTH_URL" > /dev/null; then
+              echo "✅ Health check passed"
+              exit 0
+            fi
+            echo "⚠️ Health check failed, retrying in 10 seconds..."
+            sleep 10
+          done
+
+          echo "❌ Health check failed after 5 attempts"
+          exit 1
+
+  notify-success:
+    needs: verify-deployment
+    if: success()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Slack notification
+        if: ${{ secrets.SLACK_WEBHOOK_URL != '' }}
+        run: |
+          curl -X POST ${{ secrets.SLACK_WEBHOOK_URL }} \
+            -H 'Content-Type: application/json' \
+            -d '{
+              "text": "✅ Production deployment successful",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Production Deployment Successful* :white_check_mark:"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Environment:*\nproduction"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Commit:*\n${{ github.sha }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Branch:*\n${{ github.ref_name }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Deployed by:*\n${{ github.actor }}"
+                    }
+                  ]
+                }
+              ]
+            }'
+
+  notify-failure:
+    needs: [test, e2e-test, deploy, verify-deployment]
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Slack notification
+        if: ${{ secrets.SLACK_WEBHOOK_URL != '' }}
+        run: |
+          curl -X POST ${{ secrets.SLACK_WEBHOOK_URL }} \
+            -H 'Content-Type: application/json' \
+            -d '{
+              "text": "❌ Production deployment failed",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Production Deployment Failed* :x:"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Environment:*\nproduction"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Commit:*\n${{ github.sha }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Branch:*\n${{ github.ref_name }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Failed by:*\n${{ github.actor }}"
+                    }
+                  ]
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View workflow run>"
+                  }
+                }
+              ]
+            }'

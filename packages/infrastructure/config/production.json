@@ -1,0 +1,356 @@
+{
+  "stackPrefix": "goal-mandala-production",
+  "region": "ap-northeast-1",
+  "environment": "production",
+  "network": {
+    "natGateways": 1,
+    "enableVpcEndpoints": false,
+    "vpcCidr": "10.0.0.0/16",
+    "maxAzs": 2
+  },
+  "database": {
+    "instanceClass": "serverless",
+    "minCapacity": 0.5,
+    "maxCapacity": 2.0,
+    "multiAz": true,
+    "backupRetentionDays": 7,
+    "deletionProtection": true,
+    "performanceInsights": true,
+    "monitoringInterval": 60,
+    "enableAuditLog": true,
+    "enableSlowQueryLog": true,
+    "slowQueryLogThreshold": 1000,
+    "databaseName": "goalmandalamain",
+    "enableEncryption": true,
+    "enableIamDatabaseAuthentication": true,
+    "enableSslConnection": true,
+    "enableAutomaticSnapshots": true,
+    "snapshotRetentionDays": 7,
+    "preferredBackupWindow": "03:00-04:00",
+    "preferredMaintenanceWindow": "sun:04:00-sun:05:00",
+    "tags": {
+      "DatabaseType": "aurora-serverless-v2",
+      "Engine": "postgresql",
+      "EngineVersion": "15.4",
+      "Purpose": "application-data",
+      "Tier": "production"
+    },
+    "enableRotation": true,
+    "rotationIntervalDays": 30
+  },
+  "secretsManager": {
+    "enableEncryption": true,
+    "enableRotation": true,
+    "rotationIntervalDays": 30,
+    "enableCaching": true,
+    "cacheTtlMinutes": 5,
+    "enableMonitoring": true,
+    "tags": {
+      "Component": "secrets-manager",
+      "Purpose": "application-secrets",
+      "Tier": "production"
+    }
+  },
+  "cognito": {
+    "userPool": {
+      "passwordPolicy": {
+        "minLength": 8,
+        "requireLowercase": true,
+        "requireUppercase": true,
+        "requireNumbers": true,
+        "requireSymbols": true,
+        "tempPasswordValidityDays": 7
+      },
+      "selfSignUpEnabled": true,
+      "autoVerify": ["email"],
+      "standardAttributes": {
+        "email": {
+          "required": true,
+          "mutable": true
+        },
+        "name": {
+          "required": true,
+          "mutable": true
+        }
+      },
+      "customAttributes": {
+        "industry": {
+          "mutable": true
+        },
+        "company_size": {
+          "mutable": true
+        },
+        "job_title": {
+          "mutable": true
+        },
+        "position": {
+          "mutable": true
+        }
+      },
+      "emailSettings": {
+        "fromEmail": "noreply@goal-mandala.example.com",
+        "fromName": "Goal Mandala",
+        "replyToEmail": "support@goal-mandala.example.com",
+        "useSes": true,
+        "sesConfigurationSet": "goal-mandala-production",
+        "customTemplates": {
+          "verification": {
+            "emailSubject": "Goal Mandala - メールアドレス確認",
+            "emailMessage": "Goal Mandalaへようこそ！\n\nメールアドレスの確認を行ってください。\n\n確認コード: {####}\n\nこのコードをアプリケーションに入力してください。\n\n※このメールに心当たりがない場合は、このメールを無視してください。",
+            "emailMessageByLink": "Goal Mandalaへようこそ！\n\nメールアドレスの確認を行ってください。\n\n以下のリンクをクリックして確認を完了してください：\n{##確認リンク##}\n\n※このメールに心当たりがない場合は、このメールを無視してください。"
+          },
+          "invitation": {
+            "emailSubject": "Goal Mandala - アカウント作成のご案内",
+            "emailMessage": "Goal Mandalaへようこそ！\n\nアカウントが作成されました。以下の情報でログインしてください。\n\nユーザー名: {username}\n一時パスワード: {####}\n\n初回ログイン時にパスワードの変更が必要です。\n\nログインURL: https://goal-mandala.example.com/login\n\nご不明な点がございましたら、サポートまでお問い合わせください。"
+          },
+          "forgotPassword": {
+            "emailSubject": "Goal Mandala - パスワードリセット",
+            "emailMessage": "Goal Mandalaのパスワードリセット要求を受け付けました。\n\n確認コード: {####}\n\nこのコードを使用して新しいパスワードを設定してください。\n\n※このメールに心当たりがない場合は、このメールを無視してください。",
+            "emailMessageByLink": "Goal Mandalaのパスワードリセット要求を受け付けました。\n\n以下のリンクをクリックして新しいパスワードを設定してください：\n{##リセットリンク##}\n\n※このメールに心当たりがない場合は、このメールを無視してください。"
+          }
+        }
+      },
+      "accountRecovery": ["verified_email"],
+      "deletionProtection": true,
+      "security": {
+        "enableAdvancedSecurity": true,
+        "enableCompromisedCredentialsCheck": true,
+        "enableRiskBasedAccessControl": true,
+        "mfaConfiguration": "OPTIONAL",
+        "mfaTypes": ["SOFTWARE_TOKEN_MFA"],
+        "deviceConfiguration": {
+          "challengeRequiredOnNewDevice": true,
+          "deviceOnlyRememberedOnUserPrompt": true
+        },
+        "userInvitation": {
+          "emailSubject": "Goal Mandala - アカウント作成のご案内",
+          "emailMessage": "Goal Mandalaへようこそ！\n\nユーザー名: {username}\n一時パスワード: {####}\n\n初回ログイン時にパスワードの変更が必要です。",
+          "smsMessage": "Goal Mandala - ユーザー名: {username} 一時パスワード: {####}"
+        },
+        "verification": {
+          "emailSubject": "Goal Mandala - メールアドレス確認",
+          "emailMessage": "Goal Mandalaのメールアドレス確認コード: {####}",
+          "smsMessage": "Goal Mandala確認コード: {####}"
+        }
+      }
+    },
+    "userPoolClient": {
+      "authFlows": {
+        "allowUserSrpAuth": true,
+        "allowRefreshTokenAuth": true,
+        "allowUserPasswordAuth": false,
+        "allowAdminUserPasswordAuth": false,
+        "allowCustomAuth": false
+      },
+      "tokenValidity": {
+        "accessToken": 60,
+        "idToken": 60,
+        "refreshToken": 43200
+      },
+      "oAuth": {
+        "flows": {
+          "authorizationCodeGrant": true,
+          "implicitCodeGrant": false,
+          "clientCredentials": false
+        },
+        "scopes": ["openid", "email", "profile"],
+        "callbackUrls": [
+          "https://goal-mandala.example.com/auth/callback",
+          "https://goal-mandala.example.com/"
+        ],
+        "logoutUrls": [
+          "https://goal-mandala.example.com/auth/logout",
+          "https://goal-mandala.example.com/"
+        ]
+      },
+      "preventUserExistenceErrors": true,
+      "enableTokenRevocation": true,
+      "generateSecret": false,
+      "supportedIdentityProviders": ["COGNITO"],
+      "readAttributes": [
+        "email",
+        "name",
+        "custom:industry",
+        "custom:company_size",
+        "custom:job_title",
+        "custom:position"
+      ],
+      "writeAttributes": [
+        "name",
+        "custom:industry",
+        "custom:company_size",
+        "custom:job_title",
+        "custom:position"
+      ],
+      "explicitAuthFlows": ["ALLOW_USER_SRP_AUTH", "ALLOW_REFRESH_TOKEN_AUTH"],
+      "enablePropagateAdditionalUserContextData": false,
+      "authSessionValidity": 3
+    },
+    "tags": {
+      "Component": "cognito",
+      "Purpose": "user-authentication",
+      "Tier": "production"
+    },
+    "iam": {
+      "lambdaRole": {
+        "enableDetailedLogging": true,
+        "cognitoPermissions": {
+          "userOperations": {
+            "enabled": true,
+            "actions": [
+              "cognito-idp:GetUser",
+              "cognito-idp:ListUsers",
+              "cognito-idp:AdminGetUser",
+              "cognito-idp:AdminUpdateUserAttributes",
+              "cognito-idp:AdminSetUserPassword",
+              "cognito-idp:AdminCreateUser",
+              "cognito-idp:AdminDeleteUser",
+              "cognito-idp:AdminDisableUser",
+              "cognito-idp:AdminEnableUser"
+            ]
+          },
+          "groupOperations": {
+            "enabled": true,
+            "actions": [
+              "cognito-idp:ListGroups",
+              "cognito-idp:GetGroup",
+              "cognito-idp:AdminListGroupsForUser",
+              "cognito-idp:AdminAddUserToGroup",
+              "cognito-idp:AdminRemoveUserFromGroup"
+            ]
+          },
+          "authOperations": {
+            "enabled": true,
+            "actions": [
+              "cognito-idp:InitiateAuth",
+              "cognito-idp:RespondToAuthChallenge",
+              "cognito-idp:ConfirmSignUp",
+              "cognito-idp:ResendConfirmationCode",
+              "cognito-idp:ForgotPassword",
+              "cognito-idp:ConfirmForgotPassword"
+            ]
+          },
+          "adminOperations": {
+            "enabled": true,
+            "actions": [
+              "cognito-idp:AdminConfirmSignUp",
+              "cognito-idp:AdminInitiateAuth",
+              "cognito-idp:AdminRespondToAuthChallenge",
+              "cognito-idp:AdminResetUserPassword",
+              "cognito-idp:AdminSetUserMFAPreference"
+            ]
+          }
+        },
+        "additionalPolicies": {
+          "sesAccess": {
+            "enabled": true,
+            "actions": ["ses:SendEmail", "ses:SendRawEmail"]
+          },
+          "secretsManagerAccess": {
+            "enabled": true,
+            "actions": ["secretsmanager:GetSecretValue"]
+          },
+          "logsAccess": {
+            "enabled": true,
+            "actions": ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"]
+          }
+        },
+        "resourceRestrictions": {
+          "enableResourceBasedAccess": true,
+          "allowedUserPoolArns": ["*"],
+          "allowedSecretArns": ["*"]
+        }
+      }
+    }
+  },
+  "lambda": {
+    "timeout": 30,
+    "memorySize": 512,
+    "runtime": "nodejs18.x"
+  },
+  "frontend": {
+    "domainName": "goal-mandala.example.com",
+    "certificateArn": null,
+    "customErrorResponses": true,
+    "security": {
+      "enableHsts": true,
+      "hstsMaxAge": 31536000,
+      "hstsIncludeSubdomains": true,
+      "hstsPreload": true,
+      "enableContentTypeOptions": true,
+      "enableFrameOptions": true,
+      "frameOptionsValue": "DENY",
+      "enableReferrerPolicy": true,
+      "referrerPolicyValue": "strict-origin-when-cross-origin",
+      "enableCsp": true,
+      "cspDirectives": {
+        "default-src": ["'self'"],
+        "script-src": ["'self'", "'unsafe-inline'"],
+        "style-src": ["'self'", "'unsafe-inline'"],
+        "img-src": ["'self'", "data:", "https:"],
+        "font-src": ["'self'", "https:"],
+        "connect-src": ["'self'"],
+        "frame-ancestors": ["'none'"]
+      },
+      "customHeaders": {
+        "X-Custom-Header": "goal-mandala-production"
+      }
+    },
+    "s3": {
+      "enableVersioning": true,
+      "enableLogging": true,
+      "lifecyclePolicyEnabled": true,
+      "oldVersionExpirationDays": 90,
+      "incompleteMultipartUploadDays": 7
+    },
+    "monitoring": {
+      "enableAccessLogs": true,
+      "enableCloudFrontLogs": true,
+      "enableCostMonitoring": true,
+      "logRetentionDays": 90,
+      "retainLogsOnDelete": true,
+      "alertEmail": "admin@example.com",
+      "slackWebhookUrl": null,
+      "errorRateThreshold": 5,
+      "cacheHitRateThreshold": 80,
+      "s3RequestsThreshold": 10000,
+      "monthlyBudgetLimit": 100
+    },
+    "deployment": {
+      "buildCommand": "pnpm --filter frontend build",
+      "buildDirectory": "packages/frontend/dist",
+      "excludePatterns": ["*.map", "*.DS_Store", "node_modules/**", ".git/**"],
+      "invalidationPaths": ["/*"],
+      "retainOnDelete": true,
+      "enableBuildCache": true,
+      "enableCompressionUpload": true,
+      "enableParallelUpload": true,
+      "maxConcurrentUploads": 10,
+      "uploadTimeout": 300,
+      "cacheControl": {
+        "html": "public, max-age=300, must-revalidate",
+        "css": "public, max-age=31536000, immutable",
+        "js": "public, max-age=31536000, immutable",
+        "images": "public, max-age=31536000, immutable",
+        "fonts": "public, max-age=31536000, immutable",
+        "default": "public, max-age=86400"
+      }
+    }
+  },
+  "monitoring": {
+    "logRetentionDays": 30,
+    "enableDetailedMonitoring": true,
+    "enableAlerts": true,
+    "alertEmail": "admin@example.com"
+  },
+  "tags": {
+    "Project": "GoalMandala",
+    "Environment": "production",
+    "CostCenter": "engineering",
+    "Owner": "production-team",
+    "Purpose": "production-application",
+    "DataClassification": "confidential",
+    "BackupRequired": "true",
+    "ComplianceRequired": "true"
+  }
+}

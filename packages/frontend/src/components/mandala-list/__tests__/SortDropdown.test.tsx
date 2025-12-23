@@ -1,6 +1,13 @@
-import { render, screen } from '@testing-library/react';
-import { describe, it, expect } from 'vitest';
+import { render, cleanup, screen } from '@testing-library/react';
+import { fireEvent } from '@testing-library/react';
+import { describe, it, expect, afterEach } from 'vitest';
 import { SortDropdown } from '../SortDropdown';
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('SortDropdown', () => {
   describe('表示内容', () => {

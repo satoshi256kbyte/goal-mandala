@@ -1,10 +1,15 @@
-import { describe, it } from 'vitest';
+import { describe, it, afterEach } from 'vitest';
 import {
   loginZodSchema,
   signupZodSchema,
   passwordResetZodSchema,
   newPasswordZodSchema,
 } from './validation';
+
+afterEach(() => {
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('Validation Schemas', () => {
   describe('loginZodSchema', () => {

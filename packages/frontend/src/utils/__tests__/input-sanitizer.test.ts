@@ -1,3 +1,4 @@
+import { render, cleanup, screen, waitFor, fireEvent, act } from '@testing-library/react';
 import {
   sanitizeText,
   sanitizeGoalTitle,
@@ -10,6 +11,12 @@ import {
   removeScriptPatterns,
   comprehensiveSanitize,
 } from '../input-sanitizer';
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('Input Sanitizer', () => {
   describe('sanitizeText', () => {

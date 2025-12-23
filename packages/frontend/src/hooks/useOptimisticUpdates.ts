@@ -4,7 +4,7 @@
 
 import { useQueryClient } from '@tanstack/react-query';
 import { useRef } from 'react';
-import { SubGoal } from '../types/mandala';
+import { SubGoal, Action } from '../types/mandala';
 import { QUERY_KEYS } from './useQuery';
 import { useStableCallback } from '../utils/performance';
 

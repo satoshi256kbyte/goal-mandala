@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useCallback, useReducer, useEffect } from 'react';
-import { Action } from '../types/mandala';
+import { Action, ActionType } from '../types/mandala';
 
 /**
  * アクションフォームデータの型
@@ -11,6 +11,7 @@ export interface ActionFormData {
   constraints?: string;
   type: ActionType;
   position: number;
+  subGoalId?: string;
 }
 
 /**

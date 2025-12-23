@@ -1,9 +1,16 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { render, cleanup, screen, fireEvent, act } from '@testing-library/react';
+import { waitFor } from '@testing-library/react';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import '@testing-library/jest-dom';
 import MandalaCell from '../MandalaCell';
 import { CellData } from '../../../types';
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('MandalaCell', () => {
   const mockCellData: CellData = {
@@ -395,7 +402,7 @@ describe('MandalaCell', () => {
       render(<MandalaCell {...defaultProps} cellData={cellData} />);
 
       const cell = screen.getByRole('gridcell');
-      expect(cell).toHaveClass('progress-low');
+      expect(cell).toHaveClass('progress-1-33');
     });
 
     it('進捗50-79%時に薄い黄色が適用される', () => {
@@ -403,7 +410,7 @@ describe('MandalaCell', () => {
       render(<MandalaCell {...defaultProps} cellData={cellData} />);
 
       const cell = screen.getByRole('gridcell');
-      expect(cell).toHaveClass('progress-medium');
+      expect(cell).toHaveClass('progress-34-66');
     });
 
     it('進捗80-99%時に薄い緑色が適用される', () => {
@@ -411,7 +418,7 @@ describe('MandalaCell', () => {
       render(<MandalaCell {...defaultProps} cellData={cellData} />);
 
       const cell = screen.getByRole('gridcell');
-      expect(cell).toHaveClass('progress-high');
+      expect(cell).toHaveClass('progress-67-99');
     });
 
     it('進捗100%時に濃い緑色が適用される', () => {

@@ -3,10 +3,10 @@
  * 統合テストで使用する共通機能を提供
  */
 
-import { render, RenderOptions, waitFor } from '@testing-library/react';
-import { ReactElement } from 'react';
+import { render, RenderOptions, waitFor, screen } from '@testing-library/react';
+import { ReactElement, ReactNode } from 'react';
 import { BrowserRouter } from 'react-router-dom';
-import { QueryClient } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { vi } from 'vitest';
 import { testDataGenerator } from './TestDataGenerator';
 import { mockManager } from './MockManager';
@@ -56,15 +56,10 @@ export async function waitForLoadingToFinish(timeout: number = 5000) {
   await waitFor(
     () => {
       // "読み込み中"、"Loading"、"処理中"などのテキストが存在しないことを確認
-      const loadingTexts = ['読み込み中', 'Loading', '処理中', 'loading'];
-      const hasLoading = loadingTexts.some(text => {
-        try {
-          screen.getByText(new RegExp(text, 'i'));
-          return true;
-        } catch {
-          return false;
-        }
-      });
+      const loadingTexts = ['読み込み中', 'Loading', '処理中'];
+      const hasLoading = loadingTexts.some(
+        text => screen.queryByText(new RegExp(text, 'i')) !== null
+      );
 
       if (hasLoading) {
         throw new Error('Still loading');

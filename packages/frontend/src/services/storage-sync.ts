@@ -8,7 +8,7 @@
  * - 6.4: StorageEventが発生した時に認証状態が適切に更新される
  */
 
-import { User } from '../types/storage-sync';
+import { User, AuthState } from '../types/storage-sync';
 
 export type { User, AuthState };
 
@@ -33,6 +33,7 @@ export class StorageSync {
   private syncTimer: NodeJS.Timeout | null = null;
   private isActive = false;
   private retryCount = 0;
+  private lastAuthState: { isAuthenticated: boolean; hasToken: boolean } | null = null;
 
   constructor(options: StorageSyncOptions = {}) {
     this.storageKey = options.storageKey || 'auth_state_sync';
@@ -54,6 +55,9 @@ export class StorageSync {
 
     // StorageEventリスナーを設定
     window.addEventListener('storage', this.handleStorageEvent);
+
+    // 初期状態を記録
+    this.checkAuthStateSync();
 
     // 定期的な同期チェックを開始
     this.syncTimer = setInterval(() => {
@@ -181,16 +185,27 @@ export class StorageSync {
   private checkAuthStateSync(): void {
     try {
       const currentTokens = this.getCurrentTokens();
-      const lastSyncState = this.getLastSyncState();
+      const hasToken = !!currentTokens.accessToken;
+
+      // 前回の状態を取得（初回はnull）
+      const previousState = this.lastAuthState;
+
+      // 現在の状態を記録
+      this.lastAuthState = { isAuthenticated: hasToken, hasToken };
+
+      // 初回チェックの場合はスキップ
+      if (!previousState) {
+        return;
+      }
 
       // トークンが削除されている場合（他のタブでログアウト）
-      if (lastSyncState?.isAuthenticated && !currentTokens.accessToken) {
+      if (previousState.hasToken && !hasToken) {
         console.log('[StorageSync] 他のタブでログアウトが検出されました');
         this.notifyAuthStateChange(null);
       }
 
-      // トークンが変更されている場合（他のタブでログイン）
-      if (!lastSyncState?.isAuthenticated && currentTokens.accessToken) {
+      // トークンが追加されている場合（他のタブでログイン）
+      if (!previousState.hasToken && hasToken) {
         console.log('[StorageSync] 他のタブでログインが検出されました');
         const authState = this.buildAuthStateFromTokens(currentTokens);
         this.notifyAuthStateChange(authState);

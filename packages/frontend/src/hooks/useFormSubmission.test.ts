@@ -1,4 +1,4 @@
-import { renderHook } from '@testing-library/react';
+import { renderHook, act } from '@testing-library/react';
 import { vi, beforeEach } from 'vitest';
 import {
   useFormSubmission,
@@ -9,7 +9,7 @@ import {
 
 // fetchをモック化
 global.fetch = vi.fn();
-const mockFetch = fetch as Mock<typeof fetch>;
+const mockFetch = fetch as unknown as any;
 
 describe('useFormSubmission', () => {
   beforeEach(() => {
@@ -30,7 +30,7 @@ describe('useFormSubmission', () => {
       const validData = {
         title: 'テスト目標',
         description: 'テスト説明',
-        deadline: '2024-12-31',
+        deadline: '2025-12-31',
         background: 'テスト背景',
         constraints: 'テスト制約',
       };
@@ -54,7 +54,7 @@ describe('useFormSubmission', () => {
       const invalidData = {
         title: '', // 必須項目が空
         description: 'テスト説明',
-        deadline: '2024-12-31',
+        deadline: '2025-12-31',
         background: 'テスト背景',
         constraints: 'テスト制約',
       };
@@ -98,7 +98,7 @@ describe('useFormSubmission', () => {
       const validData = {
         title: 'テスト目標',
         description: 'テスト説明',
-        deadline: '2024-12-31',
+        deadline: '2025-12-31',
         background: 'テスト背景',
         constraints: 'テスト制約',
       };
@@ -130,7 +130,7 @@ describe('useFormSubmission', () => {
       const validData = {
         title: 'テスト目標',
         description: 'テスト説明',
-        deadline: '2024-12-31',
+        deadline: '2025-12-31',
         background: 'テスト背景',
         constraints: 'テスト制約',
       };
@@ -164,7 +164,7 @@ describe('useFormSubmission', () => {
       const validData = {
         title: 'テスト目標',
         description: 'テスト説明',
-        deadline: '2024-12-31',
+        deadline: '2025-12-31',
         background: 'テスト背景',
         constraints: 'テスト制約',
       };
@@ -186,7 +186,7 @@ describe('useFormSubmission', () => {
       const validData = {
         title: 'テスト目標',
         description: 'テスト説明',
-        deadline: '2024-12-31',
+        deadline: '2025-12-31',
         background: 'テスト背景',
         constraints: 'テスト制約',
       };
@@ -202,6 +202,14 @@ describe('useFormSubmission', () => {
   });
 
   describe('リトライ機能', () => {
+    beforeEach(() => {
+      vi.useRealTimers(); // リトライ機能テストでは実際のタイマーを使用
+    });
+
+    afterEach(() => {
+      vi.useFakeTimers(); // 他のテストのために戻す
+    });
+
     it('指定回数までリトライする', async () => {
       const { result } = renderHook(() => useFormSubmission({ maxRetries: 2, retryDelayMs: 100 }));
 
@@ -217,7 +225,7 @@ describe('useFormSubmission', () => {
       const validData = {
         title: 'テスト目標',
         description: 'テスト説明',
-        deadline: '2024-12-31',
+        deadline: '2025-12-31',
         background: 'テスト背景',
         constraints: 'テスト制約',
       };
@@ -239,7 +247,7 @@ describe('useFormSubmission', () => {
       const validData = {
         title: 'テスト目標',
         description: 'テスト説明',
-        deadline: '2024-12-31',
+        deadline: '2025-12-31',
         background: 'テスト背景',
         constraints: 'テスト制約',
       };
@@ -266,7 +274,7 @@ describe('useFormSubmission', () => {
       const validData = {
         title: 'テスト目標',
         description: 'テスト説明',
-        deadline: '2024-12-31',
+        deadline: '2025-12-31',
         background: 'テスト背景',
         constraints: 'テスト制約',
       };
@@ -302,7 +310,7 @@ describe('useFormSubmission', () => {
       const validData = {
         title: 'テスト目標',
         description: 'テスト説明',
-        deadline: '2024-12-31',
+        deadline: '2025-12-31',
         background: 'テスト背景',
         constraints: 'テスト制約',
       };
@@ -325,7 +333,7 @@ describe('useFormSubmission', () => {
       const validData = {
         title: 'テスト目標',
         description: 'テスト説明',
-        deadline: '2024-12-31',
+        deadline: '2025-12-31',
         background: 'テスト背景',
         constraints: 'テスト制約',
       };
@@ -376,7 +384,7 @@ describe('useGoalFormSubmission', () => {
     const validData = {
       title: 'テスト目標',
       description: 'テスト説明',
-      deadline: '2024-12-31',
+      deadline: '2025-12-31',
       background: 'テスト背景',
       constraints: 'テスト制約',
     };
@@ -391,6 +399,10 @@ describe('useGoalFormSubmission', () => {
 });
 
 describe('useDraftSubmission', () => {
+  beforeEach(() => {
+    mockFetch.mockClear();
+  });
+
   it('下書き保存専用の送信フックが正常に動作する', async () => {
     const { result } = renderHook(() => useDraftSubmission());
     const mockSubmitFunction = vi.fn().mockResolvedValue({ draftId: '456' });

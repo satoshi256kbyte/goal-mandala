@@ -1,14 +1,14 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, cleanup, screen, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import userEvent from '@testing-library/user-event';
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { MandalaListPage } from './MandalaListPage';
 import { useAuth } from '../hooks/useAuth';
 
 // Mock the auth hook
 vi.mock('../hooks/useAuth');
-const mockUseAuth = useAuth as ReturnType<typeof vi.fn>;
+const mockUseAuth = useAuth as any;
 
 // Mock react-router-dom
 const mockNavigate = vi.fn();
@@ -40,6 +40,12 @@ vi.mock('../components/mandala-list/UserMenu', () => ({
 const renderWithRouter = (component: React.ReactElement) => {
   return render(<BrowserRouter>{component}</BrowserRouter>);
 };
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('MandalaListPage', () => {
   beforeEach(() => {
@@ -396,6 +402,114 @@ describe('MandalaListPage', () => {
 
       const main = document.querySelector('main');
       expect(main).toBeInTheDocument();
+    });
+  });
+
+  describe('エッジケース', () => {
+    it('ローディング状態が長時間続いてもエラーが発生しない', () => {
+      mockUseAuth.mockReturnValue({
+        user: null,
+        isAuthenticated: false,
+        isLoading: true,
+        signOut: vi.fn(),
+      } as any);
+
+      renderWithRouter(<MandalaListPage />);
+
+      expect(screen.getByText('読み込み中...')).toBeInTheDocument();
+      expect(screen.getByRole('status')).toHaveAttribute('aria-busy', 'true');
+    });
+
+    it('ログアウト処理が複数回呼ばれてもエラーが発生しない', async () => {
+      const mockSignOut = vi.fn().mockResolvedValue(undefined);
+      mockUseAuth.mockReturnValue({
+        user: {
+          id: '1',
+          name: 'テストユーザー',
+          email: 'test@example.com',
+          profileSetup: true,
+        },
+        isAuthenticated: true,
+        isLoading: false,
+        signOut: mockSignOut,
+      } as any);
+
+      renderWithRouter(<MandalaListPage />);
+
+      const logoutButton = screen.getByText('ログアウト');
+
+      // 複数回クリック
+      await userEvent.click(logoutButton);
+      await userEvent.click(logoutButton);
+      await userEvent.click(logoutButton);
+
+      await waitFor(() => {
+        // 複数回呼び出されてもエラーが発生しない
+        expect(mockSignOut).toHaveBeenCalled();
+      });
+    });
+
+    it('ユーザー名が非常に長い場合でも正しく表示される', () => {
+      const longName = 'テストユーザー'.repeat(20); // 非常に長い名前
+      mockUseAuth.mockReturnValue({
+        user: {
+          id: '1',
+          name: longName,
+          email: 'test@example.com',
+          profileSetup: true,
+        },
+        isAuthenticated: true,
+        isLoading: false,
+        signOut: vi.fn(),
+      } as any);
+
+      renderWithRouter(<MandalaListPage />);
+
+      expect(screen.getByText(longName)).toBeInTheDocument();
+    });
+
+    it('メールアドレスが非常に長い場合でも正しく表示される', () => {
+      const longEmail = 'verylongemailaddress'.repeat(10) + '@example.com';
+      mockUseAuth.mockReturnValue({
+        user: {
+          id: '1',
+          name: 'テストユーザー',
+          email: longEmail,
+          profileSetup: true,
+        },
+        isAuthenticated: true,
+        isLoading: false,
+        signOut: vi.fn(),
+      } as any);
+
+      renderWithRouter(<MandalaListPage />);
+
+      expect(screen.getByText(longEmail)).toBeInTheDocument();
+    });
+
+    it('エラーメッセージが非常に長い場合でも正しく表示される', async () => {
+      const longErrorMessage = 'エラーが発生しました。'.repeat(50);
+      const mockSignOut = vi.fn().mockRejectedValue(new Error(longErrorMessage));
+      mockUseAuth.mockReturnValue({
+        user: {
+          id: '1',
+          name: 'テストユーザー',
+          email: 'test@example.com',
+          profileSetup: true,
+        },
+        isAuthenticated: true,
+        isLoading: false,
+        signOut: mockSignOut,
+      } as any);
+
+      renderWithRouter(<MandalaListPage />);
+
+      const logoutButton = screen.getByText('ログアウト');
+      await userEvent.click(logoutButton);
+
+      await waitFor(() => {
+        expect(screen.getByText('ログアウトに失敗しました')).toBeInTheDocument();
+      });
     });
   });
 });

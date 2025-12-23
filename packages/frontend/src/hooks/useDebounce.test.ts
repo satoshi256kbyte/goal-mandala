@@ -1,6 +1,6 @@
 import { renderHook, act } from '@testing-library/react';
-import { useDebounce } from './useDebounce';
-import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { useDebounce, useDebouncedCallback } from './useDebounce';
+import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 
 describe('useDebounce', () => {
   beforeEach(() => {
@@ -8,7 +8,7 @@ describe('useDebounce', () => {
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
+    vi.useRealTimers();
   });
 
   it('初期値を返すこと', () => {
@@ -97,7 +97,7 @@ describe('useDebouncedCallback', () => {
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
+    vi.useRealTimers();
   });
 
   it('指定した遅延時間後にコールバックが実行されること', () => {

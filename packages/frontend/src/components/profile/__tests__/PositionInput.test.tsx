@@ -1,5 +1,6 @@
-import { render, screen } from '@testing-library/react';
-import { describe, it, expect } from 'vitest';
+import { render, cleanup, screen } from '@testing-library/react';
+import { fireEvent } from '@testing-library/react';
+import { describe, it, expect, afterEach } from 'vitest';
 import { PositionInput } from '../PositionInput';
 import {
   ERROR_MESSAGES,
@@ -8,6 +9,12 @@ import {
   ARIA_LABELS,
   TEST_IDS,
 } from '../../../constants/profile';
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('PositionInput', () => {
   const defaultProps = {

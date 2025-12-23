@@ -1,13 +1,19 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, cleanup, screen, fireEvent } from '@testing-library/react';
 import { TaskCard } from '../TaskCard';
-import { generateMockTask } from '@goal-mandala/shared';
+import { generateMockTask, TaskStatus } from '@goal-mandala/shared';
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('TaskCard', () => {
   it('should render task information correctly', () => {
     const task = generateMockTask({
       title: 'Test Task',
       description: 'Test Description',
-      status: 'not_started',
+      status: TaskStatus.NOT_STARTED,
       estimatedMinutes: 30,
     });
 
@@ -19,22 +25,22 @@ describe('TaskCard', () => {
   });
 
   it('should call onStatusChange when status is changed', () => {
-    const task = generateMockTask({ status: 'not_started' });
-    const onStatusChange = jest.fn();
+    const task = generateMockTask({ status: TaskStatus.NOT_STARTED });
+    const onStatusChange = vi.fn();
 
     render(
       <TaskCard task={task} onStatusChange={onStatusChange} onSelect={() => {}} selected={false} />
     );
 
-    const statusButton = screen.getByRole('button', { name: /状態を変更/ });
-    fireEvent.click(statusButton);
+    const statusSelect = screen.getByRole('combobox', { name: /状態を変更/ });
+    fireEvent.change(statusSelect, { target: { value: 'in_progress' } });
 
     expect(onStatusChange).toHaveBeenCalledWith('in_progress');
   });
 
   it('should call onSelect when checkbox is clicked', () => {
     const task = generateMockTask();
-    const onSelect = jest.fn();
+    const onSelect = vi.fn();
 
     render(<TaskCard task={task} onStatusChange={() => {}} onSelect={onSelect} selected={false} />);
 
@@ -56,7 +62,7 @@ describe('TaskCard', () => {
   it('should display deadline warning for overdue tasks', () => {
     const task = generateMockTask({
       deadline: new Date(Date.now() - 24 * 60 * 60 * 1000), // 昨日
-      status: 'not_started',
+      status: TaskStatus.NOT_STARTED,
     });
 
     render(<TaskCard task={task} onStatusChange={() => {}} onSelect={() => {}} selected={false} />);

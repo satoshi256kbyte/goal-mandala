@@ -3,6 +3,7 @@
  */
 
 import { describe, test, expect, beforeEach, afterEach } from 'vitest';
+import { AuthState } from '../types/storage-sync';
 import { StorageSync } from './storage-sync';
 
 describe('StorageSync', () => {
@@ -119,14 +120,14 @@ describe('StorageSync', () => {
   });
 
   describe('定期同期チェック', () => {
-    beforeEach(() => {
-      storageSync.startSync();
-    });
-
     test('他のタブでのログアウト検出', () => {
       // 初期状態：認証済み
+      localStorage.setItem('auth_access_token', 'existing_token');
       localStorage.setItem('auth_user_data', JSON.stringify({ id: '1' }));
       localStorage.setItem('auth_session_id', 'session123');
+
+      // 同期を開始（初期状態を記録）
+      storageSync.startSync();
 
       // 定期チェック実行前にトークンを削除（他のタブでのログアウトをシミュレート）
       localStorage.removeItem('auth_access_token');
@@ -139,6 +140,9 @@ describe('StorageSync', () => {
 
     test('他のタブでのログイン検出', () => {
       // 初期状態：未認証
+      // 同期を開始（初期状態を記録）
+      storageSync.startSync();
+
       // 定期チェック実行前にトークンを追加（他のタブでのログインをシミュレート）
       localStorage.setItem('auth_access_token', 'new_token');
       localStorage.setItem(

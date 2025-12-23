@@ -6,6 +6,9 @@ import { ErrorAlert, SuccessMessage } from '../components/common';
 import { useAuthForm } from '../hooks/useAuthForm';
 import type { SignupFormData } from '../utils/validation';
 
+// TODO: NetworkStatusコンポーネントを適切な場所に移動
+const NetworkStatus: React.FC = () => null;
+
 /**
  * サインアップページコンポーネント
  *

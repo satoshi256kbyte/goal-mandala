@@ -1,3 +1,4 @@
+import { render, cleanup, screen, waitFor, fireEvent, act } from '@testing-library/react';
 import {
   sanitizeHtml,
   sanitizeForDisplay,
@@ -10,11 +11,17 @@ import {
   logXSSAttempt,
 } from '../xss-protection';
 
-import { vi } from 'vitest';
+import { vi, afterEach } from 'vitest';
 
 // console.warn をモック
 const mockConsoleWarn = vi.fn();
 console.warn = mockConsoleWarn;
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('XSS Protection', () => {
   beforeEach(() => {

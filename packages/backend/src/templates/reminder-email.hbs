@@ -1,0 +1,136 @@
+<html lang='ja'>
+  <head>
+    <meta charset='UTF-8' />
+    <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+    <title>今日のタスクリマインド</title>
+    <style>
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f5f5f5;
+      }
+      .container {
+        background-color: #ffffff;
+        border-radius: 8px;
+        padding: 30px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        color: #2c3e50;
+        font-size: 24px;
+        margin-bottom: 10px;
+      }
+      h2 {
+        color: #34495e;
+        font-size: 20px;
+        margin-top: 20px;
+        margin-bottom: 15px;
+      }
+      .intro {
+        color: #555;
+        margin-bottom: 20px;
+      }
+      .task-list {
+        list-style: none;
+        padding: 0;
+        margin: 20px 0;
+      }
+      .task-item {
+        background-color: #f8f9fa;
+        border-left: 4px solid #3498db;
+        padding: 15px;
+        margin-bottom: 15px;
+        border-radius: 4px;
+      }
+      .task-title {
+        font-weight: bold;
+        color: #2c3e50;
+        font-size: 16px;
+        margin-bottom: 5px;
+      }
+      .task-time {
+        color: #7f8c8d;
+        font-size: 14px;
+        margin-bottom: 10px;
+      }
+      .task-link {
+        display: inline-block;
+        background-color: #3498db;
+        color: #ffffff;
+        text-decoration: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        font-size: 14px;
+        margin-top: 5px;
+      }
+      .task-link:hover {
+        background-color: #2980b9;
+      }
+      .total-time {
+        background-color: #e8f4f8;
+        border-radius: 4px;
+        padding: 15px;
+        margin: 20px 0;
+        text-align: center;
+      }
+      .total-time-label {
+        color: #555;
+        font-size: 14px;
+        margin-bottom: 5px;
+      }
+      .total-time-value {
+        color: #2c3e50;
+        font-size: 24px;
+        font-weight: bold;
+      }
+      .footer {
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #e0e0e0;
+        text-align: center;
+        color: #7f8c8d;
+        font-size: 12px;
+      }
+      .unsubscribe-link {
+        color: #7f8c8d;
+        text-decoration: none;
+      }
+      .unsubscribe-link:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+    <div class='container'>
+      <h1>こんにちは、{{userName}}さん</h1>
+      <p class='intro'>今日のタスクをお知らせします。</p>
+
+      <h2>目標: {{goalTitle}}</h2>
+
+      <ul class='task-list'>
+        {{#each tasks}}
+          <li class='task-item'>
+            <div class='task-title'>{{this.title}}</div>
+            <div class='task-time'>所要時間: {{this.estimatedMinutes}}分</div>
+            <a href='{{this.deepLink}}' class='task-link'>タスクを開始する</a>
+          </li>
+        {{/each}}
+      </ul>
+
+      <div class='total-time'>
+        <div class='total-time-label'>合計所要時間</div>
+        <div class='total-time-value'>{{totalMinutes}}分</div>
+      </div>
+
+      <div class='footer'>
+        <p>このメールは目標管理曼荼羅から自動送信されています。</p>
+        <p><a href='{{unsubscribeLink}}' class='unsubscribe-link'>配信停止</a></p>
+      </div>
+    </div>
+  </body>
+</html>

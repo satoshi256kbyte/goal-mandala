@@ -1,25 +1,32 @@
 import React from 'react';
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { vi } from 'vitest';
-import { BrowserRouter, Routes } from 'react-router-dom';
+import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import { ProtectedRoute } from '../ProtectedRoute';
 import { useAuth } from '../../../hooks/useAuth';
 
 // Mock the auth hook
 vi.mock('../../../hooks/useAuth');
-const mockUseAuth = useAuth as ReturnType<typeof vi.fn>;
+const mockUseAuth = useAuth as any;
 
 const TestComponent = () => <div>Protected Content</div>;
 const LoginPage = () => <div>Login Page</div>;
 const ProfileSetupPage = () => <div>Profile Setup Page</div>;
 const HomePage = () => <div>Home Page</div>;
 
-const renderWithRouter = (_initialEntries: string[] = ['/']) => {
+const renderWithRouter = (initialEntries: string[] = ['/']) => {
   return render(
-    <BrowserRouter>
+    <MemoryRouter initialEntries={initialEntries}>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/profile/setup" element={<ProfileSetupPage />} />
+        <Route
+          path="/profile/setup"
+          element={
+            <ProtectedRoute requireProfileSetup={false}>
+              <ProfileSetupPage />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/" element={<HomePage />} />
         <Route
           path="/protected"
@@ -38,16 +45,18 @@ const renderWithRouter = (_initialEntries: string[] = ['/']) => {
           }
         />
       </Routes>
-    </BrowserRouter>
+    </MemoryRouter>
   );
 };
 
 describe('ProtectedRoute', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // Mock window.location for navigation tests
-    delete (window as any).location;
-    window.location = { ...window.location, pathname: '/' };
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+    mockUseAuth.mockReset();
   });
 
   it('should show loading while checking authentication', () => {
@@ -142,11 +151,11 @@ describe('ProtectedRoute', () => {
     });
 
     render(
-      <BrowserRouter>
+      <MemoryRouter>
         <ProtectedRoute requireAuth={false}>
           <TestComponent />
         </ProtectedRoute>
-      </BrowserRouter>
+      </MemoryRouter>
     );
 
     expect(screen.getByText('Protected Content')).toBeInTheDocument();

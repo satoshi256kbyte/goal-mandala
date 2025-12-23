@@ -1,5 +1,5 @@
 import React from 'react';
-import { TaskStatus } from '@goal-mandala/shared';
+import { TaskStatus, TaskFilters } from '@goal-mandala/shared';
 
 interface TaskFilterProps {
   filters: TaskFilters;
@@ -64,6 +64,7 @@ export const TaskFilter: React.FC<TaskFilterProps> = ({ filters, onChange, actio
           value={filters.deadlineRange || ''}
           onChange={e => handleDeadlineRangeChange(e.target.value)}
           className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          aria-label="期限フィルター"
         >
           <option value="">すべて</option>
           <option value="today">今日</option>

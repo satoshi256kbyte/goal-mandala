@@ -1,11 +1,17 @@
-import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { render, cleanup, screen, fireEvent, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { ProfileSetupForm } from '../ProfileSetupForm';
 import type { ProfileFormData } from '../../../types/profile';
 import * as useProfileFormModule from '../../../hooks/useProfileForm';
 
 // useProfileFormフックをモック
 vi.mock('../../../hooks/useProfileForm');
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('ProfileSetupForm', () => {
   // デフォルトのモック関数
@@ -579,7 +585,7 @@ describe('ProfileSetupForm', () => {
         formData,
       });
 
-      render(<ProfileSetupForm onSubmit={mockOnSubmit} />);
+      render(<ProfileSetupForm />);
 
       // フィールドに入力
       const industrySelect = screen.getByTestId('industry-select');

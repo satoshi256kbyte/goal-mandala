@@ -1,5 +1,6 @@
 import React from 'react';
 import { UseFormRegister } from 'react-hook-form';
+import type { FieldError } from 'react-hook-form';
 import { CharacterCounter } from './CharacterCounter';
 import { CharacterLimitWarning } from './CharacterLimitWarning';
 import { useCharacterCounter } from '../../hooks/useCharacterCounter';
@@ -107,6 +108,10 @@ export const TextInput: React.FC<TextInputProps> = ({
       updateLength(truncatedValue);
       // フォームの値も更新
       e.target.value = truncatedValue;
+      // 制限到達時のコールバック
+      if (onLimitReached) {
+        onLimitReached(truncatedValue);
+      }
     } else {
       setInputValue(newValue);
       updateLength(newValue);

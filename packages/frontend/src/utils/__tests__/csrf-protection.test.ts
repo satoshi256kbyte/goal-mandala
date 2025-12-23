@@ -1,4 +1,5 @@
-import { vi } from 'vitest';
+import { render, cleanup, screen, waitFor, fireEvent, act } from '@testing-library/react';
+import { vi, afterEach } from 'vitest';
 import {
   generateCSRFToken,
   storeCSRFToken,
@@ -57,6 +58,12 @@ Object.defineProperty(global.window, 'location', {
     href: 'https://example.com/page',
   },
   configurable: true,
+});
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
 });
 
 describe('CSRF Protection', () => {

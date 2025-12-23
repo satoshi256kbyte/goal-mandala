@@ -1,16 +1,16 @@
 import React from 'react';
-import { render } from '@testing-library/react';
+import { render, cleanup, screen, waitFor, fireEvent, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { vi } from 'vitest';
+import { vi, afterEach } from 'vitest';
 import { DynamicFormField } from './DynamicFormField';
 // Mock dependencies
 const mockOnChange = vi.fn();
-const mockRegister = vi.fn(() => ({
+const mockRegister = vi.fn((name: string) => ({
   onChange: vi.fn(),
   onBlur: vi.fn(),
-  name: 'test',
+  name,
   ref: vi.fn(),
-}));
+})) as any;
 // Test field configurations
 const textField = {
   name: 'title',
@@ -51,6 +51,13 @@ const radioField = {
     { value: 'low', label: '低' },
   ],
 };
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
+
 describe('DynamicFormField', () => {
   beforeEach(() => {
     vi.clearAllMocks();

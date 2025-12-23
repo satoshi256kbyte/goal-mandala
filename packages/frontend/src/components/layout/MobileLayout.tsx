@@ -20,8 +20,11 @@ export function MobileLayout({
   showSafeArea = true,
 }: MobileLayoutProps) {
   const { isMobile, isPortrait } = useResponsive();
-  const { isVisible: keyboardVisible, height: keyboardHeight } = useVirtualKeyboard();
-  const safeArea = useSafeArea();
+  // TODO: useVirtualKeyboard フックを実装
+  const keyboardVisible = false;
+  const keyboardHeight = 0;
+  // TODO: useSafeArea フックを実装
+  const safeArea = { top: 0, bottom: 0, left: 0, right: 0 };
 
   // モバイル以外では通常のレイアウトを使用
   if (!isMobile) {

@@ -1,7 +1,14 @@
-import { render, screen } from '@testing-library/react';
-import { describe, it, expect } from 'vitest';
+import { render, cleanup, screen } from '@testing-library/react';
+import { fireEvent } from '@testing-library/react';
+import { describe, it, expect, afterEach } from 'vitest';
 import { StatusFilter } from '../StatusFilter';
 import { GoalStatus } from '../../../types/mandala';
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('StatusFilter', () => {
   describe('表示内容', () => {

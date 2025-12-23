@@ -2,8 +2,13 @@
  * エラー分類ユーティリティのテスト
  */
 
-import { describe, it } from 'vitest';
+import { describe, it, afterEach } from 'vitest';
 import { classifyError } from '../error-classifier';
+
+afterEach(() => {
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('classifyError', () => {
   describe('ネットワークエラーの分類', () => {

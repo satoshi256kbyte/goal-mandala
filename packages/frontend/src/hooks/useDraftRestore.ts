@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { draftUtils } from '../utils/draft-utils';
 import { PartialGoalFormData } from '../schemas/goal-form';
 import { DraftService, DraftData } from '../services/draftService';
 
@@ -221,7 +222,7 @@ export const useDraftRestoreStatus = (draftRestore: ReturnType<typeof useDraftRe
     draftSavedAt: state.draftData ? new Date(state.draftData.savedAt) : null,
     /** 下書きの保存からの経過時間 */
     timeSinceSave: state.draftData
-      ? draftUtils.getTimeSinceSave(new Date(state.draftData.savedAt))
+      ? draftUtils.getTimeSinceSave(new Date(state.draftData.savedAt).getTime())
       : null,
     /** 復元可能かどうか */
     canRestore: !!state.draftData && !state.isRestored && !state.isRejected,

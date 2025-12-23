@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { ProgressCalculationEngineImpl } from '../progress-calculation-engine';
-import { TaskStatus } from '../../types/progress';
+import { TaskStatus } from '@goal-mandala/shared';
 import { ActionType } from '../../types/mandala';
 
 /**

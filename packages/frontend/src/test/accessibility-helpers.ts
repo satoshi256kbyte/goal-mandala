@@ -152,7 +152,9 @@ export const testFormAccessibility = (formElement: HTMLElement) => {
   expect(hasFormRole || hasAriaLabel || hasAriaLabelledBy).toBe(true);
 
   // 必須フィールドが適切にマークされていることを確認
-  const requiredInputs = within(formElement).getAllByRole('textbox', { required: true });
+  const requiredInputs = within(formElement)
+    .queryAllByRole('textbox')
+    .filter(input => input.hasAttribute('required'));
   requiredInputs.forEach(input => {
     expect(input.getAttribute('required')).toBe('');
     expect(input.getAttribute('aria-required')).toBe('true');
@@ -219,15 +221,15 @@ export const testHighContrastMode = (element: HTMLElement) => {
   // 高コントラストモードをシミュレート
   Object.defineProperty(window, 'matchMedia', {
     writable: true,
-    value: jest.fn().mockImplementation(query => ({
+    value: vi.fn().mockImplementation(query => ({
       matches: query === '(prefers-contrast: high)',
       media: query,
       onchange: null,
-      addListener: jest.fn(),
-      removeListener: jest.fn(),
-      addEventListener: jest.fn(),
-      removeEventListener: jest.fn(),
-      dispatchEvent: jest.fn(),
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
     })),
   });
 
@@ -245,15 +247,15 @@ export const testReducedMotion = () => {
   // prefers-reduced-motion をシミュレート
   Object.defineProperty(window, 'matchMedia', {
     writable: true,
-    value: jest.fn().mockImplementation(query => ({
+    value: vi.fn().mockImplementation(query => ({
       matches: query === '(prefers-reduced-motion: reduce)',
       media: query,
       onchange: null,
-      addListener: jest.fn(),
-      removeListener: jest.fn(),
-      addEventListener: jest.fn(),
-      removeEventListener: jest.fn(),
-      dispatchEvent: jest.fn(),
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
     })),
   });
 

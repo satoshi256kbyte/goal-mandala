@@ -1,6 +1,6 @@
 import React from 'react';
-import { render, screen, act } from '@testing-library/react';
-import { vi } from 'vitest';
+import { render, cleanup, screen, act, waitFor, fireEvent } from '@testing-library/react';
+import { vi, afterEach } from 'vitest';
 import { renderWithProviders } from '../test/test-utils';
 import {
   ActionProvider,
@@ -8,7 +8,7 @@ import {
   useActionState,
   useActionActions,
 } from './ActionContext';
-import { Action } from '../types/mandala';
+import { Action, ActionType } from '../types/mandala';
 
 // テスト用のアクションデータ
 const mockActions: Action[] = [
@@ -136,6 +136,12 @@ const StateTestComponent: React.FC = () => {
     </div>
   );
 };
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('ActionContext', () => {
   const renderWithProvider = (

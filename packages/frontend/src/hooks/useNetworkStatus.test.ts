@@ -1,11 +1,17 @@
-import { renderHook } from '@testing-library/react';
-import { vi } from 'vitest';
+import { renderHook, cleanup, act } from '@testing-library/react';
+import { vi, afterEach } from 'vitest';
 import { useNetworkStatus } from './useNetworkStatus';
 
 // navigator.onLineをモック
 Object.defineProperty(navigator, 'onLine', {
   writable: true,
   value: true,
+});
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
 });
 
 describe('useNetworkStatus', () => {

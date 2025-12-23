@@ -1,4 +1,6 @@
+import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
+import { waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { BrowserRouter } from 'react-router-dom';
 import { UserMenu } from '../UserMenu';
@@ -356,8 +358,27 @@ describe('UserMenuWithAuth', () => {
     isAuthenticated: true,
     isLoading: false,
     error: null,
+    signIn: vi.fn(),
     signOut: mockSignOut,
+    clearError: vi.fn(),
+    addAuthStateListener: vi.fn(() => () => {}),
+    isTokenExpired: vi.fn(() => false),
     getTokenExpirationTime: () => null,
+    refreshToken: vi.fn(),
+  };
+
+  // UserMenuWithAuthコンポーネントの定義
+  const UserMenuWithAuth = () => {
+    const auth = React.useContext(AuthContext);
+    if (!auth || !auth.user) return null;
+    return (
+      <UserMenu
+        userName={auth.user.name}
+        userEmail={auth.user.email}
+        onSettingsClick={() => {}}
+        onLogoutClick={auth.signOut}
+      />
+    );
   };
 
   beforeEach(() => {

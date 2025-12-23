@@ -257,6 +257,8 @@ VPCスタックの動作確認には、以下のテストスクリプトを使�
 
 ### CDKの使用方法
 
+**重要**: CDKコマンドは必ず`pnpm`を通して実行してください。直接`cdk`コマンドを実行すると、モノレポの依存関係が正しく解決されません。
+
 ```bash
 # CDKプロジェクトディレクトリに移動
 cd packages/infrastructure
@@ -272,6 +274,19 @@ pnpm run deploy:test
 
 # 実際のデプロイ（注意：AWSリソースが作成されます）
 pnpm run deploy:test:actual
+```
+
+**CDKコマンドの実行方法**:
+
+```bash
+# ✅ 正しい方法：pnpmを通して実行
+pnpm run cdk synth
+pnpm run cdk deploy
+pnpm run cdk destroy
+
+# ❌ 間違った方法：直接cdkコマンドを実行
+cdk synth  # モノレポの依存関係が解決されない
+cdk deploy # エラーが発生する可能性がある
 ```
 
 詳細な使用方法は [CDKプロジェクト使用方法](./packages/infrastructure/README.md) を参照してください。

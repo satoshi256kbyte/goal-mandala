@@ -1,5 +1,6 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, cleanup, screen, fireEvent, act } from '@testing-library/react';
+import { waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { SignupForm } from './SignupForm';
 import type { SignupFormData } from '../../utils/validation';
@@ -8,7 +9,13 @@ const renderWithRouter = (component: React.ReactElement) => {
   return render(<BrowserRouter>{component}</BrowserRouter>);
 };
 
-import { vi } from 'vitest';
+import { vi, afterEach } from 'vitest';
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe('SignupForm', () => {
   const mockOnSubmit = vi.fn();
@@ -29,7 +36,7 @@ describe('SignupForm', () => {
   });
 
   it('有効な情報でフォーム送信が成功する', async () => {
-    mockOnSubmit.mockResolvedValue();
+    mockOnSubmit.mockResolvedValue(undefined);
     renderWithRouter(<SignupForm onSubmit={mockOnSubmit} />);
 
     const formData: SignupFormData = {
