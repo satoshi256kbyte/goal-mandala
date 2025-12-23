@@ -74,7 +74,7 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-storybook": "^9.1.9",
     "fast-check": "^4.3.0",
-    "glob": "^11.0.3",
+    "glob": "^11.1.0",
     "jest-axe": "^10.0.0",
     "jsdom": "^26.1.0",
     "postcss": "^8.4.32",
